@@ -1,0 +1,1230 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+
+  <!-- PWA -->
+  <link rel="manifest" href="manifest.json">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Kho Fecon">
+  <meta name="theme-color" content="#0B1F3A">
+  <link rel="apple-touch-icon" href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAMAAAADACAYAAABS3GwHAAAEtUlEQVR4nO3TS44cNxBF0Z57EdqHd+H9z70NCdWwBbVkt/JD5iMjzgFiXsV89+0NAAAAAAAAAAAAAAAAAAAAAACAd398+fNr+jfAUK9Rz7r0f4MPZo5dFCwnPXZB8Lj0oK/e33+9iYFr0uMdMf6fL/2mbCA93FnjFwKfSo/2qfELgQ/Sg02NXwjNnRlIetgzxy+EZq4MIz3uJ8YvhOLuDCI98CfHL4SC7g4hPfLE+EVQwKiRpIeeGv+P/z/9LTlp5FDSY0+P/99Lf1MOGj2W9OBXGL8INjBrMOnRrzJ+ISxs5mjSw19t/CJYzOzhGL8IlvXEeIxfBEt6akDGL4LlPDki4xfBUp4ekvGLYBmJMRm/CJaQGpTxiyAuOSrjF0FUeljGL4KYFcZl/CKIWWFgxi+AiFVGZvwieNxKQzN+ETxqtbGt9nt2HL8ITlhtcCv9lp3HL4ADRj/4KmMyfhH81ozHXmFQxi+CQyoGYPwCOGTWQyeHZfwiOKxaAMYvgMNmPnJiYMYvglMqBWD8Ajhl9gM/OTTjF8FpVQIwfgGc9sTjPjE44xfBJRUCMH4BXPLUw84cnvGL4LLdAzB+AVz25KPOGKDxi+CWnQMwfgHctmsAxi+A255+0FFjNH4RDLFjAMYvgGEEYPxtA0g8ZnrUxi+C7wRg/AIQgPELQADG3yyA1EOmR278IngnAOMXgADio9rp0psdSgDGL4DGAaTHtOOlNztM8hHTwzd+EbQOID2g3S+93SG6BpAeT4VLb3eIjgGkh1Pl0tsdolsA6dFUuvR2h+gUQHow1S693SG6BJAeS8VLb3eIDgGkh1L10tsdonoA6ZFUvvR2h6gcQHog1S+93SGqBpAeR4dLb/e29AMa+v6X3vBtuwcgDOO/pWoAIhDAIZUDEIEAfqt6ACIQwKc6BCACAfyvLgGIQAD/qVMAIhDAL7oFIAIBfNAxABEI4LuuAYhAAO86ByACAbzrHIAImo//pXsAIhBA+wBEIID2AYhAAO0DEEHDAF4EIIK2438RgAgEIAARCEAAImgYwIsARNB2/C8CEIEANgvg6ZDSA0xfeqPT7RiACIx/mF0DEIEAhtg5ABEIYIidAxCB8d+2ewAiEMBtuwcgAuO/pUIAIhDALRUCEIHxX1YlABEI4LIqAYjA+C+pFIAIBHBJpQBEYPynVQtABAI4rVoAIjD+UyoGIAIBnFIxABEY/ykVAxCB8R9WNQARCOCwlQY3egRdI0hvajurjG3GGLpFkN7StlYY2qxRdIkgvaGtrTCymePoEEF6Q9tLD2z2QCpHkN5OGZUDqBpBejPlVA6gWgTprZRVOYAqEaQ3Ul7lAHaPIL2NNioHsGsE6U20UzmA3SJIb6GtygHsEkF6A+1VDmD1CNLfnn9UDmDVCNLfnJ9UDmC1CNLfmk9UDWCFCNLfloOqBpCMIP1NOalqAIkI0t+SGyoG8FQE6W/HIBUDmB1B+psxQbUAZkSQ/kY8oFIAoyJIfxMC0sNdIYL0N2AB6fEmIki/OQtKD/iJCNJvzAbSI54RQfpN2VR6zHciSL8dxaRHfeTSb0Qj6bEbPMsxdjjIqAEAAAAAAAAAAAAAAAAAAAAA+ME3241vb2GTxQEAAAAASUVORK5CYII=">
+  <link rel="icon" type="image/png" sizes="192x192" href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAMAAAADACAYAAABS3GwHAAAEtUlEQVR4nO3TS44cNxBF0Z57EdqHd+H9z70NCdWwBbVkt/JD5iMjzgFiXsV89+0NAAAAAAAAAAAAAAAAAAAAAACAd398+fNr+jfAUK9Rz7r0f4MPZo5dFCwnPXZB8Lj0oK/e33+9iYFr0uMdMf6fL/2mbCA93FnjFwKfSo/2qfELgQ/Sg02NXwjNnRlIetgzxy+EZq4MIz3uJ8YvhOLuDCI98CfHL4SC7g4hPfLE+EVQwKiRpIeeGv+P/z/9LTlp5FDSY0+P/99Lf1MOGj2W9OBXGL8INjBrMOnRrzJ+ISxs5mjSw19t/CJYzOzhGL8IlvXEeIxfBEt6akDGL4LlPDki4xfBUp4ekvGLYBmJMRm/CJaQGpTxiyAuOSrjF0FUeljGL4KYFcZl/CKIWWFgxi+AiFVGZvwieNxKQzN+ETxqtbGt9nt2HL8ITlhtcCv9lp3HL4ADRj/4KmMyfhH81ozHXmFQxi+CQyoGYPwCOGTWQyeHZfwiOKxaAMYvgMNmPnJiYMYvglMqBWD8Ajhl9gM/OTTjF8FpVQIwfgGc9sTjPjE44xfBJRUCMH4BXPLUw84cnvGL4LLdAzB+AVz25KPOGKDxi+CWnQMwfgHctmsAxi+A255+0FFjNH4RDLFjAMYvgGEEYPxtA0g8ZnrUxi+C7wRg/AIQgPELQADG3yyA1EOmR278IngnAOMXgADio9rp0psdSgDGL4DGAaTHtOOlNztM8hHTwzd+EbQOID2g3S+93SG6BpAeT4VLb3eIjgGkh1Pl0tsdolsA6dFUuvR2h+gUQHow1S693SG6BJAeS8VLb3eIDgGkh1L10tsdonoA6ZFUvvR2h6gcQHog1S+93SGqBpAeR4dLb/e29AMa+v6X3vBtuwcgDOO/pWoAIhDAIZUDEIEAfqt6ACIQwKc6BCACAfyvLgGIQAD/qVMAIhDAL7oFIAIBfNAxABEI4LuuAYhAAO86ByACAbzrHIAImo//pXsAIhBA+wBEIID2AYhAAO0DEEHDAF4EIIK2438RgAgEIAARCEAAImgYwIsARNB2/C8CEIEANgvg6ZDSA0xfeqPT7RiACIx/mF0DEIEAhtg5ABEIYIidAxCB8d+2ewAiEMBtuwcgAuO/pUIAIhDALRUCEIHxX1YlABEI4LIqAYjA+C+pFIAIBHBJpQBEYPynVQtABAI4rVoAIjD+UyoGIAIBnFIxABEY/ykVAxCB8R9WNQARCOCwlQY3egRdI0hvajurjG3GGLpFkN7StlYY2qxRdIkgvaGtrTCymePoEEF6Q9tLD2z2QCpHkN5OGZUDqBpBejPlVA6gWgTprZRVOYAqEaQ3Ul7lAHaPIL2NNioHsGsE6U20UzmA3SJIb6GtygHsEkF6A+1VDmD1CNLfnn9UDmDVCNLfnJ9UDmC1CNLfmk9UDWCFCNLfloOqBpCMIP1NOalqAIkI0t+SGyoG8FQE6W/HIBUDmB1B+psxQbUAZkSQ/kY8oFIAoyJIfxMC0sNdIYL0N2AB6fEmIki/OQtKD/iJCNJvzAbSI54RQfpN2VR6zHciSL8dxaRHfeTSb0Qj6bEbPMsxdjjIqAEAAAAAAAAAAAAAAAAAAAAA+ME3241vb2GTxQEAAAAASUVORK5CYII=">
+<title>Kho Fecon South</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+:root{
+  --bg:#F5F6FA;
+  --white:#FFFFFF;
+  --navy:#0B1F3A;
+  --navy2:#1A3358;
+  --blue:#1565C0;
+  --blue-light:#E8F0FE;
+  --orange:#E65100;
+  --orange-light:#FFF3E0;
+  --green:#2E7D32;
+  --green-light:#E8F5E9;
+  --red:#C62828;
+  --red-light:#FFEBEE;
+  --yellow:#F57F17;
+  --yellow-light:#FFFDE7;
+  --gray1:#F5F6FA;
+  --gray2:#ECEFF1;
+  --gray3:#B0BEC5;
+  --gray4:#78909C;
+  --text:#1A2332;
+  --text2:#4A5568;
+  --border:#DDE3EC;
+  --radius:14px;
+  --shadow:0 2px 12px rgba(11,31,58,.08);
+}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;font-size:14px}
+
+/* ====== LOGIN ====== */
+#login-screen{
+  min-height:100vh;
+  background:linear-gradient(160deg,#0B1F3A 0%,#1A3358 60%,#1565C0 100%);
+  display:flex;flex-direction:column;align-items:center;justify-content:center;padding:24px;
+}
+.login-logo{text-align:center;margin-bottom:36px}
+.login-logo .badge{
+  display:inline-block;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.2);
+  color:rgba(255,255,255,.7);font-size:10px;letter-spacing:2px;padding:4px 12px;border-radius:20px;
+  text-transform:uppercase;margin-bottom:14px
+}
+.login-logo h1{font-size:28px;font-weight:800;color:#fff;line-height:1.1;margin-bottom:6px}
+.login-logo p{font-size:13px;color:rgba(255,255,255,.5)}
+.login-card{
+  background:#fff;border-radius:20px;padding:28px 24px;width:100%;max-width:340px;
+  box-shadow:0 20px 60px rgba(0,0,0,.25)
+}
+.role-tabs{display:flex;background:var(--gray1);border-radius:10px;padding:4px;gap:4px;margin-bottom:22px}
+.role-tab{
+  flex:1;padding:9px 6px;border:none;border-radius:8px;font-size:13px;font-weight:600;
+  color:var(--gray4);background:transparent;cursor:pointer;transition:.2s
+}
+.role-tab.active{background:#fff;color:var(--navy);box-shadow:0 1px 4px rgba(0,0,0,.1)}
+.user-row{display:flex;align-items:center;gap:10px;margin-bottom:20px}
+.avatar{
+  width:42px;height:42px;border-radius:50%;display:flex;align-items:center;
+  justify-content:center;font-weight:700;font-size:15px;color:#fff;flex-shrink:0
+}
+.avatar.tk{background:var(--navy2)}
+.avatar.ql{background:var(--blue)}
+.user-info .uname{font-weight:700;font-size:14px}
+.user-info .urole{font-size:11px;color:var(--gray4);margin-top:1px}
+.dots-row{display:flex;gap:12px;justify-content:center;margin-bottom:22px}
+.dot{width:14px;height:14px;border-radius:50%;border:2px solid var(--border);transition:.15s}
+.dot.on{background:var(--navy);border-color:var(--navy)}
+.dot.err{background:var(--red);border-color:var(--red)}
+.keypad{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.kbtn{
+  height:56px;border:none;border-radius:12px;background:var(--gray1);
+  font-size:20px;font-weight:500;color:var(--text);cursor:pointer;transition:.1s;
+  display:flex;align-items:center;justify-content:center
+}
+.kbtn:active{background:var(--gray2)}
+.kbtn.ghost{background:transparent;cursor:default}
+.kbtn.del{font-size:14px;color:var(--text2)}
+.pin-err{text-align:center;color:var(--red);font-size:12px;margin-top:8px;min-height:18px}
+.pin-hint{text-align:center;font-size:11px;color:var(--gray3);margin-top:6px}
+
+/* ====== APP SHELL ====== */
+#app{display:none;min-height:100vh;padding-bottom:72px}
+.topbar{
+  background:var(--navy);padding:14px 16px 10px;position:sticky;top:0;z-index:200
+}
+.topbar-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
+.topbar-brand{font-size:10px;letter-spacing:2px;color:rgba(255,255,255,.5);text-transform:uppercase}
+.topbar-title{font-size:18px;font-weight:800;color:#fff}
+.topbar-right{display:flex;align-items:center;gap:8px}
+.sync-chip{font-size:11px;font-weight:600;padding:3px 9px;border-radius:8px}
+.sync-ok{background:#1B5E20;color:#A5D6A7}
+.sync-err{background:#7F1D1D;color:#FFCDD2}
+.sync-ing{background:#0D47A1;color:#90CAF9}
+.exit-btn{
+  background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.15);
+  color:rgba(255,255,255,.7);border-radius:8px;padding:5px 11px;font-size:12px;cursor:pointer
+}
+.proj-bar{
+  background:rgba(255,255,255,.07);border-radius:10px;padding:8px 12px;
+  display:flex;align-items:center;gap:8px
+}
+.proj-label{font-size:10px;color:var(--orange);font-weight:700;letter-spacing:.5px;white-space:nowrap}
+.proj-sel{
+  background:none;border:none;color:#fff;font-size:13px;font-weight:600;
+  flex:1;outline:none;cursor:pointer
+}
+.proj-sel option{background:var(--navy);color:#fff}
+
+/* bottom nav */
+.bottom-nav{
+  position:fixed;bottom:0;left:0;right:0;
+  background:#fff;border-top:1px solid var(--border);
+  display:flex;z-index:200;padding-bottom:env(safe-area-inset-bottom)
+}
+.bnav-item{
+  flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;
+  padding:10px 4px 8px;cursor:pointer;border:none;background:none;
+  color:var(--gray3);font-size:10px;font-weight:600;gap:3px;transition:.15s
+}
+.bnav-item.active{color:var(--navy)}
+.bnav-icon{font-size:20px}
+
+/* ====== CONTENT ====== */
+.content{padding:14px 14px 0}
+
+/* stat cards */
+.stat-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px}
+.stat-card{
+  background:#fff;border-radius:var(--radius);padding:14px 14px 12px;
+  box-shadow:var(--shadow);position:relative;overflow:hidden
+}
+.stat-card::before{
+  content:'';position:absolute;top:0;left:0;right:0;height:3px;background:var(--navy)
+}
+.stat-card.green::before{background:var(--green)}
+.stat-card.red::before{background:var(--red)}
+.stat-card.orange::before{background:var(--orange)}
+.stat-card .s-label{font-size:11px;color:var(--text2);margin-bottom:6px}
+.stat-card .s-val{font-size:24px;font-weight:800;color:var(--navy);line-height:1}
+.stat-card .s-sub{font-size:11px;color:var(--gray4);margin-top:4px}
+
+/* section */
+.sec-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
+.sec-title{font-size:14px;font-weight:700;color:var(--navy)}
+.btn-primary{
+  background:var(--navy);color:#fff;border:none;border-radius:8px;
+  padding:7px 14px;font-size:13px;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:5px
+}
+.btn-orange{background:var(--orange)}
+.btn-green{background:var(--green)}
+.btn-blue{background:var(--blue)}
+.btn-gray{background:var(--gray4)}
+
+/* card list */
+.card{background:#fff;border-radius:var(--radius);box-shadow:var(--shadow);margin-bottom:12px;overflow:hidden}
+.card-head{
+  background:var(--navy);color:#fff;padding:10px 14px;
+  font-size:11px;font-weight:700;letter-spacing:.3px;display:flex;align-items:center;gap:6px
+}
+table.data-table{width:100%;border-collapse:collapse;font-size:13px}
+table.data-table th{
+  background:var(--navy2);color:rgba(255,255,255,.85);padding:9px 12px;
+  text-align:left;font-size:11px;font-weight:600
+}
+table.data-table td{padding:10px 12px;border-bottom:1px solid var(--gray2);vertical-align:middle}
+table.data-table tr:last-child td{border-bottom:none}
+table.data-table tr:hover td{background:#F8FAFC}
+
+/* badge */
+.badge{display:inline-block;padding:3px 8px;border-radius:6px;font-size:11px;font-weight:600}
+.b-green{background:var(--green-light);color:var(--green)}
+.b-red{background:var(--red-light);color:var(--red)}
+.b-yellow{background:var(--yellow-light);color:var(--yellow)}
+.b-blue{background:var(--blue-light);color:var(--blue)}
+.b-navy{background:#E8EDF5;color:var(--navy)}
+
+/* action buttons */
+.act-row{display:flex;gap:5px}
+.act-btn{border:none;border-radius:6px;padding:5px 9px;font-size:11px;font-weight:600;cursor:pointer}
+.a-edit{background:var(--blue-light);color:var(--blue)}
+.a-del{background:var(--red-light);color:var(--red)}
+
+/* forms */
+.form-card{background:#fff;border-radius:var(--radius);padding:16px;box-shadow:var(--shadow);margin-bottom:12px}
+.form-card h3{font-size:15px;font-weight:700;color:var(--navy);margin-bottom:14px;
+  padding-bottom:10px;border-bottom:2px solid var(--navy);display:flex;align-items:center;gap:8px}
+.fg{margin-bottom:12px}
+.fg label{display:block;font-size:11px;font-weight:700;color:var(--text2);margin-bottom:5px;text-transform:uppercase;letter-spacing:.3px}
+.fg input,.fg select,.fg textarea{
+  width:100%;border:1.5px solid var(--border);border-radius:10px;padding:10px 12px;
+  font-size:14px;color:var(--text);background:#fff;outline:none;font-family:inherit;transition:.2s
+}
+.fg input:focus,.fg select:focus,.fg textarea:focus{border-color:var(--navy)}
+.fg-row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.btn-full{
+  width:100%;border:none;border-radius:12px;padding:14px;font-size:15px;font-weight:700;
+  cursor:pointer;color:#fff;background:var(--navy);margin-top:4px
+}
+
+/* chip filter */
+.chip-row{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px}
+.chip{
+  padding:6px 12px;border-radius:20px;font-size:12px;font-weight:600;
+  border:1.5px solid var(--border);color:var(--text2);cursor:pointer;background:#fff;transition:.15s
+}
+.chip.on{background:var(--navy);color:#fff;border-color:var(--navy)}
+
+/* charts */
+.chart-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px}
+.chart-box{background:#fff;border-radius:var(--radius);padding:14px;box-shadow:var(--shadow)}
+.chart-box.full{grid-column:1/-1}
+.chart-title{font-size:12px;font-weight:700;color:var(--navy);margin-bottom:10px}
+.chart-wrap{position:relative;height:160px}
+.chart-wrap-tall{position:relative;height:200px}
+
+/* modal */
+.modal-bg{
+  position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:500;
+  display:flex;align-items:flex-end;justify-content:center
+}
+.modal{
+  background:#fff;border-radius:20px 20px 0 0;padding:20px;
+  width:100%;max-height:88vh;overflow-y:auto
+}
+.modal h3{font-size:16px;font-weight:700;color:var(--navy);margin-bottom:16px}
+.modal-actions{display:flex;gap:10px;margin-top:14px}
+.btn-cancel{flex:1;background:var(--gray1);color:var(--text2);border:none;border-radius:12px;padding:13px;font-size:14px;font-weight:600;cursor:pointer}
+.btn-ok{flex:1;background:var(--navy);color:#fff;border:none;border-radius:12px;padding:13px;font-size:14px;font-weight:700;cursor:pointer}
+
+/* toast */
+.toast{
+  position:fixed;bottom:88px;left:50%;transform:translateX(-50%);
+  background:var(--navy);color:#fff;padding:11px 20px;border-radius:12px;
+  font-size:13px;z-index:999;display:none;white-space:nowrap;
+  box-shadow:0 4px 20px rgba(0,0,0,.25)
+}
+.toast.show{display:block}
+
+/* loading */
+.loader{
+  position:fixed;inset:0;background:rgba(11,31,58,.8);z-index:600;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px
+}
+.spinner{
+  width:36px;height:36px;border:3px solid rgba(255,255,255,.2);
+  border-top-color:var(--orange);border-radius:50%;animation:spin .7s linear infinite
+}
+.loader p{color:rgba(255,255,255,.75);font-size:13px}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+.info-note{
+  background:var(--blue-light);border-left:3px solid var(--blue);border-radius:8px;
+  padding:10px 13px;font-size:12px;color:#1A3358;margin-bottom:12px;line-height:1.5
+}
+.warn-note{
+  background:var(--orange-light);border-left:3px solid var(--orange);border-radius:8px;
+  padding:10px 13px;font-size:12px;color:#7B2D00;margin-bottom:12px
+}
+.empty{text-align:center;padding:32px;color:var(--gray4);font-size:13px}
+</style>
+</head>
+<body>
+
+<!-- LOGIN -->
+<div id="login-screen">
+  <div class="login-logo">
+    <div class="badge">Fecon South</div>
+    <h1>Quản Lý<br>Kho Vật Tư</h1>
+    <p>DA TTHC Quận 2</p>
+  </div>
+  <div class="login-card">
+    <div class="role-tabs">
+      <button class="role-tab active" onclick="pickRole('tk')" id="rtab-tk">🏗️ Thủ Kho</button>
+      <button class="role-tab" onclick="pickRole('ql')" id="rtab-ql">👔 Quản Lý</button>
+    </div>
+    <div class="user-row">
+      <div class="avatar tk" id="lg-av">TK</div>
+      <div class="user-info">
+        <div class="uname" id="lg-name">Thủ Kho</div>
+        <div class="urole" id="lg-role">Nhập · Xuất kho</div>
+      </div>
+    </div>
+    <div class="dots-row">
+      <div class="dot" id="dot0"></div><div class="dot" id="dot1"></div>
+      <div class="dot" id="dot2"></div><div class="dot" id="dot3"></div>
+    </div>
+    <div class="keypad">
+      <button class="kbtn" onclick="kp('1')">1</button>
+      <button class="kbtn" onclick="kp('2')">2</button>
+      <button class="kbtn" onclick="kp('3')">3</button>
+      <button class="kbtn" onclick="kp('4')">4</button>
+      <button class="kbtn" onclick="kp('5')">5</button>
+      <button class="kbtn" onclick="kp('6')">6</button>
+      <button class="kbtn" onclick="kp('7')">7</button>
+      <button class="kbtn" onclick="kp('8')">8</button>
+      <button class="kbtn" onclick="kp('9')">9</button>
+      <button class="kbtn ghost"></button>
+      <button class="kbtn" onclick="kp('0')">0</button>
+      <button class="kbtn del" onclick="kpDel()">⌫</button>
+    </div>
+    <div class="pin-err" id="pin-err"></div>
+    <div class="pin-hint">Demo: Thủ kho <b>1234</b> · Quản lý <b>5678</b></div>
+  </div>
+</div>
+
+<!-- APP -->
+<div id="app">
+  <div class="topbar">
+    <div class="topbar-row">
+      <div>
+        <div class="topbar-brand">Fecon South</div>
+        <div class="topbar-title">Kho Vật Tư</div>
+      </div>
+      <div class="topbar-right">
+        <span class="sync-chip sync-ing" id="sync-chip">⏳ Chưa sync</span>
+        <button class="exit-btn" onclick="doLogout()">Thoát</button>
+      </div>
+    </div>
+    <div class="proj-bar">
+      <span class="proj-label">DỰ ÁN</span>
+      <select class="proj-sel" id="proj-sel" onchange="onProjChange()">
+        <option value="all">— Tất cả —</option>
+      </select>
+    </div>
+  </div>
+
+  <div class="content" id="main-content"></div>
+
+  <nav class="bottom-nav">
+    <button class="bnav-item active" id="bn-dashboard" onclick="goTab('dashboard')">
+      <span class="bnav-icon">📊</span>Tổng quan
+    </button>
+    <button class="bnav-item" id="bn-nhap" onclick="goTab('nhap')">
+      <span class="bnav-icon">📥</span>Nhập kho
+    </button>
+    <button class="bnav-item" id="bn-xuat" onclick="goTab('xuat')">
+      <span class="bnav-icon">📤</span>Xuất kho
+    </button>
+    <button class="bnav-item" id="bn-ton" onclick="goTab('ton')">
+      <span class="bnav-icon">📦</span>Tồn kho
+    </button>
+    <button class="bnav-item" id="bn-baocao" onclick="goTab('baocao')">
+      <span class="bnav-icon">📋</span>Báo cáo
+    </button>
+    <button class="bnav-item" id="bn-admin" style="display:none" onclick="goTab('admin')">
+      <span class="bnav-icon">⚙️</span>Quản lý
+    </button>
+  </nav>
+</div>
+
+<div id="modal-bg" class="modal-bg" style="display:none" onclick="closeModal(event)">
+  <div class="modal" id="modal-body"></div>
+</div>
+<div class="toast" id="toast"></div>
+<div class="loader" id="loader" style="display:none">
+  <div class="spinner"></div>
+  <p id="loader-msg">Đang xử lý...</p>
+</div>
+
+<script>
+// ============================================================
+// CONFIG — thay GOOGLE_SCRIPT_URL sau khi deploy Apps Script
+// ============================================================
+const SCRIPT_URL = 'GOOGLE_SCRIPT_URL';
+// ============================================================
+
+const PINS = { tk:'1234', ql:'5678' };
+const MACHINE_CATS = ['mayKhoan','mayCau','mayDao','mayPhat'];
+let role = 'tk', pinBuf = '', curTab = 'dashboard', curProj = 'all', filterCat = 'all';
+let charts = {};
+
+let db = {
+  projects: ['DA TTHC Quận 2'],
+  categories: [
+    { id:'nhienLieu', name:'Nhiên liệu & Dầu mỡ', icon:'🛢️' },
+    { id:'mayKhoan',  name:'Máy khoan',             icon:'🔩' },
+    { id:'mayCau',    name:'Máy cẩu',               icon:'🏗️' },
+    { id:'mayDao',    name:'Máy đào & Khác',         icon:'⛏️' },
+    { id:'mayPhat',   name:'Máy phát điện',          icon:'⚡' }
+  ],
+  items: [
+    { id:1,  name:'Dầu DO',                 cat:'nhienLieu', unit:'Lít',   stock:9661, minStock:2000 },
+    { id:2,  name:'Nhớt thủy lực 68',       cat:'nhienLieu', unit:'Lít',   stock:371,  minStock:100 },
+    { id:3,  name:'Nhớt máy',               cat:'nhienLieu', unit:'Lít',   stock:28,   minStock:20 },
+    { id:4,  name:'Mỡ bò số 0',             cat:'nhienLieu', unit:'Thùng', stock:2,    minStock:1 },
+    { id:5,  name:'Mỡ bò số 2',             cat:'nhienLieu', unit:'Thùng', stock:6,    minStock:1 },
+    { id:6,  name:'Mỡ bò chịu nhiệt 15kg', cat:'nhienLieu', unit:'Thùng', stock:1,    minStock:1 },
+    { id:7,  name:'Xe khoan SW300H - 2020 S153',          cat:'mayKhoan', unit:'cái', stock:1, minStock:1 },
+    { id:8,  name:'Xe khoan XCMG240 - 01 2020',           cat:'mayKhoan', unit:'cái', stock:1, minStock:1 },
+    { id:9,  name:'Xe khoan XCMG240 - 02 2021',           cat:'mayKhoan', unit:'cái', stock:1, minStock:1 },
+    { id:10, name:'Xe khoan Sany 285-02',                  cat:'mayKhoan', unit:'cái', stock:1, minStock:1 },
+    { id:11, name:'Xe khoan SW300H - S00354 An Khang',     cat:'mayKhoan', unit:'cái', stock:1, minStock:1 },
+    { id:12, name:'Xe cẩu Maitowoc 12000',                 cat:'mayCau',   unit:'cái', stock:1, minStock:1 },
+    { id:13, name:'Xe cẩu Sany SCC850',                    cat:'mayCau',   unit:'cái', stock:1, minStock:1 },
+    { id:14, name:'Xe cẩu 55T Sany SCC550A',               cat:'mayCau',   unit:'cái', stock:1, minStock:1 },
+    { id:15, name:'Xe cẩu Kobecol BM800',                  cat:'mayCau',   unit:'cái', stock:1, minStock:1 },
+    { id:16, name:'Xe cẩu Kobecol 7065',                   cat:'mayCau',   unit:'cái', stock:1, minStock:1 },
+    { id:17, name:'Xe cẩu Kobelco 7080',                   cat:'mayCau',   unit:'cái', stock:1, minStock:1 },
+    { id:18, name:'Xe cẩu BM600',                          cat:'mayCau',   unit:'cái', stock:1, minStock:1 },
+    { id:19, name:'Xe cẩu QY130',                          cat:'mayCau',   unit:'cái', stock:1, minStock:1 },
+    { id:20, name:'Xe cẩu bánh xích LS218',                cat:'mayCau',   unit:'cái', stock:1, minStock:1 },
+    { id:21, name:'Xe đào bánh xích SK200-9-15',            cat:'mayDao',   unit:'cái', stock:1, minStock:1 },
+    { id:22, name:'Xe đào bánh xích SK210-6',              cat:'mayDao',   unit:'cái', stock:1, minStock:1 },
+    { id:23, name:'Xe đào SK210 (Anh Bảy)',                cat:'mayDao',   unit:'cái', stock:1, minStock:1 },
+    { id:24, name:'Xe đào SK300',                          cat:'mayDao',   unit:'cái', stock:1, minStock:1 },
+    { id:25, name:'Máy đào Sumitumo 280',                  cat:'mayDao',   unit:'cái', stock:1, minStock:1 },
+    { id:26, name:'Máy đào EX200',                         cat:'mayDao',   unit:'cái', stock:1, minStock:1 },
+    { id:27, name:'Máy đào EX230',                         cat:'mayDao',   unit:'cái', stock:1, minStock:1 },
+    { id:28, name:'Máy đào Cat 320',                       cat:'mayDao',   unit:'cái', stock:1, minStock:1 },
+    { id:29, name:'Máy đào Hitachi 320',                   cat:'mayDao',   unit:'cái', stock:1, minStock:1 },
+    { id:30, name:'Máy đào Komatsu PC200',                 cat:'mayDao',   unit:'cái', stock:1, minStock:1 },
+    { id:31, name:'Máy đào Komatsu PC200-8',               cat:'mayDao',   unit:'cái', stock:1, minStock:1 },
+    { id:32, name:'Máy đào Komatsu PC210',                 cat:'mayDao',   unit:'cái', stock:1, minStock:1 },
+    { id:33, name:'Xe bent luân chuyển đất',               cat:'mayDao',   unit:'cái', stock:1, minStock:1 },
+    { id:34, name:'Xe cạp SC800',                          cat:'mayDao',   unit:'cái', stock:1, minStock:1 },
+    { id:35, name:'Xe cạp BM900',                          cat:'mayDao',   unit:'cái', stock:1, minStock:1 },
+    { id:36, name:'Xúc lật SZM 920B',                     cat:'mayDao',   unit:'cái', stock:1, minStock:1 },
+    { id:37, name:'Máy phát điện 150 KvA',                 cat:'mayPhat',  unit:'cái', stock:1, minStock:1 },
+    { id:38, name:'Máy phát điện 300 KvA',                 cat:'mayPhat',  unit:'cái', stock:1, minStock:1 }
+  ],
+  transactions: []
+};
+
+// ===== LOGIN =====
+function pickRole(r) {
+  role = r;
+  pinBuf = '';
+  refreshDots();
+  document.getElementById('pin-err').textContent = '';
+  document.querySelectorAll('.role-tab').forEach(t => t.classList.remove('active'));
+  document.getElementById('rtab-' + r).classList.add('active');
+  const av = document.getElementById('lg-av');
+  if (r === 'tk') {
+    av.className = 'avatar tk'; av.textContent = 'TK';
+    document.getElementById('lg-name').textContent = 'Thủ Kho';
+    document.getElementById('lg-role').textContent = 'Nhập · Xuất kho';
+  } else {
+    av.className = 'avatar ql'; av.textContent = 'QL';
+    document.getElementById('lg-name').textContent = 'Quản Lý / Chỉ Huy';
+    document.getElementById('lg-role').textContent = 'Báo cáo · Quản trị';
+  }
+}
+
+function kp(k) {
+  if (pinBuf.length >= 4) return;
+  pinBuf += k;
+  refreshDots();
+  if (pinBuf.length === 4) setTimeout(checkPin, 180);
+}
+function kpDel() { pinBuf = pinBuf.slice(0,-1); refreshDots(); document.getElementById('pin-err').textContent=''; }
+function refreshDots() {
+  for (let i=0;i<4;i++) {
+    const d = document.getElementById('dot'+i);
+    d.className = 'dot' + (i < pinBuf.length ? ' on' : '');
+  }
+}
+function checkPin() {
+  if (pinBuf === PINS[role]) {
+    document.getElementById('login-screen').style.display = 'none';
+    document.getElementById('app').style.display = 'block';
+    if (role === 'ql') document.getElementById('bn-admin').style.display = 'flex';
+    else document.getElementById('bn-admin').style.display = 'none';
+    initApp();
+  } else {
+    document.querySelectorAll('.dot').forEach(d => d.className = 'dot err');
+    document.getElementById('pin-err').textContent = 'Sai mã PIN';
+    setTimeout(() => { pinBuf=''; refreshDots(); }, 700);
+  }
+}
+function doLogout() {
+  pinBuf=''; refreshDots();
+  document.getElementById('pin-err').textContent='';
+  document.getElementById('login-screen').style.display='flex';
+  document.getElementById('app').style.display='none';
+  Object.values(charts).forEach(c => { try{c.destroy()}catch(e){} });
+  charts = {};
+  pickRole('tk');
+}
+
+// ===== APP INIT =====
+async function initApp() {
+  const sel = document.getElementById('proj-sel');
+  sel.innerHTML = '<option value="all">— Tất cả —</option>';
+  db.projects.forEach(p => { const o=document.createElement('option'); o.value=p; o.textContent=p; sel.appendChild(o); });
+  showLoader('Đang tải dữ liệu...');
+  await syncAll();
+  hideLoader();
+  goTab('dashboard');
+}
+
+function onProjChange() { curProj = document.getElementById('proj-sel').value; goTab(curTab); }
+
+// ===== SYNC =====
+function isConfigured() { return SCRIPT_URL && SCRIPT_URL !== 'GOOGLE_SCRIPT_URL'; }
+function setSyncChip(state, txt) {
+  const el = document.getElementById('sync-chip');
+  el.className = 'sync-chip sync-' + state;
+  el.textContent = txt;
+}
+function callServer(params) {
+  if (!isConfigured()) return Promise.resolve({ success:false });
+  return new Promise(resolve => {
+    const cb = '_cb' + Date.now();
+    const s = document.createElement('script');
+    window[cb] = r => { try{document.head.removeChild(s)}catch(e){} delete window[cb]; resolve(r); };
+    s.onerror = () => resolve({ success:false });
+    const qs = Object.entries(params).map(([k,v]) => k+'='+encodeURIComponent(typeof v==='object'?JSON.stringify(v):v)).join('&');
+    s.src = SCRIPT_URL + '?' + qs + '&callback=' + cb + '&t=' + Date.now();
+    document.head.appendChild(s);
+  });
+}
+async function syncAll() {
+  if (!isConfigured()) { setSyncChip('err','⚠️ Offline'); return; }
+  setSyncChip('ing','⏳ Đang tải...');
+  const r = await callServer({ action:'getAll' });
+  if (r.success && r.items?.length) {
+    db.items = r.items.map(i => ({ ...i, id:+i.id, stock:+i.stock, minStock:+i.minStock }));
+    db.transactions = (r.transactions||[]).map(t => ({ ...t, itemId:+t.itemId, qty:+t.qty }));
+    setSyncChip('ok','✅ Đã sync');
+  } else {
+    setSyncChip('err','❌ Offline');
+  }
+}
+async function pushTxn(txn) {
+  setSyncChip('ing','⏳ Đang lưu...');
+  const r = await callServer({ action:'addTransaction', data:txn });
+  setSyncChip(r.success ? 'ok' : 'err', r.success ? '✅ Đã lưu' : '❌ Lỗi lưu');
+}
+async function pushItems() {
+  setSyncChip('ing','⏳ Đang lưu...');
+  const r = await callServer({ action:'updateItems', data:{ items:db.items } });
+  setSyncChip(r.success ? 'ok' : 'err', r.success ? '✅ Đã lưu' : '❌ Lỗi lưu');
+}
+
+// ===== NAVIGATION =====
+function goTab(tab) {
+  curTab = tab;
+  document.querySelectorAll('.bnav-item').forEach(b => b.classList.remove('active'));
+  const el = document.getElementById('bn-' + (tab==='dashboard'?'dashboard':tab));
+  if (el) el.classList.add('active');
+  Object.values(charts).forEach(c => { try{c.destroy()}catch(e){} });
+  charts = {};
+  const c = document.getElementById('main-content');
+  if (tab==='dashboard') renderDashboard(c);
+  else if (tab==='nhap') renderNhap(c);
+  else if (tab==='xuat') renderXuat(c);
+  else if (tab==='ton') renderTon(c);
+  else if (tab==='baocao') renderBaoCao(c);
+  else if (tab==='admin') renderAdmin(c);
+}
+
+// helpers
+const stockItems = () => db.items.filter(i => !MACHINE_CATS.includes(i.cat));
+const filteredTxns = () => curProj==='all' ? db.transactions : db.transactions.filter(t => t.project===curProj);
+
+// ===== DASHBOARD =====
+function renderDashboard(c) {
+  const si = stockItems();
+  const low = si.filter(i => i.stock <= i.minStock).length;
+  const txns = filteredTxns();
+  const nhapCnt = txns.filter(t=>t.type==='nhap').length;
+  const xuatCnt = txns.filter(t=>t.type==='xuat').length;
+
+  // tính tổng xuất mỗi loại nhiên liệu
+  const xuatByItem = {};
+  txns.filter(t=>t.type==='xuat').forEach(t => {
+    const item = db.items.find(i=>i.id===t.itemId);
+    if (item && !MACHINE_CATS.includes(item.cat)) {
+      xuatByItem[item.name] = (xuatByItem[item.name]||0) + t.qty;
+    }
+  });
+  const xuatLabels = Object.keys(xuatByItem);
+  const xuatVals = Object.values(xuatByItem);
+
+  // tổng nhập theo ngày (7 ngày gần nhất)
+  const nhapByDay = {};
+  txns.filter(t=>t.type==='nhap').forEach(t => {
+    const d = (t.datetime||'').split(' ')[0] || t.datetime || '';
+    nhapByDay[d] = (nhapByDay[d]||0) + t.qty;
+  });
+  const dayKeys = Object.keys(nhapByDay).slice(-7);
+  const dayVals = dayKeys.map(k=>nhapByDay[k]);
+
+  c.innerHTML = `
+    ${!isConfigured() ? `<div class="warn-note" style="margin-top:0">⚠️ Chưa kết nối Google Sheets — dữ liệu lưu tạm, mất khi đóng app.</div>` : ''}
+    <div class="stat-grid">
+      <div class="stat-card"><div class="s-label">Loại vật tư</div><div class="s-val">${si.length}</div><div class="s-sub">đang theo dõi</div></div>
+      <div class="stat-card orange"><div class="s-label">Cần bổ sung</div><div class="s-val">${low}</div><div class="s-sub">dưới mức tối thiểu</div></div>
+      <div class="stat-card green"><div class="s-label">Phiếu nhập</div><div class="s-val">${nhapCnt}</div><div class="s-sub">${curProj==='all'?'Tất cả':curProj}</div></div>
+      <div class="stat-card red"><div class="s-label">Phiếu xuất</div><div class="s-val">${xuatCnt}</div><div class="s-sub">${curProj==='all'?'Tất cả':curProj}</div></div>
+    </div>
+
+    <div class="chart-grid">
+      <div class="chart-box">
+        <div class="chart-title">🛢️ Tỉ lệ xuất theo vật tư</div>
+        <div class="chart-wrap"><canvas id="chart-pie"></canvas></div>
+      </div>
+      <div class="chart-box">
+        <div class="chart-title">📦 Tồn kho hiện tại</div>
+        <div class="chart-wrap"><canvas id="chart-stock"></canvas></div>
+      </div>
+      <div class="chart-box full">
+        <div class="chart-title">📅 Nhập kho theo ngày</div>
+        <div class="chart-wrap-tall"><canvas id="chart-bar"></canvas></div>
+      </div>
+    </div>
+
+    <div class="sec-head"><div class="sec-title">⚠️ Vật tư cần bổ sung</div></div>
+    <div class="card">
+      <table class="data-table">
+        <thead><tr><th>Vật tư</th><th>Tồn kho</th><th>Tối thiểu</th></tr></thead>
+        <tbody>
+          ${si.filter(i=>i.stock<=i.minStock).map(i=>`<tr>
+            <td>${i.name}</td>
+            <td><span class="badge b-red">${i.stock} ${i.unit}</span></td>
+            <td>${i.minStock} ${i.unit}</td>
+          </tr>`).join('') || '<tr><td colspan="3" class="empty">✅ Tất cả vật tư đủ hàng</td></tr>'}
+        </tbody>
+      </table>
+    </div>
+
+    <div class="sec-head"><div class="sec-title">🕐 Giao dịch gần nhất</div></div>
+    <div class="card">
+      <table class="data-table">
+        <thead><tr><th>Vật tư</th><th>Loại</th><th>SL</th><th>Dự án</th></tr></thead>
+        <tbody>
+          ${txns.slice(-6).reverse().map(t => {
+            const it = db.items.find(i=>i.id===t.itemId);
+            return `<tr>
+              <td><b>${it?.name||t.itemName||'?'}</b></td>
+              <td><span class="badge ${t.type==='nhap'?'b-green':'b-red'}">${t.type==='nhap'?'Nhập':'Xuất'}</span></td>
+              <td>${t.qty} ${it?.unit||''}</td>
+              <td style="font-size:11px;color:var(--gray4)">${t.project}</td>
+            </tr>`;
+          }).join('') || '<tr><td colspan="4" class="empty">Chưa có giao dịch</td></tr>'}
+        </tbody>
+      </table>
+    </div>
+  `;
+
+  // draw charts
+  requestAnimationFrame(() => {
+    const palette = ['#0B1F3A','#1565C0','#2E7D32','#E65100','#F57F17','#6A1B9A'];
+
+    // Pie
+    if (xuatLabels.length) {
+      charts.pie = new Chart(document.getElementById('chart-pie'), {
+        type:'doughnut',
+        data:{ labels:xuatLabels, datasets:[{ data:xuatVals, backgroundColor:palette, borderWidth:2, borderColor:'#fff' }] },
+        options:{ responsive:true, maintainAspectRatio:false, plugins:{ legend:{ position:'bottom', labels:{ font:{size:10}, boxWidth:10 } } } }
+      });
+    } else {
+      document.getElementById('chart-pie').parentElement.innerHTML = '<div class="empty" style="height:100%;display:flex;align-items:center;justify-content:center">Chưa có dữ liệu</div>';
+    }
+
+    // Stock bar
+    const sLabels = si.map(i=>i.name.split(' ').slice(0,3).join(' '));
+    const sVals = si.map(i=>i.stock);
+    const sColors = si.map(i => i.stock<=i.minStock ? '#C62828' : i.stock<=i.minStock*1.5 ? '#F57F17' : '#2E7D32');
+    charts.stock = new Chart(document.getElementById('chart-stock'), {
+      type:'bar',
+      data:{ labels:sLabels, datasets:[{ label:'Tồn kho', data:sVals, backgroundColor:sColors, borderRadius:4 }] },
+      options:{ responsive:true, maintainAspectRatio:false, plugins:{legend:{display:false}},
+        scales:{ x:{ ticks:{font:{size:9}}, grid:{display:false} }, y:{ ticks:{font:{size:9}} } }
+      }
+    });
+
+    // Bar by day
+    charts.bar = new Chart(document.getElementById('chart-bar'), {
+      type:'bar',
+      data:{ labels:dayKeys.length?dayKeys:['Chưa có dữ liệu'], datasets:[{
+        label:'Tổng nhập', data:dayKeys.length?dayVals:[0],
+        backgroundColor:'#1565C0', borderRadius:6
+      }]},
+      options:{ responsive:true, maintainAspectRatio:false,
+        plugins:{legend:{display:false}},
+        scales:{ x:{ticks:{font:{size:10}}, grid:{display:false}}, y:{ticks:{font:{size:10}}} }
+      }
+    });
+  });
+}
+
+// ===== NHAP KHO =====
+function renderNhap(c) {
+  if (role==='ql') { c.innerHTML='<div class="info-note">🔒 Chức năng nhập kho chỉ dành cho Thủ kho.</div>'; return; }
+  c.innerHTML = `
+    <div class="form-card">
+      <h3>📥 Phiếu Nhập Kho</h3>
+      <div class="fg"><label>Dự án</label>
+        <select id="fn-proj">${db.projects.map(p=>`<option>${p}</option>`).join('')}</select>
+      </div>
+      <div class="fg"><label>Nhóm vật tư</label>
+        <select id="fn-cat" onchange="fillItemSel('nhap')">
+          ${db.categories.map(c=>`<option value="${c.id}">${c.icon} ${c.name}</option>`).join('')}
+        </select>
+      </div>
+      <div class="fg"><label>Tên vật tư</label>
+        <select id="fn-item" onchange="fillUnit('nhap')"></select>
+      </div>
+      <div class="fg-row">
+        <div class="fg"><label>Số lượng</label><input type="number" id="fn-qty" placeholder="0" min="0.1" step="0.1"></div>
+        <div class="fg"><label>Đơn vị</label><input type="text" id="fn-unit" readonly style="background:var(--gray1)"></div>
+      </div>
+      <div class="fg"><label>Nhà cung cấp</label><input type="text" id="fn-ncc" placeholder="Tên NCC"></div>
+      <div class="fg"><label>Ghi chú</label><textarea id="fn-note" rows="2" placeholder="Ghi chú..."></textarea></div>
+      <button class="btn-full" style="background:var(--green)" onclick="doNhap()">✅ Xác nhận nhập kho</button>
+    </div>
+  `;
+  fillItemSel('nhap');
+}
+
+function fillItemSel(type) {
+  const cat = document.getElementById('f'+type[0]+'-cat')?.value || document.getElementById('fn-cat')?.value || document.getElementById('fx-cat')?.value;
+  const sel = document.getElementById('f'+type[0]+'-item') || document.getElementById('fn-item') || document.getElementById('fx-item');
+  const unitEl = document.getElementById('f'+type[0]+'-unit') || document.getElementById('fn-unit') || document.getElementById('fx-unit');
+  const items = db.items.filter(i=>i.cat===cat);
+  if (!sel) return;
+  sel.innerHTML = items.map(i=>`<option value="${i.id}">${i.name}${!MACHINE_CATS.includes(i.cat)?' (Tồn: '+i.stock+' '+i.unit+')':''}</option>`).join('');
+  if (items.length && unitEl) unitEl.value = items[0].unit;
+}
+
+function fillUnit(type) {
+  const sel = type==='nhap' ? document.getElementById('fn-item') : document.getElementById('fx-item');
+  const unitEl = type==='nhap' ? document.getElementById('fn-unit') : document.getElementById('fx-unit');
+  const item = db.items.find(i=>i.id===+sel?.value);
+  if (item && unitEl) unitEl.value = item.unit;
+}
+
+async function doNhap() {
+  const itemId = +document.getElementById('fn-item').value;
+  const qty = +document.getElementById('fn-qty').value;
+  const proj = document.getElementById('fn-proj').value;
+  if (!qty||qty<=0) { toast('⚠️ Nhập số lượng hợp lệ'); return; }
+  const item = db.items.find(i=>i.id===itemId);
+  if (!item) return;
+  item.stock = Math.round((item.stock+qty)*100)/100;
+  const txn = {
+    id:Date.now(), type:'nhap', itemId, itemName:item.name,
+    qty, unit:item.unit, project:proj,
+    supplierOrReceiver: document.getElementById('fn-ncc').value,
+    note: document.getElementById('fn-note').value,
+    datetime: new Date().toLocaleString('vi-VN')
+  };
+  db.transactions.push(txn);
+  showLoader('Đang lưu...');
+  await pushTxn(txn);
+  hideLoader();
+  toast(`✅ Nhập ${qty} ${item.unit} ${item.name}`);
+  renderNhap(document.getElementById('main-content'));
+}
+
+// ===== XUAT KHO =====
+function renderXuat(c) {
+  if (role==='ql') { c.innerHTML='<div class="info-note">🔒 Chức năng xuất kho chỉ dành cho Thủ kho.</div>'; return; }
+  c.innerHTML = `
+    <div class="form-card">
+      <h3>📤 Phiếu Xuất Kho</h3>
+      <div class="fg"><label>Dự án</label>
+        <select id="fx-proj">${db.projects.map(p=>`<option>${p}</option>`).join('')}</select>
+      </div>
+      <div class="fg"><label>Nhóm vật tư</label>
+        <select id="fx-cat" onchange="fillXuatItems()">
+          ${db.categories.map(c=>`<option value="${c.id}">${c.icon} ${c.name}</option>`).join('')}
+        </select>
+      </div>
+      <div class="fg"><label>Tên vật tư</label>
+        <select id="fx-item" onchange="fillUnit('xuat')"></select>
+      </div>
+      <div class="fg-row">
+        <div class="fg"><label>Số lượng</label><input type="number" id="fx-qty" placeholder="0" min="0.1" step="0.1"></div>
+        <div class="fg"><label>Đơn vị</label><input type="text" id="fx-unit" readonly style="background:var(--gray1)"></div>
+      </div>
+      <div class="fg"><label>Thiết bị / Người nhận</label>
+        <select id="fx-thietbi">
+          <option value="">— Không chọn thiết bị —</option>
+          ${db.items.filter(i=>MACHINE_CATS.includes(i.cat)).map(i=>`<option value="${i.name}">${i.name}</option>`).join('')}
+        </select>
+      </div>
+      <div class="fg"><label>Ghi chú</label><textarea id="fx-note" rows="2" placeholder="Ghi chú..."></textarea></div>
+      <button class="btn-full" style="background:var(--orange)" onclick="doXuat()">📤 Xác nhận xuất kho</button>
+    </div>
+  `;
+  fillXuatItems();
+}
+
+function fillXuatItems() {
+  const cat = document.getElementById('fx-cat').value;
+  const items = db.items.filter(i=>i.cat===cat);
+  const sel = document.getElementById('fx-item');
+  const unitEl = document.getElementById('fx-unit');
+  sel.innerHTML = items.map(i=>`<option value="${i.id}">${i.name}${!MACHINE_CATS.includes(i.cat)?' (Tồn: '+i.stock+' '+i.unit+')':''}</option>`).join('');
+  if (items.length) unitEl.value = items[0].unit;
+}
+
+async function doXuat() {
+  const itemId = +document.getElementById('fx-item').value;
+  const qty = +document.getElementById('fx-qty').value;
+  const proj = document.getElementById('fx-proj').value;
+  const tb = document.getElementById('fx-thietbi').value;
+  if (!qty||qty<=0) { toast('⚠️ Nhập số lượng hợp lệ'); return; }
+  const item = db.items.find(i=>i.id===itemId);
+  if (!item) return;
+  if (!MACHINE_CATS.includes(item.cat) && qty>item.stock) {
+    toast(`❌ Tồn kho không đủ! Còn ${item.stock} ${item.unit}`); return;
+  }
+  if (!MACHINE_CATS.includes(item.cat)) {
+    item.stock = Math.round((item.stock-qty)*100)/100;
+  }
+  const txn = {
+    id:Date.now(), type:'xuat', itemId, itemName:item.name,
+    qty, unit:item.unit, project:proj,
+    supplierOrReceiver: tb || document.getElementById('fx-note').value,
+    thietBi: tb,
+    note: document.getElementById('fx-note').value,
+    datetime: new Date().toLocaleString('vi-VN')
+  };
+  db.transactions.push(txn);
+  showLoader('Đang lưu...');
+  await pushTxn(txn);
+  hideLoader();
+  toast(`✅ Xuất ${qty} ${item.unit} ${item.name}${tb?' → '+tb:''}`);
+  renderXuat(document.getElementById('main-content'));
+}
+
+// ===== TON KHO =====
+function renderTon(c) {
+  const si = stockItems();
+  const cats = db.categories.filter(ct=>!MACHINE_CATS.includes(ct.id));
+  c.innerHTML = `
+    <div class="chip-row">
+      <div class="chip on" onclick="setFC('all',event)">Tất cả</div>
+      ${cats.map(ct=>`<div class="chip" onclick="setFC('${ct.id}',event)">${ct.icon} ${ct.name}</div>`).join('')}
+    </div>
+    <div id="ton-body"></div>
+  `;
+  renderTonBody();
+}
+function setFC(cat,e) {
+  filterCat=cat;
+  document.querySelectorAll('.chip').forEach(c=>c.classList.remove('on'));
+  e.target.classList.add('on');
+  renderTonBody();
+}
+function renderTonBody() {
+  const base = stockItems();
+  const items = filterCat==='all' ? base : base.filter(i=>i.cat===filterCat);
+  document.getElementById('ton-body').innerHTML = `
+    <div class="card">
+      <table class="data-table">
+        <thead><tr><th>Tên vật tư</th><th>Tồn kho</th><th>Tình trạng</th></tr></thead>
+        <tbody>
+          ${items.map(i=>{
+            let s,cls;
+            if(i.stock<=0){s='Hết hàng';cls='b-red';}
+            else if(i.stock<=i.minStock){s='Sắp hết';cls='b-yellow';}
+            else{s='Đủ hàng';cls='b-green';}
+            return `<tr><td><b>${i.name}</b></td>
+              <td>${i.stock} ${i.unit}</td>
+              <td><span class="badge ${cls}">${s}</span></td></tr>`;
+          }).join('')}
+        </tbody>
+      </table>
+    </div>
+  `;
+}
+
+// ===== BAO CAO =====
+function renderBaoCao(c) {
+  const projs = curProj==='all' ? db.projects : [curProj];
+  // tổng xuất theo thiết bị
+  const byMachine = {};
+  filteredTxns().filter(t=>t.type==='xuat'&&t.thietBi).forEach(t=>{
+    const item = db.items.find(i=>i.id===t.itemId);
+    const key = t.thietBi;
+    if(!byMachine[key]) byMachine[key]={};
+    const vt = item?.name||t.itemName||'?';
+    byMachine[key][vt] = (byMachine[key][vt]||0) + t.qty;
+  });
+  const machineNames = Object.keys(byMachine).slice(0,8);
+  const machineVals = machineNames.map(m => Object.values(byMachine[m]).reduce((a,b)=>a+b,0));
+
+  c.innerHTML = `
+    <div class="sec-head">
+      <div class="sec-title">📋 Báo cáo xuất nhập</div>
+      <button class="btn-primary btn-green" onclick="exportExcel()">⬇️ Excel</button>
+    </div>
+
+    <div class="chart-grid">
+      <div class="chart-box full">
+        <div class="chart-title">🏗️ Tiêu thụ dầu theo thiết bị (top 8)</div>
+        <div class="chart-wrap-tall"><canvas id="chart-machine"></canvas></div>
+      </div>
+    </div>
+
+    ${projs.map(proj=>{
+      const txns = db.transactions.filter(t=>t.project===proj);
+      const byItem={};
+      txns.forEach(t=>{
+        const key=t.itemId;
+        if(!byItem[key]) byItem[key]={name:t.itemName,unit:t.unit,nhap:0,xuat:0};
+        if(t.type==='nhap') byItem[key].nhap+=+t.qty;
+        else byItem[key].xuat+=+t.qty;
+      });
+      return `<div class="card" style="margin-bottom:12px">
+        <div class="card-head">📁 ${proj} <span style="margin-left:auto;opacity:.6">${txns.length} giao dịch</span></div>
+        <table class="data-table">
+          <thead><tr><th>Vật tư</th><th style="color:#A5D6A7">Nhập</th><th style="color:#FFCDD2">Xuất</th><th>Tồn</th></tr></thead>
+          <tbody>
+            ${Object.entries(byItem).map(([id,v])=>{
+              const item=db.items.find(i=>i.id===+id);
+              return `<tr>
+                <td>${item?.name||v.name||'?'}</td>
+                <td style="color:var(--green);font-weight:600">${v.nhap} ${item?.unit||v.unit||''}</td>
+                <td style="color:var(--red);font-weight:600">${v.xuat} ${item?.unit||v.unit||''}</td>
+                <td>${item?item.stock+' '+item.unit:'-'}</td>
+              </tr>`;
+            }).join('') || '<tr><td colspan="4" class="empty">Chưa có giao dịch</td></tr>'}
+          </tbody>
+        </table>
+      </div>`;
+    }).join('')}
+  `;
+
+  requestAnimationFrame(()=>{
+    if (machineNames.length) {
+      charts.machine = new Chart(document.getElementById('chart-machine'), {
+        type:'bar',
+        data:{
+          labels: machineNames.map(m=>m.length>18?m.slice(0,18)+'…':m),
+          datasets:[{ label:'Tổng xuất (Lít)', data:machineVals, backgroundColor:'#1565C0', borderRadius:5 }]
+        },
+        options:{
+          indexAxis:'y', responsive:true, maintainAspectRatio:false,
+          plugins:{legend:{display:false}},
+          scales:{ x:{ticks:{font:{size:10}}, grid:{color:'#f0f0f0'}}, y:{ticks:{font:{size:10}}} }
+        }
+      });
+    }
+  });
+}
+
+// ===== EXPORT EXCEL =====
+function exportExcel() {
+  const wb = XLSX.utils.book_new();
+
+  // Sheet 1: Giao dịch
+  const txnRows = [['ID','Loại','Vật tư','SL','Đơn vị','Dự án','NCC/Thiết bị','Ghi chú','Thời gian']];
+  db.transactions.forEach(t => {
+    const item = db.items.find(i=>i.id===t.itemId);
+    txnRows.push([t.id, t.type==='nhap'?'Nhập':'Xuất', item?.name||t.itemName, t.qty, item?.unit||t.unit,
+      t.project, t.supplierOrReceiver||t.thietBi||'', t.note||'', t.datetime||'']);
+  });
+  XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(txnRows), 'Giao dịch');
+
+  // Sheet 2: Tồn kho
+  const stockRows = [['STT','Tên vật tư','Nhóm','Đơn vị','Tồn kho','Tối thiểu','Tình trạng']];
+  stockItems().forEach((i,idx) => {
+    const cat = db.categories.find(c=>c.id===i.cat);
+    const tt = i.stock<=0?'Hết hàng':i.stock<=i.minStock?'Sắp hết':'Đủ hàng';
+    stockRows.push([idx+1, i.name, cat?.name||i.cat, i.unit, i.stock, i.minStock, tt]);
+  });
+  XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(stockRows), 'Tồn kho');
+
+  // Sheet 3: Tổng hợp theo dự án
+  const sumRows = [['Dự án','Vật tư','Đơn vị','Tổng nhập','Tổng xuất','Tồn hiện tại']];
+  db.projects.forEach(proj => {
+    const txns = db.transactions.filter(t=>t.project===proj);
+    const byItem = {};
+    txns.forEach(t=>{
+      if(!byItem[t.itemId]) byItem[t.itemId]={nhap:0,xuat:0};
+      if(t.type==='nhap') byItem[t.itemId].nhap+=+t.qty;
+      else byItem[t.itemId].xuat+=+t.qty;
+    });
+    Object.entries(byItem).forEach(([id,v])=>{
+      const item=db.items.find(i=>i.id===+id);
+      sumRows.push([proj, item?.name||id, item?.unit||'', v.nhap, v.xuat, item?.stock??'-']);
+    });
+  });
+  XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(sumRows), 'Tổng hợp');
+
+  const date = new Date().toLocaleDateString('vi-VN').replace(/\//g,'-');
+  XLSX.writeFile(wb, `KhoVatTu_FeconSouth_${date}.xlsx`);
+  toast('✅ Đã xuất file Excel!');
+}
+
+// ===== ADMIN =====
+function renderAdmin(c) {
+  if (role!=='ql') { c.innerHTML='<div class="info-note">🔒 Chỉ Quản lý mới truy cập được.</div>'; return; }
+  c.innerHTML = `
+    <div class="warn-note">👔 Chế độ Quản lý — chỉ có thể <b>sửa</b>, không có quyền xóa vật tư hoặc dự án.</div>
+
+    <div class="sec-head">
+      <div class="sec-title">🏗️ Dự án</div>
+      <button class="btn-primary" onclick="modalAddProj()">+ Thêm</button>
+    </div>
+    <div class="card" style="margin-bottom:14px">
+      <table class="data-table">
+        <thead><tr><th>Tên dự án</th><th></th></tr></thead>
+        <tbody>
+          ${db.projects.map((p,i)=>`<tr>
+            <td>${p}</td>
+            <td><button class="act-btn a-edit" onclick="modalEditProj(${i})">Sửa</button></td>
+          </tr>`).join('')}
+        </tbody>
+      </table>
+    </div>
+
+    <div class="sec-head">
+      <div class="sec-title">📦 Danh sách vật tư</div>
+      <button class="btn-primary" onclick="modalAddItem()">+ Thêm</button>
+    </div>
+    <div class="card" style="margin-bottom:14px">
+      <table class="data-table">
+        <thead><tr><th>Vật tư</th><th>Nhóm</th><th>Tồn/Min</th><th></th></tr></thead>
+        <tbody>
+          ${db.items.map(i=>{
+            const cat=db.categories.find(c=>c.id===i.cat);
+            return `<tr>
+              <td><b>${i.name}</b></td>
+              <td style="font-size:11px">${cat?.icon} ${cat?.name||''}</td>
+              <td style="font-size:12px">${i.stock}/${i.minStock} ${i.unit}</td>
+              <td><button class="act-btn a-edit" onclick="modalEditItem(${i.id})">Sửa</button></td>
+            </tr>`;
+          }).join('')}
+        </tbody>
+      </table>
+    </div>
+
+    <div class="sec-head"><div class="sec-title">🔐 Đổi mã PIN</div></div>
+    <div class="form-card">
+      <div class="fg-row">
+        <div class="fg"><label>PIN Thủ kho mới</label><input type="password" id="pin-tk" placeholder="4 số" maxlength="4"></div>
+        <div class="fg"><label>PIN Quản lý mới</label><input type="password" id="pin-ql" placeholder="4 số" maxlength="4"></div>
+      </div>
+      <button class="btn-full" onclick="savePin()">💾 Lưu PIN mới</button>
+    </div>
+    <div style="margin-bottom:14px">
+      <button class="btn-full" style="background:var(--blue)" onclick="doSync()">🔄 Đồng bộ dữ liệu mới nhất</button>
+    </div>
+  `;
+}
+
+function savePin() {
+  const tk=document.getElementById('pin-tk').value;
+  const ql=document.getElementById('pin-ql').value;
+  if(tk&&tk.length===4) PINS.tk=tk;
+  if(ql&&ql.length===4) PINS.ql=ql;
+  toast('✅ Đã lưu PIN (lưu ý: reset khi tải lại file)');
+}
+
+async function doSync() {
+  showLoader('Đang đồng bộ...');
+  await syncAll();
+  hideLoader();
+  goTab(curTab);
+  toast('✅ Đã cập nhật dữ liệu mới nhất');
+}
+
+// ===== MODALS =====
+function modalAddProj() {
+  openModal(`<h3>➕ Thêm dự án</h3>
+    <div class="fg"><label>Tên dự án</label><input type="text" id="m-proj" placeholder="VD: DA Sunwah Pearl"></div>
+    <div class="modal-actions">
+      <button class="btn-cancel" onclick="closeModal()">Hủy</button>
+      <button class="btn-ok" onclick="saveNewProj()">Thêm</button>
+    </div>`);
+}
+function saveNewProj() {
+  const name=document.getElementById('m-proj').value.trim();
+  if(!name) return;
+  db.projects.push(name);
+  const sel=document.getElementById('proj-sel');
+  const o=document.createElement('option'); o.value=name; o.textContent=name; sel.appendChild(o);
+  closeModal(); toast('✅ Đã thêm dự án'); renderAdmin(document.getElementById('main-content'));
+}
+function modalEditProj(i) {
+  openModal(`<h3>✏️ Sửa dự án</h3>
+    <div class="fg"><label>Tên dự án</label><input type="text" id="m-proj" value="${db.projects[i]}"></div>
+    <div class="modal-actions">
+      <button class="btn-cancel" onclick="closeModal()">Hủy</button>
+      <button class="btn-ok" onclick="updateProj(${i})">Lưu</button>
+    </div>`);
+}
+function updateProj(i) {
+  const name=document.getElementById('m-proj').value.trim();
+  if(!name) return;
+  db.projects[i]=name;
+  closeModal(); toast('✅ Đã cập nhật'); initApp();
+}
+
+function modalAddItem() {
+  openModal(`<h3>➕ Thêm vật tư</h3>
+    <div class="fg"><label>Tên vật tư</label><input type="text" id="m-name" placeholder="Tên vật tư"></div>
+    <div class="fg"><label>Nhóm</label>
+      <select id="m-cat">${db.categories.map(c=>`<option value="${c.id}">${c.icon} ${c.name}</option>`).join('')}</select>
+    </div>
+    <div class="fg-row">
+      <div class="fg"><label>Tồn ban đầu</label><input type="number" id="m-stock" value="0" min="0"></div>
+      <div class="fg"><label>Tối thiểu</label><input type="number" id="m-min" value="1" min="0"></div>
+    </div>
+    <div class="fg"><label>Đơn vị</label><input type="text" id="m-unit" placeholder="Lít / cái / Thùng..."></div>
+    <div class="modal-actions">
+      <button class="btn-cancel" onclick="closeModal()">Hủy</button>
+      <button class="btn-ok" onclick="saveNewItem()">Thêm</button>
+    </div>`);
+}
+async function saveNewItem() {
+  const name=document.getElementById('m-name').value.trim();
+  if(!name) return;
+  const item={id:Date.now(),name,cat:document.getElementById('m-cat').value,
+    unit:document.getElementById('m-unit').value||'cái',
+    stock:+document.getElementById('m-stock').value||0,
+    minStock:+document.getElementById('m-min').value||1};
+  db.items.push(item);
+  closeModal();
+  showLoader('Đang lưu...');
+  await pushItems();
+  hideLoader();
+  toast('✅ Đã thêm vật tư');
+  renderAdmin(document.getElementById('main-content'));
+}
+function modalEditItem(id) {
+  const item=db.items.find(i=>i.id===id);
+  if(!item) return;
+  openModal(`<h3>✏️ Sửa vật tư</h3>
+    <div class="fg"><label>Tên vật tư</label><input type="text" id="m-name" value="${item.name}"></div>
+    <div class="fg"><label>Nhóm</label>
+      <select id="m-cat">${db.categories.map(c=>`<option value="${c.id}"${c.id===item.cat?' selected':''}>${c.icon} ${c.name}</option>`).join('')}</select>
+    </div>
+    <div class="fg-row">
+      <div class="fg"><label>Tồn kho</label><input type="number" id="m-stock" value="${item.stock}" min="0"></div>
+      <div class="fg"><label>Tối thiểu</label><input type="number" id="m-min" value="${item.minStock}" min="0"></div>
+    </div>
+    <div class="fg"><label>Đơn vị</label><input type="text" id="m-unit" value="${item.unit}"></div>
+    <div class="modal-actions">
+      <button class="btn-cancel" onclick="closeModal()">Hủy</button>
+      <button class="btn-ok" onclick="updateItem(${id})">Lưu</button>
+    </div>`);
+}
+async function updateItem(id) {
+  const item=db.items.find(i=>i.id===id);
+  if(!item) return;
+  item.name=document.getElementById('m-name').value.trim();
+  item.cat=document.getElementById('m-cat').value;
+  item.stock=+document.getElementById('m-stock').value||0;
+  item.minStock=+document.getElementById('m-min').value||1;
+  item.unit=document.getElementById('m-unit').value||'cái';
+  closeModal();
+  showLoader('Đang lưu...');
+  await pushItems();
+  hideLoader();
+  toast('✅ Đã cập nhật');
+  renderAdmin(document.getElementById('main-content'));
+}
+
+// ===== UTILS =====
+function openModal(html) {
+  document.getElementById('modal-body').innerHTML=html;
+  document.getElementById('modal-bg').style.display='flex';
+}
+function closeModal(e) {
+  if(!e||e.target===document.getElementById('modal-bg'))
+    document.getElementById('modal-bg').style.display='none';
+}
+function showLoader(msg) { document.getElementById('loader-msg').textContent=msg||'Đang xử lý...'; document.getElementById('loader').style.display='flex'; }
+function hideLoader() { document.getElementById('loader').style.display='none'; }
+function toast(msg) {
+  const t=document.getElementById('toast');
+  t.textContent=msg; t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'),2500);
+}
+</script>
+
+<!-- Install button (hiện khi có thể cài) -->
+<button id="install-btn" onclick="installApp()" style="
+  display:none;position:fixed;bottom:90px;right:16px;z-index:300;
+  background:#E65100;color:#fff;border:none;border-radius:14px;
+  padding:10px 16px;font-size:13px;font-weight:700;cursor:pointer;
+  box-shadow:0 4px 16px rgba(230,81,0,.4);align-items:center;gap:6px;
+">
+  📲 Cài App
+</button>
+
+<script>
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('./sw.js')
+      .then(r => console.log('SW registered'))
+      .catch(e => console.log('SW error', e));
+  });
+}
+
+// PWA install prompt
+let deferredPrompt;
+window.addEventListener('beforeinstallprompt', e => {
+  e.preventDefault();
+  deferredPrompt = e;
+  document.getElementById('install-btn').style.display = 'flex';
+});
+window.addEventListener('appinstalled', () => {
+  document.getElementById('install-btn').style.display = 'none';
+  deferredPrompt = null;
+});
+function installApp() {
+  if (deferredPrompt) {
+    deferredPrompt.prompt();
+    deferredPrompt.userChoice.then(r => {
+      deferredPrompt = null;
+    });
+  }
+}
+</script>
+</body>
+</html>
