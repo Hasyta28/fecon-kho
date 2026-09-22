@@ -375,9 +375,9 @@ table.data-table tr:hover td{background:#F8FAFC}
 
 <script>
 // ============================================================
-// CONFIG — thay GOOGLE_SCRIPT_URL sau khi deploy Apps Script
+// CONFIG — thay https://script.google.com/macros/s/AKfycbyqRc5EQM5NW4vqjNh3S5dMHfPAGqUWnSChf1WXpy-AzabVOqDRzHK2lJ-NHq0PAahX/exec sau khi deploy Apps Script
 // ============================================================
-const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzR0t8Ck3HPpsFG8VlgYiMsIARTDcYYXoU2QQsdlzvOqOIb-pC5Nr6p3-rU7dcccKex_Q/exec';
+const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyqRc5EQM5NW4vqjNh3S5dMHfPAGqUWnSChf1WXpy-AzabVOqDRzHK2lJ-NHq0PAahX/exec';
 // ============================================================
 
 const PINS = { tk:'1234', ql:'5678' };
@@ -507,7 +507,7 @@ async function initApp() {
 function onProjChange() { curProj = document.getElementById('proj-sel').value; goTab(curTab); }
 
 // ===== SYNC =====
-function isConfigured() { return SCRIPT_URL && SCRIPT_URL !== 'GOOGLE_SCRIPT_URL'; }
+function isConfigured() { return SCRIPT_URL && SCRIPT_URL !== 'PLACEHOLDER'; }
 function setSyncChip(state, txt) {
   const el = document.getElementById('sync-chip');
   el.className = 'sync-chip sync-' + state;
