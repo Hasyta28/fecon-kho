@@ -863,7 +863,7 @@ function setSyncBar(msg, color) {
   else bar.style.display = 'none';
 }
 function callServer(params) {
-  if (!SCRIPT_URL || SCRIPT_URL === 'GOOGLE_SCRIPT_URL') return Promise.resolve({success:false});
+  if (!SCRIPT_URL || SCRIPT_URL === 'https://script.google.com/macros/s/AKfycbw6Rmi80I7RI3ij2U7RdRF5pYuQTnPrwEmGmUZS5xpxzLwwVynfoFUujZe1lm6HS1ymxw/exec') return Promise.resolve({success:false});
   return new Promise(resolve => {
     const cb = '_cb' + Date.now();
     const s = document.createElement('script');
