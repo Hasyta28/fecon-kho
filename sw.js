@@ -1,36 +1,34 @@
-const CACHE = 'fecon-kho-v1';
-const ASSETS = [
-  './',
-  './index.html',
-  './manifest.json',
-  'https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js',
-  'https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js'
-];
+// FECON Kho - Service Worker v3
+// Ưu tiên tải bản mới từ mạng; chỉ dùng bản lưu tạm khi mất mạng.
+// Nhờ vậy mỗi lần cập nhật index.html trên GitHub, điện thoại sẽ thấy bản mới ngay.
+const CACHE = 'fecon-kho-v3';
+const CORE = ['./', './index.html', './manifest.json', './icon-192.png', './icon-512.png'];
 
 self.addEventListener('install', e => {
-  e.waitUntil(
-    caches.open(CACHE).then(c => c.addAll(ASSETS)).then(() => self.skipWaiting())
-  );
+  self.skipWaiting();
+  e.waitUntil(caches.open(CACHE).then(c => c.addAll(CORE)).catch(() => {}));
 });
 
 self.addEventListener('activate', e => {
   e.waitUntil(
-    caches.keys().then(keys =>
-      Promise.all(keys.filter(k => k !== CACHE).map(k => caches.delete(k)))
-    ).then(() => self.clients.claim())
+    caches.keys()
+      .then(keys => Promise.all(keys.filter(k => k !== CACHE).map(k => caches.delete(k))))
+      .then(() => self.clients.claim())
   );
 });
 
 self.addEventListener('fetch', e => {
+  const req = e.request;
+  if (req.method !== 'GET') return;
+  const url = new URL(req.url);
+  // Không can thiệp vào Google Script (dữ liệu) và thư viện bên ngoài
+  if (url.origin !== self.location.origin) return;
   e.respondWith(
-    caches.match(e.request).then(cached => {
-      if (cached) return cached;
-      return fetch(e.request).then(res => {
-        if (!res || res.status !== 200 || res.type === 'opaque') return res;
-        const clone = res.clone();
-        caches.open(CACHE).then(c => c.put(e.request, clone));
+    fetch(req, { cache: 'no-store' })
+      .then(res => {
+        if (res && res.ok) { const copy = res.clone(); caches.open(CACHE).then(c => c.put(req, copy)); }
         return res;
-      }).catch(() => caches.match('./index.html'));
-    })
+      })
+      .catch(() => caches.match(req).then(r => r || caches.match('./index.html')))
   );
 });
