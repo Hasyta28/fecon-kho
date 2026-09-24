@@ -138,6 +138,19 @@ body{font-family:-apple-system,BlinkMacSystemFont,"SF Pro Display","Segoe UI",sa
 .mini-chip.on{background:var(--primary);border-color:var(--primary);color:#fff}
 .chart-empty{height:100%;display:flex;align-items:center;justify-content:center;color:var(--text3);font-size:12px;text-align:center}
 
+/* COMBO (tìm / thêm vật tư) */
+.combo{position:relative}
+.combo input{padding-right:40px!important}
+.combo-clear{position:absolute;right:8px;top:50%;transform:translateY(-50%);border:none;background:var(--bg);width:26px;height:26px;border-radius:50%;color:var(--text2);font-size:13px;cursor:pointer;display:none}
+.combo-list{position:absolute;left:0;right:0;top:calc(100% + 4px);background:#fff;border:1.5px solid var(--border);border-radius:var(--r-sm);box-shadow:var(--shadow-lg);max-height:260px;overflow-y:auto;z-index:60;display:none}
+.combo-opt{padding:11px 12px;font-size:14px;border-bottom:1px solid var(--border);cursor:pointer;display:flex;justify-content:space-between;align-items:center;gap:8px}
+.combo-opt:last-child{border-bottom:none}
+.combo-opt:active,.combo-opt:hover{background:var(--bg)}
+.combo-opt small{color:var(--text3);font-size:11px;white-space:nowrap}
+.combo-opt.new{color:var(--green);font-weight:700}
+.combo-opt.empty{color:var(--text3);cursor:default}
+.combo-hint{font-size:11px;margin-top:5px;font-weight:600;min-height:14px}
+
 /* CHART ROW */
 .chart-row{display:grid;grid-template-columns:1fr 1fr;gap:10px;padding:10px 14px}
 .chart-card{background:#fff;border-radius:var(--r);padding:14px;box-shadow:var(--shadow)}
@@ -1478,10 +1491,20 @@ function renderNhap(c) {
           ${db.categories.map(cat=>`<option value="${cat.id}">${cat.icon} ${cat.name}</option>`).join('')}
         </select>
       </div>
-      <div class="fg"><label>Tên vật tư</label><select id="fn-item" onchange="fillNhapUnit()"></select></div>
+      <div class="fg"><label>Tên vật tư</label>
+        <div class="combo">
+          <input type="text" id="fn-item-txt" autocomplete="off" placeholder="Gõ tên để tìm, hoặc nhập tên mới để thêm..."
+            oninput="comboInput('fn')" onfocus="comboInput('fn')" onblur="setTimeout(()=>comboHide('fn'),200)">
+          <button type="button" class="combo-clear" id="fn-clear" onmousedown="event.preventDefault()" onclick="comboClear('fn',true)">✕</button>
+          <div class="combo-list" id="fn-list"></div>
+        </div>
+        <input type="hidden" id="fn-item">
+        <div class="combo-hint" id="fn-hint"></div>
+      </div>
       <div class="fg-row">
         <div class="fg"><label>Số lượng</label><input type="number" id="fn-qty" placeholder="0" min="0.1" step="0.1" inputmode="decimal"></div>
-        <div class="fg"><label>Đơn vị</label><input type="text" id="fn-unit" readonly style="background:var(--bg)"></div>
+        <div class="fg"><label>Đơn vị</label><input type="text" id="fn-unit" readonly style="background:var(--bg)" placeholder="—">
+          <select id="fn-unit-sel" style="display:none">${UNITS.map(u=>`<option>${u}</option>`).join('')}</select></div>
       </div>
       <div class="fg"><label>Nhà cung cấp</label><input type="text" id="fn-ncc" placeholder="Tên nhà cung cấp"></div>
       <div class="fg"><label>Số phiếu / Ghi chú</label><textarea id="fn-note" rows="2" placeholder="Ghi chú..."></textarea></div>
@@ -1490,33 +1513,83 @@ function renderNhap(c) {
   </div>`;
   fillNhapItems();
 }
-function fillNhapItems() {
-  const cat = document.getElementById('fn-cat').value;
-  const items = db.items.filter(i => i.cat === cat);
-  const sel = document.getElementById('fn-item');
-  sel.innerHTML = items.map(i => `<option value="${i.id}">${i.name} (Tồn: ${fmtNum(i.stock)} ${i.unit})</option>`).join('');
-  fillNhapUnit();
+// ===== COMBO: tìm / chọn / thêm vật tư =====
+const normVN = t => (t||'').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/đ/g,'d').replace(/\s+/g,' ').trim();
+const escHtml = t => String(t).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+function comboSetUnit(p, mode, unit) {
+  const inp = document.getElementById(p+'-unit'), sel = document.getElementById(p+'-unit-sel');
+  if (mode === 'new' && sel) { inp.style.display = 'none'; sel.style.display = ''; }
+  else { inp.style.display = ''; if (sel) sel.style.display = 'none'; inp.value = unit || ''; }
 }
-function fillNhapUnit() {
-  const sel = document.getElementById('fn-item');
-  const item = db.items.find(i => i.id === +sel.value);
-  if (item) document.getElementById('fn-unit').value = item.unit;
+function comboInput(p) {
+  const txtEl = document.getElementById(p+'-item-txt');
+  const txt = txtEl.value, q = normVN(txt);
+  const allowNew = p === 'fn';
+  const cat = document.getElementById(p+'-cat').value;
+  document.getElementById(p+'-clear').style.display = txt ? 'block' : 'none';
+  let list = q ? db.items.filter(i => normVN(i.name).includes(q)) : db.items.filter(i => i.cat === cat);
+  const exact = q ? db.items.find(i => normVN(i.name) === q) : null;
+  let html = list.slice(0, 40).map(i => `<div class="combo-opt" onmousedown="event.preventDefault()" onclick="comboPick('${p}',${i.id})">
+      <span>${escHtml(i.name)}</span><small>Tồn: ${fmtNum(i.stock)} ${escHtml(i.unit)}</small></div>`).join('');
+  if (allowNew && q && !exact) html += `<div class="combo-opt new" onmousedown="event.preventDefault()" onclick="comboPickNew('${p}')">➕ Thêm vật tư mới: “${escHtml(txt.trim())}”</div>`;
+  if (!html) html = `<div class="combo-opt empty">${q ? 'Không tìm thấy vật tư trong kho' : 'Nhóm này chưa có vật tư'}</div>`;
+  const lst = document.getElementById(p+'-list');
+  lst.innerHTML = html; lst.style.display = 'block';
+  // cập nhật trạng thái theo nội dung đang gõ
+  const hint = document.getElementById(p+'-hint');
+  if (exact) {
+    document.getElementById(p+'-item').value = exact.id;
+    comboSetUnit(p, 'old', exact.unit);
+    hint.innerHTML = `<span style="color:var(--text2)">Tồn hiện tại: ${fmtNum(exact.stock)} ${escHtml(exact.unit)}</span>`;
+  } else {
+    document.getElementById(p+'-item').value = '';
+    if (allowNew && q) { comboSetUnit(p, 'new'); hint.innerHTML = `<span style="color:var(--green)">➕ Vật tư mới — chọn đơn vị, sẽ được thêm vào nhóm đang chọn</span>`; }
+    else { comboSetUnit(p, 'old', ''); hint.innerHTML = ''; }
+  }
 }
+function comboPick(p, id) {
+  const it = db.items.find(i => i.id === id); if (!it) return;
+  document.getElementById(p+'-item-txt').value = it.name;
+  const catSel = document.getElementById(p+'-cat');
+  if ([...catSel.options].some(o => o.value === it.cat)) catSel.value = it.cat;
+  comboInput(p); comboHide(p);
+  document.getElementById(p+'-qty')?.focus();
+}
+function comboPickNew(p) { comboInput(p); comboHide(p); document.getElementById(p+'-unit-sel')?.focus(); }
+function comboHide(p) { const l = document.getElementById(p+'-list'); if (l) l.style.display = 'none'; }
+function comboClear(p, focus) {
+  const t = document.getElementById(p+'-item-txt'); if (!t) return;
+  t.value = ''; document.getElementById(p+'-item').value = '';
+  document.getElementById(p+'-hint').innerHTML = '';
+  document.getElementById(p+'-clear').style.display = 'none';
+  comboSetUnit(p, 'old', '');
+  if (focus) { t.focus(); comboInput(p); } else comboHide(p);
+}
+function fillNhapItems() { comboClear('fn', false); }
+function fillXuatItems() { comboClear('fx', false); }
 async function doNhap() {
-  const itemId = +document.getElementById('fn-item').value;
+  const name = document.getElementById('fn-item-txt').value.trim();
   const qty = +document.getElementById('fn-qty').value;
   const proj = document.getElementById('fn-proj').value;
+  if (!name) { toast('⚠️ Nhập hoặc chọn tên vật tư'); return; }
   if (!qty || qty <= 0) { toast('⚠️ Nhập số lượng hợp lệ'); return; }
-  const item = db.items.find(i => i.id === itemId); if (!item) return;
+  let item = db.items.find(i => i.id === +document.getElementById('fn-item').value) || db.items.find(i => normVN(i.name) === normVN(name));
+  showLoader('Đang lưu...');
+  if (!item) {
+    item = {id:Date.now(), name, cat:document.getElementById('fn-cat').value, unit:document.getElementById('fn-unit-sel').value, stock:0, minStock:0};
+    db.items.push(item);
+    addLog('Thêm vật tư', name);
+    await push('upsert', {table:'items', rows:[{...item, _setStock:true}]});
+  }
   item.stock = Math.round((item.stock + qty) * 100) / 100;
-  const txn = {id:Date.now(), type:'nhap', itemId, itemName:item.name, qty, unit:item.unit, project:proj,
+  const txn = {id:Date.now()+1, type:'nhap', itemId:item.id, itemName:item.name, qty, unit:item.unit, project:proj,
     supplierOrReceiver:document.getElementById('fn-ncc').value,
     note:document.getElementById('fn-note').value,
     datetime:nowStr()};
   db.transactions.push(txn);
   addLog('Nhập kho', `${qty} ${item.unit} ${item.name} — ${proj}`);
   updateLowBadge();
-  showLoader('Đang lưu...'); await push('addTransaction', txn); hideLoader();
+  await push('addTransaction', txn); hideLoader();
   toast(`✅ Nhập ${fmtNum(qty)} ${item.unit} ${item.name}`);
   renderNhap(document.getElementById('main-body'));
 }
@@ -1534,10 +1607,19 @@ function renderXuat(c) {
           ${db.categories.map(cat=>`<option value="${cat.id}">${cat.icon} ${cat.name}</option>`).join('')}
         </select>
       </div>
-      <div class="fg"><label>Tên vật tư</label><select id="fx-item" onchange="fillXuatUnit()"></select></div>
+      <div class="fg"><label>Tên vật tư</label>
+        <div class="combo">
+          <input type="text" id="fx-item-txt" autocomplete="off" placeholder="Gõ tên vật tư để tìm..."
+            oninput="comboInput('fx')" onfocus="comboInput('fx')" onblur="setTimeout(()=>comboHide('fx'),200)">
+          <button type="button" class="combo-clear" id="fx-clear" onmousedown="event.preventDefault()" onclick="comboClear('fx',true)">✕</button>
+          <div class="combo-list" id="fx-list"></div>
+        </div>
+        <input type="hidden" id="fx-item">
+        <div class="combo-hint" id="fx-hint"></div>
+      </div>
       <div class="fg-row">
         <div class="fg"><label>Số lượng</label><input type="number" id="fx-qty" placeholder="0" min="0.1" step="0.1" inputmode="decimal"></div>
-        <div class="fg"><label>Đơn vị</label><input type="text" id="fx-unit" readonly style="background:var(--bg)"></div>
+        <div class="fg"><label>Đơn vị</label><input type="text" id="fx-unit" readonly style="background:var(--bg)" placeholder="—"></div>
       </div>
       <div class="fg"><label>Thiết bị nhận (tùy chọn)</label>
         <select id="fx-device">
@@ -1551,20 +1633,9 @@ function renderXuat(c) {
   </div>`;
   fillXuatItems();
 }
-function fillXuatItems() {
-  const cat = document.getElementById('fx-cat').value;
-  const items = db.items.filter(i => i.cat === cat);
-  const sel = document.getElementById('fx-item');
-  sel.innerHTML = items.map(i => `<option value="${i.id}">${i.name} (Tồn: ${fmtNum(i.stock)} ${i.unit})</option>`).join('');
-  fillXuatUnit();
-}
-function fillXuatUnit() {
-  const sel = document.getElementById('fx-item');
-  const item = db.items.find(i => i.id === +sel.value);
-  if (item) document.getElementById('fx-unit').value = item.unit;
-}
 async function doXuat() {
   const itemId = +document.getElementById('fx-item').value;
+  if (!itemId) { toast('⚠️ Chọn vật tư có trong kho'); return; }
   const qty = +document.getElementById('fx-qty').value;
   const proj = document.getElementById('fx-proj').value;
   const dev = document.getElementById('fx-device').value;
