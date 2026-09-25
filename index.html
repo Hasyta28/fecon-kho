@@ -399,6 +399,7 @@ body.can-ql .hide-ql{display:none!important}
 .hist-head span{font-size:12px;color:var(--text3)}
 .app-ver{font-size:11px;color:var(--text3);padding:14px 20px 4px;line-height:1.5}
 .login-ver{color:rgba(255,255,255,.55);font-size:11px;text-align:center;margin-top:14px}
+.diag-out{background:var(--bg);border-radius:10px;padding:10px 12px;font-size:12px;line-height:1.7;color:var(--text2);margin-top:6px;word-break:break-word}
 </style>
 </head>
 <body>
@@ -438,6 +439,9 @@ body.can-ql .hide-ql{display:none!important}
       <button class="btn-full btn-orange" onclick="authTab('login')">Về trang đăng nhập</button>
     </div>
     <div class="pin-err" id="auth-err"></div>
+    <div id="zalo-hint" class="auth-note" style="display:none;margin:10px 0 0">Bạn đang mở trong Zalo. Nếu không đăng nhập được, bấm <b>⋯</b> góc trên → <b>Mở bằng trình duyệt</b>.</div>
+    <div style="text-align:center"><button class="link-btn" onclick="runDiag()">🔧 Kiểm tra kết nối</button></div>
+    <div id="diag-out" class="diag-out" style="display:none"></div>
   </div>
   <div class="login-ver" id="login-ver"></div>
 </div>
@@ -984,10 +988,10 @@ async function doLogin() {
   const password = document.getElementById('li-pass').value;
   if (!username || !password) return authErr('Nhập tên đăng nhập và mật khẩu');
   authErr(''); showLoader('Đang đăng nhập...');
-  const r = await api('login', {username, password, device: deviceName()}, 30000);
+  const r = await api('login', {username, password, device: deviceName()}, 45000);
   hideLoader();
   if (r.pending) { authTab('pending'); return; }
-  if (!r.success) return authErr(r.offline ? 'Không có mạng — cần kết nối để đăng nhập' : (r.error || 'Đăng nhập thất bại'));
+  if (!r.success) return authErr(r.offline ? (r.reason || 'Không có mạng — cần kết nối để đăng nhập') : (r.error || 'Đăng nhập thất bại'));
   startSession(r);
 }
 async function doRegister() {
@@ -1001,7 +1005,7 @@ async function doRegister() {
   authErr(''); showLoader('Đang gửi yêu cầu...');
   const r = await api('register', {name, username, password, phone: g('rg-phone'), note: g('rg-note')}, 30000);
   hideLoader();
-  if (!r.success) return authErr(r.offline ? 'Không có mạng — cần kết nối để gửi yêu cầu' : (r.error || 'Gửi yêu cầu thất bại'));
+  if (!r.success) return authErr(r.offline ? (r.reason || 'Không có mạng — cần kết nối để gửi yêu cầu') : (r.error || 'Gửi yêu cầu thất bại'));
   ['rg-name','rg-user','rg-pass','rg-pass2','rg-phone','rg-note'].forEach(id => document.getElementById(id).value = '');
   document.getElementById('li-user').value = username;
   if (r.token) { startSession(r); toast('⭐ Đã tạo tài khoản Admin'); return; }
@@ -1109,15 +1113,27 @@ function setSyncBar(msg, color) {
 const serverOn = () => SCRIPT_URL && SCRIPT_URL !== 'GOOGLE_SCRIPT_URL';
 // Mọi yêu cầu (đọc + ghi) đi qua POST và luôn kèm token
 async function api(action, data, timeoutMs) {
-  if (!serverOn()) return {success:false, offline:true};
-  let r;
+  if (!serverOn()) return {success:false, offline:true, reason:'Chưa cấu hình địa chỉ máy chủ'};
+  if (navigator.onLine === false) return {success:false, offline:true, reason:'Điện thoại đang không có mạng (Wi-Fi / 4G đang tắt)'};
+  const ms = timeoutMs || 25000;
+  const ctrl = new AbortController(); const tm = setTimeout(() => ctrl.abort(), ms);
+  let res, text, r;
   try {
-    const ctrl = new AbortController(); const tm = setTimeout(() => ctrl.abort(), timeoutMs || 25000);
-    const res = await fetch(SCRIPT_URL, {method:'POST', headers:{'Content-Type':'text/plain;charset=utf-8'},
+    res = await fetch(SCRIPT_URL, {method:'POST', headers:{'Content-Type':'text/plain;charset=utf-8'},
       body: JSON.stringify({action, data: data || {}, token}), redirect:'follow', signal: ctrl.signal});
+    text = await res.text();
+  } catch (e) {
     clearTimeout(tm);
-    r = await res.json();
-  } catch (e) { return {success:false, offline:true}; }
+    return {success:false, offline:true, reason: e.name === 'AbortError'
+      ? `Máy chủ phản hồi quá lâu (hơn ${Math.round(ms / 1000)} giây) — mạng yếu hoặc Google đang chậm, thử lại`
+      : 'Không kết nối được máy chủ Google Script (mạng chặn, trình duyệt chặn, hoặc link Apps Script đã đổi / chưa để quyền "Bất kỳ ai")'};
+  }
+  clearTimeout(tm);
+  try { r = JSON.parse(text); }
+  catch (e) {
+    const title = ((text || '').match(/<title>([^<]*)/i) || [])[1] || (text || '').replace(/<[^>]+>/g, ' ').trim().slice(0, 80);
+    return {success:false, offline:true, reason:`Máy chủ trả về trang lỗi (HTTP ${res.status}${title ? ': ' + title.trim() : ''}) — kiểm tra lại triển khai Apps Script`};
+  }
   if (!r) return {success:false};
   if (r.auth) onAuthLost(r.error);
   if (r.me) onMe(r.me, r.pending);
@@ -1230,7 +1246,7 @@ async function syncAll(silent) {
     let r = await api('getAll', inc, 45000);
     if (!r.success && !r.auth && token) r = await api('getAll', inc, 45000);   // lỗi mạng: thử lại ngay, không chờ 15 giây
     if (!r.success) {
-      if (token) setSyncBar(outbox.length ? `📴 Offline — ${outbox.length} thay đổi đang chờ gửi (đã lưu trên máy)` : '⚠️ Không kết nối được máy chủ — đang dùng dữ liệu lưu trên máy', '#E74C3C');
+      if (token) setSyncBar((outbox.length ? `📴 ${outbox.length} thay đổi đang chờ gửi · ` : '⚠️ ') + (r.reason || r.error || 'Không kết nối được máy chủ') + ' — đang dùng dữ liệu lưu trên máy', '#E74C3C');
       return false;
     }
     applyServer(r);
@@ -2465,7 +2481,7 @@ async function renderHistoryLog() {
   const body = document.getElementById('dp-history-log-body');
   body.innerHTML = '<div class="empty-state" style="padding-top:60px"><p>Đang tải nhật ký...</p></div>';
   const r = await api('getLog', {limit: 400});
-  if (!r.success) { body.innerHTML = `<div class="empty-state" style="padding-top:60px"><div class="e-ico">⚠️</div><p>${escHtml(r.offline ? 'Cần có mạng để xem nhật ký' : (r.error || 'Lỗi tải nhật ký'))}</p></div>`; return; }
+  if (!r.success) { body.innerHTML = `<div class="empty-state" style="padding-top:60px"><div class="e-ico">⚠️</div><p>${escHtml(r.offline ? (r.reason || 'Cần có mạng để xem nhật ký') : (r.error || 'Lỗi tải nhật ký'))}</p></div>`; return; }
   if (!r.rows.length) { body.innerHTML = '<div class="empty-state"><div class="e-ico">📋</div><p>Chưa có hoạt động</p></div>'; return; }
   const color = a => /Xóa|KHÓA|Từ chối|Tạm khóa/i.test(a) ? 'var(--red)' : /điều chỉnh/i.test(a) ? 'var(--blue)' : /nhập/i.test(a) ? 'var(--green)' : /Đăng/i.test(a) ? 'var(--text3)' : 'var(--orange)';
   body.innerHTML = `<div class="card">${r.rows.map(l => `
@@ -2485,7 +2501,7 @@ async function renderMembers() {
   const body = document.getElementById('dp-members-body');
   if (!members.length) body.innerHTML = '<div class="empty-state" style="padding-top:60px"><p>Đang tải...</p></div>';
   const r = await api('listUsers');
-  if (!r.success) { body.innerHTML = `<div class="empty-state" style="padding-top:60px"><div class="e-ico">⚠️</div><p>${escHtml(r.offline ? 'Cần có mạng để quản lý thành viên' : (r.error || 'Lỗi'))}</p></div>`; return; }
+  if (!r.success) { body.innerHTML = `<div class="empty-state" style="padding-top:60px"><div class="e-ico">⚠️</div><p>${escHtml(r.offline ? (r.reason || 'Cần có mạng để quản lý thành viên') : (r.error || 'Lỗi'))}</p></div>`; return; }
   members = r.users;
   const pend = members.filter(u => u.status === 'pending'), act = members.filter(u => u.status !== 'pending');
   setPendingBadge(pend.length);
@@ -2534,7 +2550,7 @@ function openMember(id) {
 }
 async function memberAction(action, data, okMsg) {
   showLoader('Đang lưu...'); const r = await api(action, data); hideLoader();
-  if (!r.success) { toast('⚠️ ' + (r.offline ? 'Cần có mạng để thực hiện' : r.error)); return false; }
+  if (!r.success) { toast('⚠️ ' + (r.offline ? (r.reason || 'Cần có mạng để thực hiện') : r.error)); return false; }
   closeModal('modal-member'); toast(okMsg); renderMembers(); return true;
 }
 const mmId = () => document.getElementById('mm-id').value;
@@ -2576,7 +2592,7 @@ async function saveChPw() {
   if (n.length < 6) { toast('⚠️ Mật khẩu mới tối thiểu 6 ký tự'); return; }
   if (n !== n2) { toast('⚠️ Hai lần nhập mật khẩu mới không khớp'); return; }
   showLoader('Đang lưu...'); const r = await api('changePassword', {oldPassword: o, newPassword: n}); hideLoader();
-  if (!r.success) { toast('⚠️ ' + (r.offline ? 'Cần có mạng để đổi mật khẩu' : r.error)); return; }
+  if (!r.success) { toast('⚠️ ' + (r.offline ? (r.reason || 'Cần có mạng để đổi mật khẩu') : r.error)); return; }
   closeModal('modal-chpw'); toast('✅ Đã đổi mật khẩu');
 }
 
@@ -2701,9 +2717,26 @@ function onChartReady() {
   if (document.getElementById('pg-app').classList.contains('active') && ['home','baocao'].includes(curTab)
       && ![...document.querySelectorAll('.modal-bg')].some(m => m.style.display === 'flex')) goTab(curTab);
 }
+// ===== KIỂM TRA KẾT NỐI (chụp màn hình kết quả gửi cho người hỗ trợ) =====
+async function runDiag() {
+  const el = document.getElementById('diag-out');
+  el.style.display = ''; el.innerHTML = '⏳ Đang kiểm tra, chờ tối đa 30 giây...';
+  const out = [], line = (ok, t) => out.push(`${ok === true ? '✅' : ok === false ? '❌' : 'ℹ️'} ${escHtml(t)}`);
+  line(navigator.onLine, 'Điện thoại báo: ' + (navigator.onLine ? 'đang có mạng' : 'KHÔNG có mạng'));
+  let t0 = Date.now();
+  try { const r = await fetch('manifest.json?d=' + Date.now(), {cache:'no-store'}); line(r.ok, `Tải trang app: ${r.ok ? 'được' : 'lỗi ' + r.status} (${Date.now() - t0} ms)`); }
+  catch (e) { line(false, 'Không tải được trang app — mạng đang có vấn đề'); }
+  t0 = Date.now();
+  const r = await api('ping', {}, 30000);
+  if (r.success) line(!!r.sv, `Máy chủ Google Script: trả lời sau ${Date.now() - t0} ms · ${r.sv ? 'phiên bản ' + r.sv : 'BẢN CŨ — cần triển khai Apps Script mới'}`);
+  else line(false, 'Máy chủ Google Script: ' + (r.reason || r.error || 'lỗi không rõ'));
+  line(null, `Thiết bị: ${deviceName()} · App ${APP_VERSION}`);
+  el.innerHTML = out.join('<br>');
+}
 // ===== KHỞI ĐỘNG =====
 (function boot() {
   loadLocal();
+  if (/Zalo/i.test(navigator.userAgent)) document.getElementById('zalo-hint').style.display = '';
   document.getElementById('login-ver').textContent = 'Phiên bản ' + APP_VERSION;
   showVersion();
   if (token && me) {                  // đã đăng nhập trên máy này → vào luôn (dùng được cả khi mất mạng)
