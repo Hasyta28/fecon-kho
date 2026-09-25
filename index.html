@@ -427,6 +427,24 @@ body.can-ql .hide-ql{display:none!important}
 .proj-checks input{width:18px;height:18px;accent-color:var(--primary)}
 .proj-note{font-size:11px;color:var(--text3);margin-top:6px;line-height:1.5}
 #proj-sel:disabled{opacity:1}
+/* ===== v5.5: tạo phiếu nhanh ===== */
+.qk-entry{display:flex;align-items:center;gap:10px;width:calc(100% - 28px);margin:10px 14px 0;padding:12px 14px;border-radius:var(--r);border:1.5px dashed #9DB7D5;background:#F4F8FD;color:var(--primary);font-weight:800;font-size:14px;cursor:pointer;font-family:inherit;text-align:left}
+.qk-entry small{display:block;font-weight:500;color:var(--text3);font-size:11.5px;margin-top:2px}
+.qk-entry .qe-ico{font-size:22px}
+.qk-bar{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}
+.qk-btn{border:1.5px solid var(--border);background:#fff;border-radius:10px;padding:10px 14px;font-size:13px;font-weight:700;color:var(--text2);cursor:pointer;font-family:inherit}
+.qk-btn.on{background:#FDECEA;border-color:var(--red);color:var(--red)}
+.qk-go{margin-left:auto;background:var(--primary);border-color:var(--primary);color:#fff}
+.qk-card{background:#fff;border-radius:var(--r);padding:12px 14px;margin-bottom:10px;box-shadow:0 1px 4px rgba(0,0,0,.06);border:1.5px solid transparent}
+.qk-card.bad{border-color:var(--red)}
+.qk-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:6px}
+.qk-seg{display:flex;background:var(--bg);border-radius:10px;padding:3px}
+.qk-seg button{border:none;background:none;padding:7px 14px;border-radius:8px;font-weight:700;font-size:13px;color:var(--text3);cursor:pointer;font-family:inherit}
+.qk-seg button.on.in{background:var(--green);color:#fff}.qk-seg button.on.out{background:var(--orange);color:#fff}
+.qk-x{border:none;background:var(--bg);width:32px;height:32px;border-radius:50%;cursor:pointer;color:var(--text3)}
+.qk-src{font-size:12px;color:var(--text3);font-style:italic;margin-bottom:10px;line-height:1.45}
+.qk-warn{margin-top:10px;background:#FFF8E6;color:#8A5A00;border-radius:8px;padding:8px 10px;font-size:12px;line-height:1.55}
+.qk-card.bad .qk-warn b{color:var(--red)}
 </style>
 </head>
 <body>
@@ -588,6 +606,14 @@ body.can-ql .hide-ql{display:none!important}
     <button onclick="renderHistoryLog()" style="background:var(--bg);border:1px solid var(--border);color:var(--text2);border-radius:8px;padding:6px 12px;font-size:13px;font-weight:700;cursor:pointer">↻</button>
   </div>
   <div class="detail-body" id="dp-history-log-body"></div>
+</div>
+
+<div class="detail-page" id="dp-quick">
+  <div class="detail-header">
+    <button class="back-btn" onclick="closeDp('dp-quick')">‹</button>
+    <div class="detail-title">⚡ Tạo phiếu nhanh</div>
+  </div>
+  <div class="detail-body" id="dp-quick-body"></div>
 </div>
 
 <div class="detail-page" id="dp-dc-hist">
@@ -938,7 +964,7 @@ body.can-ql .hide-ql{display:none!important}
 // ============================================================
 // CONFIG
 // ============================================================
-const APP_VERSION = '5.4.1';
+const APP_VERSION = '5.5';
 const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbw6Rmi80I7RI3ij2U7RdRF5pYuQTnPrwEmGmUZS5xpxzLwwVynfoFUujZe1lm6HS1ymxw/exec';
 // ============================================================
 
@@ -1579,6 +1605,7 @@ function renderHome(c) {
         <div><div class="act-name">Xuất kho</div><div class="act-sub">Hôm nay: ${todayCount('xuat')} phiếu</div></div>
       </button>
     </div>
+    <button class="qk-entry need-tk" onclick="openQuick()"><span class="qe-ico">⚡</span><span>Tạo phiếu nhanh<small>Dán tin nhắn Zalo hoặc bấm nói — app tự điền phiếu</small></span></button>
     <div class="stat-grid">
       <div class="stat-card" onclick="openDp('dp-vattu')">
         <div class="stat-label orange">Loại vật tư</div>
@@ -2415,6 +2442,307 @@ function buildDailyReport() {
   document.getElementById('rp-text').value = L.join('\n');
 }
 function sendDailyReport() { shareOut(document.getElementById('rp-text').value, [], 'Báo cáo kho'); }
+
+// ===== TÁCH TIN NHẮN ZALO / CÂU NÓI → PHIẾU NHÁP =====
+// Hàm thuần: nhận văn bản + danh mục vật tư + thiết bị của dự án, trả về danh sách phiếu nháp để thủ kho kiểm tra.
+const QK_UNITS = {lit:'lít', l:'lít', kg:'kg', m:'m', met:'m', m2:'m2', m3:'m3', cai:'cái', chiec:'chiếc', bo:'bộ', doi:'đôi',
+  cuon:'cuộn', thung:'thùng', phuy:'phuy', cay:'cây', tam:'tấm', bao:'bao', hop:'hộp', soi:'sợi', binh:'bình', can:'can',
+  tan:'tấn', xo:'xô', bo2:'bó', tui:'túi', goi:'gói', con:'con', cuc:'cục', vien:'viên', chai:'chai', hu:'hũ'};
+const QK_STOP = new Set(['cap','xuat','nhap','cho','cua','cac','va','them','ve','kho','roi','nhe','da','e','em','anh','a','chi','de',
+  'theo','bb','bien','ban','kem','luc','hom','nay','nha','ok','xong','lay','ra','lai','gui','dua','phat','giao','nhan','hang','mua',
+  'tra','ban','vs','ve','sinh','khi','nao','can','thi','se','duoc','di','den','tai','o','tu','sang','chieu','toi','mot','hai','ba']);
+const QK_GENERIC_DEV = new Set(['xe','khoan','may','cau','dao','cap','phuc','vu','banh','xich','phat','dien','hanh','ly','cty','cong','ty']);
+const qn = s => String(s || '').normalize('NFC').normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/đ/g, 'd').replace(/Đ/g, 'D').toLowerCase();
+// Chuẩn hóa giữ nguyên độ dài để cắt lại được đoạn chữ gốc (có dấu)
+const qnKeep = s => [...s].map(c => { const x = qn(c); return x.length === 1 ? x : c.toLowerCase(); }).join('');
+const qTokens = s => qn(s).replace(/[^a-z0-9]+/g, ' ').trim().split(/\s+/).filter(Boolean);
+const isCode = t => /\d/.test(t) && /[a-z]/.test(t) || /^\d{2,}$/.test(t);
+
+function qkScore(textToks, name, generic) {
+  const nt = qTokens(name);
+  if (!textToks.length || !nt.length) return 0;
+  let hit = 0, tot = 0, codeMiss = 0, nameHit = 0;
+  const used = new Set();
+  textToks.forEach(t => {
+    const w = isCode(t) ? 2.5 : generic && generic.has(t) ? 0.3 : 1;
+    tot += w;
+    const j = nt.findIndex((x, k) => !used.has(k) && (x === t || (t.length >= 2 && x.startsWith(t)) || (x.length >= 3 && t.startsWith(x))));
+    if (j >= 0) { used.add(j); hit += w; nameHit += isCode(nt[j]) ? 2.5 : 1; }
+    else if (isCode(t)) codeMiss++;
+  });
+  const nameTot = nt.reduce((s, x) => s + (isCode(x) ? 2.5 : 1), 0);
+  let sc = 0.75 * hit / tot + 0.25 * nameHit / nameTot;
+  if (codeMiss) sc *= 0.35;                  // mã (D20, V20, 285…) không khớp → gần như chắc là vật tư khác
+  return sc;
+}
+function qkBest(toks, list, nameOf, generic, extra) {
+  return list.map(x => ({x, s: qkScore(toks, nameOf(x), generic) + (extra ? extra(x) : 0)}))
+    .filter(r => r.s > 0).sort((a, b) => b.s - a.s);
+}
+
+function parseQuick(text, items, devices) {
+  const drafts = [];
+  let author = '', pendingTime = [];
+  const lines = String(text || '').normalize('NFC').split(/\r?\n/).map(l => l.replace(/[❤️👍😂😮😢😡]+\s*\d*/g, '').trim()).filter(Boolean);
+  lines.forEach(raw0 => {
+    // giờ gửi Zalo (dòng riêng "16:45") → gán cho tin ngay trước
+    if (/^\d{1,2}:\d{2}$/.test(raw0)) { pendingTime.forEach(d => d.time = d.time || raw0); pendingTime = []; return; }
+    let raw = raw0.replace(/@[\p{L}\w.]+(?:\s(?=\p{Lu})[\p{L}\w]+)?/gu, '').replace(/^(anh|chị|em|a|c|e)(?=[\s.,])[\s.,]*/i, '').replace(/\s+/g, ' ').trim();
+    const pre = raw.match(/^([^:\d]{2,30}):\s+(.+)$/);             // "A.Kiên: Cấp 400 lít…"
+    if (pre) { author = pre[1].trim(); raw = pre[2]; }
+    const n = qnKeep(raw);
+    const hasAct = /\b(cap|xuat|nhap|phat|giao|tra|ban giao|hoan tra|ve kho|nhan)\b/.test(n);
+    if (!hasAct && !/\d/.test(n)) { if (raw0.length <= 30) author = raw0.trim(); return; }   // dòng tên người gửi
+    // loại phiếu
+    let type = null, ret = false;
+    if (/(tra (lai )?(ve )?kho|ban giao ve kho|hoan tra|tra ve|nhap lai kho)/.test(n)) { type = 'nhap'; ret = true; }
+    else if (/\b(nhap|nhan hang|mua ve|ve kho)\b/.test(n)) type = 'nhap';
+    else if (/\b(cap|xuat|phat|giao cho|dua cho|cho muon)\b/.test(n)) type = 'xuat';
+    const warns = [];
+    if (!type) { type = 'xuat'; warns.push('Không rõ nhập hay xuất — kiểm tra lại'); }
+    // người/đội/thiết bị nhận
+    let target = '', body = raw, bn = n;
+    let m = bn.match(/\bcho\s+(.+)$/);
+    if (m) { target = body.slice(m.index + 4).trim(); body = body.slice(0, m.index); bn = bn.slice(0, m.index); }
+    else if ((m = bn.match(/\b(?:cap|xuat|giao)\s+((?:doi|to|anh|chi|xe|may|khoan)\b[^0-9]*?)\s(?=\d)/))) {
+      const st = m.index + m[0].indexOf(m[1]);
+      target = body.slice(st, st + m[1].length).trim();
+      body = body.slice(0, st) + body.slice(st + m[1].length); bn = qnKeep(body);
+    }
+    let note = '';
+    if (/\btheo (bb|bien ban)\b/.test(bn)) { note = 'Theo biên bản'; }
+    if (ret) note = [note, 'Trả về kho'].filter(Boolean).join(' · ');
+    // tách nhiều vật tư trong 1 tin: "15 đôi ủng + 3kg xốp hạt"
+    const segs = [];
+    let last = 0;
+    bn.replace(/\s*(?:\+|;|\s(?:va)\s|,(?=\s*\d))\s*/g, (mm, off) => { segs.push([last, off]); last = off + mm.length; return mm; });
+    segs.push([last, bn.length]);
+    segs.forEach(([a, b]) => {
+      const sOrig = body.slice(a, b), sN = bn.slice(a, b);
+      // số lượng: số đứng riêng (không dính chữ như d20, 1f, sw300), có thể kèm đơn vị
+      let qty = null, unitTxt = '', rest = sN;
+      const re = /(^|\s)(\d+(?:[.,]\d+)?)([a-z0-9]*)(?:\s+([a-z0-9]+))?/g;
+      let qm;
+      while ((qm = re.exec(sN))) {
+        const glued = qm[3], next = qm[4] || '';
+        if (glued && !QK_UNITS[glued]) { re.lastIndex = qm.index + qm[0].length - (next ? next.length : 0); continue; }   // mã: d20, 1f…
+        const u = glued || (QK_UNITS[next] ? next : '');
+        qty = +qm[2].replace(',', '.'); unitTxt = u ? QK_UNITS[u] : '';
+        const end = qm.index + qm[0].length - (!glued && !QK_UNITS[next] ? next.length : 0);
+        rest = sN.slice(0, qm.index) + ' ' + sN.slice(end);
+        break;
+      }
+      rest = rest.replace(/\b(cap|xuat|nhap|phat|giao|ban giao|hoan tra|tra (lai )?(ve )?kho|ve kho|theo (bb|bien ban)|roi|nhe|xong)\b/g, ' ');
+      const toks = qTokens(rest).filter(t => !QK_STOP.has(t) || isCode(t));
+      const d = {line: raw0, author, time: '', type, ret, qty, unitTxt, itemId: null, alts: [], newName: '', thietBi: '', party: '', note, warns: [...warns]};
+      // thiết bị: ưu tiên phần "cho …"; nếu không có "cho", thử phần còn lại (VD "cấp 400 lít khoan sany 285")
+      const devSrc = target ? qTokens(target) : toks;
+      const devBonus = x => (/\bcty\b|cong ty/.test(qn(target || rest)) && x.type === 'own' ? 0.15 : 0) + (/\bthue\b/.test(qn(target || rest)) && x.type !== 'own' ? 0.15 : 0);
+      const dv = devSrc.some(t => !QK_GENERIC_DEV.has(t)) ? qkBest(devSrc, devices, x => x.name, QK_GENERIC_DEV, devBonus) : [];
+      let usedDevice = false;
+      if (type === 'xuat' && dv[0] && dv[0].s >= 0.45) { d.thietBi = dv[0].x.name; usedDevice = true; }
+      else if (target) d.party = target.replace(/[.\s]+$/, '');
+      // vật tư
+      let itToks = usedDevice && !target ? [] : toks;
+      let cand = itToks.length ? qkBest(itToks, items, x => x.name) : [];
+      if ((!cand.length || cand[0].s < 0.5) && (!itToks.length || usedDevice) && /^lít$/.test(unitTxt)) {
+        const fuel = items.filter(x => /d[aầ]u/i.test(qn(x.name)) && !/nhot|mo\b/.test(qn(x.name)) && /^l[ií]t$/i.test(x.unit));
+        const dau = fuel.find(x => /\bdo\b/.test(qn(x.name))) || fuel[0];
+        if (dau) { cand = [{x: dau, s: 1}]; d.warns.push('Tin không ghi tên → hiểu là ' + dau.name); }
+      }
+      // Chọn tự động khi đủ chắc; phiếu xuất: trong các vật tư gần giống nhau chỉ xét loại còn tồn
+      let pool = cand.filter(r => r.s >= 0.5);
+      if (type === 'xuat' && pool.length) { const inStock = pool.filter(r => r.s >= pool[0].s - 0.15 && +r.x.stock > 0); if (inStock.length) pool = inStock; }
+      if (pool[0] && !(pool[1] && pool[1].s >= pool[0].s - 0.02 && pool[1].s < 1)) d.itemId = pool[0].x.id;
+      d.alts = [...new Set([...pool, ...cand].slice(0, 6).map(r => r.x.id))];
+      const nameGuess = sOrig.replace(/(^|\s)\d+(?:[.,]\d+)?\s*\S*/, ' ').replace(/\b(cấp|xuất|nhập|trả|bàn giao|về kho|theo bb|theo biên bản|rồi|nhé|xong)\b/gi, ' ').replace(/\s+/g, ' ').trim();
+      if (!d.itemId) {
+        let guess = nameGuess;
+        if (guess.split(' ').length > 5) {
+          const w = sOrig.replace(/[,.;]/g, ' ').split(/\s+/).filter(Boolean), k = w.findIndex(x => /\d/.test(x) && /\p{L}/u.test(x));
+          guess = k > 0 ? w[k - 1] + ' ' + w[k].toUpperCase() : '';
+        }
+        if (type === 'nhap' && guess) { d.newName = guess.charAt(0).toUpperCase() + guess.slice(1); d.warns.push('Chưa có trong danh mục → tạo vật tư mới hoặc chọn vật tư khác'); }
+        else if (type === 'nhap') d.warns.push('Không nhận ra vật tư — chọn hoặc nhập tên');
+        else d.warns.push('Không có trong kho — chọn vật tư khác. Nếu là dụng cụ cho mượn (máy hàn, bơm…), phần mượn/trả sẽ có ở Giai đoạn 3');
+      }
+      // quy đổi đơn vị: "50m ống nước D27" mà kho tính theo cuộn 50m
+      const it = items.find(x => x.id === d.itemId);
+      const sameU = (a, b) => { const A = qn(a), B = qn(b), g = [['m','met'],['lit','l']]; return A === B || g.some(x => x.includes(A) && x.includes(B)); };
+      if (it && qty != null && unitTxt && !sameU(unitTxt, it.unit)) {
+        const per = qn(it.name).match(/(\d+(?:[.,]\d+)?)\s*m\b/);
+        if (unitTxt === 'm' && per && /cuon|cay|ong/.test(qn(it.unit))) {
+          const k = +per[1].replace(',', '.'); d.note = [d.note, `${fmtQ(qty)}m = ${fmtQ(qty / k)} ${it.unit}`].filter(Boolean).join(' · '); d.qty = Math.round(qty / k * 1000) / 1000; d.unitTxt = it.unit;
+        } else d.warns.push(`Tin ghi "${unitTxt}", kho tính theo "${it.unit}" — kiểm tra số lượng`);
+      }
+      if (d.qty == null) d.warns.push(note.includes('biên bản') ? 'Số lượng theo biên bản — xem ảnh biên bản rồi điền' : 'Chưa có số lượng');
+      if (ret) d.warns.push('Dụng cụ trả về kho: tạm ghi phiếu nhập (theo dõi mượn/trả sẽ có ở Giai đoạn 3)');
+      drafts.push(d); pendingTime.push(d);
+    });
+  });
+  return drafts;
+}
+function fmtQ(v) { return (Math.round(v * 1000) / 1000).toLocaleString('vi-VN'); }
+
+
+// ===== TẠO PHIẾU NHANH: dán tin Zalo / nói → phiếu nháp → lưu =====
+let qkDrafts = [];
+function openQuick() {
+  if (!can('tk')) return;
+  openDp('dp-quick');
+  const b = document.getElementById('dp-quick-body');
+  if (!b.dataset.ready) {
+    b.dataset.ready = 1;
+    const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+    b.innerHTML = `
+      <div class="card card-pad" style="margin-bottom:12px">
+        <div class="info-box">Dán tin nhắn báo nhập/xuất từ nhóm Zalo (dán được nhiều tin một lúc)${SR ? ' hoặc bấm <b>🎤 Nói</b>' : ''}. App tự tách thành phiếu nháp để anh/chị kiểm tra rồi lưu.<br>VD: <i>Cấp 400 lít khoan sany 285</i> · <i>Nhập 15 đôi ủng + 3kg xốp hạt</i></div>
+        <textarea id="qk-text" class="rp-text" style="min-height:120px" placeholder="Dán hoặc gõ nội dung ở đây…"></textarea>
+        <div class="qk-bar">
+          ${SR ? '<button class="qk-btn" id="qk-mic" onclick="qkMic()">🎤 Nói</button>' : ''}
+          <button class="qk-btn" onclick="qkPaste()">📋 Dán</button>
+          <button class="qk-btn" onclick="document.getElementById('qk-text').value='';qkDrafts=[];qkRender()">Xóa</button>
+          <button class="qk-btn qk-go" onclick="qkParse()">Tách phiếu ›</button>
+        </div>
+      </div>
+      <div id="qk-list"></div>`;
+  }
+  qkRender();
+}
+async function qkPaste() {
+  try { const t = await navigator.clipboard.readText(); if (t) { const el = document.getElementById('qk-text'); el.value = (el.value ? el.value + '\n' : '') + t; qkParse(); } }
+  catch (e) { toast('Nhấn giữ vào ô nhập rồi chọn "Dán"'); document.getElementById('qk-text').focus(); }
+}
+let qkRec = null;
+function qkMic() {
+  const SR = window.SpeechRecognition || window.webkitSpeechRecognition; if (!SR) return;
+  const btn = document.getElementById('qk-mic'), el = document.getElementById('qk-text');
+  if (qkRec) { qkRec.stop(); return; }
+  qkRec = new SR(); qkRec.lang = 'vi-VN'; qkRec.interimResults = true; qkRec.continuous = false;
+  const base = el.value ? el.value.replace(/\s*$/, '\n') : '';
+  qkRec.onresult = e => { el.value = base + [...e.results].map(r => r[0].transcript).join(' '); };
+  qkRec.onend = () => { qkRec = null; btn.textContent = '🎤 Nói'; btn.classList.remove('on'); if (el.value.trim()) qkParse(); };
+  qkRec.onerror = e => { toast(e.error === 'not-allowed' ? '⚠️ Chưa cho phép dùng micro' : '⚠️ Không nghe rõ, thử lại'); };
+  btn.textContent = '⏺ Đang nghe… (bấm để dừng)'; btn.classList.add('on');
+  qkRec.start();
+}
+function qkParse() {
+  const t = document.getElementById('qk-text').value;
+  if (!t.trim()) { toast('⚠️ Chưa có nội dung'); return; }
+  qkDrafts = parseQuick(t, db.items, db.devices).map(d => ({...d, photos: [], newCat: 'khac', newUnit: '', err: ''}));
+  qkDrafts.forEach(d => { d.newUnit = UNITS.find(u => normVN(u) === normVN(d.unitTxt)) || ({m:'Mét', 'lít':'Lít'})[d.unitTxt] || 'Cái'; d.newCat = guessCat(d.newName || ''); });
+  if (!qkDrafts.length) toast('Không tìm thấy nội dung nhập/xuất trong đoạn này');
+  qkRender();
+}
+function qkRender() {
+  const box = document.getElementById('qk-list'); if (!box) return;
+  if (!qkDrafts.length) { box.innerHTML = ''; return; }
+  const itemOpts = d => {
+    const ids = [...new Set([d.itemId, ...d.alts].filter(Boolean))];
+    const pool = d.type === 'xuat' ? db.items.filter(i => +i.stock > 0 || ids.includes(i.id)) : db.items;
+    const rest = pool.filter(i => !ids.includes(i.id)).sort((a, b) => a.name.localeCompare(b.name, 'vi'));
+    const o = i => `<option value="${i.id}" ${i.id === d.itemId ? 'selected' : ''}>${escHtml(i.name)} (${escHtml(i.unit)}${d.type === 'xuat' ? ' · tồn ' + fmtNum(i.stock) : ''})</option>`;
+    return `<option value="">— Chọn vật tư —</option>`
+      + (d.type === 'nhap' ? `<option value="new" ${!d.itemId && d.newName ? 'selected' : ''}>➕ Vật tư mới${d.newName ? ': ' + escHtml(d.newName) : ''}</option>` : '')
+      + (ids.length ? `<optgroup label="Gợi ý">${ids.map(id => db.items.find(i => i.id === id)).filter(Boolean).map(o).join('')}</optgroup>` : '')
+      + `<optgroup label="Tất cả vật tư">${rest.map(o).join('')}</optgroup>`;
+  };
+  const devOpts = d => `<option value="">— Không —</option>` + db.devices.map(x => `<option ${x.name === d.thietBi ? 'selected' : ''}>${escHtml(x.name)}</option>`).join('');
+  box.innerHTML = `<div class="grp-label">${qkDrafts.length} phiếu nháp — kiểm tra rồi bấm Lưu</div>` + qkDrafts.map((d, i) => {
+    const it = db.items.find(x => x.id === d.itemId);
+    const isNew = d.type === 'nhap' && !d.itemId && d.newName !== undefined && document.activeElement && false;
+    return `<div class="qk-card ${d.err ? 'bad' : ''}" id="qk-${i}">
+      <div class="qk-head">
+        <div class="qk-seg"><button class="${d.type === 'nhap' ? 'on in' : ''}" onclick="qkSet(${i},'type','nhap')">📥 Nhập</button><button class="${d.type === 'xuat' ? 'on out' : ''}" onclick="qkSet(${i},'type','xuat')">📤 Xuất</button></div>
+        <button class="qk-x" onclick="qkDrafts.splice(${i},1);qkRender()">✕</button>
+      </div>
+      <div class="qk-src">“${escHtml(d.line)}”${d.author ? ' · ' + escHtml(d.author) : ''}${d.time ? ' · ' + escHtml(d.time) : ''}</div>
+      <div class="fg"><label>Vật tư</label><select onchange="qkItem(${i},this.value)">${itemOpts(d)}</select></div>
+      ${d.type === 'nhap' && !d.itemId ? `<div class="fg-row">
+        <div class="fg" style="flex:2"><label>Tên vật tư mới</label><input value="${escHtml(d.newName || '')}" oninput="qkDrafts[${i}].newName=this.value"></div>
+        <div class="fg"><label>Đơn vị</label><select onchange="qkDrafts[${i}].newUnit=this.value">${UNITS.map(u => `<option ${u === d.newUnit ? 'selected' : ''}>${u}</option>`).join('')}</select></div>
+      </div>
+      <div class="fg"><label>Nhóm</label><select onchange="qkDrafts[${i}].newCat=this.value">${db.categories.map(c => `<option value="${c.id}" ${c.id === d.newCat ? 'selected' : ''}>${c.name}</option>`).join('')}</select></div>` : ''}
+      <div class="fg-row">
+        <div class="fg"><label>Số lượng</label><input type="number" inputmode="decimal" step="any" value="${d.qty ?? ''}" oninput="qkDrafts[${i}].qty=this.value===''?null:+this.value" placeholder="?"></div>
+        <div class="fg"><label>Đơn vị</label><input disabled value="${escHtml(it ? it.unit : (d.newUnit || d.unitTxt || ''))}"></div>
+      </div>
+      ${d.type === 'xuat' ? `<div class="fg"><label>Thiết bị nhận</label><select onchange="qkDrafts[${i}].thietBi=this.value">${devOpts(d)}</select></div>` : ''}
+      <div class="fg"><label>${d.type === 'xuat' ? 'Người / đội nhận' : 'Nhà cung cấp / người giao'}</label><input value="${escHtml(d.party || '')}" oninput="qkDrafts[${i}].party=this.value"></div>
+      <div class="fg"><label>Ghi chú</label><input value="${escHtml(d.note || '')}" oninput="qkDrafts[${i}].note=this.value"></div>
+      <div class="ph-row" id="qk-ph-${i}">${d.photos.map((p, k) => `<div class="ph-thumb"><img src="${p.data}" onclick="openViewer(this.src)"><button class="ph-x" onclick="qkDrafts[${i}].photos.splice(${k},1);qkRender()">✕</button></div>`).join('')}
+        ${d.photos.length < MAX_PHOTOS ? `<button type="button" class="ph-add" onclick="document.getElementById('qk-in-${i}').click()"><span>📷</span>Ảnh</button>` : ''}</div>
+      <input type="file" id="qk-in-${i}" accept="image/*" multiple style="display:none" onchange="qkPhotos(${i},this)">
+      ${d.warns.length || d.err ? `<div class="qk-warn">${d.err ? '<b>❌ ' + escHtml(d.err) + '</b><br>' : ''}${d.warns.map(w => '⚠ ' + escHtml(w)).join('<br>')}</div>` : ''}
+    </div>`;
+  }).join('') + `<button class="btn-full btn-green" onclick="qkSaveAll()" style="margin:6px 0 20px">✅ Lưu ${qkDrafts.length} phiếu</button>`;
+}
+// Đoán nhóm cho vật tư mới theo tên
+function guessCat(name) {
+  const n = normVN(name), has = id => db.categories.some(c => c.id === id);
+  const rules = [[/\b(dau|nhot|mo bo|xang)\b/, 'nhienLieu'], [/\b(ung|gang tay|mu bh|mu bao|ao phan|khau trang|day an toan|bao ho)\b/, 'bhld'],
+    [/\b(may han|que han|kim han|kinh han|han|cat)\b/, 'han'], [/\bcoc noi\b/, 'cocNoi'], [/\bsieu am\b/, 'ongSieuAm'], [/\b(thep|ton|sat)\b/, 'thep'],
+    [/\b(ong nuoc|bom|voi)\b/, 'ongNuoc'], [/\b(cap dien|day dien|den|cong tac|o cam)\b/, 'dien'], [/\b(cap|xich|ma ni|tang do)\b/, 'capNang'],
+    [/\b(rang gau|loi gau|gau)\b/, 'gau'], [/\b(xop|bao tai|bat|xi mang|cat|da)\b/, 'vatLieu'], [/\b(bua|kim|kim cong luc|xa beng|may mai|may khoan)\b/, 'dungCu']];
+  const r = rules.find(([re, id]) => re.test(n) && has(id));
+  return r ? r[1] : (has('khac') ? 'khac' : db.categories[db.categories.length - 1].id);
+}
+function qkSet(i, k, v) { qkDrafts[i][k] = v; if (k === 'type' && v === 'xuat' && !qkDrafts[i].itemId) qkDrafts[i].newName = qkDrafts[i].newName || ''; qkRender(); }
+function qkItem(i, v) {
+  const d = qkDrafts[i];
+  if (v === 'new') { d.itemId = null; d.newName = d.newName || ''; }
+  else d.itemId = v ? +v : null;
+  d.warns = d.warns.filter(w => !/danh mục|Không có trong kho|Không nhận ra|tạo vật tư/.test(w));
+  qkRender();
+}
+async function qkPhotos(i, input) {
+  const files = [...input.files].slice(0, MAX_PHOTOS - qkDrafts[i].photos.length); input.value = '';
+  showLoader('Đang xử lý ảnh...');
+  for (const f of files) { try { qkDrafts[i].photos.push({id:newId(), data: await compressImage(f)}); } catch (e) {} }
+  hideLoader(); qkRender();
+}
+async function qkSaveAll() {
+  // kiểm tra trước, không lưu nửa chừng vì lỗi dễ thấy
+  let bad = 0;
+  qkDrafts.forEach(d => {
+    d.err = '';
+    const it = db.items.find(x => x.id === d.itemId);
+    if (!(d.qty > 0)) d.err = 'Nhập số lượng';
+    else if (!it && d.type === 'xuat') d.err = 'Chọn vật tư có trong kho';
+    else if (!it && !String(d.newName || '').trim()) d.err = 'Chọn vật tư hoặc nhập tên vật tư mới';
+    else if (!it && db.items.some(x => normVN(x.name) === normVN(d.newName))) d.err = 'Tên vật tư mới trùng vật tư đã có — chọn trong danh sách';
+    if (d.err) bad++;
+  });
+  const need = {};
+  qkDrafts.filter(d => !d.err && d.type === 'xuat').forEach(d => need[d.itemId] = (need[d.itemId] || 0) + d.qty);
+  qkDrafts.filter(d => !d.err && d.type === 'xuat').forEach(d => { const it = db.items.find(x => x.id === d.itemId); if (need[d.itemId] > it.stock) { d.err = `Tồn không đủ — còn ${fmtNum(it.stock)} ${it.unit}`; bad++; } });
+  if (bad) { qkRender(); document.querySelector('.qk-card.bad')?.scrollIntoView({behavior:'smooth', block:'center'}); toast(`⚠️ ${bad} phiếu cần sửa`); return; }
+  showLoader('Đang lưu...');
+  let saved = 0;
+  for (const d of qkDrafts.slice()) {
+    let item = db.items.find(x => x.id === d.itemId);
+    if (!item) {
+      item = {id:newId(), name:d.newName.trim(), cat:d.newCat || 'khac', unit:d.newUnit || UNITS[0], stock:0, minStock:0, project:curProj};
+      db.items.push(item);
+      if ((await push('upsert', {table:'items', rows:[item]})) === 'rejected') break;
+    }
+    const qty = d.qty;
+    item.stock = Math.round((item.stock + (d.type === 'nhap' ? qty : -qty)) * 100) / 100;
+    const src = `Zalo${d.author ? ' ' + d.author : ''}${d.time ? ' ' + d.time : ''}: “${d.line}”`;
+    const txn = {id:newId(), type:d.type, itemId:item.id, itemName:item.name, qty, unit:item.unit, project:curProj,
+      supplierOrReceiver:d.party || '', thietBi:d.type === 'xuat' ? (d.thietBi || '') : '',
+      note:[d.note, src].filter(Boolean).join(' · ').slice(0, 400), datetime:nowStr(), createdByName:me?.name || ''};
+    db.transactions.push(txn);
+    const r = await push('addTransaction', txn);
+    if (r === 'rejected') break;
+    await queuePhotos(txn.id, d.photos);
+    qkDrafts.splice(qkDrafts.indexOf(d), 1); saved++;
+  }
+  hideLoader(); updateLowBadge();
+  if (!qkDrafts.length) document.getElementById('qk-text').value = '';
+  qkRender();
+  toast(`✅ Đã lưu ${saved} phiếu${qkDrafts.length ? ` · còn ${qkDrafts.length} phiếu chưa lưu` : ''}`);
+}
 
 // ===== TON KHO TAB =====
 function renderTon(c) {
