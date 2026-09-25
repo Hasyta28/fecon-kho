@@ -10,8 +10,7 @@
 <meta name="theme-color" content="#0056A4">
 <link rel="manifest" href="manifest.json">
 <title>Kho Vật Tư — Fecon South</title>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js" onload="onChartReady()"></script>
 <style>
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;-webkit-touch-callout:none}
 html,body{height:100%;overflow:hidden;touch-action:pan-y}
@@ -398,6 +397,8 @@ body.can-ql .hide-ql{display:none!important}
 .hist-head{display:flex;justify-content:space-between;align-items:baseline;padding:14px 16px 10px}
 .hist-head b{font-size:16px;color:var(--text)}
 .hist-head span{font-size:12px;color:var(--text3)}
+.app-ver{font-size:11px;color:var(--text3);padding:14px 20px 4px;line-height:1.5}
+.login-ver{color:rgba(255,255,255,.55);font-size:11px;text-align:center;margin-top:14px}
 </style>
 </head>
 <body>
@@ -438,6 +439,7 @@ body.can-ql .hide-ql{display:none!important}
     </div>
     <div class="pin-err" id="auth-err"></div>
   </div>
+  <div class="login-ver" id="login-ver"></div>
 </div>
 
 <!-- ===================== MAIN APP ===================== -->
@@ -604,6 +606,7 @@ body.can-ql .hide-ql{display:none!important}
     <div class="sidebar-divider"></div>
     <div class="sidebar-item" onclick="openChPw()"><span class="sidebar-item-ico">🔒</span>Đổi mật khẩu</div>
     <div class="sidebar-item" onclick="doLogout()"><span class="sidebar-item-ico">🚪</span>Đăng xuất</div>
+    <div class="app-ver" id="app-ver"></div>
   </div>
 </div>
 
@@ -864,6 +867,7 @@ body.can-ql .hide-ql{display:none!important}
 // ============================================================
 // CONFIG
 // ============================================================
+const APP_VERSION = '5.2';
 const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbw6Rmi80I7RI3ij2U7RdRF5pYuQTnPrwEmGmUZS5xpxzLwwVynfoFUujZe1lm6HS1ymxw/exec';
 // ============================================================
 
@@ -947,7 +951,7 @@ const UNITS = ['Lít','Phuy','Thùng','Xô','Kg','Tấn','Cái','Bộ','Cây','T
 // Dữ liệu chỉ tải từ máy chủ SAU KHI đăng nhập (không còn nhúng trong file này)
 const isLow = i => (+i.minStock > 0) && (+i.stock <= +i.minStock);
 const DEVICE_FUEL_DEFAULT = Object.fromEntries(DEVICE_CATS.map(c => [c.id, c.fuel]));
-const emptyDb = () => ({categories: CATEGORIES, projects: [], items: [], devices: [], transactions: [], repairs: [], notes: []});
+const emptyDb = () => ({categories: CATEGORIES, projects: [], items: [], devices: [], transactions: [], repairs: [], notes: [], txnTotal: 0, txnLastId: ''});
 let db = emptyDb();
 
 // ===== QUYỀN =====
@@ -1050,9 +1054,13 @@ async function setupApp() {
   goTab('home');
   updateLowBadge();
   const hasCache = db.items.length > 0;
-  if (!hasCache) showLoader('Đang tải dữ liệu...');
+  let tick = null;
+  if (!hasCache) {
+    const t0 = Date.now(); showLoader('Đang tải dữ liệu lần đầu...');
+    tick = setInterval(() => { document.getElementById('loader-msg').textContent = `Đang tải dữ liệu lần đầu... ${Math.round((Date.now() - t0) / 1000)} giây`; }, 1000);
+  }
   const ok = await syncAll();
-  hideLoader();
+  clearInterval(tick); hideLoader();
   if (!token) return;                       // phiên hết hạn trong lúc tải
   if (ok || !hasCache) refreshCurrentView(false);
   startAutoSync();
@@ -1146,7 +1154,9 @@ async function flushOutbox() {
       if (!r || !r.success) {
         if (r && r.error && !r.offline && !r.auth) {
           console.warn('Máy chủ từ chối:', op.action, r.error);
-          lastReject = r.error; outbox.shift(); saveLocal(); continue;
+          lastReject = r.error; outbox.shift();
+          if (op.action === 'addTransaction') db.transactions = db.transactions.filter(t => t.id !== op.data.id);
+          saveLocal(); continue;
         }
         return false;
       }
@@ -1160,38 +1170,83 @@ async function flushOutbox() {
   })();
   try { return await flushing; } finally { flushing = null; }
 }
+let serverVerInfo = '';
 function applyServer(r) {
   if (r.items) db.items = r.items.map(i => ({...i, id:+i.id, stock:+i.stock||0, minStock:+i.minStock||0}));
-  db.transactions = (r.transactions||[]).map(t => ({...t, id:+t.id, itemId:+t.itemId, qty:+t.qty||0, refId: t.refId ? +t.refId : ''}));
   if (r.devices) db.devices = r.devices.map(d => ({...d, id:+d.id, fuelRate:+d.fuelRate||20}));
   db.repairs = (r.repairs||[]).map(rp => ({...rp, id:+rp.id, deviceId:+rp.deviceId, cost:+rp.cost||0}));
   db.notes = (r.notes||[]).map(n => ({...n, id:+n.id}));
   if (r.projects?.length) db.projects = r.projects;
+  // Phiếu: máy chủ 5.2 gửi dạng mảng gọn và chỉ gửi phần mới (txnFrom > 0)
+  let rows = r.transactions || [];
+  if (r.txnCols) rows = rows.map(a => { const o = {}; r.txnCols.forEach((c, i) => o[c] = a[i]); return o; });
+  rows = rows.map(t => ({...t, id:+t.id, itemId:+t.itemId, qty:+t.qty||0, refId: t.refId ? +t.refId : ''}));
+  const base = r.txnCols && r.txnFrom > 0 ? db.transactions.filter(t => !t._local).concat(rows) : rows;
+  const ids = new Set(base.map(t => t.id));
+  db.transactions = base.concat(db.transactions.filter(t => t._local && !ids.has(t.id)));  // giữ phiếu tạm chưa thấy trên máy chủ
+  db.txnTotal = r.txnCols ? r.txnTotal : 0; db.txnLastId = r.txnCols ? r.txnLastId : '';
   if (r.version) serverVer = r.version;
+  serverVerInfo = r.sv ? 'Máy chủ ' + r.sv : 'Máy chủ bản cũ — cần triển khai Apps Script mới';
+  showVersion();
+}
+// Thay đổi còn chờ gửi: áp lại lên dữ liệu vừa tải để không "biến mất" trên màn hình
+function reapplyOutbox() {
+  const TB = {items:1, devices:1, repairs:1, notes:1};
+  outbox.forEach(op => {
+    const d = op.data || {};
+    if (op.action === 'upsert' && TB[d.table]) {
+      const arr = db[d.table];
+      (d.rows || []).forEach(row => {
+        const i = arr.findIndex(x => x.id === row.id);
+        if (i < 0) arr.push(d.table === 'items' ? {...row, stock:0} : {...row});
+        else arr[i] = d.table === 'items' ? {...arr[i], ...row, stock:arr[i].stock} : {...arr[i], ...row};
+      });
+    } else if (op.action === 'remove' && TB[d.table]) {
+      const set = new Set(d.ids); db[d.table] = db[d.table].filter(x => !set.has(x.id));
+    } else if (op.action === 'setMinStock') {
+      const it = db.items.find(i => i.id === d.id); if (it) it.minStock = d.minStock;
+    } else if (op.action === 'updateProjects') {
+      db.projects = d.projects;
+    } else if (op.action === 'addTransaction') {
+      const it = db.items.find(i => i.id === d.itemId);
+      if (it) { const q = +d.qty || 0; it.stock = Math.round((it.stock + (d.type === 'xuat' ? -q : q)) * 100) / 100; }
+      if (!db.transactions.some(t => t.id === d.id)) db.transactions.push(d);
+    }
+  });
+}
+function showVersion() {
+  const el = document.getElementById('app-ver');
+  if (el) el.textContent = `Phiên bản app ${APP_VERSION}${serverVerInfo ? ' · ' + serverVerInfo : ''}`;
 }
 async function syncAll(silent) {
   if (syncing || !token) return false;
   syncing = true;
+  const t0 = Date.now();
   try {
     if (!silent) setSyncBar('⏳ Đang đồng bộ...');
-    if (!(await flushOutbox())) {
-      if (token) setSyncBar(`📴 Offline — ${outbox.length} thay đổi đang chờ gửi (đã lưu trên máy)`, '#E74C3C');
-      return false;
-    }
-    const r = await api('getAll', {}, 60000);
+    const flushed = await flushOutbox();          // gửi thay đổi chờ trước; lỗi vẫn tiếp tục tải dữ liệu
+    if (!token) return false;
+    const inc = db.txnTotal && db.txnLastId && db.transactions.length ? {since: db.txnTotal, lastId: db.txnLastId} : {};
+    let r = await api('getAll', inc, 45000);
+    if (!r.success && !r.auth && token) r = await api('getAll', inc, 45000);   // lỗi mạng: thử lại ngay, không chờ 15 giây
     if (!r.success) {
-      if (!silent && token) setSyncBar('⚠️ Không kết nối được máy chủ — đang dùng dữ liệu lưu trên máy', '#E74C3C');
+      if (token) setSyncBar(outbox.length ? `📴 Offline — ${outbox.length} thay đổi đang chờ gửi (đã lưu trên máy)` : '⚠️ Không kết nối được máy chủ — đang dùng dữ liệu lưu trên máy', '#E74C3C');
       return false;
     }
     applyServer(r);
+    reapplyOutbox();
     saveLocal();
-    if (!silent) { setSyncBar('✅ Đã đồng bộ', 'var(--green)'); setTimeout(() => setSyncBar(''), 2000); }
-    else if (!outbox.length) setSyncBar('');
+    const sec = ((Date.now() - t0) / 1000).toFixed(1).replace('.', ',');
+    console.log(`Đồng bộ ${sec}s · máy chủ xử lý ${r.ms ?? '?'}ms · ${(r.transactions||[]).length} phiếu mới`);
+    if (!flushed && outbox.length) setSyncBar(`📴 ${outbox.length} thay đổi đang chờ gửi (đã lưu trên máy)`, '#E74C3C');
+    else if (!silent) { setSyncBar(`✅ Đã đồng bộ (${sec} giây)`, 'var(--green)'); setTimeout(() => setSyncBar(''), 2000); }
+    else setSyncBar('');
     return true;
   } finally { syncing = false; }
 }
 // Trả về: true = đã lưu lên máy chủ · false = offline, đang chờ gửi · 'rejected' = máy chủ từ chối
 async function push(action, data) {
+  if (action === 'addTransaction') data._local = 1;     // phiếu tạm trên máy, chờ máy chủ xác nhận
   outbox.push({action, data, ts:Date.now()});
   saveLocal();
   setSyncBar('⏳ Đang lưu...');
@@ -1471,6 +1526,7 @@ function setHomeUnit(u) { homeUnit = u; if (curTab === 'home') goTab('home'); }
 function setHomeCat(c) { homeCat = c; homeUnit = null; if (curTab === 'home') goTab('home'); }
 
 function drawFuelChart() {
+  if (typeof Chart === 'undefined') return;
   const cv = document.getElementById('ch-fuel'); if (!cv) return;
   const fuelItems = db.items.filter(isFuelItem);
   const fuelIds = new Set(fuelItems.map(i => i.id));
@@ -1500,6 +1556,7 @@ function drawFuelChart() {
 }
 
 function drawUnitChart() {
+  if (typeof Chart === 'undefined') return;
   const cv = document.getElementById('ch-unit'); if (!cv) return;
   const known = new Set(db.categories.map(c => c.id));
   const inCat = i => homeCat === '__other' ? !known.has(i.cat) : i.cat === homeCat;
@@ -2115,6 +2172,7 @@ function renderBaoCao(c) {
   `;
 
   requestAnimationFrame(() => {
+    if (typeof Chart === 'undefined') return;
     if (mNames.length) {
       charts.machine = new Chart(document.getElementById('ch-machine'), {
         type:'bar',
@@ -2539,7 +2597,19 @@ async function saveProj() {
 }
 
 // ===== EXPORT EXCEL =====
-function doExport() {
+function loadScript(src) {
+  return new Promise((res, rej) => { const el = document.createElement('script'); el.src = src; el.onload = res; el.onerror = rej; document.head.appendChild(el); });
+}
+async function doExport() {
+  if (typeof XLSX === 'undefined') {
+    showLoader('Đang tải công cụ Excel...');
+    try { await loadScript('https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js'); }
+    catch (e) { hideLoader(); toast('⚠️ Cần có mạng để xuất Excel lần đầu'); return; }
+    hideLoader();
+  }
+  doExportRun();
+}
+function doExportRun() {
   const range = document.getElementById('exp-range').value;
   const expProj = document.getElementById('exp-proj').value;
   const now = new Date(), sod = d => new Date(d.getFullYear(), d.getMonth(), d.getDate());
@@ -2627,9 +2697,15 @@ function fillStaticSelects() {
 }
 fillStaticSelects();
 
+function onChartReady() {
+  if (document.getElementById('pg-app').classList.contains('active') && ['home','baocao'].includes(curTab)
+      && ![...document.querySelectorAll('.modal-bg')].some(m => m.style.display === 'flex')) goTab(curTab);
+}
 // ===== KHỞI ĐỘNG =====
 (function boot() {
   loadLocal();
+  document.getElementById('login-ver').textContent = 'Phiên bản ' + APP_VERSION;
+  showVersion();
   if (token && me) {                  // đã đăng nhập trên máy này → vào luôn (dùng được cả khi mất mạng)
     showPage('pg-app');
     setupApp();
