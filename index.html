@@ -418,6 +418,15 @@ body.can-ql .hide-ql{display:none!important}
 .saved-bar button{border:none;border-radius:8px;padding:8px 10px;font-size:12px;font-weight:700;cursor:pointer;white-space:nowrap;font-family:inherit}
 .rp-text{width:100%;border:1.5px solid var(--border);border-radius:var(--r-sm);padding:10px 12px;font-size:13px;line-height:1.5;font-family:inherit;color:var(--text);min-height:260px;resize:vertical}
 .upd-bar{position:fixed;left:12px;right:12px;bottom:calc(84px + env(safe-area-inset-bottom));z-index:960;background:#0056A4;color:#fff;border:none;border-radius:14px;padding:14px 16px;font-size:14px;font-weight:700;box-shadow:0 8px 24px rgba(0,0,0,.25);cursor:pointer;font-family:inherit;display:none;text-align:center}
+/* ===== v5.4 ===== */
+.ri-bar{width:4px;align-self:stretch;min-height:34px;border-radius:3px;flex-shrink:0}
+.donut-ctl{display:flex;gap:8px;flex-wrap:wrap;margin:6px 0 10px}
+.donut-sel{flex:1;min-width:170px;border:1.5px solid var(--border);border-radius:10px;padding:9px 12px;font-size:13px;font-weight:600;color:var(--text);background:#fff;font-family:inherit}
+.proj-checks{display:flex;flex-direction:column;gap:2px;background:var(--bg);border-radius:10px;padding:6px 10px}
+.proj-checks label{display:flex;align-items:center;gap:10px;font-size:14px;padding:8px 2px;color:var(--text);text-transform:none;letter-spacing:0;font-weight:500;margin:0;cursor:pointer}
+.proj-checks input{width:18px;height:18px;accent-color:var(--primary)}
+.proj-note{font-size:11px;color:var(--text3);margin-top:6px;line-height:1.5}
+#proj-sel:disabled{opacity:1}
 </style>
 </head>
 <body>
@@ -472,7 +481,7 @@ body.can-ql .hide-ql{display:none!important}
       <button class="header-menu" onclick="toggleSidebar()">
         <span></span><span></span><span></span>
       </button>
-      <img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjYwIDE5MCA0MjIwIDE4MjAiPjxnIHRyYW5zZm9ybT0idHJhbnNsYXRlKDAuMDAwMDAwLDIwNzAuMDAwMDAwKSBzY2FsZSgwLjEwMDAwMCwtMC4xMDAwMDApIiBmaWxsPSIjRjI2NTIyIiBzdHJva2U9Im5vbmUiPiA8cGF0aCBkPSJNMTk3NzAgMTg0OTMgYy0xMDYgLTYgLTI1NiAtMjUgLTM1MCAtNDQgLTUyIC0xMSAtMTY1IC0zMSAtMjUwIC00NCAtODYgLTEzIC0xOTIgLTM1IC0yMzUgLTQ5IC00NCAtMTQgLTEyNiAtMzYgLTE4MiAtNTAgLTU2IC0xNSAtMTUwIC00NCAtMjEwIC02NiAtNTkgLTIyIC0xMTIgLTQwIC0xMTcgLTQwIC0zOCAwIC00NTAgLTE5MyAtNjIwIC0yODkgLTExNzQgLTY2OCAtMTk3MyAtMTc4NyAtMjI0MSAtMzEzNCAtMTUxIC03NjQgLTExNSAtMTgyMiA4NSAtMjQ2MiAxNSAtNDkgMzggLTEyNCA1MCAtMTY1IDMzMSAtMTE0MyAxMzI2IC0yMjY2IDI0NjEgLTI3NzggMjQ2IC0xMTEgNjMyIC0yNDYgNzc5IC0yNzIgMzYgLTYgMTI1IC0yNyAxOTkgLTQ2IDEwNiAtMjcgMTkyIC00MCA0MzAgLTY0IDY0MyAtNjUgNzM5IC02NCAxNTQxIDE5IDUyIDYgMTU2IDI2IDIzMCA0NSA3NCAxOSAxNjQgNDAgMTk5IDQ2IDYzMSAxMTIgMTQ4NyA1OTQgMjA2OSAxMTY0IDIzNSAyMzEgMjYwIDI4MCAxOTIgMzc1IC0zNSA0OCAtMTUwOCAxNTE3IC0xNTQ4IDE1NDMgLTc1IDQ5IC0xMDggMzMgLTI4MSAtMTM1IC02MjUgLTYxMCAtMTMyMCAtODA4IC0yMjgxIC02NTEgLTE2MzAgMjY2IC0yNDAxIDI0MjQgLTEzNjEgMzgwOCA3ODMgMTA0MSAyNDUyIDEyMjUgMzQ1MCAzODAgMTcxIC0xNDUgMTgzIC0xNTQgMjIyIC0xNjUgODEgLTI1IDczIC0zMSA1NTkgNDExIDE3OSAxNjIgNDc0IDQzMCA2NTUgNTk1IDE4MiAxNjQgMzcxIDMzNyA0MjIgMzgyIDE3MSAxNTYgMTY3IDIwMCAtMzggMzk5IC01MzcgNTIwIC0xMjQ2IDkzMiAtMTg5OSAxMTAzIC02MyAxNiAtMTMzIDM2IC0xNTYgNDUgLTQ0IDE1IC0xNjYgNDAgLTI0OSA1MSAtMjcgNCAtMTI5IDIyIC0yMjUgNDAgLTI1NSA0OSAtODc0IDcyIC0xMzAwIDQ4eiBNMjgwNTkgMTg0ODkgYy02MyAtNSAtMTk2IC0yNCAtMjk1IC00MyAtOTggLTE5IC0yMDQgLTM3IC0yMzQgLTQxIC05MyAtMTEgLTE2MSAtMjUgLTI2MCAtNTUgLTUyIC0xNiAtMTMzIC0zOCAtMTgwIC01MCAtOTczIC0yMzggLTIwMTYgLTEwNDkgLTI2MDMgLTIwMjIgLTIwNSAtMzM5IC00MzQgLTg3OSAtNDg2IC0xMTQzIC03IC0zMyAtMzAgLTEyNSAtNTEgLTIwNSAtMjcgLTk4IC00NCAtMTkyIC01NCAtMjkwIC04IC04MCAtMjcgLTIxNSAtNDEgLTMwMCAtNjMgLTM4NCAtNjEgLTgzMiA1IC0xMjUwIDE2IC0xMDIgMzQgLTIzNSA0MCAtMjk2IDYgLTYyIDE5IC0xNDUgMzAgLTE4NSAxMSAtNDEgMzEgLTEyMyA0NiAtMTg0IDI2OCAtMTE0NiAxMDc5IC0yMjIyIDIxNTAgLTI4NTMgMjU3IC0xNTIgNDMyIC0yMjUgNDk4IC0yMDggNjYgMTYgNjAgLTE1OCA2NiAyMjI2IDUgMjE1NSA1IDIxNTUgMzMgMjIxNSAzNyA4MCAxNjk4IDE3NDUgMTc4MCAxNzg0IDE0MSA2OCAxNjEgNTMgNzIyIC01MTEgMTIzMSAtMTIzOSAxMjEyIC0xMjIwIDEyNDIgLTEyODMgMjggLTYwIDI4IC02MCAzMyAtMjIxMCA1IC0yMDMyIDYgLTIxNTIgMjMgLTIxODIgMzUgLTY2IDEwMiAtNTggMjg1IDM0IDExNzEgNTg2IDIxMjUgMTc2NCAyMzk3IDI5NTggMTQgNjEgMzYgMTUxIDQ5IDIwMCAxMyA1MCAzMiAxNTEgNDEgMjI1IDkgNzQgMjggMjE2IDQyIDMxNSA1MCAzNDUgNDUgODQ4IC0xMSAxMjcwIC0xNCA5OSAtMzAgMjIzIC0zNiAyNzUgLTcgNTIgLTIzIDEzNiAtMzYgMTg1IC0xMyA1MCAtMzUgMTQwIC00OSAyMDAgLTMzMSAxNDUzIC0xNzE0IDI4ODYgLTMxMjAgMzIzNSAtNDUgMTAgLTEyNCAzMyAtMTc2IDQ5IC01MyAxNiAtMTQyIDM3IC0yMDAgNDYgLTU3IDkgLTE4NyAzMiAtMjg5IDUxIC0yODUgNTIgLTk0MCA3MyAtMTM2MSA0M3ogTTEyMDAgMTgyNzAgYy0yMzIgLTYgLTI0MyAtOSAtMjc2IC04MiAtMzEgLTY5IC0zMCAtODg2NSAxIC04OTE4IDQ4IC04MSAtNjEgLTc1IDEyODUgLTc1IDEzMzUgMCAxMjQxIC01IDEyOTQgNjggMjEgMjggMjEgMzEgMjYgMTY0MCA2IDE3OTYgMCAxNjU4IDcwIDE3MDkgNTAgMzYgMTIzIDM4IDE1MjUgMzggMTU3MyAwIDE0NDMgLTggMTQ5MyA5MCAzMyA2NiAzNSAxOTA2IDIgMTk3NSAtNDIgODggMTA0IDc5IC0xNTI1IDg1IC0xNjMwIDYgLTE0OTcgLTIgLTE1NDEgODcgLTI5IDU4IC0yOSAxMDc3IDAgMTEzNSA0NSA5MSAtMTQwIDgyIDE4ODYgODggMTc3MiA1IDE3OTUgNSAxODI5IDI1IDkzIDU1IDkzIDQ5IDg5IDExMjMgLTMgMTAxMCAyIDk1MSAtOTQgOTkzIC00NiAyMSAtNTMzMiAzNyAtNjA2NCAxOXogTTg1NTAgMTgyNzAgYy0xNzcgLTYgLTE5NCAtMTIgLTIyNiAtODIgLTMxIC02OSAtMzAgLTg4NjUgMSAtODkxOCAxMiAtMTkgMzYgLTQzIDU1IC01NSA1OSAtMzQgNjIyNCAtMzEgNjI4OCAzIDg3IDQ2IDgyIC0yMiA4MiAxMDQyIDAgOTg1IDAgOTg3IC00NyAxMDMyIC01OSA1NiA1MSA1MyAtMTg4MCA1OCAtMjAzNiA2IC0xODIyIC01IC0xODcxIDkxIC0zMiA2MyAtMzEgMTA3MSAyIDExMjYgNTIgODUgLTExNyA3NyAxODkxIDgzIDE4NjEgNSAxODE5IDQgMTg1NyA0NyA0OSA1NCA0OCAyNyA0OCAxMDM1IDAgMTA1NiA0IDk5NyAtNzIgMTA0MyAtMzIgMjAgLTYyIDIwIC0xODI4IDI1IC0xOTQ2IDUgLTE4MzUgMiAtMTg4MSA1NiAtMzcgNDMgLTM5IDc2IC0zOSA1OTkgMCA1MjMgMiA1NTYgMzkgNTk5IDQ3IDU0IC04MCA1MSAxODcxIDU2IDIwMzkgNiAxODQwIC00IDE4ODggOTAgMjQgNDkgMzYgMTg3NCAxMiAxOTYxIC0xMSA0MCAtNTEgODIgLTk1IDEwMCAtMzEgMTIgLTU3NDIgMjAgLTYwOTUgOXogTTM0NDc4IDE4MjcwIGMtODEgLTggLTExNCAtMjggLTEzOSAtODUgLTI5IC02NiAtMzEgLTg4NDUgLTIgLTg5MDMgNDggLTk2IDEwIC05MyAxMzQ5IC05MCAxMTM5IDMgMTEzOSAzIDExODEgMjYgODYgNDUgNzcgLTE3NCA4MyAyMTYyIDUgMjE5NyAzIDIxMDUgNTAgMjEzMCA1MyAyOSA5MiAtMTcgMzI3IC0zOTAgNDI4IC02NzcgMTE1NiAtMTgyOSAxMjk4IC0yMDU1IDQ1IC03MSAxMzEgLTIwOSAxOTIgLTMwNSA2MSAtOTYgMjM3IC0zNzcgMzkzIC02MjUgMTU2IC0yNDcgMzIyIC01MTMgMzcxIC01OTAgMTk1IC0zMTEgMjE2IC0zMzAgMzYyIC0zNDYgMTg4IC0yMSAyMzU3IC02IDI0MDIgMTYgNTUgMjggODIgNzIgOTAgMTQ4IDIwIDE5OCAwIDg3ODIgLTIxIDg4MjIgLTQ5IDk2IDM1IDkwIC0xMjk5IDkwIC0xMzI4IC0xIC0xMjMzIDUgLTEyODAgLTc1IC0yMCAtMzUgLTIwIC00OCAtMjUgLTIxMTAgLTYgLTIzMDQgLTEgLTIxNDkgLTY3IC0yMTU4IC01NiAtOCAtNTggLTYgLTU1MyA3ODMgLTIxMSAzMzYgLTQyMCA2NjkgLTQ2NSA3NDAgLTQ1IDcyIC0xMjYgMjAwIC0xODAgMjg1IC01NCA4NSAtMTM1IDIxNCAtMTgwIDI4NSAtNDUgNzIgLTEzMSAyMDcgLTE5MCAzMDAgLTU5IDk0IC0xNDAgMjIyIC0xODAgMjg1IC0zOSA2MyAtMTE1IDE4MyAtMTY3IDI2NSAtNTIgODMgLTE3NiAyNzggLTI3NSA0MzUgLTU2OCA5MDIgLTU3NCA5MTEgLTY1OCA5NDYgLTQxIDE3IC0yMjQzIDMwIC0yNDE3IDE0eiBNMjcyNzUgMTI3NjUgYy0xMjIgLTQzIC0xMTQgLTIwMCAxMyAtMjM0IDg2IC0yNCAyNjIxIC0xMCAyNjYyIDE0IDkzIDU1IDY5IDE5NSAtMzkgMjI1IC02MiAxNyAtMjU4NiAxMyAtMjYzNiAtNXogTTI3MjYzIDEyMDM1IGMtODggLTM4IC05NCAtMTU3IC0xMCAtMjAyIDM4IC0yMSAyNTgxIC0zNCAyNjU3IC0xMyAxMTAgMzAgMTI3IDE3MyAyNCAyMTYgLTUwIDIxIC0yNjIzIDIwIC0yNjcxIC0xeiBNMjczMDMgMTE1MTAgYy0xNTQgLTMxIC0xODQgLTI2MiAtNDEgLTMyNiA2OSAtMzEgMjYyNSAtMzAgMjY3OCAyIDEyOSA3NiAxMDMgMjkwIC00MCAzMjMgLTU1IDEzIC0yNTMzIDEzIC0yNTk3IDF6IE0yNzI3NSAxMDg1NSBjLTEzOSAtNTAgLTE1NCAtMzgyIC0xOSAtNDUwIDY2IC0zNCAyNjI5IC0zMSAyNjkyIDMgMTExIDU5IDExMCAzNzAgMCA0MzcgLTQ0IDI3IC0yNjAwIDM2IC0yNjczIDEweiBNMjczMjUgMTAxNDEgYy0xMzQgLTE3IC0xNDkgLTQ5IC0xNTMgLTMyNiAtNSAtMzAxIDkgLTM1MSAxMDcgLTM4NCA3NiAtMjUgMjYxMCAtMTUgMjY2MSAxMiA3OSAzOSA4NSA2MiA4NSAzMzcgMCAzMDUgLTE0IDMzOCAtMTUwIDM2MCAtNjYgMTEgLTI0NjUgMTIgLTI1NTAgMXoiLz4gPC9nPjxnIHRyYW5zZm9ybT0idHJhbnNsYXRlKDAuMDAwMDAwLDIwNzAuMDAwMDAwKSBzY2FsZSgwLjEwMDAwMCwtMC4xMDAwMDApIiBmaWxsPSIjMDA1NkE0IiBzdHJva2U9Im5vbmUiPiA8cGF0aCBkPSJNMzkyODEgNjUyMCBjLTQ2IC0xMSAtODMgLTQwIC0xMDMgLTgxIC0zMiAtNjEgLTI3IC01Mjg3IDUgLTUzNDkgNDIgLTg1IDQ0IC04NSA0MjcgLTg1IDM4MiAwIDM5MyAyIDQzNCA4MSAyMSAzOSAyMSA1MCAyNiAxMzI5IDYgMTU0MCAtMTggMTM4MiAyMjggMTQ5NyA2MTcgMjg5IDEwOTcgMTYzIDEyMzAgLTMyMSAyNyAtOTYgMjcgLTk2IDMyIC0xMjgxIDYgLTE0ODUgLTU2IC0xMzA1IDQ1MCAtMTMwNSAzODIgMCAzOTMgMiA0MzQgODEgMjUgNDYgMzkgMjMxNiAxNiAyNTg5IC04MSAxMDAwIC04ODQgMTQxMiAtMjA1NSAxMDU0IC0xODcgLTU3IC0yMzcgLTYzIC0yNzggLTM2IC01MyAzNCAtNTIgMTQgLTU3IDg5NyAtNiA5MzIgMCA4NjkgLTg1IDkxNCAtNDMgMjMgLTYyMyAzNiAtNzA0IDE2eiBNMjUwNDUgNjIzMCBjLTI2OSAtMTkgLTM3MiAtMzcgLTU5MyAtMTA3IC03OTMgLTI0OSAtMTE3MyAtOTExIC05NzMgLTE2OTMgMTI2IC00ODkgMzM2IC03MDUgMTAxMSAtMTAzNyAyMDYgLTEwMiA0NzQgLTIzNCA1OTUgLTI5MyA0OTggLTI0NiA2OTAgLTQ1MSA2OTAgLTczOSAwIC0zMzkgLTI1NyAtNTQ4IC03NjQgLTYyMSAtMjE5IC0zMiAtNjE1IDIzIC0xMTA2IDE1NSAtMjczIDc0IC0zMDkgNDcgLTM5NSAtMjk1IC0xMiAtNDcgLTM0IC0xMjcgLTUxIC0xNzggLTUxIC0xNjAgLTI1IC0yNDUgODYgLTI4NiA5NiAtMzYgMzk2IC0xMTMgNTUyIC0xNDIgODc4IC0xNjEgMTUzMyAtNjggMjA5MCAyOTggNzU4IDQ5OSA4NDQgMTU3MiAxNzkgMjIzMyAtMTg2IDE4NSAtMzczIDI4OSAtMTEzMSA2MzUgLTY3MCAzMDUgLTg1MiA1MDYgLTc2NSA4NDYgOTIgMzU3IDY1NSA1MTQgMTI2OCAzNTMgNjQgLTE3IDE2MyAtNDIgMjE5IC01NSA1NyAtMTMgMTM1IC0zMyAxNzQgLTQ1IDE1MiAtNDYgMjAyIC05IDI4MyAyMTMgMTU0IDQyMSAxNTIgNDE0IDEzMiA0NjIgLTMxIDc0IC0yMjggMTQzIC02ODggMjQxIC0xODEgMzkgLTYxNiA2OCAtODEzIDU1eiBNMzY1MDcgNTc4NiBjLTk0IC0zNCAtOTEgLTIxIC05NyAtNDk2IC02IC01MTEgLTExIC01MjggLTE2OCAtNTQ1IC0yMzcgLTI2IC0yNDcgLTQxIC0yNDcgLTM5MCAwIC0zMDUgMTYgLTMzMiAyMDggLTM1NCAyMjEgLTI1IDIwMSA5MiAyMDcgLTEyMjEgNiAtMTE5MCAwIC0xMTA3IDEwMiAtMTM3MCAxODAgLTQ2NCA4NjUgLTY2MiAxNjIzIC00NjkgNDczIDEyMSA0NzIgMTE5IDI5MyA2MTQgLTg1IDIzMyAtMTA5IDI0OCAtMzEzIDE4NSAtNDA5IC0xMjYgLTY4MyAtODAgLTc2NyAxMjkgLTM0IDgzIC0zNyAxOTgzIC0zIDIwNDAgNDQgNzUgNDkgNzUgNTIyIDgxIDU2MCA3IDUxOCAtMjUgNTE4IDM4NSAwIDQxOSA0MSAzODggLTUzMCAzOTUgLTU4MyA3IC01MjggLTQ3IC01MzUgNTIwIC03IDU1NCAzNiA1MDQgLTQ0MCA1MDcgLTI2MyAyIC0zNDMgMCAtMzczIC0xMXogTTI5MTcwIDQ4NDMgYy02MTEgLTQ1IC0xMDYzIC0yOTggLTEzODkgLTc3OCAtMTk0IC0yODUgLTI2MCAtNDgwIC0zMzMgLTk5MCAtNSAtMzggLTggLTE0NCAtNSAtMjM1IDQgLTE1NCAxMSAtMjExIDYyIC01MTAgMjggLTE2MiAxMzQgLTQwOSAyNjAgLTYwNSA2ODkgLTEwNzMgMjQxMSAtMTA4OCAzMTI2IC0yNiAyMzMgMzQ1IDMyOSA2OTUgMzI5IDExOTAgLTEgMTIzNCAtODUwIDIwNDMgLTIwNTAgMTk1NHogbTM4NCAtODA4IGM0OTAgLTE0MiA3NTkgLTc3OCA2MzYgLTE1MDUgLTE3NSAtMTAzNiAtMTQyNCAtMTEzNSAtMTY3OSAtMTMzIC0yNTYgMTAwMiAyODggMTg1NyAxMDQzIDE2Mzh6IE0zMjA2NyA0NzU2IGMtNTAgLTE4IC04MyAtNTAgLTk5IC05NSAtMjMgLTY0IC0xOCAtMjUxMiA1IC0yNjU5IDk3IC02MTUgNDY5IC05NDUgMTE5MiAtMTA1OSAxNDAgLTIzIDY0MCAtMjUgNzgwIC01IDMwOSA0NSA2MzMgMTIyIDk5NSAyMzQgMzIyIDEwMCAzNTAgMTI2IDMzNSAzMTQgLTMgNDMgLTkgNzcyIC0xMyAxNjE5IC04IDE3MjggLTEgMTU4OCAtODEgMTYzNyAtNTMgMzQgLTY5NCAzNiAtNzUwIDMgLTk1IC01NiAtOTEgMTEgLTkwIC0xNDg2IDEgLTE0MjcgNSAtMTMzNyAtNjIgLTEzOTMgLTQzIC0zNyAtNTIgLTQwIC0yNzQgLTk4IC00MzggLTExNiAtNzg0IC02MCAtOTgzIDE1NyAtMTU4IDE3MiAtMTYyIDIxMyAtMTYyIDE2NjAgMCAxMTg0IDUgMTExMSAtODAgMTE2MCAtNDYgMjYgLTY0NSAzNSAtNzEzIDExeiIvPiA8L2c+PC9zdmc+" class="header-logo" alt="Fecon South">
+      <img src="" data-logo class="header-logo" alt="Fecon South">
       <div class="header-avatar" id="header-avatar" onclick="toggleSidebar()">TK</div>
     </div>
     <div class="header-title" id="header-title">Kho Vật Tư</div>
@@ -602,7 +611,7 @@ body.can-ql .hide-ql{display:none!important}
 <div class="sidebar-overlay" id="sidebar-overlay" onclick="closeSidebar()"></div>
 <div class="sidebar" id="sidebar">
   <div class="sidebar-header">
-    <img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjYwIDE5MCA0MjIwIDE4MjAiPjxnIHRyYW5zZm9ybT0idHJhbnNsYXRlKDAuMDAwMDAwLDIwNzAuMDAwMDAwKSBzY2FsZSgwLjEwMDAwMCwtMC4xMDAwMDApIiBmaWxsPSIjRjI2NTIyIiBzdHJva2U9Im5vbmUiPiA8cGF0aCBkPSJNMTk3NzAgMTg0OTMgYy0xMDYgLTYgLTI1NiAtMjUgLTM1MCAtNDQgLTUyIC0xMSAtMTY1IC0zMSAtMjUwIC00NCAtODYgLTEzIC0xOTIgLTM1IC0yMzUgLTQ5IC00NCAtMTQgLTEyNiAtMzYgLTE4MiAtNTAgLTU2IC0xNSAtMTUwIC00NCAtMjEwIC02NiAtNTkgLTIyIC0xMTIgLTQwIC0xMTcgLTQwIC0zOCAwIC00NTAgLTE5MyAtNjIwIC0yODkgLTExNzQgLTY2OCAtMTk3MyAtMTc4NyAtMjI0MSAtMzEzNCAtMTUxIC03NjQgLTExNSAtMTgyMiA4NSAtMjQ2MiAxNSAtNDkgMzggLTEyNCA1MCAtMTY1IDMzMSAtMTE0MyAxMzI2IC0yMjY2IDI0NjEgLTI3NzggMjQ2IC0xMTEgNjMyIC0yNDYgNzc5IC0yNzIgMzYgLTYgMTI1IC0yNyAxOTkgLTQ2IDEwNiAtMjcgMTkyIC00MCA0MzAgLTY0IDY0MyAtNjUgNzM5IC02NCAxNTQxIDE5IDUyIDYgMTU2IDI2IDIzMCA0NSA3NCAxOSAxNjQgNDAgMTk5IDQ2IDYzMSAxMTIgMTQ4NyA1OTQgMjA2OSAxMTY0IDIzNSAyMzEgMjYwIDI4MCAxOTIgMzc1IC0zNSA0OCAtMTUwOCAxNTE3IC0xNTQ4IDE1NDMgLTc1IDQ5IC0xMDggMzMgLTI4MSAtMTM1IC02MjUgLTYxMCAtMTMyMCAtODA4IC0yMjgxIC02NTEgLTE2MzAgMjY2IC0yNDAxIDI0MjQgLTEzNjEgMzgwOCA3ODMgMTA0MSAyNDUyIDEyMjUgMzQ1MCAzODAgMTcxIC0xNDUgMTgzIC0xNTQgMjIyIC0xNjUgODEgLTI1IDczIC0zMSA1NTkgNDExIDE3OSAxNjIgNDc0IDQzMCA2NTUgNTk1IDE4MiAxNjQgMzcxIDMzNyA0MjIgMzgyIDE3MSAxNTYgMTY3IDIwMCAtMzggMzk5IC01MzcgNTIwIC0xMjQ2IDkzMiAtMTg5OSAxMTAzIC02MyAxNiAtMTMzIDM2IC0xNTYgNDUgLTQ0IDE1IC0xNjYgNDAgLTI0OSA1MSAtMjcgNCAtMTI5IDIyIC0yMjUgNDAgLTI1NSA0OSAtODc0IDcyIC0xMzAwIDQ4eiBNMjgwNTkgMTg0ODkgYy02MyAtNSAtMTk2IC0yNCAtMjk1IC00MyAtOTggLTE5IC0yMDQgLTM3IC0yMzQgLTQxIC05MyAtMTEgLTE2MSAtMjUgLTI2MCAtNTUgLTUyIC0xNiAtMTMzIC0zOCAtMTgwIC01MCAtOTczIC0yMzggLTIwMTYgLTEwNDkgLTI2MDMgLTIwMjIgLTIwNSAtMzM5IC00MzQgLTg3OSAtNDg2IC0xMTQzIC03IC0zMyAtMzAgLTEyNSAtNTEgLTIwNSAtMjcgLTk4IC00NCAtMTkyIC01NCAtMjkwIC04IC04MCAtMjcgLTIxNSAtNDEgLTMwMCAtNjMgLTM4NCAtNjEgLTgzMiA1IC0xMjUwIDE2IC0xMDIgMzQgLTIzNSA0MCAtMjk2IDYgLTYyIDE5IC0xNDUgMzAgLTE4NSAxMSAtNDEgMzEgLTEyMyA0NiAtMTg0IDI2OCAtMTE0NiAxMDc5IC0yMjIyIDIxNTAgLTI4NTMgMjU3IC0xNTIgNDMyIC0yMjUgNDk4IC0yMDggNjYgMTYgNjAgLTE1OCA2NiAyMjI2IDUgMjE1NSA1IDIxNTUgMzMgMjIxNSAzNyA4MCAxNjk4IDE3NDUgMTc4MCAxNzg0IDE0MSA2OCAxNjEgNTMgNzIyIC01MTEgMTIzMSAtMTIzOSAxMjEyIC0xMjIwIDEyNDIgLTEyODMgMjggLTYwIDI4IC02MCAzMyAtMjIxMCA1IC0yMDMyIDYgLTIxNTIgMjMgLTIxODIgMzUgLTY2IDEwMiAtNTggMjg1IDM0IDExNzEgNTg2IDIxMjUgMTc2NCAyMzk3IDI5NTggMTQgNjEgMzYgMTUxIDQ5IDIwMCAxMyA1MCAzMiAxNTEgNDEgMjI1IDkgNzQgMjggMjE2IDQyIDMxNSA1MCAzNDUgNDUgODQ4IC0xMSAxMjcwIC0xNCA5OSAtMzAgMjIzIC0zNiAyNzUgLTcgNTIgLTIzIDEzNiAtMzYgMTg1IC0xMyA1MCAtMzUgMTQwIC00OSAyMDAgLTMzMSAxNDUzIC0xNzE0IDI4ODYgLTMxMjAgMzIzNSAtNDUgMTAgLTEyNCAzMyAtMTc2IDQ5IC01MyAxNiAtMTQyIDM3IC0yMDAgNDYgLTU3IDkgLTE4NyAzMiAtMjg5IDUxIC0yODUgNTIgLTk0MCA3MyAtMTM2MSA0M3ogTTEyMDAgMTgyNzAgYy0yMzIgLTYgLTI0MyAtOSAtMjc2IC04MiAtMzEgLTY5IC0zMCAtODg2NSAxIC04OTE4IDQ4IC04MSAtNjEgLTc1IDEyODUgLTc1IDEzMzUgMCAxMjQxIC01IDEyOTQgNjggMjEgMjggMjEgMzEgMjYgMTY0MCA2IDE3OTYgMCAxNjU4IDcwIDE3MDkgNTAgMzYgMTIzIDM4IDE1MjUgMzggMTU3MyAwIDE0NDMgLTggMTQ5MyA5MCAzMyA2NiAzNSAxOTA2IDIgMTk3NSAtNDIgODggMTA0IDc5IC0xNTI1IDg1IC0xNjMwIDYgLTE0OTcgLTIgLTE1NDEgODcgLTI5IDU4IC0yOSAxMDc3IDAgMTEzNSA0NSA5MSAtMTQwIDgyIDE4ODYgODggMTc3MiA1IDE3OTUgNSAxODI5IDI1IDkzIDU1IDkzIDQ5IDg5IDExMjMgLTMgMTAxMCAyIDk1MSAtOTQgOTkzIC00NiAyMSAtNTMzMiAzNyAtNjA2NCAxOXogTTg1NTAgMTgyNzAgYy0xNzcgLTYgLTE5NCAtMTIgLTIyNiAtODIgLTMxIC02OSAtMzAgLTg4NjUgMSAtODkxOCAxMiAtMTkgMzYgLTQzIDU1IC01NSA1OSAtMzQgNjIyNCAtMzEgNjI4OCAzIDg3IDQ2IDgyIC0yMiA4MiAxMDQyIDAgOTg1IDAgOTg3IC00NyAxMDMyIC01OSA1NiA1MSA1MyAtMTg4MCA1OCAtMjAzNiA2IC0xODIyIC01IC0xODcxIDkxIC0zMiA2MyAtMzEgMTA3MSAyIDExMjYgNTIgODUgLTExNyA3NyAxODkxIDgzIDE4NjEgNSAxODE5IDQgMTg1NyA0NyA0OSA1NCA0OCAyNyA0OCAxMDM1IDAgMTA1NiA0IDk5NyAtNzIgMTA0MyAtMzIgMjAgLTYyIDIwIC0xODI4IDI1IC0xOTQ2IDUgLTE4MzUgMiAtMTg4MSA1NiAtMzcgNDMgLTM5IDc2IC0zOSA1OTkgMCA1MjMgMiA1NTYgMzkgNTk5IDQ3IDU0IC04MCA1MSAxODcxIDU2IDIwMzkgNiAxODQwIC00IDE4ODggOTAgMjQgNDkgMzYgMTg3NCAxMiAxOTYxIC0xMSA0MCAtNTEgODIgLTk1IDEwMCAtMzEgMTIgLTU3NDIgMjAgLTYwOTUgOXogTTM0NDc4IDE4MjcwIGMtODEgLTggLTExNCAtMjggLTEzOSAtODUgLTI5IC02NiAtMzEgLTg4NDUgLTIgLTg5MDMgNDggLTk2IDEwIC05MyAxMzQ5IC05MCAxMTM5IDMgMTEzOSAzIDExODEgMjYgODYgNDUgNzcgLTE3NCA4MyAyMTYyIDUgMjE5NyAzIDIxMDUgNTAgMjEzMCA1MyAyOSA5MiAtMTcgMzI3IC0zOTAgNDI4IC02NzcgMTE1NiAtMTgyOSAxMjk4IC0yMDU1IDQ1IC03MSAxMzEgLTIwOSAxOTIgLTMwNSA2MSAtOTYgMjM3IC0zNzcgMzkzIC02MjUgMTU2IC0yNDcgMzIyIC01MTMgMzcxIC01OTAgMTk1IC0zMTEgMjE2IC0zMzAgMzYyIC0zNDYgMTg4IC0yMSAyMzU3IC02IDI0MDIgMTYgNTUgMjggODIgNzIgOTAgMTQ4IDIwIDE5OCAwIDg3ODIgLTIxIDg4MjIgLTQ5IDk2IDM1IDkwIC0xMjk5IDkwIC0xMzI4IC0xIC0xMjMzIDUgLTEyODAgLTc1IC0yMCAtMzUgLTIwIC00OCAtMjUgLTIxMTAgLTYgLTIzMDQgLTEgLTIxNDkgLTY3IC0yMTU4IC01NiAtOCAtNTggLTYgLTU1MyA3ODMgLTIxMSAzMzYgLTQyMCA2NjkgLTQ2NSA3NDAgLTQ1IDcyIC0xMjYgMjAwIC0xODAgMjg1IC01NCA4NSAtMTM1IDIxNCAtMTgwIDI4NSAtNDUgNzIgLTEzMSAyMDcgLTE5MCAzMDAgLTU5IDk0IC0xNDAgMjIyIC0xODAgMjg1IC0zOSA2MyAtMTE1IDE4MyAtMTY3IDI2NSAtNTIgODMgLTE3NiAyNzggLTI3NSA0MzUgLTU2OCA5MDIgLTU3NCA5MTEgLTY1OCA5NDYgLTQxIDE3IC0yMjQzIDMwIC0yNDE3IDE0eiBNMjcyNzUgMTI3NjUgYy0xMjIgLTQzIC0xMTQgLTIwMCAxMyAtMjM0IDg2IC0yNCAyNjIxIC0xMCAyNjYyIDE0IDkzIDU1IDY5IDE5NSAtMzkgMjI1IC02MiAxNyAtMjU4NiAxMyAtMjYzNiAtNXogTTI3MjYzIDEyMDM1IGMtODggLTM4IC05NCAtMTU3IC0xMCAtMjAyIDM4IC0yMSAyNTgxIC0zNCAyNjU3IC0xMyAxMTAgMzAgMTI3IDE3MyAyNCAyMTYgLTUwIDIxIC0yNjIzIDIwIC0yNjcxIC0xeiBNMjczMDMgMTE1MTAgYy0xNTQgLTMxIC0xODQgLTI2MiAtNDEgLTMyNiA2OSAtMzEgMjYyNSAtMzAgMjY3OCAyIDEyOSA3NiAxMDMgMjkwIC00MCAzMjMgLTU1IDEzIC0yNTMzIDEzIC0yNTk3IDF6IE0yNzI3NSAxMDg1NSBjLTEzOSAtNTAgLTE1NCAtMzgyIC0xOSAtNDUwIDY2IC0zNCAyNjI5IC0zMSAyNjkyIDMgMTExIDU5IDExMCAzNzAgMCA0MzcgLTQ0IDI3IC0yNjAwIDM2IC0yNjczIDEweiBNMjczMjUgMTAxNDEgYy0xMzQgLTE3IC0xNDkgLTQ5IC0xNTMgLTMyNiAtNSAtMzAxIDkgLTM1MSAxMDcgLTM4NCA3NiAtMjUgMjYxMCAtMTUgMjY2MSAxMiA3OSAzOSA4NSA2MiA4NSAzMzcgMCAzMDUgLTE0IDMzOCAtMTUwIDM2MCAtNjYgMTEgLTI0NjUgMTIgLTI1NTAgMXoiLz4gPC9nPjxnIHRyYW5zZm9ybT0idHJhbnNsYXRlKDAuMDAwMDAwLDIwNzAuMDAwMDAwKSBzY2FsZSgwLjEwMDAwMCwtMC4xMDAwMDApIiBmaWxsPSIjMDA1NkE0IiBzdHJva2U9Im5vbmUiPiA8cGF0aCBkPSJNMzkyODEgNjUyMCBjLTQ2IC0xMSAtODMgLTQwIC0xMDMgLTgxIC0zMiAtNjEgLTI3IC01Mjg3IDUgLTUzNDkgNDIgLTg1IDQ0IC04NSA0MjcgLTg1IDM4MiAwIDM5MyAyIDQzNCA4MSAyMSAzOSAyMSA1MCAyNiAxMzI5IDYgMTU0MCAtMTggMTM4MiAyMjggMTQ5NyA2MTcgMjg5IDEwOTcgMTYzIDEyMzAgLTMyMSAyNyAtOTYgMjcgLTk2IDMyIC0xMjgxIDYgLTE0ODUgLTU2IC0xMzA1IDQ1MCAtMTMwNSAzODIgMCAzOTMgMiA0MzQgODEgMjUgNDYgMzkgMjMxNiAxNiAyNTg5IC04MSAxMDAwIC04ODQgMTQxMiAtMjA1NSAxMDU0IC0xODcgLTU3IC0yMzcgLTYzIC0yNzggLTM2IC01MyAzNCAtNTIgMTQgLTU3IDg5NyAtNiA5MzIgMCA4NjkgLTg1IDkxNCAtNDMgMjMgLTYyMyAzNiAtNzA0IDE2eiBNMjUwNDUgNjIzMCBjLTI2OSAtMTkgLTM3MiAtMzcgLTU5MyAtMTA3IC03OTMgLTI0OSAtMTE3MyAtOTExIC05NzMgLTE2OTMgMTI2IC00ODkgMzM2IC03MDUgMTAxMSAtMTAzNyAyMDYgLTEwMiA0NzQgLTIzNCA1OTUgLTI5MyA0OTggLTI0NiA2OTAgLTQ1MSA2OTAgLTczOSAwIC0zMzkgLTI1NyAtNTQ4IC03NjQgLTYyMSAtMjE5IC0zMiAtNjE1IDIzIC0xMTA2IDE1NSAtMjczIDc0IC0zMDkgNDcgLTM5NSAtMjk1IC0xMiAtNDcgLTM0IC0xMjcgLTUxIC0xNzggLTUxIC0xNjAgLTI1IC0yNDUgODYgLTI4NiA5NiAtMzYgMzk2IC0xMTMgNTUyIC0xNDIgODc4IC0xNjEgMTUzMyAtNjggMjA5MCAyOTggNzU4IDQ5OSA4NDQgMTU3MiAxNzkgMjIzMyAtMTg2IDE4NSAtMzczIDI4OSAtMTEzMSA2MzUgLTY3MCAzMDUgLTg1MiA1MDYgLTc2NSA4NDYgOTIgMzU3IDY1NSA1MTQgMTI2OCAzNTMgNjQgLTE3IDE2MyAtNDIgMjE5IC01NSA1NyAtMTMgMTM1IC0zMyAxNzQgLTQ1IDE1MiAtNDYgMjAyIC05IDI4MyAyMTMgMTU0IDQyMSAxNTIgNDE0IDEzMiA0NjIgLTMxIDc0IC0yMjggMTQzIC02ODggMjQxIC0xODEgMzkgLTYxNiA2OCAtODEzIDU1eiBNMzY1MDcgNTc4NiBjLTk0IC0zNCAtOTEgLTIxIC05NyAtNDk2IC02IC01MTEgLTExIC01MjggLTE2OCAtNTQ1IC0yMzcgLTI2IC0yNDcgLTQxIC0yNDcgLTM5MCAwIC0zMDUgMTYgLTMzMiAyMDggLTM1NCAyMjEgLTI1IDIwMSA5MiAyMDcgLTEyMjEgNiAtMTE5MCAwIC0xMTA3IDEwMiAtMTM3MCAxODAgLTQ2NCA4NjUgLTY2MiAxNjIzIC00NjkgNDczIDEyMSA0NzIgMTE5IDI5MyA2MTQgLTg1IDIzMyAtMTA5IDI0OCAtMzEzIDE4NSAtNDA5IC0xMjYgLTY4MyAtODAgLTc2NyAxMjkgLTM0IDgzIC0zNyAxOTgzIC0zIDIwNDAgNDQgNzUgNDkgNzUgNTIyIDgxIDU2MCA3IDUxOCAtMjUgNTE4IDM4NSAwIDQxOSA0MSAzODggLTUzMCAzOTUgLTU4MyA3IC01MjggLTQ3IC01MzUgNTIwIC03IDU1NCAzNiA1MDQgLTQ0MCA1MDcgLTI2MyAyIC0zNDMgMCAtMzczIC0xMXogTTI5MTcwIDQ4NDMgYy02MTEgLTQ1IC0xMDYzIC0yOTggLTEzODkgLTc3OCAtMTk0IC0yODUgLTI2MCAtNDgwIC0zMzMgLTk5MCAtNSAtMzggLTggLTE0NCAtNSAtMjM1IDQgLTE1NCAxMSAtMjExIDYyIC01MTAgMjggLTE2MiAxMzQgLTQwOSAyNjAgLTYwNSA2ODkgLTEwNzMgMjQxMSAtMTA4OCAzMTI2IC0yNiAyMzMgMzQ1IDMyOSA2OTUgMzI5IDExOTAgLTEgMTIzNCAtODUwIDIwNDMgLTIwNTAgMTk1NHogbTM4NCAtODA4IGM0OTAgLTE0MiA3NTkgLTc3OCA2MzYgLTE1MDUgLTE3NSAtMTAzNiAtMTQyNCAtMTEzNSAtMTY3OSAtMTMzIC0yNTYgMTAwMiAyODggMTg1NyAxMDQzIDE2Mzh6IE0zMjA2NyA0NzU2IGMtNTAgLTE4IC04MyAtNTAgLTk5IC05NSAtMjMgLTY0IC0xOCAtMjUxMiA1IC0yNjU5IDk3IC02MTUgNDY5IC05NDUgMTE5MiAtMTA1OSAxNDAgLTIzIDY0MCAtMjUgNzgwIC01IDMwOSA0NSA2MzMgMTIyIDk5NSAyMzQgMzIyIDEwMCAzNTAgMTI2IDMzNSAzMTQgLTMgNDMgLTkgNzcyIC0xMyAxNjE5IC04IDE3MjggLTEgMTU4OCAtODEgMTYzNyAtNTMgMzQgLTY5NCAzNiAtNzUwIDMgLTk1IC01NiAtOTEgMTEgLTkwIC0xNDg2IDEgLTE0MjcgNSAtMTMzNyAtNjIgLTEzOTMgLTQzIC0zNyAtNTIgLTQwIC0yNzQgLTk4IC00MzggLTExNiAtNzg0IC02MCAtOTgzIDE1NyAtMTU4IDE3MiAtMTYyIDIxMyAtMTYyIDE2NjAgMCAxMTg0IDUgMTExMSAtODAgMTE2MCAtNDYgMjYgLTY0NSAzNSAtNzEzIDExeiIvPiA8L2c+PC9zdmc+" class="sidebar-logo" alt="Fecon South">
+    <img src="" data-logo class="sidebar-logo" alt="Fecon South">
     <div class="sidebar-user">
       <b id="sb-name">Thủ Kho</b>
       <span id="sb-role">Nhập · Xuất kho</span>
@@ -622,7 +631,7 @@ body.can-ql .hide-ql{display:none!important}
     <div class="sidebar-item" onclick="openDpSb('dp-dc-hist')"><span class="sidebar-item-ico">⚖️</span>Phiếu điều chỉnh</div>
     <div class="sidebar-divider need-ql"></div>
     <div class="sidebar-label need-ql">Quản lý</div>
-    <div class="sidebar-item need-admin" onclick="openDpSb('dp-members')"><span class="sidebar-item-ico">👥</span>Thành viên<span class="sb-badge" id="sb-pend" style="display:none">0</span></div>
+    <div class="sidebar-item need-ql" onclick="openDpSb('dp-members')"><span class="sidebar-item-ico">👥</span>Thành viên<span class="sb-badge" id="sb-pend" style="display:none">0</span></div>
     <div class="sidebar-item need-ql" onclick="openModal('modal-add-proj')"><span class="sidebar-item-ico">🏢</span>Thêm dự án</div>
     <div class="sidebar-item need-ql" onclick="openDpSb('dp-history-log')"><span class="sidebar-item-ico">📋</span>Nhật ký hoạt động</div>
     <div class="sidebar-divider"></div>
@@ -789,9 +798,7 @@ body.can-ql .hide-ql{display:none!important}
       </div>
     </div>
     <div class="fg"><label>Dự án</label>
-      <select id="exp-proj">
-        <option value="all">Tất cả dự án</option>
-      </select>
+      <select id="exp-proj" disabled></select>
     </div>
     <div class="modal-actions">
       <button class="btn-cancel" onclick="closeModal('modal-export')">Hủy</button>
@@ -838,14 +845,22 @@ body.can-ql .hide-ql{display:none!important}
     <div class="modal-title" id="mm-title">Thành viên</div>
     <input type="hidden" id="mm-id">
     <div class="kv-box" id="mm-info"></div>
-    <div class="fg"><label>Họ tên hiển thị</label><input type="text" id="mm-name"></div>
-    <div class="fg"><label>Vai trò</label>
-      <select id="mm-role">
+    <div class="fg need-admin"><label>Họ tên hiển thị</label><input type="text" id="mm-name"></div>
+    <div class="fg need-admin"><label>Vai trò</label>
+      <select id="mm-role" onchange="renderMemberProjects()">
         <option value="xem">👁 Chỉ xem — xem số liệu, không ghi</option>
         <option value="tk">🏗 Thủ kho — nhập, xuất, điều chỉnh, ghi chú</option>
         <option value="ql">👔 Quản lý — thêm sửa danh mục, dự án, nhật ký</option>
         <option value="admin">⭐ Admin — toàn quyền + quản lý thành viên</option>
       </select>
+    </div>
+    <div class="fg"><label>Dự án được giao</label>
+      <div class="proj-checks" id="mm-projs"></div>
+      <div class="proj-note" id="mm-proj-note"></div>
+    </div>
+    <div class="modal-actions" id="mm-ql-box">
+      <button class="btn-cancel" onclick="closeModal('modal-member')">Đóng</button>
+      <button class="btn-ok" onclick="saveMemberProjects()">Lưu phân công</button>
     </div>
     <div id="mm-pending-box">
       <div class="modal-actions">
@@ -907,12 +922,12 @@ body.can-ql .hide-ql{display:none!important}
 // ============================================================
 // CONFIG
 // ============================================================
-const APP_VERSION = '5.3.1';
+const APP_VERSION = '5.4';
 const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbw6Rmi80I7RI3ij2U7RdRF5pYuQTnPrwEmGmUZS5xpxzLwwVynfoFUujZe1lm6HS1ymxw/exec';
 // ============================================================
 
 const MCATS = ['mayKhoan','mayCau','mayDao','mayPhat','khac_device'];
-let role = 'xem', me = null, curTab = 'home', curProj = 'all', fCat = 'all';
+let role = 'xem', me = null, curTab = 'home', curProj = '', fCat = 'all';
 let charts = {}, currentDeviceId = null;
 
 // ===== ICONS (SVG vẽ riêng cho từng loại máy / vật tư) =====
@@ -978,7 +993,7 @@ function itemIcon(item, size) {
   const c = catOf(item.cat);
   let key = c.svg;
   if (item.cat === 'nhienLieu') { const n = (item.name||'').toLowerCase(); key = /nhớt/.test(n) ? 'nhot' : /mỡ/.test(n) ? 'mo' : 'dau'; }
-  return `<div class="ri-ico" style="background:${c.bg};color:${c.color}${size?`;width:${size}px;height:${size}px`:''}">${ICONS[key]}</div>`;
+  return `<div class="ri-bar" style="background:${c.color}"></div>`;
 }
 function devIcon(dev, size) {
   const c = devCatOf(dev.cat);
@@ -1084,9 +1099,6 @@ function setPendingBadge(n) {
 }
 async function setupApp() {
   applyRoleUI();
-  const epSel = document.getElementById('exp-proj');
-  epSel.innerHTML = '<option value="all">Tất cả dự án</option>';
-  db.projects.forEach(p => { const o = document.createElement('option'); o.value = p; o.textContent = p; epSel.appendChild(o); });
   document.getElementById('exp-range').onchange = function() {
     document.getElementById('exp-custom').style.display = this.value === 'custom' ? '' : 'none';
   };
@@ -1107,20 +1119,22 @@ async function setupApp() {
 }
 
 // ===== LOCAL STORAGE (lưu trên máy) =====
+const LS_CUR = 'fecon_proj_v5';
 const LS_TOKEN = 'fecon_token_v5', LS_USER = 'fecon_user_v5', LS_DB = 'fecon_db_v5', LS_OUT = 'fecon_outbox_v5', LS_VER = 'fecon_ver_v5';
 let token = '', pendingCount = 0, lastReject = '';
 let outbox = [], serverVer = 0, syncing = false, syncTimer = null, flushing = null;
 function saveLocal() {
   try {
     const { categories, ...rest } = db;
-    localStorage.setItem(LS_DB, JSON.stringify(rest));
+    if (curProj) { localStorage.setItem(LS_DB + '|' + curProj, JSON.stringify(rest)); localStorage.setItem(LS_CUR, curProj); }
     localStorage.setItem(LS_OUT, JSON.stringify(outbox));
     localStorage.setItem(LS_VER, String(serverVer));
   } catch (e) { console.warn('saveLocal', e); }
 }
 function clearLocalData() {
-  [LS_DB, LS_OUT, LS_VER].forEach(k => localStorage.removeItem(k));
-  db = emptyDb(); outbox = []; serverVer = 0;
+  Object.keys(localStorage).filter(k => k.startsWith(LS_DB)).forEach(k => localStorage.removeItem(k));
+  [LS_OUT, LS_VER, LS_CUR].forEach(k => localStorage.removeItem(k));
+  db = emptyDb(); outbox = []; serverVer = 0; curProj = ''; loadedOnce = false;
 }
 function loadLocal() {
   try {
@@ -1132,7 +1146,9 @@ function loadLocal() {
     token = localStorage.getItem(LS_TOKEN) || '';
     me = JSON.parse(localStorage.getItem(LS_USER) || 'null');
     if (me) role = me.role;
-    const raw = localStorage.getItem(LS_DB);
+    localStorage.removeItem(LS_DB);                       // bản ≤5.3: cache chung, bỏ
+    curProj = localStorage.getItem(LS_CUR) || '';
+    const raw = curProj ? localStorage.getItem(LS_DB + '|' + curProj) : null;
     if (raw) { const d = JSON.parse(raw); if (d && d.items) db = Object.assign(emptyDb(), d); }
     outbox = JSON.parse(localStorage.getItem(LS_OUT) || '[]');
     serverVer = +localStorage.getItem(LS_VER) || 0;
@@ -1233,17 +1249,24 @@ async function flushOutbox() {
   })();
   try { return await flushing; } finally { flushing = null; }
 }
-let serverVerInfo = '';
+let serverVerInfo = '', loadedOnce = false;
 function applyServer(r) {
+  loadedOnce = true;
+  db.projects = r.projects || [];
+  // Máy chủ quyết định dự án được xem (VD: vừa bị chuyển khỏi dự án cũ)
+  if ((r.project || '') !== curProj) { curProj = r.project || ''; localStorage.setItem(LS_CUR, curProj); }
+  const P = curProj;
+  // Xóa dữ liệu lưu trên máy của dự án không còn được giao
+  Object.keys(localStorage).filter(k => k.startsWith(LS_DB + '|') && !db.projects.includes(k.slice(LS_DB.length + 1))).forEach(k => localStorage.removeItem(k));
   if (r.items) db.items = r.items.map(i => ({...i, id:+i.id, stock:+i.stock||0, minStock:+i.minStock||0}));
   if (r.devices) db.devices = r.devices.map(d => ({...d, id:+d.id, fuelRate:+d.fuelRate||20}));
   db.repairs = (r.repairs||[]).map(rp => ({...rp, id:+rp.id, deviceId:+rp.deviceId, cost:+rp.cost||0}));
   db.notes = (r.notes||[]).map(n => ({...n, id:+n.id}));
-  if (r.projects?.length) db.projects = r.projects;
   if (r.photos) {
     const sp = r.photos.map(p => ({...p, id:+p.id, txnId:+p.txnId}));
     const pids = new Set(sp.map(p => p.id));
-    db.photos = sp.concat((db.photos || []).filter(p => p._local && !pids.has(p.id)));
+    const txIds = new Set();
+    db.photos = sp.concat((db.photos || []).filter(p => p._local && !pids.has(p.id) && db.scope === P));
   }
   // Phiếu: máy chủ 5.2 gửi dạng mảng gọn và chỉ gửi phần mới (txnFrom > 0)
   let rows = r.transactions || [];
@@ -1251,7 +1274,8 @@ function applyServer(r) {
   rows = rows.map(t => ({...t, id:+t.id, itemId:+t.itemId, qty:+t.qty||0, refId: t.refId ? +t.refId : ''}));
   const base = r.txnCols && r.txnFrom > 0 ? db.transactions.filter(t => !t._local).concat(rows) : rows;
   const ids = new Set(base.map(t => t.id));
-  db.transactions = base.concat(db.transactions.filter(t => t._local && !ids.has(t.id)));  // giữ phiếu tạm chưa thấy trên máy chủ
+  db.transactions = base.concat(db.transactions.filter(t => t._local && !ids.has(t.id) && t.project === P));  // giữ phiếu tạm chưa thấy trên máy chủ
+  db.scope = P;
   db.txnTotal = r.txnCols ? r.txnTotal : 0; db.txnLastId = r.txnCols ? r.txnLastId : '';
   if (r.version) serverVer = r.version;
   serverVerInfo = r.sv ? 'Máy chủ ' + r.sv : 'Máy chủ bản cũ — cần triển khai Apps Script mới';
@@ -1266,6 +1290,7 @@ function reapplyOutbox() {
       const arr = db[d.table];
       (d.rows || []).forEach(row => {
         const i = arr.findIndex(x => x.id === row.id);
+        if (i < 0 && row.project !== curProj) return;          // bản ghi của dự án khác
         if (i < 0) arr.push(d.table === 'items' ? {...row, stock:0} : {...row});
         else arr[i] = d.table === 'items' ? {...arr[i], ...row, stock:arr[i].stock} : {...arr[i], ...row};
       });
@@ -1276,9 +1301,11 @@ function reapplyOutbox() {
     } else if (op.action === 'updateProjects') {
       db.projects = d.projects;
     } else if (op.action === 'uploadPhoto') {
+      if (!db.transactions.some(t => t.id === d.txnId)) return;
       db.photos = db.photos || [];
       if (!db.photos.some(p => p.id === d.photoId)) db.photos.push({id:d.photoId, txnId:d.txnId, fileId:'', _local:1});
     } else if (op.action === 'addTransaction') {
+      if (d.project !== curProj) return;
       const it = db.items.find(i => i.id === d.itemId);
       if (it) { const q = +d.qty || 0; it.stock = Math.round((it.stock + (d.type === 'xuat' ? -q : q)) * 100) / 100; }
       if (!db.transactions.some(t => t.id === d.id)) db.transactions.push(d);
@@ -1297,7 +1324,8 @@ async function syncAll(silent) {
     if (!silent) setSyncBar('⏳ Đang đồng bộ...');
     const flushed = await flushOutbox();          // gửi thay đổi chờ trước; lỗi vẫn tiếp tục tải dữ liệu
     if (!token) return false;
-    const inc = db.txnTotal && db.txnLastId && db.transactions.length ? {since: db.txnTotal, lastId: db.txnLastId} : {};
+    const inc = {project: curProj};
+    if (curProj && db.scope === curProj && db.txnTotal && db.txnLastId && db.transactions.length) Object.assign(inc, {since: db.txnTotal, lastId: db.txnLastId, scope: curProj});
     let r = await api('getAll', inc, 45000);
     if (!r.success && !r.auth && token) r = await api('getAll', inc, 45000);   // lỗi mạng: thử lại ngay, không chờ 15 giây
     if (!r.success) {
@@ -1307,6 +1335,7 @@ async function syncAll(silent) {
     applyServer(r);
     reapplyOutbox();
     saveLocal();
+    updateProjSel();
     const sec = ((Date.now() - t0) / 1000).toFixed(1).replace('.', ',');
     console.log(`Đồng bộ ${sec}s · máy chủ xử lý ${r.ms ?? '?'}ms · ${(r.transactions||[]).length} phiếu mới`);
     if (!flushed && outbox.length) setSyncBar(`📴 ${outbox.length} thay đổi đang chờ gửi (đã lưu trên máy)`, '#E74C3C');
@@ -1365,17 +1394,43 @@ function refreshCurrentView(notify) {
 // ===== PROJ SELECT =====
 function updateProjSel() {
   const sel = document.getElementById('proj-sel');
-  const cur = sel.value;
-  sel.innerHTML = '<option value="all">Dự án — Tất cả —</option>';
-  db.projects.forEach(p => { const o = document.createElement('option'); o.value = p; o.textContent = 'Dự án — ' + p; sel.appendChild(o); });
-  if (cur) sel.value = cur;
+  sel.innerHTML = db.projects.length
+    ? db.projects.map(p => `<option value="${escHtml(p)}">Dự án — ${escHtml(p)}</option>`).join('')
+    : `<option value="">${loadedOnce ? 'Chưa được giao dự án' : 'Đang tải...'}</option>`;
+  sel.value = curProj;
+  sel.disabled = db.projects.length <= 1;                 // chỉ 1 dự án thì không cần chọn
+  const ep = document.getElementById('exp-proj');
+  if (ep) ep.innerHTML = `<option value="${escHtml(curProj)}">${escHtml(curProj)}</option>`;
 }
-function onProjChange() { curProj = document.getElementById('proj-sel').value; goTab(curTab); }
+function onProjChange() { switchProject(document.getElementById('proj-sel').value); }
+// Chuyển kho: mỗi dự án có dữ liệu lưu riêng trên máy
+async function switchProject(p) {
+  if (!p || p === curProj) return;
+  saveLocal();
+  const projects = db.projects;
+  curProj = p; localStorage.setItem(LS_CUR, p);
+  let cached = null; try { cached = JSON.parse(localStorage.getItem(LS_DB + '|' + p) || 'null'); } catch (e) {}
+  db = Object.assign(emptyDb(), cached || {}); db.categories = CATEGORIES; db.projects = projects;
+  formPhotos.fn = []; formPhotos.fx = []; homeCat = null; homeUnit = null;
+  document.querySelectorAll('.detail-page.show').forEach(x => x.classList.remove('show'));
+  updateProjSel(); updateLowBadge(); goTab(curTab);
+  if (!cached) showLoader('Đang tải kho ' + p + '...');
+  await syncAll(!!cached);
+  hideLoader(); refreshCurrentView(false);
+  toast('🏗 Đang làm việc: ' + p);
+}
 
 // ===== NAV =====
 function goTab(tab) {
   if ((tab === 'nhap' || tab === 'xuat') && !can('tk')) tab = 'home';
   curTab = tab;
+  if (!curProj) {
+    destroyCharts();
+    document.getElementById('main-body').innerHTML = loadedOnce
+      ? '<div class="empty-state" style="padding-top:80px"><div class="e-ico">🏗</div><p><b>Bạn chưa được giao dự án nào</b><br>Liên hệ Quản lý hoặc Admin để được phân công vào kho dự án.</p></div>'
+      : '<div class="empty-state" style="padding-top:80px"><p>Đang tải dữ liệu...</p></div>';
+    return;
+  }
   document.querySelectorAll('.bnav-btn').forEach(b => b.classList.remove('on'));
   const el = document.getElementById('bn-' + tab === 'home' ? 'bn-home' : 'bn-'+tab);
   if (el) el.classList.add('on');
@@ -1578,14 +1633,15 @@ function renderHome(c) {
     <div class="home-block" style="padding-bottom:14px">
       <div class="full-chart">
         <div class="fc-head"><div><div class="fc-title">🥧 Tồn kho theo loại vật tư</div><div class="fc-sub" id="unit-sub"></div></div></div>
-        <div class="mini-chips">
-          ${cats.map(([c,arr]) => `<span class="mini-chip ${c.id===homeCat?'on':''}" onclick="setHomeCat('${c.id}')">${c.icon||''} ${c.name} (${arr.length})</span>`).join('')}
+        <div class="donut-ctl">
+          <select class="donut-sel" onchange="setHomeCat(this.value)">
+            ${cats.map(([c,arr]) => `<option value="${c.id}" ${c.id===homeCat?'selected':''}>${c.name} (${arr.length})</option>`).join('')}
+          </select>
+          ${units.length > 1 ? `<select class="donut-sel" style="flex:0 1 auto" onchange="setHomeUnit(this.value)">
+            ${units.map(([u,arr]) => `<option value="${escHtml(u)}" ${u===homeUnit?'selected':''}>Đơn vị: ${escHtml(u)} (${arr.length})</option>`).join('')}
+          </select>` : ''}
         </div>
-        ${units.length > 1 ? `<div class="mini-chips" style="align-items:center">
-          <span style="font-size:11px;color:var(--text3);font-weight:600">Đơn vị:</span>
-          ${units.map(([u,arr]) => `<span class="mini-chip ${u===homeUnit?'on':''}" style="${u===homeUnit?'background:var(--orange);border-color:var(--orange)':''}" onclick="setHomeUnit('${u.replace(/'/g,"\\'")}')">${u} (${arr.length})</span>`).join('')}
-        </div>` : ''}
-        <div class="chart-wrap" style="height:240px"><canvas id="ch-unit"></canvas></div>
+        <div class="chart-wrap" style="height:260px;max-width:680px;margin:0 auto"><canvas id="ch-unit"></canvas></div>
       </div>
     </div>
   `;
@@ -1620,9 +1676,9 @@ function drawFuelChart() {
     data:{labels: keys.map(k => k.length > 22 ? k.slice(0,22)+'…' : k),
       datasets: usedItems.map((it, idx) => ({label: it.name, data: keys.map(k => agg[k][it.id] || 0), backgroundColor: PALETTE[idx % PALETTE.length], borderRadius:4, stack:'s'}))},
     options:{indexAxis:'y', responsive:true, maintainAspectRatio:false,
-      plugins:{legend:{position:'bottom', labels:{font:{size:10}, boxWidth:10, padding:8}},
+      plugins:{legend:{position:'bottom', labels:{font:{size:11.5}, boxWidth:12, padding:9}},
         tooltip:{callbacks:{label: ctx => `${ctx.dataset.label}: ${fmtNum(ctx.raw)} Lít`}}},
-      scales:{x:{stacked:true, ticks:{font:{size:9}, callback:v=>fmtNum(v)}}, y:{stacked:true, ticks:{font:{size:10}}, grid:{display:false}}}}
+      scales:{x:{stacked:true, ticks:{font:{size:10}, callback:v=>fmtNum(v)}}, y:{stacked:true, ticks:{font:{size:11}}, grid:{display:false}}}}
   });
 }
 
@@ -1640,7 +1696,7 @@ function drawUnitChart() {
     type:'doughnut',
     data:{labels: items.map(i => i.name), datasets:[{data: items.map(i => +i.stock), backgroundColor: items.map((_,k)=>PALETTE[k % PALETTE.length]), borderWidth:2, borderColor:'#fff'}]},
     options:{responsive:true, maintainAspectRatio:false, cutout:'55%',
-      plugins:{legend:{position:'right', labels:{font:{size:10}, boxWidth:10, padding:8,
+      plugins:{legend:{position: window.innerWidth < 520 ? 'bottom' : 'right', labels:{font:{size:11.5}, boxWidth:12, padding:9,
           generateLabels: ch => ch.data.labels.map((l,k) => ({text:`${l}: ${fmtNum(ch.data.datasets[0].data[k])}`, fillStyle:ch.data.datasets[0].backgroundColor[k], strokeStyle:'#fff', index:k}))}},
         tooltip:{callbacks:{label: ctx => `${ctx.label}: ${fmtNum(ctx.raw)} ${homeUnit} (${Math.round(ctx.raw/total*100)}%)`}}}}
   });
@@ -1700,7 +1756,7 @@ async function saveVatTu() {
   const name = document.getElementById('mv-name').value.trim();
   if (!name) { toast('⚠️ Nhập tên vật tư'); return; }
   if (db.items.some(i => normVN(i.name) === normVN(name))) { toast('⚠️ Vật tư này đã có trong danh sách'); return; }
-  const item = {id:newId(), name, cat:document.getElementById('mv-cat').value, unit:document.getElementById('mv-unit').value, stock:0, minStock:+document.getElementById('mv-min').value||0};
+  const item = {id:newId(), name, cat:document.getElementById('mv-cat').value, unit:document.getElementById('mv-unit').value, stock:0, minStock:+document.getElementById('mv-min').value||0, project:curProj};
   db.items.push(item);
   closeModal('modal-add-vattu');
   document.getElementById('mv-name').value = '';
@@ -1929,7 +1985,7 @@ function renderNhap(c) {
     <div class="form-section">
       <div class="form-section-title">📥 Phiếu Nhập Kho</div>
       <div class="fg"><label>Dự án</label>
-        <select id="fn-proj">${db.projects.map(p=>`<option>${p}</option>`).join('')}</select>
+        <select id="fn-proj" disabled><option>${escHtml(curProj)}</option></select>
       </div>
       <div class="fg"><label>Nhóm vật tư</label>
         <select id="fn-cat" onchange="fillNhapItems()">
@@ -2023,7 +2079,7 @@ async function doNhap() {
   let item = db.items.find(i => i.id === +document.getElementById('fn-item').value) || db.items.find(i => normVN(i.name) === normVN(name));
   showLoader('Đang lưu...');
   if (!item) {
-    item = {id:newId(), name, cat:document.getElementById('fn-cat').value, unit:document.getElementById('fn-unit-sel').value, stock:0, minStock:0};
+    item = {id:newId(), name, cat:document.getElementById('fn-cat').value, unit:document.getElementById('fn-unit-sel').value, stock:0, minStock:0, project:curProj};
     db.items.push(item);
     addLog('Thêm vật tư', name);
     await push('upsert', {table:'items', rows:[item]});
@@ -2050,7 +2106,7 @@ function renderXuat(c) {
     <div class="form-section">
       <div class="form-section-title">📤 Phiếu Xuất Kho</div>
       <div class="fg"><label>Dự án</label>
-        <select id="fx-proj">${db.projects.map(p=>`<option>${p}</option>`).join('')}</select>
+        <select id="fx-proj" disabled><option>${escHtml(curProj)}</option></select>
       </div>
       <div class="fg"><label>Nhóm vật tư</label>
         <select id="fx-cat" onchange="fillXuatItems()">
@@ -2678,7 +2734,7 @@ async function saveDevice() {
     d.note=document.getElementById('ad-note').value;
     addLog('Sửa thiết bị', name);
   } else {
-    const device = {id:newId(), name, cat:document.getElementById('ad-cat').value, type:document.getElementById('ad-type').value, fuelRate:+document.getElementById('ad-fuel').value||20, plate:document.getElementById('ad-plate').value, note:document.getElementById('ad-note').value};
+    const device = {id:newId(), name, cat:document.getElementById('ad-cat').value, type:document.getElementById('ad-type').value, fuelRate:+document.getElementById('ad-fuel').value||20, plate:document.getElementById('ad-plate').value, note:document.getElementById('ad-note').value, project:curProj};
     db.devices.push(device);
     saved = device;
     addLog('Thêm thiết bị', name);
@@ -2737,7 +2793,7 @@ async function saveRepair() {
     cost:+document.getElementById('rp-cost').value||0,
     by:document.getElementById('rp-by').value,
     note:document.getElementById('rp-note').value,
-    project: curProj==='all'?db.projects[0]:curProj,
+    project: curProj,
     addedBy: me?.name || '',
     datetime: nowStr()
   };
@@ -2772,7 +2828,7 @@ function renderDpNotes() {
 async function saveNote() {
   const content = document.getElementById('note-content').value.trim();
   if (!content) { toast('⚠️ Nhập nội dung ghi chú'); return; }
-  const note = {id:newId(), content, ref:document.getElementById('note-ref').value, addedBy:me?.name||'', datetime:nowStr()};
+  const note = {id:newId(), content, ref:document.getElementById('note-ref').value, addedBy:me?.name||'', datetime:nowStr(), project:curProj};
   db.notes.push(note);
   closeModal('modal-add-note');
   addLog('Thêm ghi chú', content.substring(0,50));
@@ -2801,14 +2857,14 @@ async function renderHistoryLog() {
 }
 
 // ===== THÀNH VIÊN (Admin) =====
-let members = [];
+let members = [], allProjects = [];
 async function renderMembers() {
   const body = document.getElementById('dp-members-body');
   if (!members.length) body.innerHTML = '<div class="empty-state" style="padding-top:60px"><p>Đang tải...</p></div>';
   const r = await api('listUsers');
   if (!r.success) { body.innerHTML = `<div class="empty-state" style="padding-top:60px"><div class="e-ico">⚠️</div><p>${escHtml(r.offline ? (r.reason || 'Cần có mạng để quản lý thành viên') : (r.error || 'Lỗi'))}</p></div>`; return; }
-  members = r.users;
-  const pend = members.filter(u => u.status === 'pending'), act = members.filter(u => u.status !== 'pending');
+  members = r.users; allProjects = r.allProjects || db.projects;
+  const pend = can('admin') ? members.filter(u => u.status === 'pending') : [], act = members.filter(u => u.status !== 'pending');
   setPendingBadge(pend.length);
   body.innerHTML = `
     ${pend.length ? `<div class="grp-label">⏳ Chờ duyệt (${pend.length})</div><div class="card" style="margin-bottom:14px">${pend.map(memberRow).join('')}</div>` : ''}
@@ -2828,6 +2884,7 @@ function memberRow(u) {
         <div class="ri-name">${escHtml(u.name)}${u.id === me?.id ? ' <span style="color:var(--text3);font-weight:500">(bạn)</span>' : ''}</div>
         <div class="ri-sub">@${escHtml(u.username)}${u.phone ? ' · ' + escHtml(u.phone) : ''}</div>
         <div class="ri-sub">${escHtml(sub)}</div>
+        ${u.status !== 'pending' ? `<div class="ri-sub">📍 ${RANK[u.role] >= RANK.ql ? 'Tất cả dự án' : (u.projects || []).length ? escHtml(u.projects.join(', ')) : '<b style="color:var(--red)">Chưa giao dự án</b>'}</div>` : ''}
         ${u.note ? `<div class="ri-sub">📝 ${escHtml(u.note)}</div>` : ''}
       </div>
     </div>
@@ -2847,8 +2904,12 @@ function openMember(id) {
   const rs = document.getElementById('mm-role');
   rs.value = pending ? 'tk' : u.role; rs.disabled = self;
   document.getElementById('mm-pass').value = '';
-  document.getElementById('mm-pending-box').style.display = pending ? '' : 'none';
-  document.getElementById('mm-active-box').style.display = pending ? 'none' : '';
+  const isAdmin = can('admin');
+  document.getElementById('mm-pending-box').style.display = isAdmin && pending ? '' : 'none';
+  document.getElementById('mm-active-box').style.display = isAdmin && !pending ? '' : 'none';
+  document.getElementById('mm-ql-box').style.display = isAdmin ? 'none' : '';
+  mmProjects = new Set(u.projects || []);
+  renderMemberProjects();
   document.getElementById('mm-danger').style.display = self ? 'none' : '';
   document.getElementById('mm-lock').textContent = u.status === 'locked' ? '🔓 Mở khóa' : '🔒 Khóa';
   openModal('modal-member');
@@ -2859,15 +2920,32 @@ async function memberAction(action, data, okMsg) {
   closeModal('modal-member'); toast(okMsg); renderMembers(); return true;
 }
 const mmId = () => document.getElementById('mm-id').value;
+let mmProjects = new Set();
+// Danh sách dự án có ô tích; Admin/Quản lý luôn thấy tất cả nên không cần tích
+function renderMemberProjects() {
+  const u = members.find(x => x.id === mmId()); if (!u) return;
+  const r = can('admin') ? document.getElementById('mm-role').value : u.role;
+  const all = RANK[r] >= RANK.ql;
+  document.querySelectorAll('#mm-projs input').forEach(i => { if (i.checked) mmProjects.add(i.value); else mmProjects.delete(i.value); });
+  document.getElementById('mm-projs').innerHTML = allProjects.length ? allProjects.map(p => `<label><input type="checkbox" value="${escHtml(p)}" ${all || mmProjects.has(p) ? 'checked' : ''} ${all ? 'disabled' : ''}> ${escHtml(p)}</label>`).join('')
+    : '<div class="proj-note">Chưa có dự án nào — thêm ở Menu → Thêm dự án</div>';
+  document.getElementById('mm-proj-note').textContent = all ? `${ROLE_NAME[r]} luôn thấy và làm việc được với tất cả dự án.` : 'Chỉ thấy và làm việc với kho của các dự án được tích. Không thấy dự án khác.';
+}
+const checkedProjects = () => [...document.querySelectorAll('#mm-projs input:checked:not(:disabled)')].map(i => i.value);
+function saveMemberProjects() {
+  memberAction('setUserProjects', {id: mmId(), projects: checkedProjects()}, '✅ Đã lưu phân công dự án');
+}
 function approveMember() {
   const role = document.getElementById('mm-role').value, name = document.getElementById('mm-name').value.trim();
-  memberAction('approveUser', {id: mmId(), role, name}, `✅ Đã duyệt — vai trò ${ROLE_NAME[role]}`);
+  const projects = checkedProjects();
+  if (RANK[role] < RANK.ql && !projects.length && !confirm('Chưa tích dự án nào — người này sẽ chưa xem được kho nào. Vẫn duyệt?')) return;
+  memberAction('approveUser', {id: mmId(), role, name, projects}, `✅ Đã duyệt — vai trò ${ROLE_NAME[role]}`);
 }
 function rejectMember() {
   if (!confirm('Từ chối và xóa yêu cầu này?')) return;
   memberAction('rejectUser', {id: mmId()}, 'Đã từ chối yêu cầu');
 }
-function saveMember() {
+async function saveMember() {
   const u = members.find(x => x.id === mmId()); if (!u) return;
   const name = document.getElementById('mm-name').value.trim(), role = document.getElementById('mm-role').value, password = document.getElementById('mm-pass').value.trim();
   if (!name) { toast('⚠️ Nhập họ tên'); return; }
@@ -2875,6 +2953,11 @@ function saveMember() {
   const data = {id: u.id, name};
   if (u.id !== me?.id) data.role = role;
   if (password) data.password = password;
+  const projects = checkedProjects(), old = (u.projects || []).slice().sort().join('|');
+  if (RANK[role] < RANK.ql && projects.slice().sort().join('|') !== old) {
+    showLoader('Đang lưu...'); const r1 = await api('setUserProjects', {id: u.id, projects}); hideLoader();
+    if (!r1.success) { toast('⚠️ ' + (r1.offline ? (r1.reason || 'Cần có mạng') : r1.error)); return; }
+  }
   memberAction('updateUser', data, password ? `✅ Đã lưu — mật khẩu mới: ${password}` : '✅ Đã lưu thay đổi');
 }
 function toggleLockMember() {
@@ -2910,9 +2993,6 @@ async function saveProj() {
   document.getElementById('proj-name').value = '';
   addLog('Thêm dự án', name);
   updateProjSel();
-  const epSel = document.getElementById('exp-proj');
-  epSel.innerHTML = '<option value="all">Tất cả dự án</option>';
-  db.projects.forEach(p => { const o=document.createElement('option'); o.value=p; o.textContent=p; epSel.appendChild(o); });
   showLoader('Đang lưu...'); await push('updateProjects', {projects:db.projects}); hideLoader();
   toast('✅ Đã thêm dự án — Thủ kho sẽ thấy ngay');
 }
@@ -3064,6 +3144,7 @@ document.addEventListener('visibilitychange', () => { if (!document.hidden) chec
 setTimeout(checkAppUpdate, 4000);
 // ===== KHỞI ĐỘNG =====
 (function boot() {
+  const lg = document.querySelector('.login-logo img'); document.querySelectorAll('img[data-logo]').forEach(i => i.src = lg.src);
   loadLocal();
   if (/Zalo/i.test(navigator.userAgent)) document.getElementById('zalo-hint').style.display = '';
   document.getElementById('login-ver').textContent = 'Phiên bản ' + APP_VERSION;
