@@ -400,6 +400,24 @@ body.can-ql .hide-ql{display:none!important}
 .app-ver{font-size:11px;color:var(--text3);padding:14px 20px 4px;line-height:1.5}
 .login-ver{color:rgba(255,255,255,.55);font-size:11px;text-align:center;margin-top:14px}
 .diag-out{background:var(--bg);border-radius:10px;padding:10px 12px;font-size:12px;line-height:1.7;color:var(--text2);margin-top:6px;word-break:break-word}
+/* ===== v5.3: ảnh biên bản & Zalo ===== */
+.ph-row{display:flex;flex-wrap:wrap;gap:8px}
+.ph-thumb{position:relative;width:76px;height:76px;border-radius:10px;overflow:hidden;background:var(--bg);border:1px solid var(--border);flex-shrink:0}
+.ph-thumb img{width:100%;height:100%;object-fit:cover;cursor:zoom-in;display:block}
+.ph-x{position:absolute;top:3px;right:3px;width:22px;height:22px;border-radius:50%;border:none;background:rgba(0,0,0,.6);color:#fff;font-size:11px;cursor:pointer}
+.ph-wait{position:absolute;left:0;right:0;bottom:0;background:rgba(242,101,34,.9);color:#fff;font-size:9px;font-weight:700;text-align:center;padding:2px 0}
+.ph-load{width:100%;height:100%;display:flex;align-items:center;justify-content:center;color:var(--text3);font-size:18px}
+.ph-add{width:76px;height:76px;border-radius:10px;border:1.5px dashed #B8C4D0;background:#fff;color:var(--text2);font-size:10px;font-weight:700;cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;font-family:inherit;flex-shrink:0}
+.ph-add span{font-size:22px}
+.ph-viewer{position:fixed;inset:0;background:rgba(0,0,0,.92);z-index:950;display:none;align-items:center;justify-content:center;padding:env(safe-area-inset-top) 10px env(safe-area-inset-bottom)}
+.ph-viewer img{max-width:100%;max-height:100%;object-fit:contain}
+.ph-viewer button{position:absolute;top:calc(12px + env(safe-area-inset-top));right:14px;width:40px;height:40px;border-radius:50%;border:none;background:rgba(255,255,255,.2);color:#fff;font-size:20px;cursor:pointer}
+.btn-zalo{background:#0068FF}
+.saved-bar{margin:14px 14px 0;background:#E8F8EF;border:1px solid #B7E4C7;border-radius:12px;padding:10px 12px;display:flex;align-items:center;gap:8px;font-size:13px;color:#1E7A45}
+.saved-bar div{flex:1;min-width:0;line-height:1.4}
+.saved-bar button{border:none;border-radius:8px;padding:8px 10px;font-size:12px;font-weight:700;cursor:pointer;white-space:nowrap;font-family:inherit}
+.rp-text{width:100%;border:1.5px solid var(--border);border-radius:var(--r-sm);padding:10px 12px;font-size:13px;line-height:1.5;font-family:inherit;color:var(--text);min-height:260px;resize:vertical}
+.upd-bar{position:fixed;left:12px;right:12px;bottom:calc(84px + env(safe-area-inset-bottom));z-index:960;background:#0056A4;color:#fff;border:none;border-radius:14px;padding:14px 16px;font-size:14px;font-weight:700;box-shadow:0 8px 24px rgba(0,0,0,.25);cursor:pointer;font-family:inherit;display:none;text-align:center}
 </style>
 </head>
 <body>
@@ -788,6 +806,7 @@ body.can-ql .hide-ql{display:none!important}
     <div class="modal-handle"></div>
     <div class="modal-title" id="mt-title">Chi tiết phiếu</div>
     <div id="mt-body"></div>
+    <button class="btn-full btn-zalo" onclick="shareTxn(curTxnId)" style="margin:0 0 10px">💬 Gửi Zalo (kèm ảnh)</button>
     <div class="lock-note">🔒 Phiếu đã lưu không sửa hay xóa được. Nếu ghi sai, tạo phiếu điều chỉnh có lý do.</div>
     <div class="modal-actions">
       <button class="btn-cancel" onclick="closeModal('modal-txn')">Đóng</button>
@@ -864,6 +883,23 @@ body.can-ql .hide-ql{display:none!important}
   </div>
 </div>
 
+<!-- Modal: Báo cáo ngày gửi Zalo -->
+<div class="modal-bg" id="modal-report" style="display:none" onclick="closeModalBg(event,'modal-report')">
+  <div class="modal-sheet">
+    <div class="modal-handle"></div>
+    <div class="modal-title">💬 Báo cáo kho gửi Zalo</div>
+    <div class="fg"><label>Ngày báo cáo</label><input type="date" id="rp-day" onchange="buildDailyReport()"></div>
+    <div class="fg"><label>Nội dung (sửa được trước khi gửi)</label><textarea id="rp-text" class="rp-text"></textarea></div>
+    <div class="modal-actions">
+      <button class="btn-cancel" onclick="closeModal('modal-report')">Đóng</button>
+      <button class="btn-ok btn-zalo" onclick="sendDailyReport()">💬 Gửi Zalo</button>
+    </div>
+  </div>
+</div>
+
+<div class="ph-viewer" id="ph-viewer" onclick="this.style.display='none'"><img alt="Ảnh biên bản"><button>✕</button></div>
+
+<button class="upd-bar" id="upd-bar" onclick="doAppUpdate()"></button>
 <div class="toast" id="toast"></div>
 <div class="loader" id="loader" style="display:none"><div class="spinner"></div><p id="loader-msg">Đang xử lý...</p></div>
 
@@ -871,7 +907,7 @@ body.can-ql .hide-ql{display:none!important}
 // ============================================================
 // CONFIG
 // ============================================================
-const APP_VERSION = '5.2';
+const APP_VERSION = '5.3.1';
 const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbw6Rmi80I7RI3ij2U7RdRF5pYuQTnPrwEmGmUZS5xpxzLwwVynfoFUujZe1lm6HS1ymxw/exec';
 // ============================================================
 
@@ -955,7 +991,7 @@ const UNITS = ['Lít','Phuy','Thùng','Xô','Kg','Tấn','Cái','Bộ','Cây','T
 // Dữ liệu chỉ tải từ máy chủ SAU KHI đăng nhập (không còn nhúng trong file này)
 const isLow = i => (+i.minStock > 0) && (+i.stock <= +i.minStock);
 const DEVICE_FUEL_DEFAULT = Object.fromEntries(DEVICE_CATS.map(c => [c.id, c.fuel]));
-const emptyDb = () => ({categories: CATEGORIES, projects: [], items: [], devices: [], transactions: [], repairs: [], notes: [], txnTotal: 0, txnLastId: ''});
+const emptyDb = () => ({categories: CATEGORIES, projects: [], items: [], devices: [], transactions: [], repairs: [], notes: [], photos: [], txnTotal: 0, txnLastId: ''});
 let db = emptyDb();
 
 // ===== QUYỀN =====
@@ -1166,7 +1202,13 @@ async function flushOutbox() {
     while (outbox.length) {
       if (!token) return false;
       const op = outbox[0];
-      const r = await api(op.action, op.data);
+      let payload = op.data;
+      if (op.action === 'uploadPhoto') {
+        const data = await PDB.get('u_' + op.data.photoId).catch(() => null);
+        if (!data) { outbox.shift(); saveLocal(); continue; }            // ảnh không còn trên máy
+        payload = {...op.data, data};
+      }
+      const r = await api(op.action, payload, op.action === 'uploadPhoto' ? 90000 : undefined);
       if (!r || !r.success) {
         if (r && r.error && !r.offline && !r.auth) {
           console.warn('Máy chủ từ chối:', op.action, r.error);
@@ -1177,6 +1219,11 @@ async function flushOutbox() {
         return false;
       }
       outbox.shift();
+      if (op.action === 'uploadPhoto') {
+        const id = op.data.photoId, ph = (db.photos || []).find(x => x.id === id);
+        if (ph) { delete ph._local; if (r.fileId) ph.fileId = r.fileId; }
+        PDB.get('u_' + id).then(d => d && PDB.put('c_' + id, d)).then(() => PDB.del('u_' + id)).catch(() => {});
+      }
       if (r.version && r.prevVersion === serverVer) serverVer = r.version; // chỉ nhảy version nếu không có máy khác ghi xen giữa
       saveLocal();
     }
@@ -1193,6 +1240,11 @@ function applyServer(r) {
   db.repairs = (r.repairs||[]).map(rp => ({...rp, id:+rp.id, deviceId:+rp.deviceId, cost:+rp.cost||0}));
   db.notes = (r.notes||[]).map(n => ({...n, id:+n.id}));
   if (r.projects?.length) db.projects = r.projects;
+  if (r.photos) {
+    const sp = r.photos.map(p => ({...p, id:+p.id, txnId:+p.txnId}));
+    const pids = new Set(sp.map(p => p.id));
+    db.photos = sp.concat((db.photos || []).filter(p => p._local && !pids.has(p.id)));
+  }
   // Phiếu: máy chủ 5.2 gửi dạng mảng gọn và chỉ gửi phần mới (txnFrom > 0)
   let rows = r.transactions || [];
   if (r.txnCols) rows = rows.map(a => { const o = {}; r.txnCols.forEach((c, i) => o[c] = a[i]); return o; });
@@ -1223,6 +1275,9 @@ function reapplyOutbox() {
       const it = db.items.find(i => i.id === d.id); if (it) it.minStock = d.minStock;
     } else if (op.action === 'updateProjects') {
       db.projects = d.projects;
+    } else if (op.action === 'uploadPhoto') {
+      db.photos = db.photos || [];
+      if (!db.photos.some(p => p.id === d.photoId)) db.photos.push({id:d.photoId, txnId:d.txnId, fileId:'', _local:1});
     } else if (op.action === 'addTransaction') {
       const it = db.items.find(i => i.id === d.itemId);
       if (it) { const q = +d.qty || 0; it.stock = Math.round((it.stock + (d.type === 'xuat' ? -q : q)) * 100) / 100; }
@@ -1715,7 +1770,7 @@ function txnRow(t) {
   return `<div class="row-item" onclick="openTxn(${t.id})">
     <div class="txn-ico ${dc?'adj':t.type==='nhap'?'in':'out'}">${dc?'⚖️':t.type==='nhap'?'📥':'📤'}</div>
     <div style="flex:1;min-width:0">
-      <div class="txn-name">${escHtml(it?.name||t.itemName||'?')}</div>
+      <div class="txn-name">${hasPhotos(t.id) ? '📷 ' : ''}${escHtml(it?.name||t.itemName||'?')}</div>
       <div class="txn-sub">${escHtml(t.project||'')} · ${escHtml(t.datetime||'')}</div>
       ${!dc && t.supplierOrReceiver ? `<div class="txn-sub">${t.type==='nhap'?'NCC':'Người nhận'}: ${escHtml(t.supplierOrReceiver)}</div>` : ''}
       ${t.thietBi ? `<div class="ri-sub">🏗 ${escHtml(t.thietBi)}</div>` : ''}
@@ -1758,8 +1813,10 @@ function openTxn(id) {
       ${kv('Số phiếu', '#' + t.id)}
     </div>
     ${adjs.length ? `<div class="grp-label">Đã điều chỉnh ${adjs.length} lần</div><div class="card" style="margin-bottom:12px">${adjs.map(txnRow).join('')}</div>` : ''}`;
+  document.getElementById('mt-body').insertAdjacentHTML('beforeend', txnPhotosHtml(t));
   document.getElementById('mt-adjust-btn').style.display = dc ? 'none' : '';
   openModal('modal-txn');
+  loadTxnPhotos(t);
 }
 let adjCtx = null;
 function adjustFromTxn() {
@@ -1896,10 +1953,12 @@ function renderNhap(c) {
       </div>
       <div class="fg"><label>Nhà cung cấp</label><input type="text" id="fn-ncc" placeholder="Tên nhà cung cấp"></div>
       <div class="fg"><label>Số phiếu / Ghi chú</label><textarea id="fn-note" rows="2" placeholder="Ghi chú..."></textarea></div>
+      ${photoFieldHtml('fn')}
       <button class="btn-full btn-green" onclick="doNhap()">✅ Xác nhận nhập kho</button>
     </div>
   </div>`;
   fillNhapItems();
+  renderFormPhotos('fn');
 }
 // ===== COMBO: tìm / chọn / thêm vật tư =====
 const normVN = t => (t||'').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/đ/g,'d').replace(/\s+/g,' ').trim();
@@ -1977,9 +2036,12 @@ async function doNhap() {
   db.transactions.push(txn);
   addLog('Nhập kho', `${qty} ${item.unit} ${item.name} — ${proj}`);
   updateLowBadge();
-  await push('addTransaction', txn); hideLoader();
-  toast(`✅ Nhập ${fmtNum(qty)} ${item.unit} ${item.name}`);
+  const okN = await push('addTransaction', txn); hideLoader();
+  if (okN === 'rejected') return;
+  const nPh = await queuePhotos(txn.id, formPhotos.fn.splice(0));
+  toast(`✅ Nhập ${fmtNum(qty)} ${item.unit} ${item.name}${nPh ? ` · ${nPh} ảnh` : ''}`);
   renderNhap(document.getElementById('main-body'));
+  showSavedBar(txn);
 }
 
 // ===== XUAT KHO TAB =====
@@ -2016,10 +2078,12 @@ function renderXuat(c) {
         </select>
       </div>
       <div class="fg"><label>Người nhận / Ghi chú</label><textarea id="fx-note" rows="2" placeholder="Ghi chú..."></textarea></div>
+      ${photoFieldHtml('fx')}
       <button class="btn-full btn-orange" onclick="doXuat()">📤 Xác nhận xuất kho</button>
     </div>
   </div>`;
   fillXuatItems();
+  renderFormPhotos('fx');
 }
 async function doXuat() {
   const itemId = +document.getElementById('fx-item').value;
@@ -2037,10 +2101,248 @@ async function doXuat() {
   db.transactions.push(txn);
   addLog('Xuất kho', `${qty} ${item.unit} ${item.name}${dev?' → '+dev:''} — ${proj}`);
   updateLowBadge();
-  showLoader('Đang lưu...'); await push('addTransaction', txn); hideLoader();
-  toast(`✅ Xuất ${fmtNum(qty)} ${item.unit} ${item.name}${dev?' → '+dev:''}`);
+  showLoader('Đang lưu...'); const okX = await push('addTransaction', txn); hideLoader();
+  if (okX === 'rejected') return;
+  const nPh = await queuePhotos(txn.id, formPhotos.fx.splice(0));
+  toast(`✅ Xuất ${fmtNum(qty)} ${item.unit} ${item.name}${dev?' → '+dev:''}${nPh ? ` · ${nPh} ảnh` : ''}`);
   renderXuat(document.getElementById('main-body'));
+  showSavedBar(txn);
 }
+
+function showSavedBar(t) {
+  const it = db.items.find(i => i.id === t.itemId);
+  document.getElementById('main-body').insertAdjacentHTML('afterbegin', `<div class="saved-bar" id="saved-bar">
+    <div>✅ Đã lưu phiếu ${t.type === 'nhap' ? 'nhập' : 'xuất'} <b>${fmtNum(t.qty)} ${escHtml(it?.unit || t.unit || '')} ${escHtml(it?.name || t.itemName || '')}</b></div>
+    <button class="btn-zalo" style="color:#fff" onclick="shareTxn(${t.id})">💬 Gửi Zalo</button>
+    <button style="background:#fff;color:var(--text2)" onclick="openTxn(${t.id})">Xem</button>
+  </div>`);  document.getElementById('main-body').scrollTop = 0;
+}
+
+// ===== ẢNH BIÊN BẢN =====
+// Ảnh lưu tạm trong IndexedDB (không giới hạn 5MB như localStorage) → gửi lên Google Drive khi có mạng.
+// Khóa: 'u_<id>' = ảnh chờ tải lên · 'c_<id>' = ảnh đã có trên máy chủ, lưu đệm để xem nhanh / xem khi mất mạng.
+const PDB = (() => {
+  let op = null;
+  const open = () => op || (op = new Promise((res, rej) => {
+    const r = indexedDB.open('fecon-photos', 1);
+    r.onupgradeneeded = () => r.result.createObjectStore('p');
+    r.onsuccess = () => res(r.result); r.onerror = () => rej(r.error);
+  }));
+  const run = async (mode, fn) => {
+    const d = await open();
+    return new Promise((res, rej) => { const t = d.transaction('p', mode); const rq = fn(t.objectStore('p')); t.oncomplete = () => res(rq && rq.result); t.onerror = () => rej(t.error); });
+  };
+  return { get: k => run('readonly', s => s.get(k)), put: (k, v) => run('readwrite', s => s.put(v, k)),
+           del: k => run('readwrite', s => s.delete(k)), clear: () => run('readwrite', s => s.clear()) };
+})();
+const MAX_PHOTOS = 4;
+const photoMem = {};                         // id -> dataURL đang có trong bộ nhớ
+const formPhotos = { fn: [], fx: [] };        // ảnh đã chọn nhưng chưa lưu phiếu
+
+function compressImage(file, max = 1600, q = 0.72) {
+  return new Promise((res, rej) => {
+    const url = URL.createObjectURL(file), img = new Image();
+    img.onload = () => {
+      const k = Math.min(1, max / Math.max(img.naturalWidth, img.naturalHeight));
+      const w = Math.round(img.naturalWidth * k), h = Math.round(img.naturalHeight * k);
+      const c = document.createElement('canvas'); c.width = w; c.height = h;
+      const g = c.getContext('2d'); g.fillStyle = '#fff'; g.fillRect(0, 0, w, h); g.drawImage(img, 0, 0, w, h);
+      URL.revokeObjectURL(url); res(c.toDataURL('image/jpeg', q));
+    };
+    img.onerror = () => { URL.revokeObjectURL(url); rej(new Error('Không đọc được ảnh')); };
+    img.src = url;
+  });
+}
+const photosOf = txnId => (db.photos || []).filter(p => p.txnId === txnId);
+let _phSet = {len:-1, set:new Set()};
+function hasPhotos(txnId) {
+  const L = (db.photos || []).length;
+  if (_phSet.len !== L) _phSet = {len:L, set:new Set((db.photos || []).map(p => p.txnId))};
+  return _phSet.set.has(txnId);
+}
+
+// ---- ảnh trong form nhập/xuất ----
+function photoFieldHtml(p) {
+  return `<div class="fg"><label>Ảnh biên bản / hóa đơn (tùy chọn, tối đa ${MAX_PHOTOS})</label>
+    <div class="ph-row" id="${p}-ph"></div>
+    <input type="file" id="${p}-ph-in" accept="image/*" multiple style="display:none" onchange="addFormPhotos('${p}', this)">
+  </div>`;
+}
+function renderFormPhotos(p) {
+  const el = document.getElementById(p + '-ph'); if (!el) return;
+  const list = formPhotos[p];
+  el.innerHTML = list.map((ph, i) => `<div class="ph-thumb"><img src="${ph.data}" onclick="viewPhotoData('${p}',${i})"><button class="ph-x" onclick="removeFormPhoto('${p}',${i})">✕</button></div>`).join('')
+    + (list.length < MAX_PHOTOS ? `<button type="button" class="ph-add" onclick="document.getElementById('${p}-ph-in').click()"><span>📷</span>Chụp / chọn ảnh</button>` : '');
+}
+async function addFormPhotos(p, input) {
+  const files = [...input.files].slice(0, MAX_PHOTOS - formPhotos[p].length); input.value = '';
+  if (!files.length) return;
+  showLoader('Đang xử lý ảnh...');
+  for (const f of files) { try { formPhotos[p].push({id:newId(), data: await compressImage(f)}); } catch (e) { toast('⚠️ ' + e.message); } }
+  hideLoader(); renderFormPhotos(p);
+}
+function removeFormPhoto(p, i) { formPhotos[p].splice(i, 1); renderFormPhotos(p); }
+function viewPhotoData(p, i) { openViewer(formPhotos[p][i].data); }
+
+// Gắn ảnh vào phiếu: lưu tạm trên máy + xếp hàng gửi lên Drive (chạy nền, không bắt chờ)
+async function queuePhotos(txnId, list) {
+  if (!list.length) return 0;
+  db.photos = db.photos || [];
+  for (const ph of list) {
+    try { await PDB.put('u_' + ph.id, ph.data); } catch (e) { toast('⚠️ Máy không lưu được ảnh: ' + e.message); continue; }
+    photoMem[ph.id] = ph.data;
+    db.photos.push({id: ph.id, txnId, fileId: '', addedByName: me?.name || '', time: nowStr(), _local: 1});
+    outbox.push({action: 'uploadPhoto', data: {photoId: ph.id, txnId}, ts: Date.now()});
+  }
+  saveLocal();
+  bgFlush('⏳ Đang tải ảnh lên Google Drive...');
+  return list.length;
+}
+function bgFlush(msg) {
+  if (msg) setSyncBar(msg);
+  flushOutbox().then(ok => {
+    if (lastReject) { const m = lastReject; lastReject = ''; setSyncBar('⚠️ ' + m, '#E74C3C'); setTimeout(() => setSyncBar(''), 4000); return; }
+    if (ok) { setSyncBar('✅ Đã tải ảnh lên', 'var(--green)'); setTimeout(() => setSyncBar(''), 1500); }
+    else if (token) setSyncBar(`📴 ${outbox.length} thay đổi đang chờ gửi (ảnh đã lưu trên máy)`, '#E74C3C');
+  });
+}
+
+// ---- xem ảnh ----
+async function photoData(ph) {
+  if (photoMem[ph.id]) return photoMem[ph.id];
+  let d = null;
+  try { d = await PDB.get('c_' + ph.id) || await PDB.get('u_' + ph.id); } catch (e) {}
+  if (!d && ph.fileId) {
+    const r = await api('getPhoto', {fileId: ph.fileId}, 45000);
+    if (r.success) { d = r.data; PDB.put('c_' + ph.id, d).catch(() => {}); }
+  }
+  if (d) photoMem[ph.id] = d;
+  return d;
+}
+function txnPhotosHtml(t) {
+  const list = photosOf(t.id);
+  const addBtn = `<button type="button" class="ph-add need-tk" onclick="document.getElementById('mt-ph-in').click()"><span>📷</span>Thêm ảnh</button>`;
+  if (!list.length && !can('tk')) return '';
+  return `<div class="grp-label">📷 Ảnh biên bản (${list.length})</div>
+    <div class="ph-row" style="margin-bottom:14px">${list.map(ph => `<div class="ph-thumb" id="pt-${ph.id}"><div class="ph-load">${ph._local ? '⏳' : '…'}</div></div>`).join('')}${list.length < 8 ? addBtn : ''}</div>
+    <input type="file" id="mt-ph-in" accept="image/*" multiple style="display:none" onchange="addTxnPhotos(this)">`;
+}
+async function loadTxnPhotos(t) {
+  for (const ph of photosOf(t.id)) {
+    const d = await photoData(ph);
+    const el = document.getElementById('pt-' + ph.id); if (!el) continue;
+    el.innerHTML = d ? `<img src="${d}" onclick="viewPhoto(${ph.id})">${ph._local ? '<span class="ph-wait">Chờ gửi</span>' : ''}`
+                     : '<div class="ph-load" title="Cần mạng để tải ảnh">📴</div>';
+  }
+}
+async function addTxnPhotos(input) {
+  const files = [...input.files].slice(0, MAX_PHOTOS); input.value = '';
+  if (!files.length || !curTxnId) return;
+  showLoader('Đang xử lý ảnh...');
+  const list = [];
+  for (const f of files) { try { list.push({id:newId(), data: await compressImage(f)}); } catch (e) {} }
+  hideLoader();
+  await queuePhotos(curTxnId, list);
+  openTxn(curTxnId);
+}
+function viewPhoto(id) { if (photoMem[id]) openViewer(photoMem[id]); }
+function openViewer(src) {
+  const v = document.getElementById('ph-viewer');
+  v.querySelector('img').src = src; v.style.display = 'flex';
+}
+
+// ===== GỬI ZALO (bảng chia sẻ của điện thoại) =====
+function dataUrlToFile(d, name) {
+  const [head, b64] = d.split(','); const mime = (head.match(/:(.*?);/) || [])[1] || 'image/jpeg';
+  const bin = atob(b64); const arr = new Uint8Array(bin.length);
+  for (let i = 0; i < bin.length; i++) arr[i] = bin.charCodeAt(i);
+  return new File([arr], name, {type: mime});
+}
+async function shareOut(text, files, title) {
+  // Chép sẵn nội dung: một số máy khi gửi kèm ảnh, Zalo chỉ nhận ảnh → dán nội dung vào tin nhắn
+  try { navigator.clipboard && navigator.clipboard.writeText(text).catch(() => {}); } catch (e) {}
+  try {
+    if (files.length && navigator.canShare && navigator.canShare({files})) {
+      await navigator.share({files, text, title});
+      toast('📋 Nội dung cũng đã được chép — nếu Zalo chỉ nhận ảnh, dán vào tin nhắn');
+      return;
+    }
+    if (navigator.share) {
+      await navigator.share({text, title});
+      if (files.length) toast('ℹ️ Máy này không gửi kèm ảnh được — chỉ gửi nội dung');
+      return;
+    }
+  } catch (e) { if (e.name === 'AbortError') return; }
+  // Máy tính: không có bảng chia sẻ → chép nội dung để dán vào Zalo PC
+  try { await navigator.clipboard.writeText(text); toast('📋 Đã chép nội dung — mở Zalo và dán (Ctrl+V)'); }
+  catch (e) { window.prompt('Chép nội dung dưới đây rồi dán vào Zalo:', text); }
+}
+function txnShareText(t) {
+  const it = db.items.find(i => i.id === t.itemId);
+  const unit = it?.unit || t.unit || '', name = it?.name || t.itemName || '?';
+  const dc = t.type === 'dieuchinh';
+  const L = [];
+  L.push(`${dc ? '⚖️ PHIẾU ĐIỀU CHỈNH' : t.type === 'nhap' ? '📥 PHIẾU NHẬP KHO' : '📤 PHIẾU XUẤT KHO'} — ${t.project || ''}`);
+  L.push(`Vật tư: ${name}`);
+  L.push(`Số lượng: ${dc ? (t.qty > 0 ? '+' : '') : t.type === 'nhap' ? '+' : '-'}${fmtNum(t.qty)} ${unit}${adjMap()[t.id] ? ` (sau điều chỉnh: ${fmtNum(effQty(t))})` : ''}`);
+  if (!dc && t.supplierOrReceiver) L.push(`${t.type === 'nhap' ? 'Nhà cung cấp' : 'Người nhận'}: ${t.supplierOrReceiver}`);
+  if (t.thietBi) L.push(`Thiết bị: ${t.thietBi}`);
+  if (t.note && t.note !== t.supplierOrReceiver) L.push(`Ghi chú: ${t.note}`);
+  if (t.reason) L.push(`Lý do: ${t.reason}`);
+  if (it) L.push(`Tồn hiện tại: ${fmtNum(it.stock)} ${unit}`);
+  L.push(`Người lập: ${t.createdByName || me?.name || ''} · ${t.datetime || ''}`);
+  const n = photosOf(t.id).length; if (n) L.push(`📷 ${n} ảnh biên bản`);
+  return L.join('\n');
+}
+async function shareTxn(id) {
+  const t = db.transactions.find(x => x.id === id); if (!t) return;
+  const list = photosOf(id);
+  const files = list.map((ph, i) => photoMem[ph.id] ? dataUrlToFile(photoMem[ph.id], `bien-ban-${id}-${i + 1}.jpg`) : null).filter(Boolean);
+  if (files.length < list.length) toast('⏳ Một số ảnh chưa tải xong — gửi phần đã có');
+  await shareOut(txnShareText(t), files, 'Phiếu kho');
+}
+
+// ---- Báo cáo ngày ----
+function openDailyReport() {
+  const d = new Date(), p = n => String(n).padStart(2, '0');
+  document.getElementById('rp-day').value = `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())}`;
+  buildDailyReport();
+  openModal('modal-report');
+}
+function buildDailyReport() {
+  const v = document.getElementById('rp-day').value; if (!v) return;
+  const [Y, M, D] = v.split('-').map(Number);
+  const same = t => { const d = parseVN(t.datetime); return d && d.getFullYear() === Y && d.getMonth() === M - 1 && d.getDate() === D; };
+  const txns = filtTxns().filter(same);
+  const group = type => {
+    const g = {};
+    txns.filter(t => t.type === type).forEach(t => {
+      const it = db.items.find(i => i.id === t.itemId), k = t.itemId;
+      g[k] = g[k] || {name: it?.name || t.itemName, unit: it?.unit || t.unit || '', q: 0, n: 0, who: new Set()};
+      g[k].q += effQty(t); g[k].n++;
+      const w = type === 'xuat' ? (t.thietBi || t.supplierOrReceiver) : t.supplierOrReceiver; if (w) g[k].who.add(w);
+    });
+    return Object.values(g).sort((a, b) => b.n - a.n);
+  };
+  const lines = (arr, sign) => {
+    const out = arr.slice(0, 15).map(x => ` • ${x.name}: ${sign}${fmtNum(Math.round(x.q * 100) / 100)} ${x.unit}${x.who.size ? ' (' + [...x.who].slice(0, 3).join(', ') + (x.who.size > 3 ? '…' : '') + ')' : ''}`);
+    if (arr.length > 15) out.push(` • … và ${arr.length - 15} vật tư khác`);
+    return out;
+  };
+  const nh = group('nhap'), xu = group('xuat'), dcs = txns.filter(t => t.type === 'dieuchinh'), low = db.items.filter(isLow);
+  const L = [`📊 BÁO CÁO KHO NGÀY ${D}/${M}/${Y}`, `🏗 ${curProj === 'all' ? db.projects.join(', ') : curProj}`, ''];
+  L.push(`📥 NHẬP: ${txns.filter(t => t.type === 'nhap').length} phiếu`); L.push(...(nh.length ? lines(nh, '+') : [' • Không có']));
+  L.push(''); L.push(`📤 XUẤT: ${txns.filter(t => t.type === 'xuat').length} phiếu`); L.push(...(xu.length ? lines(xu, '-') : [' • Không có']));
+  if (dcs.length) {
+    L.push(''); L.push(`⚖️ ĐIỀU CHỈNH: ${dcs.length} phiếu`);
+    dcs.slice(0, 10).forEach(t => { const it = db.items.find(i => i.id === t.itemId); L.push(` • ${it?.name || t.itemName}: ${t.qty > 0 ? '+' : ''}${fmtNum(t.qty)} ${it?.unit || t.unit || ''} — ${t.reason || ''}`); });
+  }
+  L.push(''); L.push(low.length ? `⚠️ CẦN BỔ SUNG (${low.length}):` : '✅ Không có vật tư dưới mức tối thiểu');
+  low.slice(0, 15).forEach(i => L.push(` • ${i.name}: còn ${fmtNum(i.stock)} ${i.unit} (tối thiểu ${fmtNum(i.minStock)})`));
+  L.push(''); L.push(`Người gửi: ${me?.name || ''} · ${nowStr()}`);
+  document.getElementById('rp-text').value = L.join('\n');
+}
+function sendDailyReport() { shareOut(document.getElementById('rp-text').value, [], 'Báo cáo kho'); }
 
 // ===== TON KHO TAB =====
 function renderTon(c) {
@@ -2124,6 +2426,9 @@ function renderBaoCao(c) {
     </div>
     <div style="padding:0 14px 14px">
       <div class="action-row">
+        <div class="action-btn" onclick="openDailyReport()">
+          <span class="ab-ico">💬</span>Báo cáo Zalo
+        </div>
         <div class="action-btn" onclick="openModal('modal-export')">
           <span class="ab-ico">⬇️</span>Xuất Excel
         </div>
@@ -2681,6 +2986,7 @@ function doLogout() {
   if (outbox.length && !confirm(`Còn ${outbox.length} thay đổi CHƯA gửi lên máy chủ (do mất mạng).\nĐăng xuất bây giờ sẽ MẤT các thay đổi này.\n\nVẫn đăng xuất?`)) return;
   if (token) api('logout');                       // báo máy chủ hủy phiên (không cần chờ)
   token = ''; localStorage.removeItem(LS_TOKEN);
+  PDB.clear().catch(() => {}); formPhotos.fn = []; formPhotos.fx = [];
   clearLocalData();                               // không để lại dữ liệu kho trên máy sau khi đăng xuất
   destroyCharts(); stopAutoSync(); setSyncBar('');
   document.querySelectorAll('.detail-page.show').forEach(p => p.classList.remove('show'));
@@ -2733,6 +3039,29 @@ async function runDiag() {
   line(null, `Thiết bị: ${deviceName()} · App ${APP_VERSION}`);
   el.innerHTML = out.join('<br>');
 }
+// ===== TỰ KIỂM TRA BẢN MỚI TRÊN GITHUB =====
+let _updChecked = 0;
+async function checkAppUpdate() {
+  if (Date.now() - _updChecked < 3 * 60000 || !navigator.onLine) return;
+  _updChecked = Date.now();
+  try {
+    const html = await (await fetch('./index.html?v=' + Date.now(), {cache:'no-store'})).text();
+    const m = html.match(/const APP_VERSION = '([^']+)'/);
+    if (m && m[1] !== APP_VERSION) {
+      const b = document.getElementById('upd-bar');
+      b.textContent = `🔄 Có bản mới ${m[1]} (đang dùng ${APP_VERSION}) — bấm để cập nhật`;
+      b.style.display = 'block';
+    }
+  } catch (e) {}
+}
+async function doAppUpdate() {
+  document.getElementById('upd-bar').textContent = '⏳ Đang cập nhật...';
+  try { const keys = await caches.keys(); await Promise.all(keys.map(k => caches.delete(k))); } catch (e) {}
+  try { const regs = await navigator.serviceWorker?.getRegistrations(); if (regs) await Promise.all(regs.map(r => r.update())); } catch (e) {}
+  location.reload();
+}
+document.addEventListener('visibilitychange', () => { if (!document.hidden) checkAppUpdate(); });
+setTimeout(checkAppUpdate, 4000);
 // ===== KHỞI ĐỘNG =====
 (function boot() {
   loadLocal();
