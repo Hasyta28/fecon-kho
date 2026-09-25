@@ -964,7 +964,7 @@ body.can-ql .hide-ql{display:none!important}
 // ============================================================
 // CONFIG
 // ============================================================
-const APP_VERSION = '5.5';
+const APP_VERSION = '5.5.1';
 const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbw6Rmi80I7RI3ij2U7RdRF5pYuQTnPrwEmGmUZS5xpxzLwwVynfoFUujZe1lm6HS1ymxw/exec';
 // ============================================================
 
@@ -3213,8 +3213,7 @@ async function renderMembers() {
   body.innerHTML = `
     ${pend.length ? `<div class="grp-label">⏳ Chờ duyệt (${pend.length})</div><div class="card" style="margin-bottom:14px">${pend.map(memberRow).join('')}</div>` : ''}
     <div class="grp-label">👥 Thành viên (${act.length})</div>
-    <div class="card">${act.map(memberRow).join('')}</div>
-    <div class="mem-help"><b>Chỉ xem</b>: xem số liệu, không ghi gì.<br><b>Thủ kho</b>: nhập, xuất, điều chỉnh, thêm vật tư mới, ghi chú, sửa chữa.<br><b>Quản lý</b>: thêm quyền sửa/xóa danh mục, dự án, xem nhật ký.<br><b>Admin</b>: toàn quyền + duyệt và quản lý thành viên.</div>`;
+    <div class="card">${act.map(memberRow).join('')}</div>`;
 }
 function memberRow(u) {
   const badge = u.status === 'pending' ? '<span class="txn-badge badge-out">Chờ duyệt</span>'
