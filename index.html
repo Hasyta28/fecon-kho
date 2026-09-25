@@ -784,9 +784,10 @@ body.can-ql .hide-ql{display:none!important}
     <div class="modal-title">⬇️ Xuất báo cáo Excel</div>
     <div class="fg"><label>Khoảng thời gian</label>
       <select id="exp-range">
+        <option value="all" selected>Toàn bộ (từ đầu dự án) — như file NXT</option>
         <option value="today">Hôm nay</option>
         <option value="week">Tuần này</option>
-        <option value="month" selected>Tháng này</option>
+        <option value="month">Tháng này</option>
         <option value="year">Năm nay</option>
         <option value="custom">Tùy chọn ngày</option>
       </select>
@@ -803,6 +804,21 @@ body.can-ql .hide-ql{display:none!important}
     <div class="modal-actions">
       <button class="btn-cancel" onclick="closeModal('modal-export')">Hủy</button>
       <button class="btn-ok" onclick="doExport()">⬇️ Xuất Excel</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal: File Excel đã tạo -->
+<div class="modal-bg" id="modal-xfile" style="display:none" onclick="closeModalBg(event,'modal-xfile')">
+  <div class="modal-sheet">
+    <div class="modal-handle"></div>
+    <div class="modal-title">✅ Đã tạo file Excel</div>
+    <div class="adj-info" id="xf-name"></div>
+    <div class="lock-note" style="text-align:left">Gồm: Số liệu ngày (dầu nhớt) · Vật tư · NXT dầu nhớt · NXT vật tư · Theo dõi dầu thiết bị · Chi tiết phiếu</div>
+    <button class="btn-full btn-zalo" id="xf-share" onclick="shareExport()" style="margin:0 0 10px">💬 Gửi Zalo / Lưu vào Tệp</button>
+    <div class="modal-actions">
+      <button class="btn-cancel" onclick="closeModal('modal-xfile')">Đóng</button>
+      <button class="btn-ok" onclick="downloadExport()">⬇️ Tải về máy</button>
     </div>
   </div>
 </div>
@@ -922,7 +938,7 @@ body.can-ql .hide-ql{display:none!important}
 // ============================================================
 // CONFIG
 // ============================================================
-const APP_VERSION = '5.4';
+const APP_VERSION = '5.4.1';
 const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbw6Rmi80I7RI3ij2U7RdRF5pYuQTnPrwEmGmUZS5xpxzLwwVynfoFUujZe1lm6HS1ymxw/exec';
 // ============================================================
 
@@ -2998,66 +3014,270 @@ async function saveProj() {
 }
 
 // ===== EXPORT EXCEL =====
+// ===== XUẤT EXCEL THEO MẪU "BẢNG THEO DÕI NXT VẬT TƯ" =====
+// Dùng ExcelJS (tải khi cần) để có tiêu đề, viền, độ rộng cột, ngày thật và công thức như file gốc.
+const EXCELJS_URLS = ['https://cdnjs.cloudflare.com/ajax/libs/exceljs/4.4.0/exceljs.min.js',
+                      'https://cdn.jsdelivr.net/npm/exceljs@4.4.0/dist/exceljs.min.js'];
 function loadScript(src) {
   return new Promise((res, rej) => { const el = document.createElement('script'); el.src = src; el.onload = res; el.onerror = rej; document.head.appendChild(el); });
 }
-async function doExport() {
-  if (typeof XLSX === 'undefined') {
-    showLoader('Đang tải công cụ Excel...');
-    try { await loadScript('https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js'); }
-    catch (e) { hideLoader(); toast('⚠️ Cần có mạng để xuất Excel lần đầu'); return; }
-    hideLoader();
-  }
-  doExportRun();
+async function ensureExcelJS() {
+  if (window.ExcelJS) return true;
+  for (const u of EXCELJS_URLS) { try { await loadScript(u); if (window.ExcelJS) return true; } catch (e) {} }
+  return false;
 }
-function doExportRun() {
-  const range = document.getElementById('exp-range').value;
-  const expProj = document.getElementById('exp-proj').value;
-  const now = new Date(), sod = d => new Date(d.getFullYear(), d.getMonth(), d.getDate());
-  let from = null, to = null;
-  if (range === 'today') from = sod(now);
-  else if (range === 'week') from = sod(new Date(now - 6 * 864e5));
-  else if (range === 'month') from = new Date(now.getFullYear(), now.getMonth(), 1);
-  else if (range === 'year') from = new Date(now.getFullYear(), 0, 1);
-  else {
+const slugVN = s => String(s || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/đ/g, 'd').replace(/Đ/g, 'D').replace(/[^a-z0-9]+/gi, '-').replace(/^-|-$/g, '');
+function exportRange() {
+  const v = document.getElementById('exp-range').value, now = new Date();
+  const sod = d => new Date(d.getFullYear(), d.getMonth(), d.getDate());
+  const fmt = d => `${d.getDate()}/${d.getMonth() + 1}/${d.getFullYear()}`;
+  let from = null, to = null, tag = 'ToanBo';
+  if (v === 'today') { from = sod(now); tag = 'HomNay'; }
+  else if (v === 'week') { from = sod(new Date(now - 6 * 864e5)); tag = 'TuanNay'; }
+  else if (v === 'month') { from = new Date(now.getFullYear(), now.getMonth(), 1); tag = 'Thang' + (now.getMonth() + 1); }
+  else if (v === 'year') { from = new Date(now.getFullYear(), 0, 1); tag = 'Nam' + now.getFullYear(); }
+  else if (v === 'custom') {
     const f = document.getElementById('exp-from').value, t = document.getElementById('exp-to').value;
     if (f) from = new Date(f + 'T00:00:00'); if (t) to = new Date(t + 'T23:59:59');
+    tag = `${from ? fmt(from).replace(/\//g, '-') : 'DauKy'}_den_${to ? fmt(to).replace(/\//g, '-') : 'Nay'}`;
   }
-  const inRange = t => { const d = parseVN(t.datetime); return !d || ((!from || d >= from) && (!to || d <= to)); };
-  const txns = (expProj === 'all' ? db.transactions : db.transactions.filter(t => t.project === expProj)).filter(inRange);
+  const label = from || to ? `Từ ngày ${from ? fmt(from) : '(đầu dự án)'} đến ngày ${fmt(to || now)}` : `Toàn bộ từ đầu dự án đến ngày ${fmt(now)}`;
+  return {from, to, tag, label, end: to || now};
+}
+async function doExport() {
+  showLoader('Đang tạo file Excel...');
+  if (!(await ensureExcelJS())) { hideLoader(); toast('⚠️ Không tải được công cụ Excel — cần có mạng'); return; }
+  try { await buildNxtWorkbook(); }
+  catch (e) { console.error(e); toast('⚠️ Lỗi tạo file Excel: ' + e.message); }
+  hideLoader();
+}
+
+async function buildNxtWorkbook() {
+  const R = exportRange(), P = curProj;
+  const inRange = t => { const d = parseVN(t.datetime); return !d || ((!R.from || d >= R.from) && (!R.to || d <= R.to)); };
+  const after = t => { const d = parseVN(t.datetime); return d && R.from && d < R.from ? false : true; };   // từ đầu kỳ trở đi
+  const isFuelGroup = i => i.cat === 'nhienLieu' || isFuelItem(i);
+  const itemById = id => db.items.find(i => i.id === id);
+  // Phiếu điều chỉnh có "phiếu gốc" đã được cộng vào số lượng của phiếu gốc (effQty) → không tính lại
+  const moves = db.transactions.filter(t => !(t.type === 'dieuchinh' && t.refId));
+  const net = t => t.type === 'nhap' ? effQty(t) : t.type === 'xuat' ? -effQty(t) : (+t.qty || 0);
+  const sorted = arr => arr.slice().sort((a, b) => ((parseVN(a.datetime) || 0) - (parseVN(b.datetime) || 0)) || (a.id - b.id));
+  const xd = d => d ? new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate())) : null;  // ngày Excel (không lệch múi giờ)
+  const nf = v => Number.isInteger(+v) ? '#,##0' : '#,##0.##';
   const TYPE = {nhap:'Nhập', xuat:'Xuất', dieuchinh:'Điều chỉnh'};
 
-  const wb = XLSX.utils.book_new();
-  const r1 = [['STT','Số phiếu','Loại','Vật tư','Số lượng','SL sau điều chỉnh','Đơn vị','Dự án','NCC/Người nhận','Thiết bị','Ghi chú','Lý do điều chỉnh','Phiếu gốc','Người lập','Thời gian']];
-  txns.forEach((t, i) => {
-    const it = db.items.find(x => x.id === t.itemId);
-    r1.push([i+1, String(t.id), TYPE[t.type] || t.type, it?.name || t.itemName, t.qty, t.type === 'dieuchinh' ? '' : effQty(t), it?.unit || t.unit, t.project,
-      t.type === 'dieuchinh' ? '' : (t.supplierOrReceiver || ''), t.thietBi || '', t.note || '', t.reason || '', t.refId ? String(t.refId) : '', t.createdByName || '', t.datetime || '']);
-  });
-  XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(r1), 'Giao dịch');
-  const r2 = [['STT','Tên vật tư','Nhóm','Đơn vị','Tồn kho','Tối thiểu','Tình trạng']];
-  db.items.forEach((i, idx) => {
-    const cat = db.categories.find(c => c.id === i.cat);
-    r2.push([idx+1, i.name, cat?.name || i.cat, i.unit, i.stock, i.minStock, i.stock <= 0 ? 'Hết hàng' : isLow(i) ? 'Sắp hết' : 'Đủ hàng']);
-  });
-  XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(r2), 'Tồn kho');
-  const r3 = [['STT','Thiết bị','Ngày','Hư hỏng','Đã sửa','Chi phí VNĐ','Người sửa','Ghi chú','Người ghi']];
-  db.repairs.forEach((rp, i) => {
-    const d = db.devices.find(x => x.id === rp.deviceId);
-    r3.push([i+1, d?.name || rp.deviceId, rp.date, rp.issue, rp.fix, rp.cost || 0, rp.by, rp.note, rp.addedBy || '']);
-  });
-  XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(r3), 'Sửa chữa');
-  const r4 = [['STT','Tên thiết bị','Nhóm','Loại hình','Định mức L/h','Tổng dầu đã dùng','Số lần sửa','Tổng chi phí sửa']];
-  db.devices.forEach((d, i) => {
-    const fuel = txns.filter(t => t.type === 'xuat' && t.thietBi === d.name).reduce((s, t) => s + effQty(t), 0);
-    const repairs = db.repairs.filter(r => r.deviceId === d.id);
-    r4.push([i+1, d.name, devCatOf(d.cat).name, d.type === 'own' ? 'Công ty' : 'Thuê ngoài', d.fuelRate || 0, fuel, repairs.length, repairs.reduce((s, r) => s + (+r.cost || 0), 0)]);
-  });
-  XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(r4), 'Thiết bị');
+  const wb = new ExcelJS.Workbook();
+  wb.creator = 'FECON Kho Vật Tư'; wb.created = new Date();
+  const FONT = {name:'Calibri', size:11};
+  const thin = {style:'thin', color:{argb:'FF9AA5B1'}};
+  const BORDER = {top:thin, left:thin, bottom:thin, right:thin};
+  const HEAD = {type:'pattern', pattern:'solid', fgColor:{argb:'FFDDEBF7'}};
+  const SEC = {type:'pattern', pattern:'solid', fgColor:{argb:'FFF2F2F2'}};
+  function sheet(name, widths, freezeRow) {
+    const ws = wb.addWorksheet(name, {views:[{state:'frozen', ySplit:freezeRow, showGridLines:true}],
+      pageSetup:{orientation:'landscape', fitToPage:true, fitToWidth:1, fitToHeight:0, paperSize:9}});
+    widths.forEach((w, i) => ws.getColumn(i + 1).width = w);
+    return ws;
+  }
+  function title(ws, text, lastCol) {
+    ws.mergeCells(1, 2, 1, lastCol);
+    Object.assign(ws.getCell(1, 2), {value:text, font:{...FONT, size:16, bold:true}, alignment:{horizontal:'center'}});
+    ws.mergeCells(2, 2, 2, lastCol);
+    Object.assign(ws.getCell(2, 2), {value:'Dự án: ' + P, font:{...FONT, bold:true}, alignment:{horizontal:'center'}});
+    ws.mergeCells(3, 2, 3, lastCol);
+    Object.assign(ws.getCell(3, 2), {value:R.label, font:{...FONT, italic:true, color:{argb:'FF555555'}}, alignment:{horizontal:'center'}});
+  }
+  function header(ws, row, cols, startCol) {
+    cols.forEach((h, i) => Object.assign(ws.getCell(row, startCol + i), {value:h, font:{...FONT, bold:true}, fill:HEAD, border:BORDER,
+      alignment:{horizontal:'center', vertical:'middle', wrapText:true}}));
+    ws.getRow(row).height = 30;
+  }
+  function body(ws, r, c1, c2) { for (let c = c1; c <= c2; c++) { const cell = ws.getCell(r, c); cell.border = BORDER; cell.font = cell.font?.bold ? cell.font : FONT; } }
 
-  XLSX.writeFile(wb, `KhoVatTu_FeconSouth_${range}_${new Date().toLocaleDateString('vi-VN').replace(/\//g,'-')}.xlsx`);
+  // ---------- 1 & 2. SỔ NHẬP XUẤT HẰNG NGÀY (Dầu nhớt | Vật tư) ----------
+  const LOG_COLS = ['Ngày', 'Tên vật tư', 'Đơn vị', 'Xuất/nhập', 'NCC/NTP/Đội', 'Thiết bị', 'Khối lượng', 'Thời gian', 'Ghi chú', 'Người lập'];
+  function logSheet(name, fuel) {
+    const ws = sheet(name, [3.5, 12, 30, 9, 11, 26, 32, 13, 9, 30, 20], 5);
+    title(ws, 'BẢNG THEO DÕI XUẤT NHẬP KHO' + (fuel ? ' — DẦU NHỚT' : ' — VẬT TƯ'), 11);
+    header(ws, 5, LOG_COLS, 2);
+    const rows = sorted(moves.filter(t => inRange(t) && (() => { const it = itemById(t.itemId); return it ? isFuelGroup(it) === fuel : false; })()));
+    let r = 6;
+    rows.forEach(t => {
+      const it = itemById(t.itemId), d = parseVN(t.datetime), q = t.type === 'dieuchinh' ? +t.qty : effQty(t);
+      const adj = t.type !== 'dieuchinh' && adjMap()[t.id];
+      const tm = /\d{1,2}:\d{2}/.test(t.datetime || '') ? (t.datetime.match(/\d{1,2}:\d{2}/) || [''])[0] : '';
+      let note = t.type === 'dieuchinh' ? (t.reason || 'Kiểm kê') : (t.note && t.note !== t.supplierOrReceiver ? t.note : '');
+      if (adj) note = [note, `Đã điều chỉnh: ghi ${fmtNum(t.qty)} → đúng ${fmtNum(q)}`].filter(Boolean).join(' · ');
+      const vals = [xd(d), it?.name || t.itemName, it?.unit || t.unit, TYPE[t.type], t.type === 'dieuchinh' ? '' : (t.supplierOrReceiver || ''),
+        t.thietBi || '', q, tm, note, t.createdByName || ''];
+      vals.forEach((v, i) => ws.getCell(r, 2 + i).value = v === '' ? null : v);
+      ws.getCell(r, 2).numFmt = 'dd/mm/yyyy';
+      ws.getCell(r, 8).numFmt = nf(q);
+      body(ws, r, 2, 11);
+      r++;
+    });
+    if (!rows.length) { ws.mergeCells(6, 2, 6, 11); Object.assign(ws.getCell(6, 2), {value:'Không có phiếu trong khoảng thời gian này', font:{...FONT, italic:true}, alignment:{horizontal:'center'}}); }
+    ws.autoFilter = {from:{row:5, column:2}, to:{row:5, column:11}};
+    return {ws, first:6, last:Math.max(6, r - 1), name};
+  }
+  const logFuel = logSheet('Số liệu ngày (dầu nhớt)', true);
+  const logVt = logSheet('Vật tư', false);
+
+  // ---------- 3 & 4. BẢNG NHẬP – XUẤT – TỒN ----------
+  const q = s => `'${s.replace(/'/g, "''")}'`;
+  function nxtSheet(name, log, fuel) {
+    const ws = sheet(name, [5, 34, 9, 13, 13, 13, 13, 13, 12, 12], 5);
+    title(ws, 'BẢNG TỔNG HỢP NHẬP – XUẤT – TỒN' + (fuel ? ' DẦU NHỚT' : ' VẬT TƯ'), 10);
+    header(ws, 5, ['STT', 'Tên vật tư', 'Đơn vị', 'Tồn đầu kỳ', 'Nhập', 'Xuất', 'Điều chỉnh', 'Tồn cuối kỳ', 'Tối thiểu', 'Tình trạng'], 1);
+    const L = q(log.name), rg = c => `${L}!$${c}$${log.first}:$${c}$${log.last}`;
+    const items = db.items.filter(i => isFuelGroup(i) === fuel);
+    let r = 6, mismatch = 0;
+    items.forEach((it, idx) => {
+      const mine = moves.filter(t => t.itemId === it.id);
+      const sinceStart = mine.filter(t => after(t)).reduce((s, t) => s + net(t), 0);
+      const open = Math.round(((+it.stock || 0) - sinceStart) * 1000) / 1000;          // tồn đầu kỳ = tồn hiện tại − phát sinh từ đầu kỳ
+      const inR = mine.filter(inRange);
+      const nh = inR.filter(t => t.type === 'nhap').reduce((s, t) => s + effQty(t), 0);
+      const xu = inR.filter(t => t.type === 'xuat').reduce((s, t) => s + effQty(t), 0);
+      const dc = inR.filter(t => t.type === 'dieuchinh').reduce((s, t) => s + (+t.qty || 0), 0);
+      const close = Math.round((open + nh - xu + dc) * 1000) / 1000;
+      const st = close <= 0 ? 'Hết hàng' : (+it.minStock > 0 && close <= +it.minStock) ? 'Sắp hết' : 'Đủ hàng';
+      ws.getCell(r, 1).value = idx + 1;
+      ws.getCell(r, 2).value = it.name;
+      ws.getCell(r, 3).value = it.unit;
+      ws.getCell(r, 4).value = open;
+      ws.getCell(r, 5).value = {formula:`SUMIFS(${rg('H')},${rg('C')},$B${r},${rg('E')},"Nhập")`, result:nh};
+      ws.getCell(r, 6).value = {formula:`SUMIFS(${rg('H')},${rg('C')},$B${r},${rg('E')},"Xuất")`, result:xu};
+      ws.getCell(r, 7).value = {formula:`SUMIFS(${rg('H')},${rg('C')},$B${r},${rg('E')},"Điều chỉnh")`, result:dc};
+      ws.getCell(r, 8).value = {formula:`D${r}+E${r}-F${r}+G${r}`, result:close};
+      ws.getCell(r, 9).value = +it.minStock || 0;
+      ws.getCell(r, 10).value = {formula:`IF(H${r}<=0,"Hết hàng",IF(AND(I${r}>0,H${r}<=I${r}),"Sắp hết","Đủ hàng"))`, result:st};
+      [4, 5, 6, 7, 8, 9].forEach(c => ws.getCell(r, c).numFmt = '#,##0.##;-#,##0.##;"-"');
+      body(ws, r, 1, 10);
+      ws.getCell(r, 8).font = {...FONT, bold:true};
+      // Xuất toàn bộ mà tồn đầu kỳ ≠ 0 → số tồn hệ thống không khớp tổng Nhập − Xuất trong sổ
+      if (!R.from && Math.abs(open) > 1e-9) {
+        ws.getCell(r, 4).fill = {type:'pattern', pattern:'solid', fgColor:{argb:'FFFFF2B3'}};
+        ws.getCell(r, 4).note = `Tồn trên hệ thống (${fmtNum(it.stock)}) khác tổng Nhập − Xuất trong sổ (${fmtNum(Math.round((it.stock - open) * 1000) / 1000)}), chênh ${fmtNum(open)} ${it.unit}. Nên kiểm kê thực tế và tạo phiếu điều chỉnh.`;
+        mismatch++;
+      }
+      if (st !== 'Đủ hàng') ws.getCell(r, 10).font = {...FONT, bold:true, color:{argb:'FFC0392B'}};
+      r++;
+    });
+    ws.autoFilter = {from:{row:5, column:1}, to:{row:5, column:10}};
+    const n = ws.getCell(r + 1, 2);
+    n.value = 'Tồn đầu kỳ = tồn hiện tại trên hệ thống trừ các phiếu phát sinh từ đầu kỳ. Nhập/Xuất/Điều chỉnh cộng từ sheet "' + log.name + '".';
+    n.font = {...FONT, italic:true, size:9, color:{argb:'FF777777'}};
+    if (mismatch) {
+      const w = ws.getCell(r + 2, 2);
+      w.value = `⚠ ${mismatch} vật tư tô vàng: số tồn trên hệ thống không khớp tổng Nhập − Xuất trong sổ (thường do dữ liệu Excel cũ ghi thiếu/sai). Nên kiểm kê thực tế rồi tạo phiếu điều chỉnh.`;
+      w.font = {...FONT, bold:true, size:10, color:{argb:'FFB7791F'}};
+    }
+    return ws;
+  }
+  nxtSheet('NXT dầu nhớt', logFuel, true);
+  nxtSheet('NXT vật tư', logVt, false);
+
+  // ---------- 5. THEO DÕI DẦU THEO THIẾT BỊ ----------
+  {
+    const ws = sheet('Theo dõi dầu thiết bị', [6, 38, 14, 16, 10, 16, 14, 16], 5);
+    title(ws, 'THEO DÕI CẤP DẦU CHO THIẾT BỊ', 8);
+    header(ws, 5, ['STT', 'Tên thiết bị', 'Ngày cấp đầu tiên', 'Tổng dầu nhận (Lít)', 'Số ngày', 'TB lít dầu/ngày', 'Nhớt (Lít)', 'Loại hình'], 1);
+    const dauNames = db.items.filter(i => isFuelGroup(i) && /dầu/i.test(i.name) && !/nhớt|mỡ/i.test(i.name)).map(i => i.name);
+    const nhotNames = db.items.filter(i => isFuelGroup(i) && /nhớt/i.test(i.name)).map(i => i.name);
+    const L = q(logFuel.name), rg = c => `${L}!$${c}$${logFuel.first}:$${c}$${logFuel.last}`;
+    const sumF = (names, r) => names.length ? names.map(nm => `SUMIFS(${rg('H')},${rg('G')},$B${r},${rg('C')},"${nm.replace(/"/g, '""')}",${rg('E')},"Xuất")`).join('+') : '0';
+    const fuelRows = moves.filter(t => inRange(t) && t.type === 'xuat' && t.thietBi);
+    const names = [...new Set(db.devices.map(d => d.name).concat(fuelRows.map(t => t.thietBi)))];
+    const groups = {};
+    names.forEach(nm => { const d = db.devices.find(x => x.name === nm); const g = d ? devCatOf(d.cat).name : 'Khác'; (groups[g] = groups[g] || []).push({nm, d}); });
+    const ROMAN = ['I','II','III','IV','V','VI','VII','VIII','IX','X','XI','XII'];
+    const endX = xd(R.end);
+    let r = 6, gi = 0;
+    Object.entries(groups).forEach(([g, list]) => {
+      ws.getCell(r, 1).value = ROMAN[gi++] || gi; ws.getCell(r, 2).value = g.toUpperCase();
+      for (let c = 1; c <= 8; c++) { const cell = ws.getCell(r, c); cell.fill = SEC; cell.border = BORDER; cell.font = {...FONT, bold:true}; }
+      r++;
+      list.forEach(({nm, d}, k) => {
+        const rows = fuelRows.filter(t => t.thietBi === nm);
+        const dau = rows.filter(t => dauNames.includes(itemById(t.itemId)?.name)).reduce((s, t) => s + effQty(t), 0);
+        const nhot = rows.filter(t => nhotNames.includes(itemById(t.itemId)?.name)).reduce((s, t) => s + effQty(t), 0);
+        const firstD = rows.filter(t => dauNames.includes(itemById(t.itemId)?.name)).map(t => parseVN(t.datetime)).filter(Boolean).sort((a, b) => a - b)[0];
+        const days = firstD ? Math.round((endX - xd(firstD)) / 864e5) + 1 : 0;
+        ws.getCell(r, 1).value = k + 1;
+        ws.getCell(r, 2).value = nm;
+        ws.getCell(r, 3).value = firstD ? xd(firstD) : null; ws.getCell(r, 3).numFmt = 'dd/mm/yyyy';
+        ws.getCell(r, 4).value = {formula:sumF(dauNames, r), result:dau};
+        ws.getCell(r, 5).value = firstD ? {formula:`DATE(${R.end.getFullYear()},${R.end.getMonth() + 1},${R.end.getDate()})-C${r}+1`, result:days} : null;
+        ws.getCell(r, 6).value = {formula:`IFERROR(D${r}/E${r},0)`, result: days ? Math.round(dau / days * 100) / 100 : 0};
+        ws.getCell(r, 7).value = {formula:sumF(nhotNames, r), result:nhot};
+        ws.getCell(r, 8).value = d ? (d.type === 'own' ? 'Công ty' : 'Thuê ngoài') : '';
+        [4, 7].forEach(c => ws.getCell(r, c).numFmt = '#,##0.##;-#,##0.##;"-"');
+        ws.getCell(r, 6).numFmt = '#,##0.0;-#,##0.0;"-"';
+        body(ws, r, 1, 8);
+        r++;
+      });
+    });
+    const n = ws.getCell(r + 1, 2);
+    n.value = `Tổng dầu nhận = tổng phiếu xuất ${dauNames.join(', ') || 'dầu'} cho thiết bị trong kỳ. TB lít/ngày = tổng dầu ÷ số ngày từ lần cấp đầu tiên đến hết kỳ.`;
+    n.font = {...FONT, italic:true, size:9, color:{argb:'FF777777'}};
+  }
+
+  // ---------- 6. CHI TIẾT PHIẾU (đủ thông tin hệ thống để đối chiếu) ----------
+  {
+    const ws = sheet('Chi tiết phiếu', [6, 18, 12, 9, 12, 30, 12, 12, 9, 24, 28, 26, 30, 18, 20, 20], 5);
+    title(ws, 'CHI TIẾT PHIẾU NHẬP – XUẤT – ĐIỀU CHỈNH', 16);
+    header(ws, 5, ['STT', 'Số phiếu', 'Ngày', 'Giờ', 'Loại', 'Vật tư', 'Số lượng ghi', 'SL sau điều chỉnh', 'Đơn vị', 'NCC/Người nhận', 'Thiết bị', 'Ghi chú', 'Lý do điều chỉnh', 'Phiếu gốc', 'Người lập', 'Ảnh biên bản'], 1);
+    let r = 6;
+    sorted(db.transactions.filter(inRange)).forEach((t, i) => {
+      const it = itemById(t.itemId), d = parseVN(t.datetime);
+      const vals = [i + 1, String(t.id), xd(d), (t.datetime || '').match(/\d{1,2}:\d{2}/)?.[0] || '', TYPE[t.type], it?.name || t.itemName,
+        +t.qty, t.type === 'dieuchinh' ? null : effQty(t), it?.unit || t.unit, t.type === 'dieuchinh' ? '' : (t.supplierOrReceiver || ''),
+        t.thietBi || '', t.note || '', t.reason || '', t.refId ? String(t.refId) : '', t.createdByName || '', photosOf(t.id).length || null];
+      vals.forEach((v, k) => ws.getCell(r, k + 1).value = v === '' ? null : v);
+      ws.getCell(r, 3).numFmt = 'dd/mm/yyyy';
+      [7, 8].forEach(c => ws.getCell(r, c).numFmt = '#,##0.##;-#,##0.##;"-"');
+      body(ws, r, 1, 16);
+      r++;
+    });
+    ws.autoFilter = {from:{row:5, column:1}, to:{row:5, column:16}};
+  }
+
+  // ---------- 7. SỬA CHỮA (nếu có) ----------
+  if (db.repairs.length) {
+    const ws = sheet('Sửa chữa', [6, 32, 12, 30, 30, 16, 18, 24, 18], 5);
+    title(ws, 'THEO DÕI SỬA CHỮA THIẾT BỊ', 9);
+    header(ws, 5, ['STT', 'Thiết bị', 'Ngày', 'Hư hỏng', 'Đã sửa', 'Chi phí (VNĐ)', 'Người sửa', 'Ghi chú', 'Người ghi'], 1);
+    db.repairs.forEach((rp, i) => {
+      const r = 6 + i, dv = db.devices.find(x => x.id === rp.deviceId);
+      const dd = /^\d{4}-\d{2}-\d{2}$/.test(rp.date || '') ? (([y, m, d]) => new Date(Date.UTC(y, m - 1, d)))(rp.date.split('-').map(Number)) : (rp.date || null);
+      [i + 1, dv?.name || rp.deviceId, dd, rp.issue, rp.fix, +rp.cost || 0, rp.by, rp.note, rp.addedBy].forEach((v, k) => ws.getCell(r, k + 1).value = v ?? null);
+      ws.getCell(r, 3).numFmt = 'dd/mm/yyyy'; ws.getCell(r, 6).numFmt = '#,##0';
+      body(ws, r, 1, 9);
+    });
+  }
+
+  const buf = await wb.xlsx.writeBuffer();
+  const d = new Date();
+  const fname = `NXT_${slugVN(P)}_${R.tag}_${d.getDate()}-${d.getMonth() + 1}-${d.getFullYear()}.xlsx`;
+  lastExport = new File([buf], fname, {type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'});
   closeModal('modal-export');
-  toast(`✅ Đã xuất Excel (${txns.length} phiếu)`);
+  document.getElementById('xf-name').textContent = fname;
+  document.getElementById('xf-share').style.display = navigator.canShare && navigator.canShare({files:[lastExport]}) ? '' : 'none';
+  openModal('modal-xfile');
+}
+let lastExport = null;
+function downloadExport() {
+  if (!lastExport) return;
+  const a = document.createElement('a'); a.href = URL.createObjectURL(lastExport); a.download = lastExport.name;
+  document.body.appendChild(a); a.click();
+  setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 5000);
+  closeModal('modal-xfile'); toast('✅ Đã tải file ' + lastExport.name);
+}
+async function shareExport() {
+  if (!lastExport) return;
+  try { await navigator.share({files:[lastExport], title:lastExport.name}); closeModal('modal-xfile'); }
+  catch (e) { if (e.name !== 'AbortError') downloadExport(); }
 }
 
 // ===== LOGOUT =====
