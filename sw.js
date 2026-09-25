@@ -1,7 +1,7 @@
-// FECON Kho - Service Worker v5.5
+// FECON Kho - Service Worker v5.6
 // Ưu tiên tải bản mới từ mạng; chỉ dùng bản lưu tạm khi mất mạng.
 // Nhờ vậy mỗi lần cập nhật index.html trên GitHub, điện thoại sẽ thấy bản mới ngay.
-const CACHE = 'fecon-kho-v5-5';
+const CACHE = 'fecon-kho-v5-6-1';
 const CORE = ['./', './index.html', './manifest.json', './icon-192.png', './icon-512.png'];
 
 self.addEventListener('install', e => {

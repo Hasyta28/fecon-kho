@@ -424,7 +424,7 @@ body.can-ql .hide-ql{display:none!important}
 .donut-sel{flex:1;min-width:170px;border:1.5px solid var(--border);border-radius:10px;padding:9px 12px;font-size:13px;font-weight:600;color:var(--text);background:#fff;font-family:inherit}
 .proj-checks{display:flex;flex-direction:column;gap:2px;background:var(--bg);border-radius:10px;padding:6px 10px}
 .proj-checks label{display:flex;align-items:center;gap:10px;font-size:14px;padding:8px 2px;color:var(--text);text-transform:none;letter-spacing:0;font-weight:500;margin:0;cursor:pointer}
-.proj-checks input{width:18px;height:18px;accent-color:var(--primary)}
+.fg .proj-checks input{-webkit-appearance:checkbox;appearance:auto;width:20px;height:20px;min-width:20px;padding:0;margin:0;border:none;box-shadow:none;accent-color:var(--primary);flex:0 0 auto;cursor:pointer}
 .proj-note{font-size:11px;color:var(--text3);margin-top:6px;line-height:1.5}
 #proj-sel:disabled{opacity:1}
 /* ===== v5.5: tạo phiếu nhanh ===== */
@@ -445,6 +445,16 @@ body.can-ql .hide-ql{display:none!important}
 .qk-src{font-size:12px;color:var(--text3);font-style:italic;margin-bottom:10px;line-height:1.45}
 .qk-warn{margin-top:10px;background:#FFF8E6;color:#8A5A00;border-radius:8px;padding:8px 10px;font-size:12px;line-height:1.55}
 .qk-card.bad .qk-warn b{color:var(--red)}
+/* ===== v5.6: ai đang dùng app ===== */
+.mem-av{position:relative}
+.on-dot{position:absolute;right:-1px;bottom:-1px;width:12px;height:12px;border-radius:50%;background:#22C55E;border:2px solid #fff}
+.on-dot.idle{background:#F5B83D}
+.ri-sub.live{color:#16A34A;font-weight:700}
+.online-sum{display:flex;align-items:center;gap:8px;background:#ECFDF3;color:#166534;border-radius:12px;padding:10px 14px;font-size:13px;font-weight:600;margin-bottom:12px}
+.sess-list{background:var(--bg);border-radius:10px;padding:4px 12px;margin-bottom:10px}
+.sess-list div{display:flex;justify-content:space-between;gap:10px;padding:8px 0;border-bottom:1px solid var(--border);font-size:13px}
+.sess-list div:last-child{border-bottom:none}
+.sess-list span{color:var(--text3);font-size:12px;white-space:nowrap}
 </style>
 </head>
 <body>
@@ -887,6 +897,7 @@ body.can-ql .hide-ql{display:none!important}
     <div class="modal-title" id="mm-title">Thành viên</div>
     <input type="hidden" id="mm-id">
     <div class="kv-box" id="mm-info"></div>
+    <div id="mm-sess"></div>
     <div class="fg need-admin"><label>Họ tên hiển thị</label><input type="text" id="mm-name"></div>
     <div class="fg need-admin"><label>Vai trò</label>
       <select id="mm-role" onchange="renderMemberProjects()">
@@ -964,7 +975,7 @@ body.can-ql .hide-ql{display:none!important}
 // ============================================================
 // CONFIG
 // ============================================================
-const APP_VERSION = '5.5.1';
+const APP_VERSION = '5.6.1';
 const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbw6Rmi80I7RI3ij2U7RdRF5pYuQTnPrwEmGmUZS5xpxzLwwVynfoFUujZe1lm6HS1ymxw/exec';
 // ============================================================
 
@@ -1096,7 +1107,7 @@ async function doRegister() {
   if (password.length < 6) return authErr('Mật khẩu tối thiểu 6 ký tự');
   if (password !== pw2) return authErr('Hai lần nhập mật khẩu không khớp');
   authErr(''); showLoader('Đang gửi yêu cầu...');
-  const r = await api('register', {name, username, password, phone: g('rg-phone'), note: g('rg-note')}, 30000);
+  const r = await api('register', {name, username, password, phone: g('rg-phone'), note: g('rg-note'), device: deviceName()}, 30000);
   hideLoader();
   if (!r.success) return authErr(r.offline ? (r.reason || 'Không có mạng — cần kết nối để gửi yêu cầu') : (r.error || 'Gửi yêu cầu thất bại'));
   ['rg-name','rg-user','rg-pass','rg-pass2','rg-phone','rg-note'].forEach(id => document.getElementById(id).value = '');
@@ -3201,32 +3212,52 @@ async function renderHistoryLog() {
 }
 
 // ===== THÀNH VIÊN (Admin) =====
-let members = [], allProjects = [];
+let members = [], allProjects = [], memNow = 0, memTimer = null, showAdmins = false;
+// Trạng thái hoạt động: app đang mở thì 15 giây báo máy chủ 1 lần
+function presence(u) {
+  if (!u.lastSeen) return {cls:'', txt:''};
+  const m = Math.floor((memNow - u.lastSeen) / 60000);
+  if (m < 2) return {cls:'on', txt:'🟢 Đang dùng app' + (u.lastDevice ? ' · ' + u.lastDevice : '')};
+  if (m < 60) return {cls:'idle', txt:`Hoạt động ${m} phút trước` + (u.lastDevice ? ' · ' + u.lastDevice : '')};
+  const h = Math.floor(m / 60);
+  return {cls:'', txt: h < 24 ? `Hoạt động ${h} giờ trước` : ''};
+}
+const ago = t => { if (!t) return ''; const m = Math.floor((memNow - t) / 60000); if (m < 1) return 'vừa xong'; if (m < 60) return m + ' phút trước'; const h = Math.floor(m / 60); if (h < 24) return h + ' giờ trước'; const d = new Date(t); return `${d.getDate()}/${d.getMonth() + 1}/${d.getFullYear()}`; };
 async function renderMembers() {
   const body = document.getElementById('dp-members-body');
   if (!members.length) body.innerHTML = '<div class="empty-state" style="padding-top:60px"><p>Đang tải...</p></div>';
   const r = await api('listUsers');
   if (!r.success) { body.innerHTML = `<div class="empty-state" style="padding-top:60px"><div class="e-ico">⚠️</div><p>${escHtml(r.offline ? (r.reason || 'Cần có mạng để quản lý thành viên') : (r.error || 'Lỗi'))}</p></div>`; return; }
-  members = r.users; allProjects = r.allProjects || db.projects;
-  const pend = can('admin') ? members.filter(u => u.status === 'pending') : [], act = members.filter(u => u.status !== 'pending');
+  members = r.users; allProjects = r.allProjects || db.projects; memNow = r.now || Date.now();
+  // người đang dùng lên đầu
+  members.sort((a, b) => (b.lastSeen || 0) - (a.lastSeen || 0));
+  clearInterval(memTimer);
+  memTimer = setInterval(() => { const pg = document.getElementById('dp-members'); if (!pg.classList.contains('show') || !token) { clearInterval(memTimer); return; } if (!document.hidden && document.getElementById('modal-member').style.display !== 'flex') renderMembers(); }, 30000);
+  const pend = can('admin') ? members.filter(u => u.status === 'pending') : [];
+  const admins = members.filter(u => u.status !== 'pending' && u.role === 'admin');
+  const act = members.filter(u => u.status !== 'pending' && (u.role !== 'admin' || showAdmins));
   setPendingBadge(pend.length);
   body.innerHTML = `
     ${pend.length ? `<div class="grp-label">⏳ Chờ duyệt (${pend.length})</div><div class="card" style="margin-bottom:14px">${pend.map(memberRow).join('')}</div>` : ''}
+    ${(() => { const on = act.filter(u => presence(u).cls === 'on'); return on.length ? `<div class="online-sum">🟢 ${on.length} người đang dùng app: ${on.map(u => escHtml(u.name)).join(', ')}</div>` : ''; })()}
     <div class="grp-label">👥 Thành viên (${act.length})</div>
-    <div class="card">${act.map(memberRow).join('')}</div>`;
+    <div class="card">${act.length ? act.map(memberRow).join('') : '<div class="empty-state" style="padding:24px"><p>Chưa có thành viên</p></div>'}</div>
+    ${can('admin') && admins.length ? `<div style="text-align:center;margin-top:8px"><button class="link-btn" style="color:var(--text3);font-weight:600" onclick="showAdmins=!showAdmins;renderMembers()">${showAdmins ? 'Ẩn tài khoản Admin' : `Hiện tài khoản Admin (${admins.length})`}</button></div>` : ''}`;
 }
 function memberRow(u) {
   const badge = u.status === 'pending' ? '<span class="txn-badge badge-out">Chờ duyệt</span>'
     : u.status === 'locked' ? '<span class="txn-badge badge-warn">Đã khóa</span>'
     : `<span class="txn-badge ${u.role==='admin'?'badge-out':u.role==='ql'?'badge-blue':u.role==='tk'?'badge-in':'badge-gray'}">${ROLE_NAME[u.role] || u.role}</span>`;
-  const sub = u.status === 'pending' ? 'Gửi lúc ' + u.createdAt : u.lastLogin ? 'Vào gần nhất ' + u.lastLogin : 'Chưa đăng nhập';
+  const pr = u.status === 'pending' ? {cls:'', txt:''} : presence(u);
+  const sub = u.status === 'pending' ? 'Gửi lúc ' + u.createdAt : pr.txt || (u.lastLogin ? 'Đăng nhập lần cuối ' + u.lastLogin : 'Chưa đăng nhập');
+  const nDev = (u.sessions || []).length;
   return `<div class="row-item" onclick="openMember('${escHtml(u.id)}')">
     <div class="ri-left">
-      <div class="mem-av r-${escHtml(u.role)}">${escHtml(initials(u.name))}</div>
+      <div class="mem-av r-${escHtml(u.role)}">${escHtml(initials(u.name))}${pr.cls ? `<i class="on-dot ${pr.cls === 'idle' ? 'idle' : ''}"></i>` : ''}</div>
       <div class="ri-texts">
         <div class="ri-name">${escHtml(u.name)}${u.id === me?.id ? ' <span style="color:var(--text3);font-weight:500">(bạn)</span>' : ''}</div>
         <div class="ri-sub">@${escHtml(u.username)}${u.phone ? ' · ' + escHtml(u.phone) : ''}</div>
-        <div class="ri-sub">${escHtml(sub)}</div>
+        <div class="ri-sub ${pr.cls === 'on' ? 'live' : ''}">${escHtml(sub)}${nDev ? ` · 📱 ${nDev} máy đăng nhập` : ''}</div>
         ${u.status !== 'pending' ? `<div class="ri-sub">📍 ${RANK[u.role] >= RANK.ql ? 'Tất cả dự án' : (u.projects || []).length ? escHtml(u.projects.join(', ')) : '<b style="color:var(--red)">Chưa giao dự án</b>'}</div>` : ''}
         ${u.note ? `<div class="ri-sub">📝 ${escHtml(u.note)}</div>` : ''}
       </div>
@@ -3242,7 +3273,11 @@ function openMember(id) {
   document.getElementById('mm-title').textContent = pending ? '⏳ Duyệt yêu cầu tham gia' : '👤 ' + u.name;
   document.getElementById('mm-info').innerHTML = kv('Tên đăng nhập', '@' + u.username) + kv('Điện thoại', u.phone) + kv('Ghi chú', u.note)
     + kv('Đăng ký lúc', u.createdAt) + kv('Người duyệt', u.approvedBy) + kv('Vào gần nhất', u.lastLogin)
-    + kv('Trạng thái', pending ? 'Chờ duyệt' : u.status === 'locked' ? 'Đã khóa' : 'Đang hoạt động');
+    + kv('Trạng thái', pending ? 'Chờ duyệt' : u.status === 'locked' ? 'Đã khóa' : (presence(u).txt || 'Đang hoạt động'));
+  const ss = u.sessions || [];
+  document.getElementById('mm-sess').innerHTML = pending ? '' : `<div class="grp-label">📱 Đang đăng nhập trên ${ss.length} máy</div>`
+    + (ss.length ? `<div class="sess-list">${ss.map(x => `<div><b>${escHtml(x.d || 'Máy không rõ (đăng nhập trước bản 5.6)')}</b><span>${x.c ? (ago(x.c) === 'vừa xong' ? 'vừa đăng nhập' : 'từ ' + ago(x.c)) : ''}</span></div>`).join('')}</div>` : '<div class="proj-note" style="margin:-4px 0 12px">Không có máy nào đang đăng nhập.</div>')
+    + (can('admin') && ss.length ? `<button class="btn-full" style="background:#fff;color:var(--red);border:1.5px solid #F5C2C0;margin:0 0 14px" onclick="revokeMember()">🚪 Đăng xuất ${self ? 'các máy khác' : 'khỏi mọi máy'}</button>` : '');
   document.getElementById('mm-name').value = u.name;
   const rs = document.getElementById('mm-role');
   rs.value = pending ? 'tk' : u.role; rs.disabled = self;
@@ -3252,6 +3287,7 @@ function openMember(id) {
   document.getElementById('mm-active-box').style.display = isAdmin && !pending ? '' : 'none';
   document.getElementById('mm-ql-box').style.display = isAdmin ? 'none' : '';
   mmProjects = new Set(u.projects || []);
+  document.getElementById('mm-projs').innerHTML = '';     // không mang trạng thái tích của người xem trước
   renderMemberProjects();
   document.getElementById('mm-danger').style.display = self ? 'none' : '';
   document.getElementById('mm-lock').textContent = u.status === 'locked' ? '🔓 Mở khóa' : '🔒 Khóa';
@@ -3277,6 +3313,12 @@ function renderMemberProjects() {
 const checkedProjects = () => [...document.querySelectorAll('#mm-projs input:checked:not(:disabled)')].map(i => i.value);
 function saveMemberProjects() {
   memberAction('setUserProjects', {id: mmId(), projects: checkedProjects()}, '✅ Đã lưu phân công dự án');
+}
+function revokeMember() {
+  const u = members.find(x => x.id === mmId()); if (!u) return;
+  const self = u.id === me?.id;
+  if (!confirm(self ? 'Đăng xuất tài khoản của bạn trên các máy khác (giữ máy này)?' : `Đăng xuất ${u.name} khỏi tất cả máy? Người này sẽ phải đăng nhập lại (tài khoản không bị khóa).`)) return;
+  memberAction('revokeUserSessions', {id: u.id}, '🚪 Đã đăng xuất từ xa');
 }
 function approveMember() {
   const role = document.getElementById('mm-role').value, name = document.getElementById('mm-name').value.trim();
