@@ -71,34 +71,48 @@ body{font-family:-apple-system,BlinkMacSystemFont,"SF Pro Display","Segoe UI",sa
 
 /* ===== TOP HEADER (gradient) ===== */
 .app-header{
-  background:linear-gradient(135deg,#003F7D 0%,#0056A4 50%,#F26522 130%);
-  padding:calc(env(safe-area-inset-top,14px) + 10px) 16px 14px;
+  background:none;
+  padding:calc(env(safe-area-inset-top,14px) + 6px) 16px 10px;
   flex-shrink:0
 }
-.header-row1{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
-.header-menu{width:36px;height:36px;border-radius:50%;background:rgba(255,255,255,.15);display:flex;align-items:center;justify-content:center;cursor:pointer;border:none;flex-direction:column;gap:4px;padding:10px}
+/* v5.10: nền xanh → cam chia ngang (mã màu cũ, trong suốt 85%), cam tràn xuống giữa trang rồi mờ dần */
+#pg-app{--st:env(safe-area-inset-top,14px);background:linear-gradient(180deg,
+  rgba(0,63,125,.85) 0px, rgba(0,86,164,.85) calc(var(--st) + 44px),
+  rgba(242,101,34,.85) calc(var(--st) + 68px), rgba(242,101,34,.85) calc(var(--st) + 102px),
+  rgba(242,101,34,.38) calc(var(--st) + 186px), rgba(242,101,34,.13) calc(var(--st) + 282px),
+  rgba(242,101,34,0) calc(var(--st) + 402px)), var(--bg)}
+.header-row1{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:0}
+.header-menu{margin-top:6px;width:44px;height:44px;border-radius:50%;background:rgba(255,255,255,.15);display:flex;align-items:center;justify-content:center;cursor:pointer;border:none;flex-direction:column;gap:4px;padding:10px}
 .header-menu span{display:block;width:16px;height:2px;background:#fff;border-radius:1px}
-.header-logo{height:38px;object-fit:contain;background:#fff;padding:4px 10px;border-radius:10px;box-shadow:0 2px 8px rgba(0,0,0,.15)}
-.header-avatar{width:36px;height:36px;border-radius:50%;background:rgba(255,255,255,.2);border:2px solid rgba(255,255,255,.4);display:flex;align-items:center;justify-content:center;color:#fff;font-weight:800;font-size:13px;cursor:pointer}
-.header-title{text-align:center;color:#fff;font-size:22px;font-weight:800;letter-spacing:-.3px;margin-bottom:8px}
-.proj-pill{display:flex;align-items:center;justify-content:center;gap:6px}
-.proj-select-wrap{background:rgba(255,255,255,.15);backdrop-filter:blur(10px);border:1px solid rgba(255,255,255,.25);border-radius:20px;padding:6px 16px;display:inline-flex;align-items:center;gap:6px}
-.proj-select-wrap select{background:none;border:none;color:#fff;font-size:13px;font-weight:600;outline:none;cursor:pointer;-webkit-appearance:none}
-.proj-select-wrap select option{background:#003F7D;color:#fff}
-.proj-arrow{color:rgba(255,255,255,.7);font-size:11px}
+.header-logo{width:min(200px,52vw);height:auto;object-fit:contain;display:block}
+.header-avatar{margin-top:6px;width:44px;height:44px;border-radius:50%;background:rgba(255,255,255,.2);border:2px solid rgba(255,255,255,.4);display:flex;align-items:center;justify-content:center;color:#fff;font-weight:800;font-size:13px;cursor:pointer}
+/* iPhone (app đã cài): nếu vùng hiển thị ngắn hơn màn hình thì kéo đáy trang + thanh dưới xuống sát mép */
+#pg-app{bottom:calc(0px - var(--iosgap,0px))}
+#pg-app .bottom-nav{bottom:calc(0px - var(--iosgap,0px))}
+/* Ô chọn dự án (nằm trong menu) */
+.sb-kho{padding:14px 16px 12px;border-bottom:1px solid var(--border);background:linear-gradient(180deg,rgba(242,101,34,.38),rgba(242,101,34,.13) 45%,rgba(242,101,34,0)),#F7F9FC}
+.sb-kho-lbl{font-size:10.5px;font-weight:800;letter-spacing:.6px;color:#6B3A1F}
+.proj-select-wrap{margin-top:8px;position:relative;display:flex;align-items:center;gap:10px;background:#fff;border:1.5px solid #C9D3E3;border-radius:12px;padding:8px 12px;min-height:52px}
+.proj-select-wrap .pj-ico{font-size:22px}
+.proj-select-wrap .pj-txt{flex:1;min-width:0}
+.proj-select-wrap .pj-txt small{display:block;font-size:11.5px;color:var(--text3)}
+.proj-select-wrap select{width:100%;background:none;border:none;color:var(--primary);font-size:15px;font-weight:800;outline:none;cursor:pointer;-webkit-appearance:none;appearance:none;padding:0;font-family:inherit;text-overflow:ellipsis}
+.proj-arrow{color:var(--text3);font-size:16px}
+.proj-select-wrap:has(select:disabled) .proj-arrow{display:none}
 
 /* ===== BOTTOM NAV ===== */
 .bottom-nav{
   position:fixed;bottom:0;left:0;right:0;
   background:#fff;border-top:1px solid var(--border);
   display:flex;z-index:100;
-  padding-bottom:env(safe-area-inset-bottom,0px)
+  padding-bottom:max(6px, calc(env(safe-area-inset-bottom,0px) - 12px));
+  box-shadow:0 -4px 14px rgba(16,24,40,.06)
 }
-.bnav-btn{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:10px 4px 8px;border:none;background:none;color:var(--text3);font-size:10px;font-weight:600;gap:4px;cursor:pointer;transition:.15s;position:relative}
+.bnav-btn{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:6px 2px 4px;border:none;background:none;color:var(--text3);font-size:11px;font-weight:700;gap:3px;cursor:pointer;transition:.15s;position:relative}
 .bnav-btn.on{color:var(--orange)}
-.bnav-btn.on .bnav-icon-wrap::after{content:'';position:absolute;bottom:-4px;left:50%;transform:translateX(-50%);width:20px;height:3px;background:var(--orange);border-radius:2px}
-.bnav-icon-wrap{position:relative;width:28px;height:28px;display:flex;align-items:center;justify-content:center}
-.bnav-icon{font-size:20px}
+.bnav-btn.on .bnav-icon-wrap::after{content:'';position:absolute;bottom:-18px;left:50%;transform:translateX(-50%);width:20px;height:3px;background:var(--orange);border-radius:2px}
+.bnav-icon-wrap{position:relative;width:36px;height:34px;display:flex;align-items:center;justify-content:center}
+.bnav-icon{font-size:28px;line-height:1}
 .bnav-badge{position:absolute;top:-2px;right:-4px;background:var(--red);color:#fff;font-size:9px;font-weight:700;padding:1px 4px;border-radius:6px;min-width:14px;text-align:center}
 
 /* ===== CARDS ===== */
@@ -166,12 +180,12 @@ body{font-family:-apple-system,BlinkMacSystemFont,"SF Pro Display","Segoe UI",sa
 .txn-row:last-child{border-bottom:none}
 .txn-ico{width:36px;height:36px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:17px;flex-shrink:0;margin-right:10px}
 .txn-ico.in{background:#E8F8EF}
-.txn-ico.out{background:#FFF4EE}
+.txn-ico.out{background:#E3EEFA}
 .txn-name{font-size:13px;font-weight:600;color:var(--text)}
 .txn-sub{font-size:11px;color:var(--text3);margin-top:1px}
 .txn-badge{font-size:12px;font-weight:700;padding:4px 9px;border-radius:8px}
 .badge-in{background:#E8F8EF;color:var(--green)}
-.badge-out{background:#FFF4EE;color:var(--orange)}
+.badge-out{background:#E3EEFA;color:#1A5FA8}
 .badge-warn{background:#FFF0EE;color:var(--red)}
 .badge-blue{background:#EEF4FF;color:var(--blue)}
 .badge-gray{background:var(--bg);color:var(--text2)}
@@ -283,8 +297,8 @@ body{font-family:-apple-system,BlinkMacSystemFont,"SF Pro Display","Segoe UI",sa
 .sidebar.open{transform:translateX(0)}
 .sidebar-overlay{position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:299;display:none}
 .sidebar-overlay.show{display:block}
-.sidebar-header{background:linear-gradient(135deg,#003F7D,#F26522);padding:calc(env(safe-area-inset-top,14px) + 20px) 20px 20px}
-.sidebar-logo{height:44px;background:#fff;padding:5px 12px;border-radius:10px;margin-bottom:10px}
+.sidebar-header{--st:env(safe-area-inset-top,14px);background:linear-gradient(180deg,rgba(0,63,125,.85) 0px,rgba(0,86,164,.85) calc(var(--st) + 36px),rgba(242,101,34,.85) calc(var(--st) + 56px),rgba(242,101,34,.85) 100%),#F7F9FC;padding:calc(env(safe-area-inset-top,14px) + 8px) 20px 14px}
+.sidebar-logo{width:150px;height:auto;display:block;margin-bottom:12px}
 .sidebar-user{color:rgba(255,255,255,.8);font-size:12px}
 .sidebar-user b{color:#fff;display:block;font-size:15px;margin-bottom:2px}
 .sidebar-body{flex:1;overflow-y:auto;padding:16px 0}
@@ -387,13 +401,17 @@ body.can-ql .hide-ql{display:none!important}
 
 /* ===== Ô lập phiếu nhanh (đầu trang Tổng quan) ===== */
 .act-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;padding:14px 14px 0}
-.act-tile{border:none;border-radius:var(--r);padding:18px 16px;display:flex;align-items:center;gap:14px;cursor:pointer;color:#fff;text-align:left;font-family:inherit;box-shadow:0 6px 18px rgba(0,0,0,.14);transition:transform .12s}
+.act-tile{border:1px solid var(--border);border-radius:var(--r);padding:18px 16px;display:flex;align-items:center;gap:14px;cursor:pointer;color:var(--text);background:#fff;text-align:left;font-family:inherit;box-shadow:0 2px 10px rgba(16,24,40,.06);transition:transform .12s}
 .act-tile:active{transform:scale(.97)}
-.act-tile.nhap{background:linear-gradient(135deg,#1E9E57,#27AE60)}
-.act-tile.xuat{background:linear-gradient(135deg,#E0521A,#F26522)}
-.act-ico{width:52px;height:52px;border-radius:14px;background:rgba(255,255,255,.2);display:flex;align-items:center;justify-content:center;font-size:28px;flex-shrink:0}
+.act-tile.nhap{border-color:#D7EEDF;border-left:4px solid #2E9F5A}
+.act-tile.nhap .act-name{color:#1E7A45}
+.act-tile.nhap .act-ico{background:#E4F4EA}
+.act-tile.xuat{border-color:#D5E4F5;border-left:4px solid #1E6FC0}
+.act-tile.xuat .act-name{color:#1A5FA8}
+.act-tile.xuat .act-ico{background:#E3EEFA}
+.act-ico{width:52px;height:52px;border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:28px;flex-shrink:0}
 .act-name{font-size:19px;font-weight:800;line-height:1.15}
-.act-sub{font-size:12px;opacity:.9;margin-top:4px}
+.act-sub{font-size:12px;color:var(--text2);margin-top:4px}
 @media (max-width:420px){.act-tile{flex-direction:column;align-items:flex-start;gap:10px;padding:16px 14px}.act-ico{width:46px;height:46px;font-size:24px}.act-name{font-size:18px}}
 .hist-head{display:flex;justify-content:space-between;align-items:baseline;padding:14px 16px 10px}
 .hist-head b{font-size:16px;color:var(--text)}
@@ -429,8 +447,8 @@ body.can-ql .hide-ql{display:none!important}
 .proj-note{font-size:11px;color:var(--text3);margin-top:6px;line-height:1.5}
 #proj-sel:disabled{opacity:1}
 /* ===== v5.5: tạo phiếu nhanh ===== */
-.qk-entry{display:flex;align-items:center;gap:10px;width:calc(100% - 28px);margin:10px 14px 0;padding:12px 14px;border-radius:var(--r);border:1.5px dashed #9DB7D5;background:#F4F8FD;color:var(--primary);font-weight:800;font-size:14px;cursor:pointer;font-family:inherit;text-align:left}
-.qk-entry small{display:block;font-weight:500;color:var(--text3);font-size:11.5px;margin-top:2px}
+.qk-entry{display:flex;align-items:center;gap:10px;width:calc(100% - 28px);margin:10px 14px 0;padding:12px 14px;border-radius:var(--r);border:1.5px dashed #7DB6DD;background:#E1F1FB;color:var(--primary);font-weight:800;font-size:14px;cursor:pointer;font-family:inherit;text-align:left}
+.qk-entry small{display:block;font-weight:500;color:#3D5873;font-size:11.5px;margin-top:2px}
 .qk-entry .qe-ico{font-size:22px}
 .qk-bar{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}
 .qk-btn{border:1.5px solid var(--border);background:#fff;border-radius:10px;padding:10px 14px;font-size:13px;font-weight:700;color:var(--text2);cursor:pointer;font-family:inherit}
@@ -538,15 +556,6 @@ body.can-admin .lock-note{display:none}
       </button>
       <img src="" data-logo class="header-logo" alt="Fecon South">
       <div class="header-avatar" id="header-avatar" onclick="toggleSidebar()">TK</div>
-    </div>
-    <div class="header-title" id="header-title">Kho Vật Tư</div>
-    <div class="proj-pill">
-      <div class="proj-select-wrap">
-        <select id="proj-sel" onchange="onProjChange()">
-          <option value="all">Dự án — Tất cả —</option>
-        </select>
-        <span class="proj-arrow">⌄</span>
-      </div>
     </div>
   </div>
   <!-- SYNC STATUS -->
@@ -696,6 +705,18 @@ body.can-admin .lock-note{display:none}
       <b id="sb-name">Thủ Kho</b>
       <span id="sb-role">Nhập · Xuất kho</span>
     </div>
+  </div>
+  <div class="sb-kho">
+    <div class="sb-kho-lbl">KHO VẬT TƯ ĐANG XEM</div>
+    <label class="proj-select-wrap">
+      <span class="pj-ico">🏗️</span>
+      <span class="pj-txt"><small>Dự án</small>
+        <select id="proj-sel" onchange="onProjChange();closeSidebar()">
+          <option value="all">— Tất cả —</option>
+        </select>
+      </span>
+      <span class="proj-arrow">⌄</span>
+    </label>
   </div>
   <div class="sidebar-body">
     <div class="sidebar-label">Chức năng</div>
@@ -1117,7 +1138,7 @@ body.can-admin .lock-note{display:none}
 // ============================================================
 // CONFIG
 // ============================================================
-const APP_VERSION = '5.9';
+const APP_VERSION = '5.10';
 const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbw6Rmi80I7RI3ij2U7RdRF5pYuQTnPrwEmGmUZS5xpxzLwwVynfoFUujZe1lm6HS1ymxw/exec';
 // ============================================================
 
@@ -1617,7 +1638,7 @@ function refreshCurrentView(notify) {
 function updateProjSel() {
   const sel = document.getElementById('proj-sel');
   sel.innerHTML = db.projects.length
-    ? db.projects.map(p => `<option value="${escHtml(p)}">Dự án — ${escHtml(p)}</option>`).join('')
+    ? db.projects.map(p => `<option value="${escHtml(p)}">${escHtml(p)}</option>`).join('')
     : `<option value="">${loadedOnce ? 'Chưa được giao dự án' : 'Đang tải...'}</option>`;
   sel.value = curProj;
   sel.disabled = db.projects.length <= 1;                 // chỉ 1 dự án thì không cần chọn
@@ -4636,8 +4657,18 @@ async function doInstall() {
   openModal('modal-install');
 }
 
+// iPhone app đã cài: một số máy báo chiều cao vùng hiển thị ngắn hơn màn hình → dải trống xám dưới thanh điều hướng.
+function fixIosGap() {
+  if (navigator.standalone !== true) return;
+  const gap = Math.round(screen.height - window.innerHeight);
+  if (gap >= 0 && gap <= 60) document.documentElement.style.setProperty('--iosgap', gap + 'px');   // > 60: bàn phím đang mở, giữ nguyên
+}
+window.addEventListener('resize', fixIosGap);
+window.addEventListener('orientationchange', () => setTimeout(fixIosGap, 300));
+
 // ===== KHỞI ĐỘNG =====
 (function boot() {
+  fixIosGap();
   updInstallUI();
   const lg = document.querySelector('.login-logo img'); document.querySelectorAll('img[data-logo]').forEach(i => i.src = lg.src);
   loadLocal();
