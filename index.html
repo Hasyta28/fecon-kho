@@ -467,6 +467,7 @@ body.can-ql .hide-ql{display:none!important}
 .ln-loan-line{font-size:11px;font-weight:600;color:var(--text2);margin-top:6px;display:flex;gap:10px;flex-wrap:wrap}
 .ln-loan-line span{background:var(--bg);border-radius:6px;padding:2px 8px}
 .ln-dev{margin-top:10px;background:#FFF4EE;border-radius:8px;padding:10px 12px;font-size:13px;color:var(--text);cursor:pointer}
+body.can-admin .lock-note{display:none}
 .ri-sub.live{color:#16A34A;font-weight:700}
 .online-sum{display:flex;align-items:center;gap:8px;background:#ECFDF3;color:#166534;border-radius:12px;padding:10px 14px;font-size:13px;font-weight:600;margin-bottom:12px}
 .sess-list{background:var(--bg);border-radius:10px;padding:4px 12px;margin-bottom:10px}
@@ -723,6 +724,41 @@ body.can-ql .hide-ql{display:none!important}
 </div>
 
 <!-- ===================== MODALS ===================== -->
+<!-- Modal: Admin sửa phiếu -->
+<div class="modal-bg" id="modal-edit-txn" style="display:none" onclick="closeModalBg(event,'modal-edit-txn')">
+  <div class="modal-sheet">
+    <div class="modal-handle"></div>
+    <div class="modal-title" id="et-title">✏️ Sửa phiếu</div>
+    <div class="fg"><label>Vật tư</label><select id="et-item"></select></div>
+    <div class="fg"><label id="et-qty-label">Số lượng</label><input type="number" id="et-qty" step="any" inputmode="decimal"></div>
+    <div class="fg" id="et-party-wrap"><label id="et-party-label">Người nhận</label><input type="text" id="et-party"></div>
+    <div class="fg" id="et-dev-wrap"><label>Thiết bị nhận</label><select id="et-dev"></select></div>
+    <div class="fg" id="et-reason-wrap"><label>Lý do điều chỉnh</label><input type="text" id="et-reason"></div>
+    <div class="fg"><label>Ghi chú</label><textarea id="et-note" rows="2"></textarea></div>
+    <div class="fg"><label>Ngày giờ phiếu</label><input type="datetime-local" id="et-time"></div>
+    <div class="modal-actions">
+      <button class="btn-cancel" onclick="closeModal('modal-edit-txn')">Hủy</button>
+      <button class="btn-ok" onclick="saveEditTxn()">Lưu thay đổi</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-bg" id="modal-edit-loan" style="display:none" onclick="closeModalBg(event,'modal-edit-loan')">
+  <div class="modal-sheet">
+    <div class="modal-handle"></div>
+    <div class="modal-title">✏️ Sửa phiếu mượn</div>
+    <div class="adj-info" id="el-info"></div>
+    <div class="fg"><label id="el-party-label">Người / đơn vị mượn</label><input type="text" id="el-party"></div>
+    <div class="fg"><label>Điện thoại</label><input type="tel" id="el-phone" inputmode="tel"></div>
+    <div class="fg"><label>Hạn trả (để trống = không hạn)</label><input type="date" id="el-due"></div>
+    <div class="fg"><label>Ghi chú</label><textarea id="el-note" rows="2"></textarea></div>
+    <div class="modal-actions">
+      <button class="btn-cancel" onclick="closeModal('modal-edit-loan')">Hủy</button>
+      <button class="btn-ok" onclick="saveEditLoan()">Lưu thay đổi</button>
+    </div>
+  </div>
+</div>
+
 <!-- Modal: phiếu mượn -->
 <div class="modal-bg" id="modal-loan" style="display:none" onclick="closeModalBg(event,'modal-loan')">
   <div class="modal-sheet">
@@ -735,6 +771,10 @@ body.can-ql .hide-ql{display:none!important}
       <button class="btn-ok need-tk" id="ml-ret-btn" style="background:var(--green)" onclick="openLoanReturn()">↩️ Nhận trả</button>
     </div>
     <button class="btn-full need-tk" id="ml-close-btn" style="background:none;color:var(--red);font-size:13px;margin-top:10px;padding:10px" onclick="openLoanClose()">Đóng phiếu — không trả đủ</button>
+    <div class="modal-actions need-admin" style="margin-top:4px">
+      <button class="btn-cancel" onclick="openEditLoan()">✏️ Sửa phiếu mượn</button>
+      <button class="btn-cancel" style="color:var(--red)" onclick="deleteLoanAdmin()">🗑 Xóa phiếu mượn</button>
+    </div>
   </div>
 </div>
 
@@ -959,6 +999,10 @@ body.can-ql .hide-ql{display:none!important}
       <button class="btn-cancel" onclick="closeModal('modal-txn')">Đóng</button>
       <button class="btn-ok need-tk" id="mt-adjust-btn" style="background:var(--primary)" onclick="adjustFromTxn()">⚖️ Tạo phiếu điều chỉnh</button>
     </div>
+    <div class="modal-actions need-admin" style="margin-top:8px">
+      <button class="btn-cancel" onclick="openEditTxn()">✏️ Sửa phiếu</button>
+      <button class="btn-cancel" style="color:var(--red)" onclick="deleteTxnAdmin()">🗑 Xóa phiếu</button>
+    </div>
   </div>
 </div>
 
@@ -1073,7 +1117,7 @@ body.can-ql .hide-ql{display:none!important}
 // ============================================================
 // CONFIG
 // ============================================================
-const APP_VERSION = '5.8.3';
+const APP_VERSION = '5.9';
 const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbw6Rmi80I7RI3ij2U7RdRF5pYuQTnPrwEmGmUZS5xpxzLwwVynfoFUujZe1lm6HS1ymxw/exec';
 // ============================================================
 
@@ -1447,7 +1491,8 @@ function applyServer(r) {
   const ids = new Set(base.map(t => t.id));
   db.transactions = base.concat(db.transactions.filter(t => t._local && !ids.has(t.id) && t.project === P));  // giữ phiếu tạm chưa thấy trên máy chủ
   db.scope = P;
-  db.txnTotal = r.txnCols ? r.txnTotal : 0; db.txnLastId = r.txnCols ? r.txnLastId : '';
+  db.txnTotal = r.txnCols ? r.txnTotal : 0; db.txnLastId = r.txnCols ? r.txnLastId : ''; db.txnRev = r.txnRev || 0;
+  _adj.len = -1;
   if (r.version) serverVer = r.version;
   serverVerInfo = r.sv ? 'Máy chủ ' + r.sv : 'Máy chủ bản cũ — cần triển khai Apps Script mới';
   showVersion();
@@ -1482,6 +1527,8 @@ function reapplyOutbox() {
       if (!db.transactions.some(t => t.id === d.id)) db.transactions.push(d);
     } else if (LOAN_ACTIONS[op.action]) {
       applyLoanOp(op.action, d);
+    } else if (ADMIN_ACTIONS[op.action]) {
+      applyAdminOp(op.action, d);
     }
   });
 }
@@ -1499,7 +1546,7 @@ async function syncAll(silent) {
     const flushed = await flushOutbox();          // gửi thay đổi chờ trước; lỗi vẫn tiếp tục tải dữ liệu
     if (!token || gen !== sessionGen) return false;
     const inc = {project: curProj};
-    if (curProj && db.scope === curProj && db.txnTotal && db.txnLastId && db.transactions.length) Object.assign(inc, {since: db.txnTotal, lastId: db.txnLastId, scope: curProj});
+    if (curProj && db.scope === curProj && db.txnTotal && db.txnLastId && db.transactions.length) Object.assign(inc, {since: db.txnTotal, lastId: db.txnLastId, scope: curProj, txnRev: db.txnRev || 0});
     let r = await api('getAll', inc, 45000);
     if (!r.success && !r.auth && !r.stale && token) r = await api('getAll', inc, 45000);   // lỗi mạng: thử lại ngay, không chờ 15 giây
     if (gen !== sessionGen || r.stale) return false;
@@ -1726,7 +1773,7 @@ function renderHome(c) {
   const catItems = cats.find(([c]) => c.id === homeCat)?.[1] || [];
   const units = unitGroups(catItems);
   if (!homeUnit || !units.some(([u]) => u === homeUnit)) homeUnit = units[0]?.[0] || null;
-  const recent = txns.filter(t => !LOAN_T[t.type]).sort((a,b) => (+b.id||0) - (+a.id||0)).slice(0, 6);
+  const recent = byTimeDesc(txns.filter(t => !LOAN_T[t.type])).slice(0, 6);
 
   c.innerHTML = `
     <div class="act-grid need-tk">
@@ -2150,7 +2197,7 @@ function renderTxnList(txns, type) {
   if (!txns.length) return '<div class="empty-state" style="padding-top:60px"><div class="e-ico">📭</div><p>Chưa có phiếu</p></div>';
   const total = txns.reduce((s,t) => s + effQty(t), 0);
   return `<div class="card">
-    ${txns.slice().reverse().map(txnRow).join('')}
+    ${byTimeDesc(txns).map(txnRow).join('')}
     ${type === 'dieuchinh' ? '' : `<div class="total-row">
       <span class="total-label">Tổng ${type==='nhap'?'nhập':'xuất'}</span>
       <span class="total-val">${fmtNum(total)}</span>
@@ -2188,6 +2235,7 @@ function renderNhap(c) {
       </div>
       <div class="fg"><label>Nhà cung cấp</label><input type="text" id="fn-ncc" placeholder="Tên nhà cung cấp"></div>
       <div class="fg"><label>Số phiếu / Ghi chú</label><textarea id="fn-note" rows="2" placeholder="Ghi chú..."></textarea></div>
+      <div class="fg need-admin"><label>Ngày giờ phiếu (để trống = bây giờ)</label><input type="datetime-local" id="fn-time"></div>
       ${photoFieldHtml('fn')}
       <button class="btn-full btn-green" onclick="doNhap()">✅ Xác nhận nhập kho</button>
     </div>
@@ -2268,6 +2316,7 @@ async function doNhap() {
     supplierOrReceiver:document.getElementById('fn-ncc').value,
     note:document.getElementById('fn-note').value,
     datetime:nowStr(), createdByName:me?.name||''};
+  withAdminTime(txn, 'fn-time');
   db.transactions.push(txn);
   addLog('Nhập kho', `${qty} ${item.unit} ${item.name} — ${proj}`);
   updateLowBadge();
@@ -2311,6 +2360,7 @@ function renderXuat(c) {
         </select>
       </div>
       <div class="fg"><label>Người nhận / Ghi chú</label><textarea id="fx-note" rows="2" placeholder="Ghi chú..."></textarea></div>
+      <div class="fg need-admin"><label>Ngày giờ phiếu (để trống = bây giờ)</label><input type="datetime-local" id="fx-time"></div>
       ${photoFieldHtml('fx')}
       <button class="btn-full btn-orange" onclick="doXuat()">📤 Xác nhận xuất kho</button>
     </div>
@@ -2331,6 +2381,7 @@ async function doXuat() {
   const txn = {id:newId(), type:'xuat', itemId, itemName:item.name, qty, unit:item.unit, project:proj,
     supplierOrReceiver:document.getElementById('fx-note').value,
     thietBi:dev, note:document.getElementById('fx-note').value, datetime:nowStr(), createdByName:me?.name||''};
+  withAdminTime(txn, 'fx-time');
   db.transactions.push(txn);
   addLog('Xuất kho', `${qty} ${item.unit} ${item.name}${dev?' → '+dev:''} — ${proj}`);
   updateLowBadge();
@@ -4292,6 +4343,159 @@ async function doLoan() {
   closeDp('dp-loan-new');
   refreshLoanViews();
   openLoan(data.id);
+}
+
+// ===== ADMIN: SỬA / XÓA PHIẾU, CHỌN NGÀY GIỜ (v5.9 · chỉ Admin, không ghi nhật ký) =====
+const ADMIN_ACTIONS = {editTxn:1, deleteTxn:1, editLoan:1, deleteLoan:1};
+const TSIGN = {nhap:1, xuat:-1, dieuchinh:1, chomuon:-1, nhantra:1, dimuon:1, tralai:-1};
+// Mới nhất trước theo ngày giờ phiếu (phiếu Admin ghi lùi ngày nằm đúng chỗ)
+const byTimeDesc = arr => arr.slice().sort((a, b) => ((parseVN(b.datetime) || 0) - (parseVN(a.datetime) || 0)) || (+b.id - +a.id));
+// 'yyyy-mm-ddTHH:MM' ↔ 'HH:MM:SS d/M/yyyy'
+function localToVN(v) {
+  const m = String(v || '').match(/^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2})/);
+  return m ? `${m[4]}:${m[5]}:00 ${+m[3]}/${+m[2]}/${m[1]}` : '';
+}
+function vnToLocal(s) {
+  const d = parseVN(s); if (!d) return '';
+  const p = n => String(n).padStart(2, '0');
+  return `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())}T${p(d.getHours())}:${p(d.getMinutes())}`;
+}
+function withAdminTime(txn, inputId) {
+  const el = document.getElementById(inputId);
+  const v = can('admin') && el ? localToVN(el.value) : '';
+  if (v) { txn.txTime = v; txn.datetime = v; }
+}
+const txnEffect = t => (TSIGN[t.type] || 0) * (+t.qty || 0);
+function stockAdd(itemId, d) { const it = db.items.find(i => i.id === itemId); if (it && d) it.stock = Math.round((it.stock + d) * 100) / 100; }
+
+// Áp thao tác Admin lên dữ liệu trên máy (lúc bấm, và áp lại khi còn chờ gửi)
+function applyAdminOp(action, d) {
+  if (action === 'editTxn') {
+    const t = db.transactions.find(x => x.id === d.id); if (!t) return;
+    stockAdd(t.itemId, -txnEffect(t));
+    const it = db.items.find(i => i.id === d.itemId) || db.items.find(i => i.id === t.itemId);
+    Object.assign(t, {itemId:it ? it.id : t.itemId, itemName:it ? it.name : t.itemName, unit:it ? it.unit : t.unit, qty:+d.qty,
+      note:d.note, clientTime:''});
+    if (t.type !== 'dieuchinh') t.supplierOrReceiver = d.supplierOrReceiver;
+    if (t.type === 'xuat') t.thietBi = d.thietBi;
+    if (t.type === 'dieuchinh') t.reason = d.reason;
+    if (d.datetime) t.datetime = d.datetime;
+    stockAdd(t.itemId, txnEffect(t));
+  } else if (action === 'deleteTxn') {
+    const gone = db.transactions.filter(x => x.id === d.id || (x.type === 'dieuchinh' && +x.refId === d.id));
+    if (!gone.length) return;
+    gone.forEach(x => stockAdd(x.itemId, -txnEffect(x)));
+    const ids = new Set(gone.map(x => x.id));
+    db.transactions = db.transactions.filter(x => !ids.has(x.id));
+    db.photos = (db.photos || []).filter(p => !ids.has(p.txnId));
+  } else if (action === 'editLoan') {
+    const l = (db.loans || []).find(x => x.id === d.id); if (!l) return;
+    Object.assign(l, {party:d.party, phone:d.phone, dueDate:d.dueDate, note:d.note});
+    db.transactions.forEach(t => { if (+t.refId === l.id && t.type !== 'dieuchinh') t.supplierOrReceiver = d.party; });
+  } else if (action === 'deleteLoan') {
+    const l = (db.loans || []).find(x => x.id === d.id); if (!l) return;
+    const gone = db.transactions.filter(t => +t.refId === l.id && t.type !== 'dieuchinh');
+    gone.forEach(t => stockAdd(t.itemId, -txnEffect(t)));
+    const ids = new Set(gone.map(t => t.id));
+    db.transactions = db.transactions.filter(t => !ids.has(t.id));
+    db.loans = db.loans.filter(x => x.id !== l.id);
+    db.photos = (db.photos || []).filter(p => p.txnId !== l.id);
+  }
+  _adj.len = -1; _phSet.len = -1;
+}
+async function pushAdmin(action, data) {
+  applyAdminOp(action, data);
+  updateLowBadge();
+  const ok = await push(action, data);
+  if (['home', 'ton', 'lsnhap', 'lsxuat', 'baocao'].includes(curTab)) goTab(curTab);
+  document.querySelectorAll('.detail-page.show').forEach(p => { if (DP_RENDER[p.id] && !['dp-members', 'dp-history-log'].includes(p.id)) DP_RENDER[p.id](); });
+  if (document.getElementById('dp-device').classList.contains('show') && currentDeviceId) renderDeviceDetail(currentDeviceId);
+  return ok;
+}
+
+// ---- Sửa phiếu nhập / xuất / điều chỉnh ----
+function openEditTxn() {
+  const t = db.transactions.find(x => x.id === curTxnId); if (!t || !can('admin')) return;
+  const dc = t.type === 'dieuchinh';
+  document.getElementById('et-title').textContent = '✏️ Sửa ' + (dc ? 'phiếu điều chỉnh' : t.type === 'nhap' ? 'phiếu nhập' : 'phiếu xuất');
+  const items = db.items.filter(i => i.project === t.project || !i.project).slice().sort((a, b) => a.name.localeCompare(b.name, 'vi'));
+  document.getElementById('et-item').innerHTML = items.map(i => `<option value="${i.id}" ${i.id === t.itemId ? 'selected' : ''}>${escHtml(i.name)} (${escHtml(i.unit)})</option>`).join('');
+  document.getElementById('et-qty-label').textContent = dc ? 'Số lượng điều chỉnh (+ tăng / − giảm)' : 'Số lượng';
+  document.getElementById('et-qty').value = t.qty;
+  document.getElementById('et-party-wrap').style.display = dc ? 'none' : '';
+  document.getElementById('et-party-label').textContent = t.type === 'nhap' ? 'Nhà cung cấp' : 'Người nhận';
+  document.getElementById('et-party').value = t.supplierOrReceiver || '';
+  document.getElementById('et-dev-wrap').style.display = t.type === 'xuat' ? '' : 'none';
+  const devs = db.devices.map(d => d.name); if (t.thietBi && !devs.includes(t.thietBi)) devs.unshift(t.thietBi);
+  document.getElementById('et-dev').innerHTML = '<option value="">— Không chọn thiết bị —</option>' + devs.map(n => `<option value="${escHtml(n)}" ${n === t.thietBi ? 'selected' : ''}>${escHtml(n)}</option>`).join('');
+  document.getElementById('et-reason-wrap').style.display = dc ? '' : 'none';
+  document.getElementById('et-reason').value = t.reason || '';
+  document.getElementById('et-note').value = t.note || '';
+  document.getElementById('et-time').value = vnToLocal(t.datetime);
+  closeModal('modal-txn');
+  openModal('modal-edit-txn');
+}
+async function saveEditTxn() {
+  const t = db.transactions.find(x => x.id === curTxnId); if (!t) return;
+  const dc = t.type === 'dieuchinh';
+  const qty = r3(parseVN_num(document.getElementById('et-qty').value));
+  if (dc ? !qty : !(qty > 0)) { toast(dc ? '⚠️ Số lượng điều chỉnh phải khác 0' : '⚠️ Số lượng phải lớn hơn 0'); return; }
+  const time = localToVN(document.getElementById('et-time').value);
+  if (!time) { toast('⚠️ Chọn ngày giờ phiếu'); return; }
+  const data = {id:t.id, itemId:+document.getElementById('et-item').value, qty,
+    supplierOrReceiver:document.getElementById('et-party').value.trim(), thietBi:document.getElementById('et-dev').value,
+    reason:document.getElementById('et-reason').value.trim(), note:document.getElementById('et-note').value.trim(), datetime:time};
+  closeModal('modal-edit-txn');
+  const ok = await pushAdmin('editTxn', data);
+  if (ok === 'rejected') return;
+  toast('✅ Đã sửa phiếu');
+  openTxn(t.id);
+}
+async function deleteTxnAdmin() {
+  const t = db.transactions.find(x => x.id === curTxnId); if (!t || !can('admin')) return;
+  const kids = db.transactions.filter(x => x.type === 'dieuchinh' && +x.refId === t.id).length;
+  const it = db.items.find(i => i.id === t.itemId);
+  if (!confirm(`Xóa hẳn phiếu ${t.type === 'nhap' ? 'nhập' : t.type === 'xuat' ? 'xuất' : 'điều chỉnh'} ${fmtNum(t.qty)} ${it?.unit || t.unit || ''} ${it?.name || t.itemName || ''}?`
+    + (kids ? `\nCả ${kids} phiếu điều chỉnh của phiếu này cũng bị xóa.` : '')
+    + (photosOf(t.id).length ? `\n${photosOf(t.id).length} ảnh biên bản cũng bị xóa.` : '')
+    + '\n\nTồn kho sẽ được tính lại. Không khôi phục được.')) return;
+  closeModal('modal-txn');
+  const ok = await pushAdmin('deleteTxn', {id:t.id});
+  if (ok !== 'rejected') toast('🗑 Đã xóa phiếu');
+}
+
+// ---- Sửa / xóa phiếu mượn ----
+function openEditLoan() {
+  const l = (db.loans || []).find(x => x.id === curLoanId); if (!l || !can('admin')) return;
+  document.getElementById('el-info').innerHTML = `<b>${escHtml(l.itemName)}</b>${l.itemType === 'vt' ? ` · ${fmtNum(l.qty)} ${escHtml(l.unit)}` : ''}`;
+  document.getElementById('el-party-label').textContent = l.kind === 'cho' ? 'Người / đơn vị mượn' : 'Mượn của';
+  document.getElementById('el-party').value = l.party || '';
+  document.getElementById('el-phone').value = l.phone || '';
+  document.getElementById('el-due').value = l.dueDate || '';
+  document.getElementById('el-note').value = l.note || '';
+  closeModal('modal-loan');
+  openModal('modal-edit-loan');
+}
+async function saveEditLoan() {
+  const l = (db.loans || []).find(x => x.id === curLoanId); if (!l) return;
+  const party = document.getElementById('el-party').value.trim();
+  if (party.length < 2) { toast('⚠️ Ghi rõ người / đơn vị'); return; }
+  const data = {id:l.id, party, phone:document.getElementById('el-phone').value.trim(), dueDate:document.getElementById('el-due').value,
+    note:document.getElementById('el-note').value.trim()};
+  closeModal('modal-edit-loan');
+  const ok = await pushAdmin('editLoan', data);
+  if (ok === 'rejected') return;
+  toast('✅ Đã sửa phiếu mượn');
+  openLoan(l.id);
+}
+async function deleteLoanAdmin() {
+  const l = (db.loans || []).find(x => x.id === curLoanId); if (!l || !can('admin')) return;
+  if (!confirm(`Xóa hẳn phiếu ${l.kind === 'cho' ? 'cho mượn' : 'đi mượn'} ${l.itemName} (${l.party})?`
+    + (l.itemType === 'vt' ? '\nMọi lần mượn / trả của phiếu này bị xóa, tồn kho được tính lại.' : '')
+    + '\n\nKhông khôi phục được.')) return;
+  closeModal('modal-loan');
+  const ok = await pushAdmin('deleteLoan', {id:l.id});
+  if (ok !== 'rejected') toast('🗑 Đã xóa phiếu mượn');
 }
 
 // ===== LOGOUT =====
