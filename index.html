@@ -9,6 +9,7 @@
 <meta name="apple-mobile-web-app-title" content="Kho Fecon">
 <meta name="theme-color" content="#0056A4">
 <link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="icon-192.png">
 <title>Kho Vật Tư — Fecon South</title>
 <script defer src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js" onload="onChartReady()"></script>
 <style>
@@ -455,6 +456,13 @@ body.can-ql .hide-ql{display:none!important}
 .sess-list div{display:flex;justify-content:space-between;gap:10px;padding:8px 0;border-bottom:1px solid var(--border);font-size:13px}
 .sess-list div:last-child{border-bottom:none}
 .sess-list span{color:var(--text3);font-size:12px;white-space:nowrap}
+/* ===== v5.7: cài app ===== */
+.login-inst{display:block;margin:16px auto 0;background:rgba(255,255,255,.15);border:1.5px solid rgba(255,255,255,.45);color:#fff;border-radius:12px;padding:12px 20px;font-size:14px;font-weight:700;cursor:pointer;font-family:inherit}
+.inst-steps{counter-reset:st;margin:4px 0 14px;padding:0;list-style:none}
+.inst-steps li{counter-increment:st;display:flex;gap:12px;align-items:flex-start;padding:10px 0;border-bottom:1px solid var(--border);font-size:14px;line-height:1.5;color:var(--text)}
+.inst-steps li:last-child{border-bottom:none}
+.inst-steps li::before{content:counter(st);flex:0 0 26px;height:26px;border-radius:50%;background:var(--primary);color:#fff;font-weight:800;font-size:13px;display:flex;align-items:center;justify-content:center}
+.inst-key{display:inline-block;background:var(--bg);border:1px solid var(--border);border-radius:6px;padding:0 6px;font-weight:700}
 </style>
 </head>
 <body>
@@ -498,6 +506,7 @@ body.can-ql .hide-ql{display:none!important}
     <div style="text-align:center"><button class="link-btn" onclick="runDiag()">🔧 Kiểm tra kết nối</button></div>
     <div id="diag-out" class="diag-out" style="display:none"></div>
   </div>
+  <button class="login-inst inst-btn" style="display:none" onclick="doInstall()">📲 Cài app vào điện thoại</button>
   <div class="login-ver" id="login-ver"></div>
 </div>
 
@@ -671,6 +680,7 @@ body.can-ql .hide-ql{display:none!important}
     <div class="sidebar-item need-ql" onclick="openModal('modal-add-proj')"><span class="sidebar-item-ico">🏢</span>Thêm dự án</div>
     <div class="sidebar-item need-ql" onclick="openDpSb('dp-history-log')"><span class="sidebar-item-ico">📋</span>Nhật ký hoạt động</div>
     <div class="sidebar-divider"></div>
+    <div class="sidebar-item inst-btn" style="display:none" onclick="closeSidebar();doInstall()"><span class="sidebar-item-ico">📲</span>Cài app vào điện thoại</div>
     <div class="sidebar-item" onclick="openChPw()"><span class="sidebar-item-ico">🔒</span>Đổi mật khẩu</div>
     <div class="sidebar-item" onclick="doLogout()"><span class="sidebar-item-ico">🚪</span>Đăng xuất</div>
     <div class="app-ver" id="app-ver"></div>
@@ -968,6 +978,16 @@ body.can-ql .hide-ql{display:none!important}
 <div class="ph-viewer" id="ph-viewer" onclick="this.style.display='none'"><img alt="Ảnh biên bản"><button>✕</button></div>
 
 <button class="upd-bar" id="upd-bar" onclick="doAppUpdate()"></button>
+<!-- Modal: Hướng dẫn cài app -->
+<div class="modal-bg" id="modal-install" style="display:none" onclick="closeModalBg(event,'modal-install')">
+  <div class="modal-sheet">
+    <div class="modal-handle"></div>
+    <div class="modal-title" id="inst-title">📲 Cài app vào điện thoại</div>
+    <div id="inst-body"></div>
+    <div class="modal-actions"><button class="btn-cancel" onclick="closeModal('modal-install')">Đã hiểu</button></div>
+  </div>
+</div>
+
 <div class="toast" id="toast"></div>
 <div class="loader" id="loader" style="display:none"><div class="spinner"></div><p id="loader-msg">Đang xử lý...</p></div>
 
@@ -975,7 +995,7 @@ body.can-ql .hide-ql{display:none!important}
 // ============================================================
 // CONFIG
 // ============================================================
-const APP_VERSION = '5.6.1';
+const APP_VERSION = '5.7';
 const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbw6Rmi80I7RI3ij2U7RdRF5pYuQTnPrwEmGmUZS5xpxzLwwVynfoFUujZe1lm6HS1ymxw/exec';
 // ============================================================
 
@@ -3731,8 +3751,58 @@ async function doAppUpdate() {
 }
 document.addEventListener('visibilitychange', () => { if (!document.hidden) checkAppUpdate(); });
 setTimeout(checkAppUpdate, 4000);
+// ===== CÀI APP VÀO ĐIỆN THOẠI =====
+let installEvt = null;
+const UA = navigator.userAgent;
+const isStandalone = () => (window.matchMedia && matchMedia('(display-mode: standalone)').matches) || navigator.standalone === true;
+const isIOS = /iPhone|iPad|iPod/.test(UA) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+const isAndroid = /Android/i.test(UA);
+const inAppBrowser = /Zalo|FBAN|FBAV|Instagram|Line\/|TikTok/i.test(UA);
+window.addEventListener('beforeinstallprompt', e => { e.preventDefault(); installEvt = e; updInstallUI(); });
+window.addEventListener('appinstalled', () => { installEvt = null; updInstallUI(); toast('✅ Đã cài app — mở bằng biểu tượng "Kho Fecon" trên màn hình chính'); });
+function updInstallUI() {
+  const show = !isStandalone() && (!!installEvt || isIOS || isAndroid);
+  document.querySelectorAll('.inst-btn').forEach(b => b.style.display = show ? '' : 'none');
+}
+async function doInstall() {
+  if (installEvt && !inAppBrowser) {
+    installEvt.prompt();
+    try { const r = await installEvt.userChoice; if (r.outcome === 'accepted') toast('✅ Đang cài app…'); } catch (e) {}
+    installEvt = null; updInstallUI(); return;
+  }
+  const url = location.href.split('#')[0].split('?')[0];
+  const k = t => `<span class="inst-key">${t}</span>`;
+  let title = '📲 Cài app vào điện thoại', steps;
+  if (inAppBrowser) {
+    title = '📲 Mở bằng trình duyệt để cài app';
+    steps = [`Bạn đang mở trong ${/Zalo/i.test(UA) ? 'Zalo' : 'ứng dụng khác'} — ở đây không cài app được.`,
+      `Bấm ${k('⋯')} góc trên bên phải → chọn ${k(isIOS ? 'Mở bằng Safari' : 'Mở bằng trình duyệt')}.`,
+      `Trong trình duyệt, bấm lại nút ${k('📲 Cài app vào điện thoại')}.`];
+  } else if (isIOS) {
+    steps = [`Mở bằng ${k('Safari')} (nếu đang dùng trình duyệt khác cũng được, miễn có nút Chia sẻ).`,
+      `Bấm nút ${k('Chia sẻ ⬆')} ở thanh dưới cùng (hoặc trên thanh địa chỉ).`,
+      `Kéo xuống chọn ${k('Thêm vào MH chính')} → bấm ${k('Thêm')}.`,
+      `Mở app bằng biểu tượng ${k('Kho Fecon')} trên màn hình chính.`];
+  } else if (/SamsungBrowser/i.test(UA)) {
+    steps = [`Bấm biểu tượng ${k('⬇')} trên thanh địa chỉ nếu có.`,
+      `Nếu không thấy: bấm ${k('≡')} góc dưới bên phải → ${k('Thêm trang vào')} → ${k('Màn hình chờ')}.`,
+      `Bấm ${k('Thêm')} rồi mở app bằng biểu tượng ${k('Kho Fecon')}.`];
+  } else {
+    steps = [`Bấm ${k('⋮')} góc trên bên phải của Chrome.`,
+      `Chọn ${k('Cài đặt ứng dụng')} hoặc ${k('Thêm vào màn hình chính')}.`,
+      `Nếu hỏi, chọn ${k('Cài đặt')} (không chọn "Tạo lối tắt") → xác nhận.`,
+      `Mở app bằng biểu tượng ${k('Kho Fecon')} trên màn hình chính.`];
+  }
+  document.getElementById('inst-title').textContent = title;
+  document.getElementById('inst-body').innerHTML = `<ol class="inst-steps">${steps.map(x => `<li><div>${x}</div></li>`).join('')}</ol>`
+    + (inAppBrowser ? `<button class="btn-full" style="background:var(--bg);color:var(--text);margin:0 0 10px" onclick="navigator.clipboard?.writeText('${url}').then(()=>toast('📋 Đã chép link — dán vào Chrome/Safari'),()=>prompt('Chép link này:', '${url}'))">📋 Chép link app</button>` : '')
+    + `<div class="lock-note" style="text-align:left">Biểu tượng đúng chỉ có logo, không kèm logo trình duyệt ở góc. App mở toàn màn hình, không có thanh địa chỉ.</div>`;
+  openModal('modal-install');
+}
+
 // ===== KHỞI ĐỘNG =====
 (function boot() {
+  updInstallUI();
   const lg = document.querySelector('.login-logo img'); document.querySelectorAll('img[data-logo]').forEach(i => i.src = lg.src);
   loadLocal();
   if (/Zalo/i.test(navigator.userAgent)) document.getElementById('zalo-hint').style.display = '';

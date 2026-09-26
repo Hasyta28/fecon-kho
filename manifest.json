@@ -1,15 +1,17 @@
 {
-  "name": "Kho Vật Tư - FECON SOUTH",
+  "id": "./",
+  "name": "Kho Vật Tư FECON South",
   "short_name": "Kho Fecon",
-  "description": "Quản lý kho vật tư DA TTHC Quận 2",
-  "start_url": "./index.html",
+  "description": "Quản lý nhập xuất tồn kho vật tư công trình FECON South",
+  "lang": "vi",
+  "start_url": "./",
+  "scope": "./",
   "display": "standalone",
   "orientation": "portrait",
-  "background_color": "#0B1F3A",
-  "theme_color": "#0B1F3A",
-  "lang": "vi",
+  "background_color": "#0056A4",
+  "theme_color": "#0056A4",
   "icons": [
-    { "src": "icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any maskable" },
-    { "src": "icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable" }
+    { "src": "icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" }
   ]
 }
