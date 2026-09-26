@@ -1073,7 +1073,7 @@ body.can-ql .hide-ql{display:none!important}
 // ============================================================
 // CONFIG
 // ============================================================
-const APP_VERSION = '5.8';
+const APP_VERSION = '5.8.1';
 const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbw6Rmi80I7RI3ij2U7RdRF5pYuQTnPrwEmGmUZS5xpxzLwwVynfoFUujZe1lm6HS1ymxw/exec';
 // ============================================================
 
@@ -2240,12 +2240,12 @@ async function doNhap() {
   if (!name) { toast('⚠️ Nhập hoặc chọn tên vật tư'); return; }
   if (!qty || qty <= 0) { toast('⚠️ Nhập số lượng hợp lệ'); return; }
   let item = db.items.find(i => i.id === +document.getElementById('fn-item').value) || db.items.find(i => normVN(i.name) === normVN(name));
-  showLoader('Đang lưu...');
+  closeKeyboard();
   if (!item) {
     item = {id:newId(), name, cat:document.getElementById('fn-cat').value, unit:document.getElementById('fn-unit-sel').value, stock:0, minStock:0, project:curProj};
     db.items.push(item);
     addLog('Thêm vật tư', name);
-    await push('upsert', {table:'items', rows:[item]});
+    push('upsert', {table:'items', rows:[item]});      // gửi nền, giữ đúng thứ tự trong hàng chờ
   }
   item.stock = Math.round((item.stock + qty) * 100) / 100;
   const txn = {id:newId(), type:'nhap', itemId:item.id, itemName:item.name, qty, unit:item.unit, project:proj,
@@ -2255,12 +2255,10 @@ async function doNhap() {
   db.transactions.push(txn);
   addLog('Nhập kho', `${qty} ${item.unit} ${item.name} — ${proj}`);
   updateLowBadge();
-  const okN = await push('addTransaction', txn); hideLoader();
-  if (okN === 'rejected') return;
+  push('addTransaction', txn);                        // gửi nền: không bắt chờ máy chủ (máy chủ từ chối thì app tự báo và tải lại)
   const nPh = await queuePhotos(txn.id, formPhotos.fn.splice(0));
   toast(`✅ Nhập ${fmtNum(qty)} ${item.unit} ${item.name}${nPh ? ` · ${nPh} ảnh` : ''}`);
-  renderNhap(document.getElementById('main-body'));
-  showSavedBar(txn);
+  afterSave(txn);
 }
 
 // ===== XUAT KHO TAB =====
@@ -2320,13 +2318,48 @@ async function doXuat() {
   db.transactions.push(txn);
   addLog('Xuất kho', `${qty} ${item.unit} ${item.name}${dev?' → '+dev:''} — ${proj}`);
   updateLowBadge();
-  showLoader('Đang lưu...'); const okX = await push('addTransaction', txn); hideLoader();
-  if (okX === 'rejected') return;
+  closeKeyboard();
+  push('addTransaction', txn);                        // gửi nền: không bắt chờ máy chủ (máy chủ từ chối thì app tự báo và tải lại)
   const nPh = await queuePhotos(txn.id, formPhotos.fx.splice(0));
   toast(`✅ Xuất ${fmtNum(qty)} ${item.unit} ${item.name}${dev?' → '+dev:''}${nPh ? ` · ${nPh} ảnh` : ''}`);
-  renderXuat(document.getElementById('main-body'));
-  showSavedBar(txn);
+  afterSave(txn);
 }
+
+// Sau khi lưu phiếu nhập/xuất: đóng bàn phím, về Tổng quan, hiện thanh "Đã lưu" (Gửi Zalo / Xem)
+let navLockUntil = 0;
+function afterSave(t) {
+  navLockUntil = Date.now() + 700;                    // bỏ qua cú chạm "dội" vào thanh dưới ngay sau khi bấm Xác nhận
+  goTab('home');
+  showSavedBar(t);
+  resetViewport();
+}
+function closeKeyboard() {
+  const a = document.activeElement;
+  if (a && a !== document.body && a.blur) a.blur();
+  resetViewport();
+}
+// Toàn app không cuộn ở cấp trang (chỉ cuộn trong từng vùng). Trên Android, bàn phím có thể đẩy cả trang lên
+// và không trả về khi đóng → chạm bị lệch chỗ, phải vuốt mới bấm được. Đưa trang về đúng vị trí.
+function resetViewport() {
+  if (window.scrollY || window.scrollX) window.scrollTo(0, 0);
+  document.documentElement.scrollTop = 0; document.body.scrollTop = 0;
+  const pa = document.getElementById('pg-app'); if (pa && pa.scrollTop) pa.scrollTop = 0;
+}
+document.addEventListener('focusout', () => setTimeout(() => {
+  const a = document.activeElement;
+  if (!a || a === document.body || !/^(INPUT|TEXTAREA|SELECT)$/.test(a.tagName)) resetViewport();
+}, 60));
+if (window.visualViewport) {
+  let vvH = window.visualViewport.height;
+  window.visualViewport.addEventListener('resize', () => {
+    const h = window.visualViewport.height;
+    if (h > vvH + 80) setTimeout(resetViewport, 50);  // bàn phím vừa đóng
+    vvH = h;
+  });
+}
+document.addEventListener('click', e => {
+  if (Date.now() < navLockUntil && e.target.closest && e.target.closest('#bottom-nav')) { e.stopPropagation(); e.preventDefault(); }
+}, true);
 
 function showSavedBar(t) {
   const it = db.items.find(i => i.id === t.itemId);
