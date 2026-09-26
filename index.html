@@ -450,6 +450,23 @@ body.can-ql .hide-ql{display:none!important}
 .mem-av{position:relative}
 .on-dot{position:absolute;right:-1px;bottom:-1px;width:12px;height:12px;border-radius:50%;background:#22C55E;border:2px solid #fff}
 .on-dot.idle{background:#F5B83D}
+.ln-summary{display:flex;gap:8px;padding:12px 14px 0}
+.ln-sum{flex:1;background:#fff;border-radius:12px;box-shadow:var(--shadow);padding:10px 12px;cursor:pointer;border:2px solid transparent}
+.ln-sum.on{border-color:var(--orange)}
+.ln-sum b{display:block;font-size:20px;font-weight:900;color:var(--text);line-height:1.2}
+.ln-sum span{font-size:11px;font-weight:700;color:var(--text3)}
+.ln-sum.late b{color:var(--red)}
+.ln-search{margin:10px 14px 0;width:calc(100% - 28px);border:1.5px solid var(--border);border-radius:var(--r-sm);padding:10px 12px;font-size:14px;outline:none;font-family:inherit;background:#fff}
+.ln-late{color:var(--red);font-weight:700}
+.ln-soon{color:var(--orange);font-weight:700}
+.ln-hist{display:flex;gap:10px;padding:9px 0;border-bottom:1px solid var(--border);font-size:13px}
+.ln-hist:last-child{border-bottom:none}
+.ln-hist small{display:block;color:var(--text3);font-size:11px;margin-top:2px}
+.ln-due-chips{display:flex;gap:6px;margin-top:6px;flex-wrap:wrap}
+.ln-due-chips button{border:1.5px solid var(--border);background:#fff;border-radius:16px;padding:5px 11px;font-size:12px;font-weight:600;color:var(--text2);cursor:pointer;font-family:inherit}
+.ln-loan-line{font-size:11px;font-weight:600;color:var(--text2);margin-top:6px;display:flex;gap:10px;flex-wrap:wrap}
+.ln-loan-line span{background:var(--bg);border-radius:6px;padding:2px 8px}
+.ln-dev{margin-top:10px;background:#FFF4EE;border-radius:8px;padding:10px 12px;font-size:13px;color:var(--text);cursor:pointer}
 .ri-sub.live{color:#16A34A;font-weight:700}
 .online-sum{display:flex;align-items:center;gap:8px;background:#ECFDF3;color:#166534;border-radius:12px;padding:10px 14px;font-size:13px;font-weight:600;margin-bottom:12px}
 .sess-list{background:var(--bg);border-radius:10px;padding:4px 12px;margin-bottom:10px}
@@ -652,6 +669,23 @@ body.can-ql .hide-ql{display:none!important}
   <div class="detail-body" id="dp-members-body"></div>
 </div>
 
+<div class="detail-page" id="dp-loans">
+  <div class="detail-header">
+    <button class="back-btn" onclick="closeDp('dp-loans')">‹</button>
+    <div class="detail-title">🔁 Cho mượn / Trả</div>
+    <button class="need-tk" onclick="openLoanForm()" style="background:var(--orange);color:#fff;border:none;border-radius:8px;padding:6px 12px;font-size:12px;font-weight:700;cursor:pointer">+ Lập phiếu</button>
+  </div>
+  <div class="detail-body" id="dp-loans-body"></div>
+</div>
+
+<div class="detail-page" id="dp-loan-new">
+  <div class="detail-header">
+    <button class="back-btn" onclick="closeDp('dp-loan-new')">‹</button>
+    <div class="detail-title">Lập phiếu mượn</div>
+  </div>
+  <div class="detail-body" id="dp-loan-new-body"></div>
+</div>
+
 <!-- ===================== SIDEBAR ===================== -->
 <div class="sidebar-overlay" id="sidebar-overlay" onclick="closeSidebar()"></div>
 <div class="sidebar" id="sidebar">
@@ -668,6 +702,7 @@ body.can-ql .hide-ql{display:none!important}
     <div class="sidebar-item need-tk" onclick="goTabSb('nhap')"><span class="sidebar-item-ico">📥</span>Nhập kho</div>
     <div class="sidebar-item need-tk" onclick="goTabSb('xuat')"><span class="sidebar-item-ico">📤</span>Xuất kho</div>
     <div class="sidebar-item" onclick="goTabSb('ton')"><span class="sidebar-item-ico">📦</span>Tồn kho</div>
+    <div class="sidebar-item" onclick="openDpSb('dp-loans')"><span class="sidebar-item-ico">🔁</span>Cho mượn / Trả</div>
     <div class="sidebar-item" onclick="goTabSb('baocao')"><span class="sidebar-item-ico">📊</span>Báo cáo</div>
     <div class="sidebar-divider"></div>
     <div class="sidebar-label">Thiết bị & Ghi chú</div>
@@ -688,6 +723,49 @@ body.can-ql .hide-ql{display:none!important}
 </div>
 
 <!-- ===================== MODALS ===================== -->
+<!-- Modal: phiếu mượn -->
+<div class="modal-bg" id="modal-loan" style="display:none" onclick="closeModalBg(event,'modal-loan')">
+  <div class="modal-sheet">
+    <div class="modal-handle"></div>
+    <div class="modal-title" id="ml-title">Phiếu mượn</div>
+    <div id="ml-body"></div>
+    <button class="btn-full btn-zalo" onclick="shareLoan(curLoanId)" style="margin:0 0 10px">💬 Gửi Zalo (kèm ảnh)</button>
+    <div class="modal-actions" style="margin-top:0">
+      <button class="btn-cancel" onclick="closeModal('modal-loan')">Đóng</button>
+      <button class="btn-ok need-tk" id="ml-ret-btn" style="background:var(--green)" onclick="openLoanReturn()">↩️ Nhận trả</button>
+    </div>
+    <button class="btn-full need-tk" id="ml-close-btn" style="background:none;color:var(--red);font-size:13px;margin-top:10px;padding:10px" onclick="openLoanClose()">Đóng phiếu — không trả đủ</button>
+  </div>
+</div>
+
+<div class="modal-bg" id="modal-loan-ret" style="display:none" onclick="closeModalBg(event,'modal-loan-ret')">
+  <div class="modal-sheet">
+    <div class="modal-handle"></div>
+    <div class="modal-title" id="lr-title">↩️ Nhận trả</div>
+    <div class="adj-info" id="lr-info"></div>
+    <div class="fg" id="lr-qty-wrap"><label id="lr-qty-label">Số lượng trả lần này</label>
+      <input type="number" id="lr-qty" inputmode="decimal" min="0" step="any"></div>
+    <div class="fg"><label>Ghi chú (tùy chọn)</label><input type="text" id="lr-note" placeholder="VD: trả tại kho, còn tốt"></div>
+    <div class="modal-actions">
+      <button class="btn-cancel" onclick="closeModal('modal-loan-ret')">Hủy</button>
+      <button class="btn-ok" style="background:var(--green)" id="lr-ok" onclick="saveLoanReturn()">Xác nhận</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-bg" id="modal-loan-close" style="display:none" onclick="closeModalBg(event,'modal-loan-close')">
+  <div class="modal-sheet">
+    <div class="modal-handle"></div>
+    <div class="modal-title">Đóng phiếu mượn</div>
+    <div class="adj-info" id="lc-info"></div>
+    <div class="fg"><label>Lý do (bắt buộc)</label><textarea id="lc-reason" rows="2" placeholder="VD: đội làm mất 20m, đã trừ tiền"></textarea></div>
+    <div class="modal-actions">
+      <button class="btn-cancel" onclick="closeModal('modal-loan-close')">Hủy</button>
+      <button class="btn-ok" style="background:var(--red)" onclick="saveLoanClose()">Đóng phiếu</button>
+    </div>
+  </div>
+</div>
+
 <!-- Modal: Add vat tu -->
 <div class="modal-bg" id="modal-add-vattu" style="display:none" onclick="closeModalBg(event,'modal-add-vattu')">
   <div class="modal-sheet">
@@ -995,7 +1073,7 @@ body.can-ql .hide-ql{display:none!important}
 // ============================================================
 // CONFIG
 // ============================================================
-const APP_VERSION = '5.7';
+const APP_VERSION = '5.8';
 const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbw6Rmi80I7RI3ij2U7RdRF5pYuQTnPrwEmGmUZS5xpxzLwwVynfoFUujZe1lm6HS1ymxw/exec';
 // ============================================================
 
@@ -1079,7 +1157,7 @@ const UNITS = ['Lít','Phuy','Thùng','Xô','Kg','Tấn','Cái','Bộ','Cây','T
 // Dữ liệu chỉ tải từ máy chủ SAU KHI đăng nhập (không còn nhúng trong file này)
 const isLow = i => (+i.minStock > 0) && (+i.stock <= +i.minStock);
 const DEVICE_FUEL_DEFAULT = Object.fromEntries(DEVICE_CATS.map(c => [c.id, c.fuel]));
-const emptyDb = () => ({categories: CATEGORIES, projects: [], items: [], devices: [], transactions: [], repairs: [], notes: [], photos: [], txnTotal: 0, txnLastId: ''});
+const emptyDb = () => ({categories: CATEGORIES, projects: [], items: [], devices: [], transactions: [], repairs: [], notes: [], photos: [], loans: [], txnTotal: 0, txnLastId: ''});
 let db = emptyDb();
 
 // ===== QUYỀN =====
@@ -1303,6 +1381,11 @@ async function flushOutbox() {
           console.warn('Máy chủ từ chối:', op.action, r.error);
           lastReject = r.error; outbox.shift();
           if (op.action === 'addTransaction') db.transactions = db.transactions.filter(t => t.id !== op.data.id);
+          if (LOAN_ACTIONS[op.action]) {                 // bỏ phần đã ghi tạm trên máy của thao tác mượn bị từ chối
+            const ids = new Set([op.data.txnId, op.data.id, op.data.id2].filter(Boolean));
+            db.transactions = db.transactions.filter(t => !(t._local && ids.has(t.id)));
+            if (op.action === 'addLoan') db.loans = (db.loans || []).filter(l => l.id !== op.data.id);
+          }
           saveLocal(); continue;
         }
         return false;
@@ -1335,6 +1418,7 @@ function applyServer(r) {
   if (r.devices) db.devices = r.devices.map(d => ({...d, id:+d.id, fuelRate:+d.fuelRate||20}));
   db.repairs = (r.repairs||[]).map(rp => ({...rp, id:+rp.id, deviceId:+rp.deviceId, cost:+rp.cost||0}));
   db.notes = (r.notes||[]).map(n => ({...n, id:+n.id}));
+  db.loans = (r.loans||[]).map(normLoan);                 // phiếu mượn: luôn lấy bản đầy đủ từ máy chủ (thay đổi chờ gửi được áp lại sau)
   if (r.photos) {
     const sp = r.photos.map(p => ({...p, id:+p.id, txnId:+p.txnId}));
     const pids = new Set(sp.map(p => p.id));
@@ -1374,7 +1458,7 @@ function reapplyOutbox() {
     } else if (op.action === 'updateProjects') {
       db.projects = d.projects;
     } else if (op.action === 'uploadPhoto') {
-      if (!db.transactions.some(t => t.id === d.txnId)) return;
+      if (!db.transactions.some(t => t.id === d.txnId) && !(db.loans || []).some(l => l.id === d.txnId)) return;
       db.photos = db.photos || [];
       if (!db.photos.some(p => p.id === d.photoId)) db.photos.push({id:d.photoId, txnId:d.txnId, fileId:'', _local:1});
     } else if (op.action === 'addTransaction') {
@@ -1382,6 +1466,8 @@ function reapplyOutbox() {
       const it = db.items.find(i => i.id === d.itemId);
       if (it) { const q = +d.qty || 0; it.stock = Math.round((it.stock + (d.type === 'xuat' ? -q : q)) * 100) / 100; }
       if (!db.transactions.some(t => t.id === d.id)) db.transactions.push(d);
+    } else if (LOAN_ACTIONS[op.action]) {
+      applyLoanOp(op.action, d);
     }
   });
 }
@@ -1557,7 +1643,8 @@ const DP_RENDER = {
   'dp-nhap-hist': () => renderDpNhapHist(), 'dp-xuat-hist': () => renderDpXuatHist(),
   'dp-notes': () => renderDpNotes(), 'dp-devices-list': () => renderDevicesList(),
   'dp-history-log': () => renderHistoryLog(),
-  'dp-dc-hist': () => renderDcHist(), 'dp-members': () => renderMembers()
+  'dp-dc-hist': () => renderDcHist(), 'dp-members': () => renderMembers(),
+  'dp-loans': () => renderLoans()
 };
 function openDp(id, renderFn) {
   const fn = renderFn || DP_RENDER[id];
@@ -1623,7 +1710,7 @@ function renderHome(c) {
   const catItems = cats.find(([c]) => c.id === homeCat)?.[1] || [];
   const units = unitGroups(catItems);
   if (!homeUnit || !units.some(([u]) => u === homeUnit)) homeUnit = units[0]?.[0] || null;
-  const recent = txns.slice().sort((a,b) => (+b.id||0) - (+a.id||0)).slice(0, 6);
+  const recent = txns.filter(t => !LOAN_T[t.type]).sort((a,b) => (+b.id||0) - (+a.id||0)).slice(0, 6);
 
   c.innerHTML = `
     <div class="act-grid need-tk">
@@ -1665,6 +1752,7 @@ function renderHome(c) {
       <div class="low-num">✓</div>
       <div class="low-body"><div class="low-title">Cần bổ sung: không có</div><div class="stat-sub">Tất cả vật tư đang đủ hàng</div></div>
     </div>`}
+    ${loanAlertHtml()}
 
     <div class="home-block">
       <div class="sec-head">
@@ -1916,6 +2004,7 @@ function txnRow(t) {
 let curTxnId = null;
 function openTxn(id) {
   const t = db.transactions.find(x => x.id === id); if (!t) return;
+  if (LOAN_T[t.type] && t.refId && (db.loans || []).some(l => l.id === +t.refId)) { openLoan(+t.refId); return; }
   curTxnId = id;
   const it = db.items.find(i => i.id === t.itemId);
   const unit = escHtml(it?.unit || t.unit || '');
@@ -2101,7 +2190,7 @@ function comboSetUnit(p, mode, unit) {
 function comboInput(p) {
   const txtEl = document.getElementById(p+'-item-txt');
   const txt = txtEl.value, q = normVN(txt);
-  const allowNew = p === 'fn';
+  const allowNew = p === 'fn' || (p === 'fl' && loanKind === 'di');
   const cat = document.getElementById(p+'-cat').value;
   document.getElementById(p+'-clear').style.display = txt ? 'block' : 'none';
   let list = q ? db.items.filter(i => normVN(i.name).includes(q)) : db.items.filter(i => i.cat === cat);
@@ -2804,6 +2893,7 @@ function renderTonRows(items) {
         <div class="prog-bar"><div class="prog-fill" style="width:${pct}%;background:${fc}"></div></div>
         <div class="prog-nums">${fmtNum(i.stock)} ${i.unit}</div>
       </div>
+      ${itemLoanLine(i)}
       ${can('tk')?`<div style="margin-top:8px">
         <label style="font-size:10px;font-weight:700;color:var(--text3);text-transform:uppercase">Cảnh báo khi tồn ≤</label>
         <input type="range" style="width:100%;accent-color:var(--orange);margin:4px 0" min="0" max="${maxVal}" value="${i.minStock}" step="1"
@@ -2970,6 +3060,7 @@ function renderDevicesList() {
               </div>
             </div>
             <div class="ri-right">
+              ${devLoan(d.id) ? '<span class="txn-badge badge-warn">Cho mượn</span>' : ''}
               <span class="txn-badge ${d.type==='own'?'badge-blue':'badge-out'}">${d.type==='own'?'Cty':'Thuê'}</span>
               <span class="chevron">›</span>
             </div>
@@ -3029,6 +3120,7 @@ function renderDeviceDetail(id) {
           </div>`;
         })()}
       </div>` : ''}
+      ${devLoanHtml(d)}
       ${d.plate ? `<div style="margin-top:8px;font-size:13px;color:var(--text2)">🔖 Số hiệu: <b>${d.plate}</b></div>` : ''}
       ${d.note ? `<div style="margin-top:6px;font-size:12px;color:var(--text3)">${d.note}</div>` : ''}
 
@@ -3449,11 +3541,15 @@ async function buildNxtWorkbook() {
   const itemById = id => db.items.find(i => i.id === id);
   // Phiếu điều chỉnh có "phiếu gốc" đã được cộng vào số lượng của phiếu gốc (effQty) → không tính lại
   const moves = db.transactions.filter(t => !(t.type === 'dieuchinh' && t.refId));
-  const net = t => t.type === 'nhap' ? effQty(t) : t.type === 'xuat' ? -effQty(t) : (+t.qty || 0);
+  const net = t => t.type === 'nhap' ? effQty(t) : t.type === 'xuat' ? -effQty(t) : LOAN_T[t.type] ? LOAN_T[t.type] * (+t.qty || 0) : (+t.qty || 0);
   const sorted = arr => arr.slice().sort((a, b) => ((parseVN(a.datetime) || 0) - (parseVN(b.datetime) || 0)) || (a.id - b.id));
+  const kho = moves.filter(t => !LOAN_T[t.type]);                     // nhập / xuất / điều chỉnh (mượn – trả để ở sheet riêng)
+  const loanMoves = sorted(moves.filter(t => LOAN_T[t.type] && inRange(t)));
+  const hasLoans = db.transactions.some(t => LOAN_T[t.type]) || (db.loans || []).length > 0;
+  const MT = {name:'Mượn – Trả', first:6, last:Math.max(6, 5 + loanMoves.length)};
   const xd = d => d ? new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate())) : null;  // ngày Excel (không lệch múi giờ)
   const nf = v => Number.isInteger(+v) ? '#,##0' : '#,##0.##';
-  const TYPE = {nhap:'Nhập', xuat:'Xuất', dieuchinh:'Điều chỉnh'};
+  const TYPE = {nhap:'Nhập', xuat:'Xuất', dieuchinh:'Điều chỉnh', chomuon:'Cho mượn', nhantra:'Nhận trả', dimuon:'Đi mượn', tralai:'Trả lại'};
 
   const wb = new ExcelJS.Workbook();
   wb.creator = 'FECON Kho Vật Tư'; wb.created = new Date();
@@ -3489,7 +3585,7 @@ async function buildNxtWorkbook() {
     const ws = sheet(name, [3.5, 12, 30, 9, 11, 26, 32, 13, 9, 30, 20], 5);
     title(ws, 'BẢNG THEO DÕI XUẤT NHẬP KHO' + (fuel ? ' — DẦU NHỚT' : ' — VẬT TƯ'), 11);
     header(ws, 5, LOG_COLS, 2);
-    const rows = sorted(moves.filter(t => inRange(t) && (() => { const it = itemById(t.itemId); return it ? isFuelGroup(it) === fuel : false; })()));
+    const rows = sorted(kho.filter(t => inRange(t) && (() => { const it = itemById(t.itemId); return it ? isFuelGroup(it) === fuel : false; })()));
     let r = 6;
     rows.forEach(t => {
       const it = itemById(t.itemId), d = parseVN(t.datetime), q = t.type === 'dieuchinh' ? +t.qty : effQty(t);
@@ -3529,7 +3625,8 @@ async function buildNxtWorkbook() {
       const nh = inR.filter(t => t.type === 'nhap').reduce((s, t) => s + effQty(t), 0);
       const xu = inR.filter(t => t.type === 'xuat').reduce((s, t) => s + effQty(t), 0);
       const dc = inR.filter(t => t.type === 'dieuchinh').reduce((s, t) => s + (+t.qty || 0), 0);
-      const close = Math.round((open + nh - xu + dc) * 1000) / 1000;
+      const mt = inR.filter(t => LOAN_T[t.type]).reduce((s, t) => s + net(t), 0);
+      const close = Math.round((open + nh - xu + dc + mt) * 1000) / 1000;
       const st = close <= 0 ? 'Hết hàng' : (+it.minStock > 0 && close <= +it.minStock) ? 'Sắp hết' : 'Đủ hàng';
       ws.getCell(r, 1).value = idx + 1;
       ws.getCell(r, 2).value = it.name;
@@ -3538,7 +3635,8 @@ async function buildNxtWorkbook() {
       ws.getCell(r, 5).value = {formula:`SUMIFS(${rg('H')},${rg('C')},$B${r},${rg('E')},"Nhập")`, result:nh};
       ws.getCell(r, 6).value = {formula:`SUMIFS(${rg('H')},${rg('C')},$B${r},${rg('E')},"Xuất")`, result:xu};
       ws.getCell(r, 7).value = {formula:`SUMIFS(${rg('H')},${rg('C')},$B${r},${rg('E')},"Điều chỉnh")`, result:dc};
-      ws.getCell(r, 8).value = {formula:`D${r}+E${r}-F${r}+G${r}`, result:close};
+      const mtF = hasLoans ? `+SUMIFS(${q(MT.name)}!$H$${MT.first}:$H$${MT.last},${q(MT.name)}!$E$${MT.first}:$E$${MT.last},$B${r})` : '';
+      ws.getCell(r, 8).value = {formula:`D${r}+E${r}-F${r}+G${r}${mtF}`, result:close};
       ws.getCell(r, 9).value = +it.minStock || 0;
       ws.getCell(r, 10).value = {formula:`IF(H${r}<=0,"Hết hàng",IF(AND(I${r}>0,H${r}<=I${r}),"Sắp hết","Đủ hàng"))`, result:st};
       [4, 5, 6, 7, 8, 9].forEach(c => ws.getCell(r, c).numFmt = '#,##0.##;-#,##0.##;"-"');
@@ -3555,7 +3653,8 @@ async function buildNxtWorkbook() {
     });
     ws.autoFilter = {from:{row:5, column:1}, to:{row:5, column:10}};
     const n = ws.getCell(r + 1, 2);
-    n.value = 'Tồn đầu kỳ = tồn hiện tại trên hệ thống trừ các phiếu phát sinh từ đầu kỳ. Nhập/Xuất/Điều chỉnh cộng từ sheet "' + log.name + '".';
+    n.value = 'Tồn đầu kỳ = tồn hiện tại trên hệ thống trừ các phiếu phát sinh từ đầu kỳ. Nhập/Xuất/Điều chỉnh cộng từ sheet "' + log.name + '".'
+      + (hasLoans ? ' Tồn cuối kỳ đã tính cả hàng cho mượn / đi mượn (cột "Tăng/giảm tồn" ở sheet "' + MT.name + '").' : '');
     n.font = {...FONT, italic:true, size:9, color:{argb:'FF777777'}};
     if (mismatch) {
       const w = ws.getCell(r + 2, 2);
@@ -3632,7 +3731,51 @@ async function buildNxtWorkbook() {
     ws.autoFilter = {from:{row:5, column:1}, to:{row:5, column:16}};
   }
 
-  // ---------- 7. SỬA CHỮA (nếu có) ----------
+  // ---------- 7. MƯỢN – TRẢ (nếu có) ----------
+  if (hasLoans) {
+    const ws = sheet(MT.name, [6, 12, 8, 12, 30, 9, 11, 12, 26, 18, 32, 20], 5);
+    title(ws, 'THEO DÕI CHO MƯỢN – ĐI MƯỢN VẬT TƯ', 12);
+    header(ws, 5, ['STT', 'Ngày', 'Giờ', 'Loại', 'Vật tư', 'Đơn vị', 'Số lượng', 'Tăng/giảm tồn', 'Người / đơn vị', 'Số phiếu mượn', 'Ghi chú', 'Người lập'], 1);
+    loanMoves.forEach((t, i) => {
+      const r = MT.first + i, it = itemById(t.itemId), d = parseVN(t.datetime);
+      const vals = [i + 1, xd(d), (t.datetime || '').match(/\d{1,2}:\d{2}/)?.[0] || '', TYPE[t.type], it?.name || t.itemName, it?.unit || t.unit,
+        +t.qty, LOAN_T[t.type] * (+t.qty || 0), t.supplierOrReceiver || '', t.refId ? String(t.refId) : '',
+        [t.note, t.reason].filter(Boolean).join(' · '), t.createdByName || ''];
+      vals.forEach((v, k) => ws.getCell(r, k + 1).value = v === '' ? null : v);
+      ws.getCell(r, 2).numFmt = 'dd/mm/yyyy';
+      [7, 8].forEach(c => ws.getCell(r, c).numFmt = '#,##0.##;-#,##0.##;"-"');
+      body(ws, r, 1, 12);
+      ws.getCell(r, 8).font = {...FONT, bold:true, color:{argb: LOAN_T[t.type] < 0 ? 'FFC0392B' : 'FF1E7A45'}};
+    });
+    if (!loanMoves.length) { ws.mergeCells(6, 1, 6, 12); Object.assign(ws.getCell(6, 1), {value:'Không có phiếu mượn / trả vật tư trong khoảng thời gian này', font:{...FONT, italic:true}, alignment:{horizontal:'center'}}); }
+    ws.autoFilter = {from:{row:5, column:1}, to:{row:5, column:12}};
+    let r = MT.last + 2;
+    const n = ws.getCell(r, 1);
+    n.value = 'Tăng/giảm tồn: cho mượn và trả lại (−), nhận trả và đi mượn (+). Phiếu đóng khi còn thiếu: phần không trả được ghi thành phiếu xuất (cho mượn) hoặc phiếu nhập (đi mượn) ở sheet sổ nhập xuất.';
+    n.font = {...FONT, italic:true, size:9, color:{argb:'FF777777'}};
+    // Danh sách phiếu còn mở (kể cả máy móc) tính đến hôm nay
+    const openL = (db.loans || []).filter(l => l.status === 'open').sort((a, b) => (a.dueDate || '9') < (b.dueDate || '9') ? -1 : 1);
+    r += 2;
+    ws.mergeCells(r, 1, r, 12);
+    Object.assign(ws.getCell(r, 1), {value:`PHIẾU MƯỢN CHƯA TRẢ XONG (tính đến ${today()})`, font:{...FONT, bold:true, size:13}});
+    r++;
+    header(ws, r, ['STT', 'Ngày lập', 'Loại', 'Hàng', 'Tên vật tư / máy', 'Đơn vị', 'Số lượng', 'Còn phải trả', 'Người / đơn vị', 'Số phiếu mượn', 'Hạn trả', 'Điện thoại'], 1);
+    r++;
+    openL.forEach((l, i) => {
+      const od = loanOverdue(l);
+      const vals = [i + 1, xd(parseVN(l.datetime)), l.kind === 'cho' ? 'Cho mượn' : 'Đi mượn', l.itemType === 'tb' ? 'Máy' : 'Vật tư', l.itemName, l.unit,
+        +l.qty, loanRemain(l), l.party, String(l.id), l.dueDate ? fmtDue(l.dueDate) + (od > 0 ? ` (quá ${od} ngày)` : '') : '', l.phone || ''];
+      vals.forEach((v, k) => ws.getCell(r, k + 1).value = v === '' ? null : v);
+      ws.getCell(r, 2).numFmt = 'dd/mm/yyyy';
+      [7, 8].forEach(c => ws.getCell(r, c).numFmt = '#,##0.##;-#,##0.##;"-"');
+      body(ws, r, 1, 12);
+      if (od > 0) ws.getCell(r, 11).font = {...FONT, bold:true, color:{argb:'FFC0392B'}};
+      r++;
+    });
+    if (!openL.length) { ws.mergeCells(r, 1, r, 12); Object.assign(ws.getCell(r, 1), {value:'Không có phiếu nào đang mở', font:{...FONT, italic:true}, alignment:{horizontal:'center'}}); }
+  }
+
+  // ---------- 8. SỬA CHỮA (nếu có) ----------
   if (db.repairs.length) {
     const ws = sheet('Sửa chữa', [6, 32, 12, 30, 30, 16, 18, 24, 18], 5);
     title(ws, 'THEO DÕI SỬA CHỮA THIẾT BỊ', 9);
@@ -3667,6 +3810,439 @@ async function shareExport() {
   if (!lastExport) return;
   try { await navigator.share({files:[lastExport], title:lastExport.name}); closeModal('modal-xfile'); }
   catch (e) { if (e.name !== 'AbortError') downloadExport(); }
+}
+
+// ===== CHO MƯỢN / TRẢ (Giai đoạn 3) =====
+// Vật tư: cho mượn trừ tồn, nhận trả cộng tồn; đi mượn cộng tồn, trả lại trừ tồn (phiếu kho loại chomuon/nhantra/dimuon/tralai).
+// Máy móc: chỉ ghi máy đang ở đâu, ai giữ. Máy chủ kiểm tra lại mọi thứ; máy này chỉ ghi tạm để hiện ngay.
+const LOAN_T = {chomuon:-1, nhantra:1, dimuon:1, tralai:-1};
+const LOAN_ACTIONS = {addLoan:1, returnLoan:1, closeLoan:1};
+const r3 = v => Math.round((+v || 0) * 1000) / 1000;
+function normLoan(l) {
+  return {...l, id:+l.id, itemId: l.itemId === '' || l.itemId == null ? '' : +l.itemId, qty:+l.qty || 0, returned:+l.returned || 0,
+    closeQty:+l.closeQty || 0, history:(Array.isArray(l.history) ? l.history : []).map(h => ({...h, id:+h.id, q:+h.q || 0}))};
+}
+const loanRemain = l => r3(l.qty - l.returned - (l.status === 'closed' ? l.closeQty : 0));
+const isoDay = d => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+const fmtDue = s => { const m = String(s || '').match(/^(\d{4})-(\d{2})-(\d{2})$/); return m ? `${+m[3]}/${+m[2]}/${m[1]}` : ''; };
+// Số ngày quá hạn (> 0 = quá hạn, 0 = hạn hôm nay, < 0 = còn hạn, null = không đặt hạn / đã xong)
+function loanOverdue(l) {
+  if (l.status !== 'open' || !l.dueDate) return null;
+  const [y, m, d] = l.dueDate.split('-').map(Number);
+  const n = new Date();
+  return Math.round((Date.UTC(n.getFullYear(), n.getMonth(), n.getDate()) - Date.UTC(y, m - 1, d)) / 864e5);
+}
+const projLoans = () => (db.loans || []).filter(l => l.project === curProj);
+const devLoan = id => projLoans().find(l => l.status === 'open' && l.kind === 'cho' && l.itemType === 'tb' && l.itemId === id);
+
+// Áp thao tác mượn lên dữ liệu trên máy (lúc lập phiếu, và áp lại khi còn chờ gửi sau mỗi lần tải dữ liệu)
+function applyLoanOp(action, d) {
+  db.loans = db.loans || [];
+  const who = me?.name || '';
+  const addTxn = (id, type, qty, loan, note, reason) => {
+    const it = db.items.find(i => i.id === loan.itemId); if (!it) return;
+    it.stock = Math.round((it.stock + ({...LOAN_T, nhap:1, xuat:-1})[type] * qty) * 100) / 100;
+    if (!db.transactions.some(t => t.id === id))
+      db.transactions.push({id, type, itemId:it.id, itemName:it.name, qty, unit:it.unit, project:loan.project,
+        supplierOrReceiver:loan.party, thietBi:'', note:note || '', reason:reason || '', refId:loan.id, datetime:d.datetime, createdByName:who, _local:1});
+  };
+  if (action === 'addLoan') {
+    if (d.project !== curProj || db.loans.some(l => l.id === d.id)) return;
+    const loan = {id:d.id, kind:d.kind, itemType:d.itemType, itemId:d.itemId ?? '', itemName:d.itemName || '', unit:d.unit || '', qty:+d.qty || 1,
+      party:d.party, phone:d.phone || '', dueDate:d.dueDate || '', note:d.note || '', project:d.project, createdByName:who,
+      datetime:d.datetime, returned:0, status:'open', closeQty:0, closeReason:'', history:[], _local:1};
+    if (d.itemType === 'vt') {
+      const it = db.items.find(i => i.id === d.itemId); if (!it) return;
+      Object.assign(loan, {itemName:it.name, unit:it.unit});
+      addTxn(d.txnId, d.kind === 'cho' ? 'chomuon' : 'dimuon', loan.qty, loan, d.note);
+    } else { loan.unit = 'máy'; loan.qty = 1; if (d.kind === 'cho') loan.itemName = db.devices.find(x => x.id === d.itemId)?.name || loan.itemName; }
+    db.loans.push(loan);
+    return;
+  }
+  const loan = db.loans.find(l => l.id === d.loanId);
+  if (!loan || loan.status !== 'open' || loan.history.some(h => h.id === d.id)) return;
+  const remain = loanRemain(loan), cho = loan.kind === 'cho';
+  if (action === 'returnLoan') {
+    const q = loan.itemType === 'tb' ? remain : Math.min(r3(d.qty), remain);
+    if (loan.itemType === 'vt') addTxn(d.id, cho ? 'nhantra' : 'tralai', q, loan, d.note);
+    loan.returned = r3(loan.returned + q);
+    if (loan.returned >= loan.qty - 1e-9) loan.status = 'done';
+    loan.history.push({id:d.id, t:'tra', q, note:d.note || '', by:who, at:d.datetime, _local:1});
+  } else if (action === 'closeLoan') {
+    if (loan.itemType === 'vt' && remain > 0) {
+      addTxn(d.id, cho ? 'nhantra' : 'tralai', remain, loan, 'Quy đổi khi đóng phiếu mượn', d.reason);
+      addTxn(d.id2, cho ? 'xuat' : 'nhap', remain, loan, (cho ? 'Cho mượn' : 'Đi mượn') + ' không trả lại: ' + d.reason);
+    }
+    Object.assign(loan, {status:'closed', closeQty:remain, closeReason:d.reason});
+    loan.history.push({id:d.id, t:'dong', q:remain, note:d.reason, by:who, at:d.datetime, _local:1});
+  }
+}
+async function pushLoan(action, data) {
+  applyLoanOp(action, data);
+  updateLowBadge();
+  showLoader('Đang lưu...');
+  const ok = await push(action, data);
+  hideLoader();
+  if (ok === true) {                              // máy chủ đã nhận → bỏ nhãn "chờ gửi"
+    const l = (db.loans || []).find(x => x.id === (action === 'addLoan' ? data.id : data.loanId));
+    if (l) { delete l._local; l.history.forEach(h => delete h._local); saveLocal(); }
+  }
+  return ok;
+}
+
+// ---- Tổng quan: dòng cảnh báo quá hạn ----
+function loanAlertHtml() {
+  const open = projLoans().filter(l => l.status === 'open');
+  const late = open.filter(l => loanOverdue(l) > 0), todayL = open.filter(l => loanOverdue(l) === 0);
+  if (!late.length && !todayL.length) return '';
+  const list = late.length ? late : todayL;
+  const names = [...new Set(list.map(l => l.party))];
+  return `<div class="alert-banner" style="${late.length ? '' : 'border-left-color:var(--orange)'}" onclick="openLoanList('${late.length ? 'late' : 'cho'}')">
+    <div class="alert-ico">🔁</div>
+    <div class="alert-text">
+      <div class="at-title" style="${late.length ? '' : 'color:var(--orange)'}">${late.length ? `${late.length} phiếu mượn quá hạn chưa trả` : `${todayL.length} phiếu mượn đến hạn trả hôm nay`}${late.length && todayL.length ? ` · ${todayL.length} đến hạn hôm nay` : ''}</div>
+      <div class="at-sub">${escHtml(names.slice(0, 3).join(', '))}${names.length > 3 ? ` và ${names.length - 3} người khác` : ''}</div>
+    </div>
+    <span class="alert-chevron">›</span>
+  </div>`;
+}
+// ---- Tồn kho: đang cho mượn / đang mượn ----
+function itemLoanLine(i) {
+  let out = 0, inn = 0;
+  projLoans().forEach(l => { if (l.status === 'open' && l.itemType === 'vt' && l.itemId === i.id) { if (l.kind === 'cho') out += loanRemain(l); else inn += loanRemain(l); } });
+  if (!out && !inn) return '';
+  return `<div class="ln-loan-line" onclick="openLoanList('${out ? 'cho' : 'di'}')">${out ? `<span>🔁 Đang cho mượn: ${fmtNum(r3(out))} ${escHtml(i.unit)}</span>` : ''}${inn ? `<span>📥 Trong đó đi mượn: ${fmtNum(r3(inn))} ${escHtml(i.unit)}</span>` : ''}</div>`;
+}
+// ---- Hồ sơ máy: đang cho mượn ----
+function devLoanHtml(d) {
+  const l = devLoan(d.id); if (!l) return '';
+  const od = loanOverdue(l);
+  return `<div class="ln-dev" onclick="openLoan(${l.id})">🔁 Đang cho <b>${escHtml(l.party)}</b> mượn từ ${escHtml((l.datetime || '').replace(/^\S+\s+/, ''))}${l.dueDate ? ` · hạn ${fmtDue(l.dueDate)}` : ''}${od > 0 ? ` · <span class="ln-late">quá ${od} ngày</span>` : ''} ›</div>`;
+}
+
+// ---- Danh sách ----
+let loanTab = 'cho', loanQ = '';
+function openLoanList(tab) { if (tab) loanTab = tab; openDp('dp-loans'); }
+function loanStatusBadge(l) {
+  if (l.status === 'done') return `<span class="txn-badge badge-in">Đã trả đủ</span>`;
+  if (l.status === 'closed') return `<span class="txn-badge badge-gray">Đã đóng${l.closeQty ? ` · thiếu ${fmtNum(l.closeQty)}` : ''}</span>`;
+  if (l.itemType === 'tb') return `<span class="txn-badge ${l.kind === 'cho' ? 'badge-out' : 'badge-blue'}">${l.kind === 'cho' ? 'Đang cho mượn' : 'Đang mượn'}</span>`;
+  return `<span class="txn-badge ${l.kind === 'cho' ? 'badge-out' : 'badge-blue'}">Còn ${fmtNum(loanRemain(l))}/${fmtNum(l.qty)} ${escHtml(l.unit)}</span>`;
+}
+function loanDueHtml(l) {
+  const od = loanOverdue(l);
+  if (!l.dueDate) return l.status === 'open' ? 'Không đặt hạn' : '';
+  if (od === null) return 'Hạn ' + fmtDue(l.dueDate);
+  if (od > 0) return `<span class="ln-late">Quá hạn ${od} ngày (${fmtDue(l.dueDate)})</span>`;
+  if (od === 0) return `<span class="ln-soon">Hạn trả hôm nay</span>`;
+  return `Hạn ${fmtDue(l.dueDate)}${od >= -2 ? ` <span class="ln-soon">· còn ${-od} ngày</span>` : ''}`;
+}
+function loanRow(l) {
+  const cho = l.kind === 'cho';
+  return `<div class="row-item" onclick="openLoan(${l.id})">
+    <div class="txn-ico ${cho ? 'out' : 'adj'}">${l.itemType === 'tb' ? '🏗️' : cho ? '🔁' : '📥'}</div>
+    <div style="flex:1;min-width:0">
+      <div class="txn-name">${hasPhotos(l.id) ? '📷 ' : ''}${escHtml(l.itemName)}</div>
+      <div class="txn-sub">${cho ? '→' : '←'} <b style="color:var(--text2)">${escHtml(l.party)}</b></div>
+      <div class="txn-sub">${escHtml((l.datetime || '').replace(/^\S+\s+/, ''))}${loanDueHtml(l) ? ' · ' + loanDueHtml(l) : ''}</div>
+    </div>
+    <div style="flex-shrink:0;margin-left:8px;text-align:right">${loanStatusBadge(l)}</div>
+  </div>`;
+}
+function renderLoans() {
+  const all = projLoans();
+  const open = all.filter(l => l.status === 'open');
+  const cho = open.filter(l => l.kind === 'cho'), di = open.filter(l => l.kind === 'di');
+  const late = open.filter(l => loanOverdue(l) > 0);
+  const done = all.filter(l => l.status !== 'open');
+  if (loanTab === 'late' && !late.length) loanTab = 'cho';
+  const q = normVN(loanQ);
+  let list = {cho, di, late, done}[loanTab] || cho;
+  if (q) list = list.filter(l => normVN(l.party + ' ' + l.itemName + ' ' + (l.note || '')).includes(q));
+  // Đang mở: quá hạn trước, rồi theo hạn gần nhất; đã xong: mới nhất trước
+  list = list.slice().sort(loanTab === 'done' ? (a, b) => b.id - a.id
+    : (a, b) => ((loanOverdue(b) ?? -1e9) - (loanOverdue(a) ?? -1e9)) || (a.dueDate || '9').localeCompare(b.dueDate || '9') || b.id - a.id);
+  const tab = (k, n, lbl, cls) => `<div class="ln-sum ${loanTab === k ? 'on' : ''} ${cls || ''}" onclick="loanTab='${k}';renderLoans()"><b>${n}</b><span>${lbl}</span></div>`;
+  const empty = {cho:'Không có phiếu cho mượn nào đang mở', di:'Không có phiếu đi mượn nào đang mở', late:'Không có phiếu quá hạn', done:'Chưa có phiếu nào đã xong'}[loanTab];
+  document.getElementById('dp-loans-body').innerHTML = `
+    <div class="ln-summary" style="padding:0">
+      ${tab('cho', cho.length, 'Đang cho mượn')}
+      ${tab('di', di.length, 'Đang đi mượn')}
+      ${late.length ? tab('late', late.length, 'Quá hạn', 'late') : ''}
+      ${tab('done', done.length, 'Đã xong')}
+    </div>
+    ${all.length > 6 ? `<input class="ln-search" style="margin:10px 0 0;width:100%" placeholder="🔎 Tìm theo người mượn, vật tư, máy..." value="${escHtml(loanQ)}" oninput="loanQ=this.value;renderLoanListOnly()">` : ''}
+    <div class="card" id="ln-list" style="margin-top:10px">${list.length ? list.map(loanRow).join('') : `<div class="empty-state"><div class="e-ico">🔁</div><p>${q ? 'Không tìm thấy phiếu phù hợp' : empty}</p>${!q && loanTab !== 'done' && can('tk') ? '<p style="margin-top:6px">Bấm <b>+ Lập phiếu</b> để ghi cho mượn hoặc đi mượn</p>' : ''}</div>`}</div>`;
+}
+function renderLoanListOnly() {
+  const y = document.getElementById('dp-loans-body').scrollTop, el = document.activeElement, pos = el?.selectionStart;
+  renderLoans();
+  const inp = document.querySelector('#dp-loans-body .ln-search');
+  if (inp) { inp.focus(); if (pos != null) inp.setSelectionRange(pos, pos); }
+  document.getElementById('dp-loans-body').scrollTop = y;
+}
+
+// ---- Chi tiết phiếu mượn ----
+let curLoanId = null;
+function openLoan(id) {
+  const l = (db.loans || []).find(x => x.id === id); if (!l) return;
+  curLoanId = id;
+  const cho = l.kind === 'cho', open = l.status === 'open', u = escHtml(l.unit);
+  const kv = (k, v) => (v === '' || v == null) ? '' : `<div class="kv"><span>${k}</span><b>${v}</b></div>`;
+  document.getElementById('ml-title').textContent = cho ? '🔁 Phiếu cho mượn' : '📥 Phiếu đi mượn';
+  const hist = l.history.map(h => `<div class="ln-hist"><div>${h.t === 'dong' ? '🔒' : '↩️'}</div><div style="flex:1">
+      ${h.t === 'dong' ? `Đóng phiếu${h.q ? ` — không trả ${fmtNum(h.q)} ${u}` : ''}` : `${cho ? 'Nhận trả' : 'Trả lại'} ${l.itemType === 'tb' ? 'máy' : fmtNum(h.q) + ' ' + u}`}
+      ${h.note ? `<small>📝 ${escHtml(h.note)}</small>` : ''}
+      <small>👤 ${escHtml(h.by || '')} · ${escHtml(h.at || '')}${h._local ? ' · ⏳ chờ gửi' : ''}</small></div></div>`).join('');
+  document.getElementById('ml-body').innerHTML = `
+    <div style="margin:-4px 0 12px">${loanStatusBadge(l)}</div>
+    <div class="kv-box">
+      ${kv(l.itemType === 'tb' ? 'Máy' : 'Vật tư', escHtml(l.itemName))}
+      ${l.itemType === 'vt' ? kv('Số lượng mượn', `${fmtNum(l.qty)} ${u}`) : ''}
+      ${l.itemType === 'vt' && l.returned ? kv(cho ? 'Đã nhận trả' : 'Đã trả lại', `${fmtNum(l.returned)} ${u}`) : ''}
+      ${open && l.itemType === 'vt' ? kv('Còn phải trả', `<span style="color:var(--orange)">${fmtNum(loanRemain(l))} ${u}</span>`) : ''}
+      ${l.status === 'closed' && l.closeQty ? kv('Không trả', `<span style="color:var(--red)">${fmtNum(l.closeQty)} ${u}</span>`) : ''}
+      ${kv(cho ? 'Người / đơn vị mượn' : 'Mượn của', escHtml(l.party))}
+      ${l.phone ? kv('Điện thoại', `<a href="tel:${escHtml(l.phone.replace(/[^\d+]/g, ''))}" style="text-decoration:none">📞 ${escHtml(l.phone)}</a>`) : ''}
+      ${kv('Hạn trả', l.dueDate ? loanDueHtml(l) : 'Không đặt hạn')}
+      ${kv('Ghi chú', escHtml(l.note || ''))}
+      ${l.closeReason ? kv('Lý do đóng', escHtml(l.closeReason)) : ''}
+      ${kv('Người lập', escHtml(l.createdByName || ''))}
+      ${kv('Lập lúc', escHtml(l.datetime || '') + (l._local ? ' · ⏳ chờ gửi' : ''))}
+      ${kv('Số phiếu', '#' + l.id)}
+    </div>
+    ${hist ? `<div class="grp-label">Lịch sử trả</div><div class="kv-box" style="padding:2px 14px">${hist}</div>` : ''}
+    ${loanPhotosHtml(l)}`;
+  document.getElementById('ml-ret-btn').textContent = cho ? '↩️ Nhận trả' : '↩️ Trả lại';
+  document.getElementById('ml-ret-btn').style.display = open ? '' : 'none';
+  document.getElementById('ml-close-btn').style.display = open ? '' : 'none';
+  openModal('modal-loan');
+  loadLoanPhotos(l);
+}
+function loanPhotosHtml(l) {
+  const list = photosOf(l.id);
+  if (!list.length && !can('tk')) return '';
+  return `<div class="grp-label">📷 Ảnh biên bản (${list.length})</div>
+    <div class="ph-row" style="margin-bottom:14px">${list.map(ph => `<div class="ph-thumb" id="pt-${ph.id}"><div class="ph-load">${ph._local ? '⏳' : '…'}</div></div>`).join('')}${list.length < 8 ? `<button type="button" class="ph-add need-tk" onclick="document.getElementById('ml-ph-in').click()"><span>📷</span>Thêm ảnh</button>` : ''}</div>
+    <input type="file" id="ml-ph-in" accept="image/*" multiple style="display:none" onchange="addLoanPhotos(this)">`;
+}
+async function loadLoanPhotos(l) { await loadTxnPhotos({id:l.id}); }
+async function addLoanPhotos(input) {
+  const files = [...input.files].slice(0, MAX_PHOTOS); input.value = '';
+  if (!files.length || !curLoanId) return;
+  showLoader('Đang xử lý ảnh...');
+  const list = [];
+  for (const f of files) { try { list.push({id:newId(), data: await compressImage(f)}); } catch (e) {} }
+  hideLoader();
+  await queuePhotos(curLoanId, list);
+  openLoan(curLoanId);
+}
+function loanShareText(l) {
+  const cho = l.kind === 'cho', u = l.unit, L = [];
+  L.push(`${cho ? '🔁 PHIẾU CHO MƯỢN' : '📥 PHIẾU ĐI MƯỢN'} — ${l.project || ''}`);
+  L.push(`${l.itemType === 'tb' ? 'Máy' : 'Vật tư'}: ${l.itemName}`);
+  if (l.itemType === 'vt') L.push(`Số lượng: ${fmtNum(l.qty)} ${u}`);
+  L.push(`${cho ? 'Người mượn' : 'Mượn của'}: ${l.party}${l.phone ? ' · ' + l.phone : ''}`);
+  if (l.dueDate) L.push(`Hạn trả: ${fmtDue(l.dueDate)}${loanOverdue(l) > 0 ? ` (đã quá ${loanOverdue(l)} ngày)` : ''}`);
+  if (l.note) L.push(`Ghi chú: ${l.note}`);
+  if (l.history.length) l.history.forEach(h => L.push(h.t === 'dong' ? `🔒 Đóng phiếu${h.q ? ', không trả ' + fmtNum(h.q) + ' ' + u : ''}: ${h.note}` : `↩️ ${cho ? 'Nhận trả' : 'Trả lại'} ${l.itemType === 'tb' ? 'máy' : fmtNum(h.q) + ' ' + u} · ${h.at || ''}`));
+  L.push(l.status === 'open' ? (l.itemType === 'vt' ? `➡️ Còn phải trả: ${fmtNum(loanRemain(l))} ${u}` : '➡️ Chưa trả máy')
+    : l.status === 'done' ? '✅ Đã trả đủ' : '🔒 Đã đóng phiếu');
+  L.push(`Người lập: ${l.createdByName || ''} · ${l.datetime || ''}`);
+  const n = photosOf(l.id).length; if (n) L.push(`📷 ${n} ảnh biên bản`);
+  return L.join('\n');
+}
+async function shareLoan(id) {
+  const l = (db.loans || []).find(x => x.id === id); if (!l) return;
+  const list = photosOf(id);
+  const files = list.map((ph, i) => photoMem[ph.id] ? dataUrlToFile(photoMem[ph.id], `muon-${id}-${i + 1}.jpg`) : null).filter(Boolean);
+  if (files.length < list.length) toast('⏳ Một số ảnh chưa tải xong — gửi phần đã có');
+  await shareOut(loanShareText(l), files, 'Phiếu mượn');
+}
+
+// ---- Nhận trả / trả lại ----
+function openLoanReturn() {
+  const l = (db.loans || []).find(x => x.id === curLoanId); if (!l || l.status !== 'open') return;
+  const cho = l.kind === 'cho', tb = l.itemType === 'tb';
+  document.getElementById('lr-title').textContent = cho ? '↩️ Nhận trả về kho' : '↩️ Trả lại cho bên cho mượn';
+  document.getElementById('lr-info').innerHTML = `<b>${escHtml(l.itemName)}</b><br>${cho ? 'Người mượn' : 'Mượn của'}: <b>${escHtml(l.party)}</b>`
+    + (tb ? '' : `<br>Còn phải trả: <b>${fmtNum(loanRemain(l))} ${escHtml(l.unit)}</b>`)
+    + (!cho && !tb ? `<br>Tồn trong kho: ${fmtNum(db.items.find(i => i.id === l.itemId)?.stock ?? 0)} ${escHtml(l.unit)}` : '');
+  document.getElementById('lr-qty-wrap').style.display = tb ? 'none' : '';
+  document.getElementById('lr-qty-label').textContent = `Số lượng ${cho ? 'nhận trả' : 'trả lại'} lần này (${l.unit})`;
+  document.getElementById('lr-qty').value = tb ? '' : loanRemain(l);
+  document.getElementById('lr-note').value = '';
+  document.getElementById('lr-ok').textContent = tb ? (cho ? 'Xác nhận đã nhận máy' : 'Xác nhận đã trả máy') : 'Xác nhận';
+  closeModal('modal-loan');
+  openModal('modal-loan-ret');
+}
+async function saveLoanReturn() {
+  const l = (db.loans || []).find(x => x.id === curLoanId); if (!l || l.status !== 'open') return;
+  const tb = l.itemType === 'tb', remain = loanRemain(l);
+  const qty = tb ? remain : r3(parseVN_num(document.getElementById('lr-qty').value));
+  if (!tb) {
+    if (!(qty > 0)) { toast('⚠️ Nhập số lượng lớn hơn 0'); return; }
+    if (qty > remain + 1e-9) { toast(`⚠️ Chỉ còn ${fmtNum(remain)} ${l.unit} chưa trả`); return; }
+    if (l.kind === 'di') { const it = db.items.find(i => i.id === l.itemId); if (it && qty > it.stock + 1e-9) { toast(`❌ Tồn trong kho không đủ để trả lại — còn ${fmtNum(it.stock)} ${l.unit}`); return; } }
+  }
+  const data = {loanId:l.id, id:newId(), qty, note:document.getElementById('lr-note').value.trim(), datetime:nowStr()};
+  closeModal('modal-loan-ret');
+  const ok = await pushLoan('returnLoan', data);
+  if (ok === 'rejected') return;
+  toast(`✅ ${l.kind === 'cho' ? 'Đã nhận trả' : 'Đã trả lại'} ${tb ? 'máy ' + l.itemName : fmtNum(qty) + ' ' + l.unit + ' ' + l.itemName}${l.status === 'done' ? ' — phiếu đã xong' : ''}`);
+  refreshLoanViews();
+  openLoan(l.id);
+}
+const parseVN_num = v => +String(v || '').replace(',', '.');
+
+// ---- Đóng phiếu còn thiếu ----
+function openLoanClose() {
+  const l = (db.loans || []).find(x => x.id === curLoanId); if (!l || l.status !== 'open') return;
+  const cho = l.kind === 'cho', tb = l.itemType === 'tb', rem = loanRemain(l);
+  document.getElementById('lc-info').innerHTML = `<b>${escHtml(l.itemName)}</b> · ${escHtml(l.party)}<br>`
+    + (tb ? `Máy sẽ được ghi là không còn theo dõi mượn.`
+      : `Còn <b>${fmtNum(rem)} ${escHtml(l.unit)}</b> chưa trả. Khi đóng phiếu, phần này được ghi thành `
+        + (cho ? `<b>phiếu xuất</b> cho ${escHtml(l.party)} (coi như đã dùng / mất). Tồn kho không đổi.`
+               : `<b>phiếu nhập</b> từ ${escHtml(l.party)} (coi như đã mua / giữ lại). Tồn kho không đổi.`));
+  document.getElementById('lc-reason').value = '';
+  closeModal('modal-loan');
+  openModal('modal-loan-close');
+}
+async function saveLoanClose() {
+  const l = (db.loans || []).find(x => x.id === curLoanId); if (!l || l.status !== 'open') return;
+  const reason = document.getElementById('lc-reason').value.trim();
+  if (reason.length < 5) { toast('⚠️ Ghi rõ lý do (ít nhất 5 ký tự)'); return; }
+  let id2 = newId(); const id = newId(); if (id2 === id) id2 = id + 1;
+  closeModal('modal-loan-close');
+  const ok = await pushLoan('closeLoan', {loanId:l.id, id, id2, reason, datetime:nowStr()});
+  if (ok === 'rejected') return;
+  toast('🔒 Đã đóng phiếu mượn');
+  refreshLoanViews();
+  openLoan(l.id);
+}
+function refreshLoanViews() {
+  if (document.getElementById('dp-loans').classList.contains('show')) renderLoans();
+  if (document.getElementById('dp-device').classList.contains('show') && currentDeviceId) renderDeviceDetail(currentDeviceId);
+  if (['home', 'ton'].includes(curTab)) goTab(curTab);
+}
+
+// ---- Lập phiếu mượn ----
+let loanKind = 'cho', loanType = 'vt';
+formPhotos.fl = [];
+function openLoanForm() {
+  if (!can('tk')) return;
+  if (!curProj) { toast('⚠️ Chọn dự án trước'); return; }
+  loanKind = loanTab === 'di' ? 'di' : 'cho'; loanType = 'vt'; formPhotos.fl = [];
+  document.getElementById('dp-loan-new-body').innerHTML = `
+    <div class="form-section">
+      <div class="fg"><label>Loại phiếu</label>
+        <div class="qk-seg" id="fl-kind"><button data-k="cho" onclick="setLoanKind('cho')">🔁 Cho mượn</button><button data-k="di" onclick="setLoanKind('di')">📥 Đi mượn</button></div>
+      </div>
+      <div class="fg"><label>Mượn gì</label>
+        <div class="qk-seg" id="fl-type"><button data-t="vt" onclick="setLoanType('vt')">📦 Vật tư, dụng cụ</button><button data-t="tb" onclick="setLoanType('tb')">🏗️ Máy móc</button></div>
+      </div>
+      <div id="fl-vt">
+        <div class="fg"><label>Nhóm vật tư</label>
+          <select id="fl-cat" onchange="comboClear('fl', false)">${db.categories.map(cat => `<option value="${cat.id}">${cat.icon} ${cat.name}</option>`).join('')}</select>
+        </div>
+        <div class="fg"><label>Tên vật tư</label>
+          <div class="combo">
+            <input type="text" id="fl-item-txt" autocomplete="off" placeholder="Gõ tên vật tư để tìm..."
+              oninput="comboInput('fl')" onfocus="comboInput('fl')" onblur="setTimeout(()=>comboHide('fl'),200)">
+            <button type="button" class="combo-clear" id="fl-clear" onmousedown="event.preventDefault()" onclick="comboClear('fl',true)">✕</button>
+            <div class="combo-list" id="fl-list"></div>
+          </div>
+          <input type="hidden" id="fl-item">
+          <div class="combo-hint" id="fl-hint"></div>
+        </div>
+        <div class="fg-row">
+          <div class="fg"><label>Số lượng</label><input type="number" id="fl-qty" placeholder="0" min="0" step="any" inputmode="decimal"></div>
+          <div class="fg"><label>Đơn vị</label><input type="text" id="fl-unit" readonly style="background:var(--bg)" placeholder="—">
+            <select id="fl-unit-sel" style="display:none">${UNITS.map(u => `<option>${u}</option>`).join('')}</select></div>
+        </div>
+      </div>
+      <div id="fl-tb" style="display:none">
+        <div class="fg" id="fl-dev-wrap"><label>Máy cho mượn</label><select id="fl-dev"></select></div>
+        <div class="fg" id="fl-devname-wrap"><label>Tên máy đi mượn</label><input type="text" id="fl-devname" placeholder="VD: Cẩu bánh xích 50T"></div>
+      </div>
+      <div class="fg"><label id="fl-party-label">Người / đơn vị mượn</label>
+        <input type="text" id="fl-party" autocomplete="off" placeholder="VD: Tổ đội A.Kiên, CT Nhơn Trạch">
+      </div>
+      <div class="fg"><label>Điện thoại (tùy chọn)</label><input type="tel" id="fl-phone" inputmode="tel" placeholder="Số điện thoại người mượn"></div>
+      <div class="fg"><label>Hạn trả (tùy chọn)</label>
+        <input type="date" id="fl-due">
+        <div class="ln-due-chips"><button type="button" onclick="setLoanDue(1)">Ngày mai</button><button type="button" onclick="setLoanDue(3)">3 ngày</button><button type="button" onclick="setLoanDue(7)">1 tuần</button><button type="button" onclick="setLoanDue(30)">1 tháng</button><button type="button" onclick="setLoanDue(0)">Không hạn</button></div>
+      </div>
+      <div class="fg"><label>Ghi chú</label><textarea id="fl-note" rows="2" placeholder="VD: mượn hàn cọc khu B, tình trạng còn tốt"></textarea></div>
+      ${photoFieldHtml('fl')}
+      <button class="btn-full btn-orange" id="fl-save" onclick="doLoan()">Lưu phiếu</button>
+    </div>`;
+  renderFormPhotos('fl');
+  setLoanKind(loanKind); setLoanType(loanType);
+  openDp('dp-loan-new');
+}
+function setLoanDue(days) {
+  const el = document.getElementById('fl-due');
+  if (!days) { el.value = ''; return; }
+  const d = new Date(); d.setDate(d.getDate() + days); el.value = isoDay(d);
+}
+function setLoanKind(k) {
+  loanKind = k;
+  document.querySelectorAll('#fl-kind button').forEach(b => b.className = b.dataset.k === k ? 'on ' + (k === 'cho' ? 'out' : 'in') : '');
+  document.getElementById('fl-party-label').textContent = k === 'cho' ? 'Người / đơn vị mượn' : 'Mượn của ai (người / công trình)';
+  document.getElementById('fl-save').textContent = k === 'cho' ? '🔁 Lưu phiếu cho mượn' : '📥 Lưu phiếu đi mượn';
+  document.getElementById('fl-save').className = 'btn-full ' + (k === 'cho' ? 'btn-orange' : 'btn-green');
+  document.getElementById('fl-item-txt').placeholder = k === 'cho' ? 'Gõ tên vật tư để tìm...' : 'Gõ tên để tìm, hoặc nhập tên mới để thêm...';
+  document.getElementById('fl-dev-wrap').style.display = k === 'cho' ? '' : 'none';
+  document.getElementById('fl-devname-wrap').style.display = k === 'cho' ? 'none' : '';
+  const free = db.devices.filter(d => !devLoan(d.id));
+  document.getElementById('fl-dev').innerHTML = free.length ? '<option value="">— Chọn máy —</option>' + free.map(d => `<option value="${d.id}">${escHtml(d.name)}</option>`).join('')
+    : '<option value="">Không có máy nào đang rảnh</option>';
+  if (document.getElementById('fl-item-txt').value) comboInput('fl');
+  comboHide('fl');
+}
+function setLoanType(t) {
+  loanType = t;
+  document.querySelectorAll('#fl-type button').forEach(b => b.className = b.dataset.t === t ? 'on out' : '');
+  document.getElementById('fl-vt').style.display = t === 'vt' ? '' : 'none';
+  document.getElementById('fl-tb').style.display = t === 'tb' ? '' : 'none';
+}
+async function doLoan() {
+  const val = id => document.getElementById(id).value.trim();
+  const party = val('fl-party');
+  if (party.length < 2) { toast(loanKind === 'cho' ? '⚠️ Ghi rõ người / đơn vị mượn' : '⚠️ Ghi rõ mượn của ai'); document.getElementById('fl-party').focus(); return; }
+  const data = {id:newId(), kind:loanKind, itemType:loanType, party, phone:val('fl-phone'), dueDate:val('fl-due'), note:val('fl-note'), project:curProj, datetime:nowStr()};
+  if (data.dueDate && data.dueDate < isoDay(new Date())) { toast('⚠️ Hạn trả đang ở ngày đã qua'); return; }
+  let newItem = null;
+  if (loanType === 'vt') {
+    const name = val('fl-item-txt');
+    if (!name) { toast('⚠️ Chọn vật tư'); return; }
+    let item = db.items.find(i => i.id === +val('fl-item')) || db.items.find(i => normVN(i.name) === normVN(name));
+    if (!item && loanKind === 'cho') { toast('⚠️ Chọn vật tư có trong kho'); return; }
+    const qty = r3(parseVN_num(val('fl-qty')));
+    if (!(qty > 0)) { toast('⚠️ Nhập số lượng hợp lệ'); return; }
+    if (item && loanKind === 'cho' && qty > item.stock + 1e-9) { toast(`❌ Tồn không đủ! Còn ${fmtNum(item.stock)} ${item.unit}`); return; }
+    if (!item) newItem = item = {id:newId(), name, cat:val('fl-cat'), unit:document.getElementById('fl-unit-sel').value, stock:0, minStock:0, project:curProj};
+    let txnId = newId(); if (txnId === data.id) txnId = data.id + 1;
+    Object.assign(data, {itemId:item.id, itemName:item.name, unit:item.unit, qty, txnId});
+  } else if (loanKind === 'cho') {
+    const dv = db.devices.find(d => d.id === +val('fl-dev'));
+    if (!dv) { toast('⚠️ Chọn máy cho mượn'); return; }
+    Object.assign(data, {itemId:dv.id, itemName:dv.name, unit:'máy', qty:1});
+  } else {
+    const name = val('fl-devname');
+    if (name.length < 2) { toast('⚠️ Nhập tên máy đi mượn'); return; }
+    Object.assign(data, {itemId:'', itemName:name, unit:'máy', qty:1});
+  }
+  if (newItem) { db.items.push(newItem); showLoader('Đang lưu...'); await push('upsert', {table:'items', rows:[newItem]}); }
+  const ok = await pushLoan('addLoan', data);
+  if (ok === 'rejected') return;
+  const nPh = await queuePhotos(data.id, formPhotos.fl.splice(0));
+  toast(`✅ Đã lưu phiếu ${loanKind === 'cho' ? 'cho mượn' : 'đi mượn'}${nPh ? ` · ${nPh} ảnh` : ''}`);
+  loanTab = loanKind;
+  closeDp('dp-loan-new');
+  refreshLoanViews();
+  openLoan(data.id);
 }
 
 // ===== LOGOUT =====
