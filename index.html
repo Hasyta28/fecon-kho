@@ -1073,7 +1073,7 @@ body.can-ql .hide-ql{display:none!important}
 // ============================================================
 // CONFIG
 // ============================================================
-const APP_VERSION = '5.8.1';
+const APP_VERSION = '5.8.3';
 const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbw6Rmi80I7RI3ij2U7RdRF5pYuQTnPrwEmGmUZS5xpxzLwwVynfoFUujZe1lm6HS1ymxw/exec';
 // ============================================================
 
@@ -1216,6 +1216,7 @@ async function doRegister() {
 function startSession(r) {
   // Máy dùng chung: người khác đăng nhập thì không giữ dữ liệu/thay đổi chờ gửi của người trước
   if (me && me.id !== r.user.id) clearLocalData();
+  newSessionGen(); stopAutoSync();
   token = r.token; me = r.user; role = me.role;
   localStorage.setItem(LS_TOKEN, token);
   localStorage.setItem(LS_USER, JSON.stringify(me));
@@ -1262,9 +1263,14 @@ async function setupApp() {
     const t0 = Date.now(); showLoader('Đang tải dữ liệu lần đầu...');
     tick = setInterval(() => { document.getElementById('loader-msg').textContent = `Đang tải dữ liệu lần đầu... ${Math.round((Date.now() - t0) / 1000)} giây`; }, 1000);
   }
-  const ok = await syncAll();
+  const gen = sessionGen;
+  let ok = await syncAll();
+  if (!ok && token && gen === sessionGen && !loadedOnce) {      // lần đầu chưa tải được: thử lại ngay, không để trống 15 giây
+    await new Promise(r => setTimeout(r, 1500));
+    if (gen === sessionGen) ok = await syncAll();
+  }
   clearInterval(tick); hideLoader();
-  if (!token) return;                       // phiên hết hạn trong lúc tải
+  if (!token || gen !== sessionGen) return;                     // đã đăng xuất / người khác đăng nhập trong lúc tải
   if (ok || !hasCache) refreshCurrentView(false);
   startAutoSync();
 }
@@ -1274,6 +1280,10 @@ const LS_CUR = 'fecon_proj_v5';
 const LS_TOKEN = 'fecon_token_v5', LS_USER = 'fecon_user_v5', LS_DB = 'fecon_db_v5', LS_OUT = 'fecon_outbox_v5', LS_VER = 'fecon_ver_v5';
 let token = '', pendingCount = 0, lastReject = '';
 let outbox = [], serverVer = 0, syncing = false, syncTimer = null, flushing = null;
+// Mỗi lần đăng nhập / đăng xuất là một "phiên" mới. Yêu cầu của phiên cũ trả về muộn thì bỏ qua,
+// không được ghi dữ liệu của người trước vào máy, không được làm người mới bị đăng xuất.
+let sessionGen = 0;
+function newSessionGen() { sessionGen++; syncing = false; flushing = null; }
 function saveLocal() {
   try {
     const { categories, ...rest } = db;
@@ -1319,11 +1329,12 @@ async function api(action, data, timeoutMs) {
   if (!serverOn()) return {success:false, offline:true, reason:'Chưa cấu hình địa chỉ máy chủ'};
   if (navigator.onLine === false) return {success:false, offline:true, reason:'Điện thoại đang không có mạng (Wi-Fi / 4G đang tắt)'};
   const ms = timeoutMs || 25000;
+  const tok = token;
   const ctrl = new AbortController(); const tm = setTimeout(() => ctrl.abort(), ms);
   let res, text, r;
   try {
     res = await fetch(SCRIPT_URL, {method:'POST', headers:{'Content-Type':'text/plain;charset=utf-8'},
-      body: JSON.stringify({action, data: data || {}, token}), redirect:'follow', signal: ctrl.signal});
+      body: JSON.stringify({action, data: data || {}, token: tok}), redirect:'follow', signal: ctrl.signal});
     text = await res.text();
   } catch (e) {
     clearTimeout(tm);
@@ -1338,6 +1349,7 @@ async function api(action, data, timeoutMs) {
     return {success:false, offline:true, reason:`Máy chủ trả về trang lỗi (HTTP ${res.status}${title ? ': ' + title.trim() : ''}) — kiểm tra lại triển khai Apps Script`};
   }
   if (!r) return {success:false};
+  if (tok !== token) return {success:false, stale:true};  // trả lời của phiên đăng nhập trước → bỏ qua
   if (r.auth) onAuthLost(r.error);
   if (r.me) onMe(r.me, r.pending);
   return r;
@@ -1354,7 +1366,7 @@ function onMe(u, pending) {
 }
 function onAuthLost(msg) {
   if (!token) return;
-  token = ''; localStorage.removeItem(LS_TOKEN);
+  token = ''; localStorage.removeItem(LS_TOKEN); newSessionGen();
   stopAutoSync(); closeSidebar(); hideLoader();
   document.querySelectorAll('.modal-bg').forEach(m => m.style.display = 'none');
   document.querySelectorAll('.detail-page.show').forEach(p => p.classList.remove('show'));
@@ -1365,9 +1377,10 @@ function onAuthLost(msg) {
 // Gửi lần lượt các thay đổi đang chờ (không chạy chồng)
 async function flushOutbox() {
   if (flushing) return flushing;
-  flushing = (async () => {
+  const gen = sessionGen;
+  const job = flushing = (async () => {
     while (outbox.length) {
-      if (!token) return false;
+      if (!token || gen !== sessionGen) return false;
       const op = outbox[0];
       let payload = op.data;
       if (op.action === 'uploadPhoto') {
@@ -1376,6 +1389,7 @@ async function flushOutbox() {
         payload = {...op.data, data};
       }
       const r = await api(op.action, payload, op.action === 'uploadPhoto' ? 90000 : undefined);
+      if (gen !== sessionGen) return false;
       if (!r || !r.success) {
         if (r && r.error && !r.offline && !r.auth) {
           console.warn('Máy chủ từ chối:', op.action, r.error);
@@ -1403,7 +1417,7 @@ async function flushOutbox() {
     if (bar && bar.textContent.startsWith('📴')) setSyncBar('');
     return true;
   })();
-  try { return await flushing; } finally { flushing = null; }
+  try { return await job; } finally { if (flushing === job) flushing = null; }
 }
 let serverVerInfo = '', loadedOnce = false;
 function applyServer(r) {
@@ -1478,15 +1492,17 @@ function showVersion() {
 async function syncAll(silent) {
   if (syncing || !token) return false;
   syncing = true;
+  const gen = sessionGen;
   const t0 = Date.now();
   try {
     if (!silent) setSyncBar('⏳ Đang đồng bộ...');
     const flushed = await flushOutbox();          // gửi thay đổi chờ trước; lỗi vẫn tiếp tục tải dữ liệu
-    if (!token) return false;
+    if (!token || gen !== sessionGen) return false;
     const inc = {project: curProj};
     if (curProj && db.scope === curProj && db.txnTotal && db.txnLastId && db.transactions.length) Object.assign(inc, {since: db.txnTotal, lastId: db.txnLastId, scope: curProj});
     let r = await api('getAll', inc, 45000);
-    if (!r.success && !r.auth && token) r = await api('getAll', inc, 45000);   // lỗi mạng: thử lại ngay, không chờ 15 giây
+    if (!r.success && !r.auth && !r.stale && token) r = await api('getAll', inc, 45000);   // lỗi mạng: thử lại ngay, không chờ 15 giây
+    if (gen !== sessionGen || r.stale) return false;
     if (!r.success) {
       if (token) setSyncBar((outbox.length ? `📴 ${outbox.length} thay đổi đang chờ gửi · ` : '⚠️ ') + (r.reason || r.error || 'Không kết nối được máy chủ') + ' — đang dùng dữ liệu lưu trên máy', '#E74C3C');
       return false;
@@ -1501,7 +1517,7 @@ async function syncAll(silent) {
     else if (!silent) { setSyncBar(`✅ Đã đồng bộ (${sec} giây)`, 'var(--green)'); setTimeout(() => setSyncBar(''), 2000); }
     else setSyncBar('');
     return true;
-  } finally { syncing = false; }
+  } finally { if (gen === sessionGen) syncing = false; }
 }
 // Trả về: true = đã lưu lên máy chủ · false = offline, đang chờ gửi · 'rejected' = máy chủ từ chối
 async function push(action, data) {
@@ -4283,7 +4299,7 @@ function doLogout() {
   closeSidebar();
   if (outbox.length && !confirm(`Còn ${outbox.length} thay đổi CHƯA gửi lên máy chủ (do mất mạng).\nĐăng xuất bây giờ sẽ MẤT các thay đổi này.\n\nVẫn đăng xuất?`)) return;
   if (token) api('logout');                       // báo máy chủ hủy phiên (không cần chờ)
-  token = ''; localStorage.removeItem(LS_TOKEN);
+  token = ''; localStorage.removeItem(LS_TOKEN); newSessionGen();
   PDB.clear().catch(() => {}); formPhotos.fn = []; formPhotos.fx = [];
   clearLocalData();                               // không để lại dữ liệu kho trên máy sau khi đăng xuất
   destroyCharts(); stopAutoSync(); setSyncBar('');
@@ -4352,11 +4368,18 @@ async function checkAppUpdate() {
     }
   } catch (e) {}
 }
+// iPhone (app đã cài) đôi khi treo ở bước xóa bộ nhớ tạm / cập nhật service worker → mỗi bước tối đa 3 giây,
+// sau đó luôn mở lại trang với địa chỉ mới để chắc chắn tải bản mới từ GitHub.
+let _updating = false;
 async function doAppUpdate() {
+  if (_updating) return; _updating = true;
   document.getElementById('upd-bar').textContent = '⏳ Đang cập nhật...';
-  try { const keys = await caches.keys(); await Promise.all(keys.map(k => caches.delete(k))); } catch (e) {}
-  try { const regs = await navigator.serviceWorker?.getRegistrations(); if (regs) await Promise.all(regs.map(r => r.update())); } catch (e) {}
-  location.reload();
+  const limit = (p, ms) => Promise.race([p, new Promise(r => setTimeout(r, ms))]);
+  const go = () => location.replace(location.pathname + '?v=' + Date.now());
+  setTimeout(go, 8000);                                 // chốt an toàn: không bao giờ đứng quá 8 giây
+  try { await limit(caches.keys().then(keys => Promise.all(keys.map(k => caches.delete(k)))), 3000); } catch (e) {}
+  try { await limit((navigator.serviceWorker?.getRegistrations() || Promise.resolve([])).then(regs => Promise.all(regs.map(r => r.update().catch(() => {})))), 3000); } catch (e) {}
+  go();
 }
 document.addEventListener('visibilitychange', () => { if (!document.hidden) checkAppUpdate(); });
 setTimeout(checkAppUpdate, 4000);
