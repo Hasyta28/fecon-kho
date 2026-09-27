@@ -15,6 +15,8 @@
 <style>
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;-webkit-touch-callout:none}
 html,body{height:100%;overflow:hidden;touch-action:pan-y}
+html{background:#fff}   /* v5.12: vùng dưới thanh điều hướng trên iPhone hiện màu trắng liền với thanh (thay vì xám) */
+html.ios-gap .bottom-nav{padding-bottom:4px}   /* đã có vùng trắng bên dưới chừa chỗ vạch vuốt → thanh gọn lại */
 :root{
   --primary:#0056A4;
   --primary-dark:#003F7D;
@@ -1141,7 +1143,7 @@ body.can-admin .lock-note{display:none}
 // ============================================================
 // CONFIG
 // ============================================================
-const APP_VERSION = '5.11';
+const APP_VERSION = '5.12';
 const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbw6Rmi80I7RI3ij2U7RdRF5pYuQTnPrwEmGmUZS5xpxzLwwVynfoFUujZe1lm6HS1ymxw/exec';
 // ============================================================
 
@@ -4658,9 +4660,21 @@ const isAndroid = /Android/i.test(UA);
 const inAppBrowser = /Zalo|FBAN|FBAV|Instagram|Line\/|TikTok/i.test(UA);
 window.addEventListener('beforeinstallprompt', e => { e.preventDefault(); installEvt = e; updInstallUI(); });
 window.addEventListener('appinstalled', () => { installEvt = null; updInstallUI(); toast('✅ Đã cài app — mở bằng biểu tượng "Kho Fecon" trên màn hình chính'); });
+// Android đang mở bằng Samsung Internet hoặc trong Zalo/Facebook → cài bằng Chrome (tránh cảnh báo Play Protect)
+const needChrome = () => isAndroid && (/SamsungBrowser/i.test(UA) || inAppBrowser);
+const appUrl = () => location.href.split('#')[0].split('?')[0];
+function chromeIntent() {
+  const u = new URL(appUrl());
+  return `intent://${u.host}${u.pathname}#Intent;scheme=https;package=com.android.chrome;S.browser_fallback_url=${encodeURIComponent('https://play.google.com/store/apps/details?id=com.android.chrome')};end`;
+}
 function updInstallUI() {
   const show = !isStandalone() && (!!installEvt || isIOS || isAndroid);
-  document.querySelectorAll('.inst-btn').forEach(b => b.style.display = show ? '' : 'none');
+  document.querySelectorAll('.inst-btn').forEach(b => {
+    b.style.display = show ? '' : 'none';
+    const lbl = needChrome() ? 'Mở bằng Chrome để cài app' : 'Cài app vào điện thoại';
+    if (b.classList.contains('sidebar-item')) b.innerHTML = `<span class="sidebar-item-ico">${needChrome() ? '🌐' : '📲'}</span>${lbl}`;
+    else b.textContent = (needChrome() ? '🌐 ' : '📲 ') + lbl;
+  });
 }
 async function doInstall() {
   if (installEvt && !inAppBrowser) {
@@ -4668,13 +4682,21 @@ async function doInstall() {
     try { const r = await installEvt.userChoice; if (r.outcome === 'accepted') toast('✅ Đang cài app…'); } catch (e) {}
     installEvt = null; updInstallUI(); return;
   }
-  const url = location.href.split('#')[0].split('?')[0];
+  const url = appUrl();
   const k = t => `<span class="inst-key">${t}</span>`;
-  let title = '📲 Cài app vào điện thoại', steps;
-  if (inAppBrowser) {
+  let title = '📲 Cài app vào điện thoại', steps, top = '';
+  if (needChrome()) {
+    const where = /SamsungBrowser/i.test(UA) ? 'Samsung Internet' : /Zalo/i.test(UA) ? 'Zalo' : 'ứng dụng này';
+    title = '🌐 Mở bằng Chrome để cài app';
+    top = `<a class="btn-full" href="${chromeIntent()}" style="display:block;background:var(--primary);color:#fff;text-align:center;text-decoration:none;margin:0 0 12px;padding:14px;font-size:16px">🌐 Mở bằng Chrome</a>`;
+    steps = [`Cài từ ${where} sẽ bị Google Play Protect cảnh báo <b>"ứng dụng không an toàn"</b>. Cài bằng ${k('Chrome')} thì không bị.`,
+      `Bấm nút ${k('🌐 Mở bằng Chrome')} ở trên → Chrome mở đúng trang app.`,
+      `Trong Chrome, bấm ${k('📲 Cài app vào điện thoại')} (hoặc ${k('⋮')} → ${k('Cài đặt ứng dụng')}).`,
+      `Máy chưa có Chrome thì nút trên sẽ mở Play Store để tải Chrome. Nếu nút không mở được: bấm ${k('📋 Chép link app')} rồi dán vào Chrome.`];
+  } else if (inAppBrowser) {
     title = '📲 Mở bằng trình duyệt để cài app';
     steps = [`Bạn đang mở trong ${/Zalo/i.test(UA) ? 'Zalo' : 'ứng dụng khác'} — ở đây không cài app được.`,
-      `Bấm ${k('⋯')} góc trên bên phải → chọn ${k(isIOS ? 'Mở bằng Safari' : 'Mở bằng trình duyệt')}.`,
+      `Bấm ${k('⋯')} góc trên bên phải → chọn ${k(isIOS ? 'Mở bằng Safari' : 'Mở bằng trình duyệt')}${isIOS ? ' (iPhone chỉ cài được app bằng Safari)' : ''}.`,
       `Trong trình duyệt, bấm lại nút ${k('📲 Cài app vào điện thoại')}.`];
   } else if (isIOS) {
     steps = [`Mở bằng ${k('Safari')} (nếu đang dùng trình duyệt khác cũng được, miễn có nút Chia sẻ).`,
@@ -4692,8 +4714,8 @@ async function doInstall() {
       `Mở app bằng biểu tượng ${k('Kho Fecon')} trên màn hình chính.`];
   }
   document.getElementById('inst-title').textContent = title;
-  document.getElementById('inst-body').innerHTML = `<ol class="inst-steps">${steps.map(x => `<li><div>${x}</div></li>`).join('')}</ol>`
-    + (inAppBrowser ? `<button class="btn-full" style="background:var(--bg);color:var(--text);margin:0 0 10px" onclick="navigator.clipboard?.writeText('${url}').then(()=>toast('📋 Đã chép link — dán vào Chrome/Safari'),()=>prompt('Chép link này:', '${url}'))">📋 Chép link app</button>` : '')
+  document.getElementById('inst-body').innerHTML = top + `<ol class="inst-steps">${steps.map(x => `<li><div>${x}</div></li>`).join('')}</ol>`
+    + (inAppBrowser || needChrome() ? `<button class="btn-full" style="background:var(--bg);color:var(--text);margin:0 0 10px" onclick="navigator.clipboard?.writeText('${url}').then(()=>toast('📋 Đã chép link — dán vào Chrome/Safari'),()=>prompt('Chép link này:', '${url}'))">📋 Chép link app</button>` : '')
     + `<div class="lock-note" style="text-align:left">Biểu tượng đúng chỉ có logo, không kèm logo trình duyệt ở góc. App mở toàn màn hình, không có thanh địa chỉ.</div>`;
   openModal('modal-install');
 }
@@ -4712,8 +4734,35 @@ function screenDiag() {
     + ` · ${navigator.standalone ? 'Đã cài' : matchMedia('(display-mode: standalone)').matches ? 'standalone' : 'Trình duyệt'}`;
 }
 
+function iosGapCheck() {
+  if (!isIOS || !isStandalone()) return;
+  const gap = screen.height - window.innerHeight;
+  if (gap > 60) return;                                  // bàn phím đang mở: giữ nguyên
+  document.documentElement.classList.toggle('ios-gap', gap >= 20);
+}
+window.addEventListener('resize', iosGapCheck);
+
+// ===== GHI LỖI PHÁT SINH (gửi về tab LoiApp trên Sheet) =====
+const _errSent = new Set(); let _errN = 0;
+function reportError(msg, src, line, col, stack) {
+  msg = String(msg || '').slice(0, 300);
+  if (!msg || /ResizeObserver loop|^Script error\.?$/i.test(msg)) return;
+  const key = msg + '|' + line;
+  if (_errSent.has(key) || _errN >= 15) return;        // mỗi lỗi gửi 1 lần, tối đa 15 lỗi / lần mở app
+  _errSent.add(key); _errN++;
+  try {
+    fetch(SCRIPT_URL, {method:'POST', headers:{'Content-Type':'text/plain;charset=utf-8'}, redirect:'follow',
+      body: JSON.stringify({action:'logError', token, data:{msg, src:String(src || '').split('/').pop().slice(0, 80), line:line || 0, col:col || 0,
+        stack:String(stack || '').slice(0, 800), ver:APP_VERSION, tab:curTab, proj:curProj,
+        ua:UA.slice(0, 200), online:navigator.onLine}})}).catch(() => {});
+  } catch (e) {}
+}
+window.addEventListener('error', e => reportError(e.message, e.filename, e.lineno, e.colno, e.error && e.error.stack));
+window.addEventListener('unhandledrejection', e => { const r = e.reason; reportError('Promise: ' + (r && r.message || r), '', 0, 0, r && r.stack); });
+
 // ===== KHỞI ĐỘNG =====
 (function boot() {
+  iosGapCheck();
   updInstallUI();
   const lg = document.querySelector('.login-logo img'); document.querySelectorAll('img[data-logo]').forEach(i => i.src = lg.src);
   loadLocal();
