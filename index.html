@@ -486,6 +486,8 @@ body.can-ql .hide-ql{display:none!important}
 .ln-dev{margin-top:10px;background:#FFF4EE;border-radius:8px;padding:10px 12px;font-size:13px;color:var(--text);cursor:pointer}
 body.can-admin .lock-note{display:none}
 body:not(.can-lead) .need-lead{display:none!important}
+.lead-back{margin:10px 14px 0;background:#E1F1FB;border:1.5px solid #9DC1E8;color:var(--primary);border-radius:12px;padding:10px 14px;font-size:14px;font-weight:800;cursor:pointer}
+.lead-back span{display:block;font-size:11.5px;font-weight:600;color:var(--text3);margin-top:2px}
 .sum-chips{display:flex;gap:8px;overflow-x:auto;padding-bottom:2px}
 .sum-chip{border:1.5px solid var(--border);background:#fff;border-radius:16px;padding:7px 13px;font-size:13px;font-weight:700;color:var(--text2);white-space:nowrap;font-family:inherit;cursor:pointer}
 .sum-chip.on{background:var(--primary);border-color:var(--primary);color:#fff}
@@ -599,7 +601,7 @@ body:not(.can-lead) .need-lead{display:none!important}
 
   <!-- BOTTOM NAV -->
   <nav class="bottom-nav" id="bottom-nav">
-    <button class="bnav-btn on" id="bn-home" onclick="goTab('home')">
+    <button class="bnav-btn on" id="bn-home" onclick="goHome()">
       <div class="bnav-icon-wrap"><span class="bnav-icon">🏠</span></div>Tổng quan
     </button>
     <button class="bnav-btn" id="bn-lsnhap" onclick="goTab('lsnhap')">
@@ -1183,7 +1185,7 @@ body:not(.can-lead) .need-lead{display:none!important}
 // ============================================================
 // CONFIG
 // ============================================================
-const APP_VERSION = '5.13';
+const APP_VERSION = '5.14';
 const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbw6Rmi80I7RI3ij2U7RdRF5pYuQTnPrwEmGmUZS5xpxzLwwVynfoFUujZe1lm6HS1ymxw/exec';
 // ============================================================
 
@@ -1367,7 +1369,7 @@ async function setupApp() {
     document.getElementById('exp-custom').style.display = this.value === 'custom' ? '' : 'none';
   };
   updateProjSel();
-  goTab('home');
+  goHome();
   updateLowBadge();
   const hasCache = db.items.length > 0;
   let tick = null;
@@ -1674,7 +1676,7 @@ function refreshCurrentView(notify) {
   if (modalOpen) return;
   // Đang gõ ô tìm kiếm / kéo thanh định mức thì không vẽ lại chỗ đó (tránh mất bàn phím)
   const ae = document.activeElement, typing = el => ae && /^(INPUT|TEXTAREA|SELECT)$/.test(ae.tagName) && el && el.contains(ae);
-  if (['home','ton','baocao','lsnhap','lsxuat'].includes(curTab) && !typing(document.getElementById('main-body'))) goTab(curTab);
+  if (['home','ton','baocao','lsnhap','lsxuat','lead'].includes(curTab) && !typing(document.getElementById('main-body'))) goTab(curTab);
   document.querySelectorAll('.detail-page.show').forEach(p => {
     if (typing(p)) return;
     if (p.id === 'dp-device') { if (currentDeviceId) renderDeviceDetail(currentDeviceId); }
@@ -1716,7 +1718,18 @@ async function switchProject(p) {
 // ===== NAV =====
 function goTab(tab) {
   if ((tab === 'nhap' || tab === 'xuat') && !can('tk')) tab = 'home';
+  if (tab === 'lead' && !canLead()) tab = 'home';
   curTab = tab;
+  if (tab === 'lead') {                                   // Lãnh đạo: màn hình chính là Tổng hợp các dự án
+    document.querySelectorAll('.bnav-btn').forEach(b => b.classList.remove('on'));
+    document.getElementById('bn-home')?.classList.add('on');
+    destroyCharts();
+    const body = document.getElementById('main-body');
+    body.innerHTML = '<div id="lead-body" style="padding:12px 14px 20px"></div>';
+    renderSummary();
+    if (!sumData || Date.now() - (sumData._at || 0) > 5 * 60e3) loadSummary();
+    return;
+  }
   if (!curProj) {
     destroyCharts();
     document.getElementById('main-body').innerHTML = loadedOnce
@@ -1740,8 +1753,10 @@ function goTab(tab) {
   else if (tab === 'ton') renderTon(body);
   else if (tab === 'baocao') renderBaoCao(body);
   else if (tab === 'lsnhap' || tab === 'lsxuat') renderHistTab(body, tab === 'lsnhap' ? 'nhap' : 'xuat');
+  if (role === 'ld') body.insertAdjacentHTML('afterbegin', `<div class="lead-back" onclick="goTab('lead')">‹ Về tổng hợp các dự án<span>Đang xem: ${escHtml(curProj)}</span></div>`);
   body.scrollTop = 0;
 }
+const goHome = () => goTab(role === 'ld' ? 'lead' : 'home');
 // Đếm phiếu lập hôm nay
 function todayCount(type) {
   const n = new Date();
@@ -4632,6 +4647,7 @@ async function loadSummary() {
 }
 function openSummary() {
   closeSidebar();
+  if (role === 'ld') { goTab('lead'); return; }
   setTimeout(() => { openDp('dp-summary'); if (!sumData || Date.now() - (sumData._at || 0) > 5 * 60e3) loadSummary(); }, 300);
 }
 function setSumPer(p) {
@@ -4662,7 +4678,9 @@ function sumAlerts(ps) {
   return out.sort((a, b) => b.w - a.w);
 }
 function renderSummary() {
-  const body = document.getElementById('dp-summary-body'); if (!body) return;
+  const body = document.getElementById('dp-summary').classList.contains('show') ? document.getElementById('dp-summary-body')
+    : curTab === 'lead' ? document.getElementById('lead-body') : null;
+  if (!body) return;
   if (!canLead()) { body.innerHTML = '<div class="empty-state"><p>Chỉ Admin và Lãnh đạo xem được mục này</p></div>'; return; }
   const chip = p => `<button class="sum-chip ${sumPer === p ? 'on' : ''}" onclick="setSumPer('${p}')">${sumPerLabel(p)}</button>`;
   const r = sumRange(sumPer);
@@ -4706,6 +4724,7 @@ async function sumGo(p) {
   closeDp('dp-summary');
   if (p !== curProj) await switchProject(p);
   goTab('home');
+  if (role === 'ld') document.getElementById('main-body').scrollTop = 0;
 }
 // ---- Biểu đồ (SVG, co giãn theo bề ngang) ----
 function hBars(rows, unit, opts = {}) {
