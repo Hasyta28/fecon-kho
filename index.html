@@ -485,6 +485,35 @@ body.can-ql .hide-ql{display:none!important}
 .ln-loan-line span{background:var(--bg);border-radius:6px;padding:2px 8px}
 .ln-dev{margin-top:10px;background:#FFF4EE;border-radius:8px;padding:10px 12px;font-size:13px;color:var(--text);cursor:pointer}
 body.can-admin .lock-note{display:none}
+body:not(.can-lead) .need-lead{display:none!important}
+.sum-chips{display:flex;gap:8px;overflow-x:auto;padding-bottom:2px}
+.sum-chip{border:1.5px solid var(--border);background:#fff;border-radius:16px;padding:7px 13px;font-size:13px;font-weight:700;color:var(--text2);white-space:nowrap;font-family:inherit;cursor:pointer}
+.sum-chip.on{background:var(--primary);border-color:var(--primary);color:#fff}
+.sum-custom{display:flex;gap:6px;align-items:center;margin-top:8px}
+.sum-custom input{flex:1;min-width:0;border:1.5px solid var(--border);border-radius:10px;padding:8px;font-family:inherit;font-size:13px}
+.sum-custom button{border:none;background:var(--primary);color:#fff;border-radius:10px;padding:9px 14px;font-weight:700;font-family:inherit}
+.sum-tabs{display:flex;margin:12px 0 6px}
+.sum-tabs button{flex:1;border:none;background:none;padding:9px 0;font-size:14px;font-weight:800;color:var(--text3);border-bottom:3px solid #E1E5EC;font-family:inherit;cursor:pointer}
+.sum-tabs button.on{color:var(--primary);border-bottom-color:var(--primary)}
+.sum-range{font-size:12px;color:var(--text3);margin:4px 2px 10px}
+.sum-kpis{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin-bottom:12px}
+.sum-kpi{padding:12px}.sum-kpi .k{font-size:11px;font-weight:700}.sum-kpi .v{font-size:21px;font-weight:900;margin-top:2px}.sum-kpi .s{font-size:11px;color:var(--text3)}
+.sum-alerts{padding:4px 14px;border-left:4px solid var(--red);margin-bottom:12px}
+.sum-alerts .t{font-size:14px;font-weight:800;padding:8px 0 4px}
+.sum-al{display:flex;gap:10px;align-items:center;padding:8px 0;border-top:1px solid #F0F2F5;cursor:pointer}
+.sum-al>span:first-child{font-size:18px}.sum-al div{flex:1}.sum-al b{display:block;font-size:13px}.sum-al small{font-size:12px;font-weight:600}
+.sum-h{font-size:15px;font-weight:800;margin:4px 2px 8px}
+.sum-card{padding:12px 14px;border-top:4px solid var(--primary);margin-bottom:10px}
+.sum-card-top{display:flex;justify-content:space-between;align-items:flex-start;gap:8px}.sum-card-top b{font-size:15px}
+.sum-upd{font-size:11px;font-weight:800;border-radius:8px;padding:4px 8px;white-space:nowrap;color:#1E7A45;background:#E4F4EA}
+.sum-upd.late{color:#B83224;background:#FDECEA}
+.sum-stats{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:6px;margin-top:10px;text-align:center}
+.sum-stats b{display:block;font-size:16px;font-weight:900}.sum-stats small{font-size:10.5px;color:var(--text3);font-weight:600}
+.sum-card-foot{display:flex;justify-content:space-between;align-items:center;margin-top:10px;padding-top:8px;border-top:1px solid #F0F2F5;font-size:12px;color:var(--text3)}
+.sum-card-foot a{color:var(--primary);font-weight:700;cursor:pointer}
+.sum-chart{padding:12px 14px;margin-bottom:12px}.sum-chart .t{font-size:14px;font-weight:800}.sum-chart .s{font-size:12px;color:var(--text3);margin-bottom:10px}
+.sum-leg{margin-top:8px;display:flex;flex-wrap:wrap;gap:4px 12px}.sum-leg span{display:inline-flex;align-items:center;gap:4px;font-size:11px;color:var(--text3)}.sum-leg i{display:inline-block;width:10px;height:10px;border-radius:3px}
+.sum-empty{font-size:13px;color:var(--text3);padding:10px 0}
 .srch-box{position:relative}
 .srch-box input{width:100%;box-sizing:border-box;border:1.5px solid var(--border);border-radius:12px;padding:10px 36px 10px 12px;font-size:15px;outline:none;font-family:inherit;background:#fff;-webkit-appearance:none}
 .srch-box input:focus{border-color:var(--primary)}
@@ -700,6 +729,15 @@ body.can-admin .lock-note{display:none}
   <div class="detail-body" id="dp-loan-new-body"></div>
 </div>
 
+<div class="detail-page" id="dp-summary">
+  <div class="detail-header">
+    <button class="back-btn" onclick="closeDp('dp-summary')">‹</button>
+    <div class="detail-title">📈 Tổng hợp dự án</div>
+    <button onclick="loadSummary()" style="background:var(--bg);border:none;border-radius:8px;padding:6px 10px;font-size:15px;cursor:pointer" aria-label="Tải lại">↻</button>
+  </div>
+  <div class="detail-body" id="dp-summary-body"></div>
+</div>
+
 <!-- ===================== SIDEBAR ===================== -->
 <div class="sidebar-overlay" id="sidebar-overlay" onclick="closeSidebar()"></div>
 <div class="sidebar" id="sidebar">
@@ -730,6 +768,7 @@ body.can-admin .lock-note{display:none}
     <div class="sidebar-item" onclick="goTabSb('ton')"><span class="sidebar-item-ico">📦</span>Tồn kho</div>
     <div class="sidebar-item" onclick="openDpSb('dp-loans')"><span class="sidebar-item-ico">🔁</span>Cho mượn / Trả</div>
     <div class="sidebar-item" onclick="goTabSb('baocao')"><span class="sidebar-item-ico">📊</span>Báo cáo</div>
+    <div class="sidebar-item need-lead" onclick="openSummary()"><span class="sidebar-item-ico">📈</span>Tổng hợp dự án</div>
     <div class="sidebar-divider"></div>
     <div class="sidebar-label">Thiết bị & Ghi chú</div>
     <div class="sidebar-item" onclick="openDpSb('dp-devices-list')"><span class="sidebar-item-ico">🏗️</span>Máy móc & Thiết bị</div>
@@ -1060,6 +1099,7 @@ body.can-admin .lock-note{display:none}
     <div class="fg need-admin"><label>Vai trò</label>
       <select id="mm-role" onchange="renderMemberProjects()">
         <option value="xem">👁 Chỉ xem — xem số liệu, không ghi</option>
+        <option value="ld">🏛 Lãnh đạo — xem mọi dự án + Tổng hợp dự án, không ghi</option>
         <option value="tk">🏗 Thủ kho — nhập, xuất, điều chỉnh, ghi chú</option>
         <option value="ql">👔 Quản lý — thêm sửa danh mục, dự án, nhật ký</option>
         <option value="admin">⭐ Admin — toàn quyền + quản lý thành viên</option>
@@ -1143,7 +1183,7 @@ body.can-admin .lock-note{display:none}
 // ============================================================
 // CONFIG
 // ============================================================
-const APP_VERSION = '5.12';
+const APP_VERSION = '5.13';
 const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbw6Rmi80I7RI3ij2U7RdRF5pYuQTnPrwEmGmUZS5xpxzLwwVynfoFUujZe1lm6HS1ymxw/exec';
 // ============================================================
 
@@ -1231,8 +1271,9 @@ const emptyDb = () => ({categories: CATEGORIES, projects: [], items: [], devices
 let db = emptyDb();
 
 // ===== QUYỀN =====
-const RANK = {xem:1, tk:2, ql:3, admin:4};
-const ROLE_NAME = {admin:'Admin', ql:'Quản lý', tk:'Thủ kho', xem:'Chỉ xem'};
+const RANK = {xem:1, ld:1, tk:2, ql:3, admin:4};   // ld = Lãnh đạo: xem mọi dự án + Tổng hợp, không ghi
+const ROLE_NAME = {admin:'Admin', ql:'Quản lý', tk:'Thủ kho', xem:'Chỉ xem', ld:'Lãnh đạo'};
+const allProjRole = r => RANK[r] >= RANK.ql || r === 'ld';
 const can = r => (RANK[role] || 0) >= RANK[r];
 const newId = () => Date.now() * 100 + Math.floor(Math.random() * 100);
 const initials = n => { const w = String(n || '?').trim().split(/\s+/); return ((w.length > 1 ? w[0][0] + w[w.length-1][0] : w[0].slice(0, 2)) || '?').toUpperCase(); };
@@ -1304,6 +1345,7 @@ function showPage(id) {
 // ===== APP SETUP =====
 function applyRoleUI() {
   ['tk','ql','admin'].forEach(r => document.body.classList.toggle('can-' + r, can(r)));
+  document.body.classList.toggle('can-lead', role === 'admin' || role === 'ld');
   renderAvatar();
   document.getElementById('sb-name').textContent = me?.name || '';
   document.getElementById('sb-role').textContent = `${ROLE_NAME[role] || role} · @${me?.username || ''}`;
@@ -1737,7 +1779,8 @@ const DP_RENDER = {
   'dp-notes': () => renderDpNotes(), 'dp-devices-list': () => renderDevicesList(),
   'dp-history-log': () => renderHistoryLog(),
   'dp-dc-hist': () => renderDcHist(), 'dp-members': () => renderMembers(),
-  'dp-loans': () => renderLoans()
+  'dp-loans': () => renderLoans(),
+  'dp-summary': () => renderSummary()
 };
 function openDp(id, renderFn) {
   const fn = renderFn || DP_RENDER[id];
@@ -3523,7 +3566,7 @@ async function renderMembers() {
 function memberRow(u) {
   const badge = u.status === 'pending' ? '<span class="txn-badge badge-out">Chờ duyệt</span>'
     : u.status === 'locked' ? '<span class="txn-badge badge-warn">Đã khóa</span>'
-    : `<span class="txn-badge ${u.role==='admin'?'badge-out':u.role==='ql'?'badge-blue':u.role==='tk'?'badge-in':'badge-gray'}">${ROLE_NAME[u.role] || u.role}</span>`;
+    : `<span class="txn-badge ${u.role==='admin'?'badge-out':u.role==='ql'?'badge-blue':u.role==='tk'?'badge-in':u.role==='ld'?'badge-warn':'badge-gray'}">${ROLE_NAME[u.role] || u.role}</span>`;
   const pr = u.status === 'pending' ? {cls:'', txt:''} : presence(u);
   const sub = u.status === 'pending' ? 'Gửi lúc ' + u.createdAt : pr.txt || (u.lastLogin ? 'Đăng nhập lần cuối ' + u.lastLogin : 'Chưa đăng nhập');
   const nDev = (u.sessions || []).length;
@@ -3534,7 +3577,7 @@ function memberRow(u) {
         <div class="ri-name">${escHtml(u.name)}${u.id === me?.id ? ' <span style="color:var(--text3);font-weight:500">(bạn)</span>' : ''}</div>
         <div class="ri-sub">@${escHtml(u.username)}${u.phone ? ' · ' + escHtml(u.phone) : ''}</div>
         <div class="ri-sub ${pr.cls === 'on' ? 'live' : ''}">${escHtml(sub)}${nDev ? ` · 📱 ${nDev} máy đăng nhập` : ''}</div>
-        ${u.status !== 'pending' ? `<div class="ri-sub">📍 ${RANK[u.role] >= RANK.ql ? 'Tất cả dự án' : (u.projects || []).length ? escHtml(u.projects.join(', ')) : '<b style="color:var(--red)">Chưa giao dự án</b>'}</div>` : ''}
+        ${u.status !== 'pending' ? `<div class="ri-sub">📍 ${allProjRole(u.role) ? 'Tất cả dự án' : (u.projects || []).length ? escHtml(u.projects.join(', ')) : '<b style="color:var(--red)">Chưa giao dự án</b>'}</div>` : ''}
         ${u.note ? `<div class="ri-sub">📝 ${escHtml(u.note)}</div>` : ''}
       </div>
     </div>
@@ -3580,7 +3623,7 @@ let mmProjects = new Set();
 function renderMemberProjects() {
   const u = members.find(x => x.id === mmId()); if (!u) return;
   const r = can('admin') ? document.getElementById('mm-role').value : u.role;
-  const all = RANK[r] >= RANK.ql;
+  const all = allProjRole(r);
   document.querySelectorAll('#mm-projs input').forEach(i => { if (i.checked) mmProjects.add(i.value); else mmProjects.delete(i.value); });
   document.getElementById('mm-projs').innerHTML = allProjects.length ? allProjects.map(p => `<label><input type="checkbox" value="${escHtml(p)}" ${all || mmProjects.has(p) ? 'checked' : ''} ${all ? 'disabled' : ''}> ${escHtml(p)}</label>`).join('')
     : '<div class="proj-note">Chưa có dự án nào — thêm ở Menu → Thêm dự án</div>';
@@ -3599,7 +3642,7 @@ function revokeMember() {
 function approveMember() {
   const role = document.getElementById('mm-role').value, name = document.getElementById('mm-name').value.trim();
   const projects = checkedProjects();
-  if (RANK[role] < RANK.ql && !projects.length && !confirm('Chưa tích dự án nào — người này sẽ chưa xem được kho nào. Vẫn duyệt?')) return;
+  if (!allProjRole(role) && !projects.length && !confirm('Chưa tích dự án nào — người này sẽ chưa xem được kho nào. Vẫn duyệt?')) return;
   memberAction('approveUser', {id: mmId(), role, name, projects}, `✅ Đã duyệt — vai trò ${ROLE_NAME[role]}`);
 }
 function rejectMember() {
@@ -3615,7 +3658,7 @@ async function saveMember() {
   if (u.id !== me?.id) data.role = role;
   if (password) data.password = password;
   const projects = checkedProjects(), old = (u.projects || []).slice().sort().join('|');
-  if (RANK[role] < RANK.ql && projects.slice().sort().join('|') !== old) {
+  if (!allProjRole(role) && projects.slice().sort().join('|') !== old) {
     showLoader('Đang lưu...'); const r1 = await api('setUserProjects', {id: u.id, projects}); hideLoader();
     if (!r1.success) { toast('⚠️ ' + (r1.offline ? (r1.reason || 'Cần có mạng') : r1.error)); return; }
   }
@@ -4560,6 +4603,198 @@ async function deleteLoanAdmin() {
   closeModal('modal-loan');
   const ok = await pushAdmin('deleteLoan', {id:l.id});
   if (ok !== 'rejected') toast('🗑 Đã xóa phiếu mượn');
+}
+
+// ===== TỔNG HỢP DỰ ÁN (v5.13 · chỉ Admin và Lãnh đạo) =====
+// Máy chủ tính sẵn số liệu mọi dự án (getSummary); điện thoại chỉ vẽ.
+const SUM_COLORS = ['#0056A4', '#F26522', '#2E9F5A', '#7357C9', '#0E8C8C', '#B8860B', '#D64532', '#5B6577'];
+let sumPer = 'month', sumTab = 0, sumData = null, sumLoading = false, sumFrom = '', sumTo = '';
+const canLead = () => role === 'admin' || role === 'ld';
+function sumRange(per) {
+  const n = new Date(), d0 = new Date(n.getFullYear(), n.getMonth(), n.getDate());
+  let a = new Date(d0);
+  if (per === 'week') a.setDate(a.getDate() - ((a.getDay() + 6) % 7));
+  else if (per === 'month') a.setDate(1);
+  else if (per === 'quarter') a = new Date(d0.getFullYear(), Math.floor(d0.getMonth() / 3) * 3, 1);
+  else return {from: sumFrom || isoDay(new Date(d0.getFullYear(), d0.getMonth(), 1)), to: sumTo || isoDay(d0)};
+  return {from: isoDay(a), to: isoDay(d0)};
+}
+const sumPerLabel = per => ({week:'Tuần này', month:'Tháng ' + (new Date().getMonth() + 1), quarter:'Quý ' + ['I','II','III','IV'][Math.floor(new Date().getMonth() / 3)], custom:'📅 Tự chọn'})[per];
+async function loadSummary() {
+  if (!canLead() || sumLoading) return;
+  const r = sumRange(sumPer);
+  sumLoading = true; renderSummary();
+  const res = await api('getSummary', r, 60000);
+  sumLoading = false;
+  if (res && res.success) { sumData = res; sumData.per = sumPer; sumData._at = Date.now(); }
+  else toast('⚠️ ' + (res && res.error || 'Không tải được số liệu tổng hợp — kiểm tra mạng'));
+  renderSummary();
+}
+function openSummary() {
+  closeSidebar();
+  setTimeout(() => { openDp('dp-summary'); if (!sumData || Date.now() - (sumData._at || 0) > 5 * 60e3) loadSummary(); }, 300);
+}
+function setSumPer(p) {
+  sumPer = p;
+  if (p === 'custom') { renderSummary(); return; }
+  loadSummary();
+}
+function applySumCustom() {
+  sumFrom = document.getElementById('sum-from').value; sumTo = document.getElementById('sum-to').value;
+  if (!sumFrom || !sumTo || sumFrom > sumTo) { toast('⚠️ Chọn ngày bắt đầu và kết thúc hợp lệ'); return; }
+  loadSummary();
+}
+const sumAgo = s => {
+  if (!s) return 'Chưa có phiếu';
+  const m = Math.max(0, Math.round(((sumData?.now || 0) - s) / 60));
+  return m < 1 ? 'Vừa xong' : m < 60 ? `${m} phút trước` : m < 1440 ? `${Math.round(m / 60)} giờ trước` : `${Math.floor(m / 1440)} ngày trước`;
+};
+function sumAlerts(ps) {
+  const out = [];
+  const withFuel = ps.filter(p => p.dauMayNgay);
+  const avg = withFuel.length >= 2 ? withFuel.reduce((s, p) => s + p.dauMayNgay, 0) / withFuel.length : 0;
+  ps.forEach(p => {
+    if (p.lastAt && p.idleDays >= 2) out.push({ico:'⏰', p:p.name, t:`${p.idleDays} ngày chưa ghi phiếu nào`, c:'#D64532', w:3});
+    if (avg && p.dauMayNgay > avg * 1.2) out.push({ico:'⛽', p:p.name, t:`Dầu / máy khoan cao hơn trung bình ${Math.round((p.dauMayNgay / avg - 1) * 100)}%`, c:'#C4521F', w:2});
+    if (p.overdue) out.push({ico:'🔁', p:p.name, t:`${p.overdue} phiếu mượn quá hạn chưa trả`, c:'#C4521F', w:2});
+    if (p.low) out.push({ico:'📉', p:p.name, t:`${p.low} vật tư dưới định mức`, c:'#B8860B', w:1});
+  });
+  return out.sort((a, b) => b.w - a.w);
+}
+function renderSummary() {
+  const body = document.getElementById('dp-summary-body'); if (!body) return;
+  if (!canLead()) { body.innerHTML = '<div class="empty-state"><p>Chỉ Admin và Lãnh đạo xem được mục này</p></div>'; return; }
+  const chip = p => `<button class="sum-chip ${sumPer === p ? 'on' : ''}" onclick="setSumPer('${p}')">${sumPerLabel(p)}</button>`;
+  const r = sumRange(sumPer);
+  let h = `<div class="sum-chips">${chip('week')}${chip('month')}${chip('quarter')}${chip('custom')}</div>`;
+  if (sumPer === 'custom') h += `<div class="sum-custom"><input type="date" id="sum-from" value="${r.from}"><span>→</span><input type="date" id="sum-to" value="${r.to}"><button onclick="applySumCustom()">Xem</button></div>`;
+  h += `<div class="sum-tabs"><button class="${sumTab === 0 ? 'on' : ''}" onclick="sumTab=0;renderSummary()">Tổng quan</button><button class="${sumTab === 1 ? 'on' : ''}" onclick="sumTab=1;renderSummary()">So sánh</button></div>`;
+  if (sumLoading && !sumData) { body.innerHTML = h + '<div class="empty-state"><div class="e-ico">⏳</div><p>Đang tính số liệu các dự án…</p></div>'; return; }
+  if (!sumData) { body.innerHTML = h + '<div class="empty-state"><div class="e-ico">📈</div><p>Chưa có số liệu</p></div>'; return; }
+  const D = sumData, ps = D.projects;
+  const fr = s => s.split('-').reverse().map(Number).join('/');
+  h += `<div class="sum-range">${fr(D.from)} → ${fr(D.to)} · ${ps.length} dự án${sumLoading ? ' · ⏳ đang cập nhật…' : ''}</div>`;
+  h += sumTab === 0 ? sumOverview(ps) : sumCompare(D);
+  body.innerHTML = h;
+}
+function sumOverview(ps) {
+  const tx = ps.reduce((s, p) => s + p.xuat, 0), nh = ps.reduce((s, p) => s + p.nhap, 0);
+  const dau = ps.reduce((s, p) => s + p.dau, 0), prev = ps.reduce((s, p) => s + p.dauPrev, 0);
+  const alerts = sumAlerts(ps);
+  const pct = prev ? Math.round((dau / prev - 1) * 100) : null;
+  let h = `<div class="sum-kpis">
+    <div class="card sum-kpi"><div class="k" style="color:#1A5FA8">Phiếu xuất</div><div class="v">${fmtNum(tx)}</div><div class="s">nhập ${fmtNum(nh)} phiếu</div></div>
+    <div class="card sum-kpi"><div class="k" style="color:#C4521F">Dầu DO đã cấp</div><div class="v">${fmtNum(Math.round(dau))}</div><div class="s">lít${pct !== null ? ` · ${pct >= 0 ? '↑' : '↓'} ${Math.abs(pct)}% kỳ trước` : ''}</div></div>
+    <div class="card sum-kpi"><div class="k" style="color:#D64532">Cần chú ý</div><div class="v" style="color:${alerts.length ? '#D64532' : 'var(--green)'}">${alerts.length}</div><div class="s">cảnh báo</div></div>
+  </div>`;
+  if (alerts.length) h += `<div class="card sum-alerts"><div class="t">⚠️ Cần chú ý</div>${alerts.map(a => `<div class="sum-al" onclick="sumGo('${escHtml(a.p).replace(/'/g, "\\'")}')"><span>${a.ico}</span><div><b>${escHtml(a.p)}</b><small style="color:${a.c}">${a.t}</small></div><span class="chevron">›</span></div>`).join('')}</div>`;
+  h += `<div class="sum-h">🏗️ Từng dự án</div>`;
+  const st = (l, v, c) => `<div><b style="color:${c || 'var(--text)'}">${v}</b><small>${l}</small></div>`;
+  h += ps.map((p, i) => {
+    const late = p.lastAt && p.idleDays >= 2;
+    return `<div class="card sum-card" style="border-top-color:${SUM_COLORS[i % SUM_COLORS.length]}">
+      <div class="sum-card-top"><b>${escHtml(p.name)}</b><span class="sum-upd ${late || !p.lastAt ? 'late' : ''}">${late ? '⏰' : '●'} ${sumAgo(p.lastAt)}</span></div>
+      <div class="sum-stats">${st('Nhập', fmtNum(p.nhap))}${st('Xuất', fmtNum(p.xuat), '#1A5FA8')}${st('Dầu (L)', fmtNum(Math.round(p.dau)), '#C4521F')}${st('Sắp hết', p.low, p.low ? '#D64532' : '')}${st('Quá hạn', p.overdue, p.overdue ? '#D64532' : '')}</div>
+      <div class="sum-card-foot"><span>🏗️ ${p.devices} máy · 📦 ${p.items} vật tư</span><a onclick="sumGo('${escHtml(p.name).replace(/'/g, "\\'")}')">Vào dự án ›</a></div>
+    </div>`;
+  }).join('');
+  h += `<button class="btn-full btn-green" style="margin:4px 0 20px" onclick="exportSummary()">⬇ Xuất Excel tổng hợp</button>`;
+  return h;
+}
+async function sumGo(p) {
+  if (!db.projects.includes(p)) { toast('⚠️ Không mở được dự án này'); return; }
+  closeDp('dp-summary');
+  if (p !== curProj) await switchProject(p);
+  goTab('home');
+}
+// ---- Biểu đồ (SVG, co giãn theo bề ngang) ----
+function hBars(rows, unit, opts = {}) {
+  const W = 340, lw = 96, bw = W - lw - 70, rh = 32;
+  const mx = Math.max(1, ...rows.map(r => r.v || 0));
+  let avgLine = '';
+  if (opts.avg) { const x = lw + bw * opts.avg / mx; avgLine = `<line x1="${x}" y1="0" x2="${x}" y2="${rows.length * rh}" stroke="#9AA3B2" stroke-width="1.2" stroke-dasharray="4 3"/><text x="${x + 4}" y="${rows.length * rh + 12}" font-size="11" fill="#5B6577">Trung bình ${fmtNum(Math.round(opts.avg))} ${unit}</text>`; }
+  const bars = rows.map((r, i) => {
+    const w = r.v ? Math.max(2, bw * r.v / mx) : 0, c = r.hl ? '#D64532' : r.c;
+    return `<text x="0" y="${i * rh + 16}" font-size="12" font-weight="700" fill="#1A1F2B">${escHtml(r.l)}</text>
+      <rect x="${lw}" y="${i * rh + 4}" width="${w}" height="18" rx="5" fill="${c}"/>
+      <text x="${lw + w + 6}" y="${i * rh + 17}" font-size="12" font-weight="800" fill="${c}" paint-order="stroke" stroke="#fff" stroke-width="3">${r.v === null ? '—' : fmtNum(r.v) + ' ' + unit}</text>`;
+  }).join('');
+  const H = rows.length * rh + (opts.avg ? 18 : 4);
+  return `<svg viewBox="0 0 ${W} ${H}" width="100%" style="display:block;overflow:visible">${avgLine}${bars}</svg>`;
+}
+const shortName = n => n.replace(/^DA\s+/i, '').slice(0, 14);
+function sumCompare(D) {
+  const ps = D.projects, col = i => SUM_COLORS[i % SUM_COLORS.length];
+  let h = `<div class="card sum-chart"><div class="t">⛽ Dầu DO đã cấp</div><div class="s">Lít trong kỳ</div>
+    ${hBars(ps.map((p, i) => ({l:shortName(p.name), v:Math.round(p.dau), c:col(i)})), 'L')}</div>`;
+  const wf = ps.filter(p => p.dauMayNgay), avg = wf.length ? wf.reduce((s, p) => s + p.dauMayNgay, 0) / wf.length : 0;
+  h += `<div class="card sum-chart"><div class="t">🔩 Dầu / máy khoan / ngày</div><div class="s">Lít trung bình mỗi máy khoan có nhận dầu · đỏ = cao hơn trung bình trên 20%</div>
+    ${wf.length ? hBars(ps.map((p, i) => ({l:shortName(p.name), v:p.dauMayNgay, c:col(i), hl:wf.length >= 2 && p.dauMayNgay > avg * 1.2})), 'L', {avg: wf.length >= 2 ? avg : 0}) : '<div class="sum-empty">Chưa có phiếu cấp dầu cho máy khoan trong kỳ</div>'}</div>`;
+  // Xuất theo nhóm: 4 nhóm nhiều nhất + Khác
+  const tot = {}; ps.forEach(p => Object.entries(p.cat).forEach(([k, v]) => tot[k] = (tot[k] || 0) + v));
+  const top = Object.keys(tot).sort((a, b) => tot[b] - tot[a]).slice(0, 4);
+  const CC0 = ['#0056A4', '#F26522', '#2E9F5A', '#B8860B'], CC = j => j < top.length ? CC0[j] : '#9AA3B2';
+  const catName = id => (CATEGORIES.find(c => c.id === id)?.name || 'Khác').replace(/ &.*$/, '');
+  const groups = [...top.map(catName), 'Khác'];
+  const W = 340, lw = 96, bw = W - lw - 4;
+  const bars = ps.map((p, i) => {
+    const vals = [...top.map(k => p.cat[k] || 0), Object.entries(p.cat).filter(([k]) => !top.includes(k)).reduce((s, [, v]) => s + v, 0)];
+    const sum = vals.reduce((a, b) => a + b, 0);
+    let x = lw, seg = '';
+    if (sum) vals.forEach((v, j) => { const w = bw * v / sum, pc = Math.round(v / sum * 100);
+      seg += `<rect x="${x}" y="${i * 30 + 4}" width="${w}" height="18" fill="${CC(j)}"/>` + (pc >= 14 ? `<text x="${x + w / 2}" y="${i * 30 + 17}" font-size="10" font-weight="800" fill="#fff" text-anchor="middle">${pc}%</text>` : ''); x += w; });
+    else seg = `<text x="${lw}" y="${i * 30 + 17}" font-size="11" fill="#9AA3B2">Chưa xuất</text>`;
+    return `<text x="0" y="${i * 30 + 17}" font-size="12" font-weight="700" fill="#1A1F2B">${escHtml(shortName(p.name))}</text>${seg}`;
+  }).join('');
+  h += `<div class="card sum-chart"><div class="t">📦 Xuất theo nhóm vật tư</div><div class="s">Tỷ lệ số lượt xuất trong kỳ</div>
+    <svg viewBox="0 0 ${W} ${ps.length * 30}" width="100%" style="display:block">${bars}</svg>
+    <div class="sum-leg">${groups.map((g, j) => `<span><i style="background:${CC(j)}"></i>${escHtml(g)}</span>`).join('')}</div></div>`;
+  // Dầu theo tuần
+  const Hc = 170, L = 38, Wc = W - L - 8, ymax = Math.max(100, ...ps.flatMap(p => p.week)) * 1.1;
+  const py = v => 8 + (Hc - 24) * (1 - v / ymax);
+  const ticks = [0, ymax / 3, ymax * 2 / 3, ymax].map(v => Math.round(v / 100) * 100);
+  const grid = ticks.map(v => `<line x1="${L}" y1="${py(v)}" x2="${W}" y2="${py(v)}" stroke="#EEF0F4"/><text x="${L - 4}" y="${py(v) + 4}" font-size="10" fill="#9AA3B2" text-anchor="end">${v >= 1000 ? fmtNum(Math.round(v / 100) / 10) + 'k' : v}</text>`).join('');
+  const xl = D.weeks.map((w, i) => `<text x="${L + Wc * i / 7}" y="${Hc + 2}" font-size="10" fill="#9AA3B2" text-anchor="middle">${w}</text>`).join('');
+  const lines = ps.map((p, i) => `<polyline fill="none" stroke="${col(i)}" stroke-width="2.5" stroke-linejoin="round" points="${p.week.map((v, k) => `${L + Wc * k / 7},${py(v)}`).join(' ')}"/><circle cx="${L + Wc}" cy="${py(p.week[7])}" r="3.5" fill="${col(i)}"/>`).join('');
+  h += `<div class="card sum-chart"><div class="t">📈 Dầu DO theo tuần</div><div class="s">8 tuần gần nhất (tuần tính đến hôm nay) · lít</div>
+    <svg viewBox="0 0 ${W} ${Hc + 8}" width="100%" style="display:block">${grid}${xl}${lines}</svg>
+    <div class="sum-leg">${ps.map((p, i) => `<span><i style="background:${col(i)};height:3px"></i>${escHtml(shortName(p.name))}</span>`).join('')}</div></div>`;
+  h += `<button class="btn-full btn-green" style="margin:4px 0 20px" onclick="exportSummary()">⬇ Xuất Excel tổng hợp</button>`;
+  return h;
+}
+// ---- Excel tổng hợp ----
+async function exportSummary() {
+  if (!sumData) return;
+  showLoader('Đang tạo file Excel…');
+  if (!(await ensureExcelJS())) { hideLoader(); toast('⚠️ Không tải được công cụ Excel — cần có mạng'); return; }
+  const D = sumData, ps = D.projects, wb = new ExcelJS.Workbook();
+  const F = {name:'Times New Roman', size:11}, B = {style:'thin', color:{argb:'FF999999'}};
+  const box = c => { c.border = {top:B, left:B, bottom:B, right:B}; c.font = c.font || F; };
+  const fr = s => s.split('-').reverse().map(Number).join('/');
+  const sheet = (name, head, rows, widths) => {
+    const ws = wb.addWorksheet(name);
+    ws.mergeCells(1, 1, 1, head.length);
+    Object.assign(ws.getCell(1, 1), {value:`${name.toUpperCase()} — TỪ ${fr(D.from)} ĐẾN ${fr(D.to)}`, font:{...F, bold:true, size:14}});
+    ws.getCell(2, 1).value = `Xuất lúc ${nowStr()} · ${me?.name || ''}`; ws.getCell(2, 1).font = {...F, italic:true, size:9, color:{argb:'FF777777'}};
+    head.forEach((t, j) => { const c = ws.getCell(4, j + 1); c.value = t; c.font = {...F, bold:true, color:{argb:'FFFFFFFF'}}; c.fill = {type:'pattern', pattern:'solid', fgColor:{argb:'FF0056A4'}}; c.alignment = {wrapText:true, vertical:'middle', horizontal:'center'}; box(c); });
+    rows.forEach((r, i) => r.forEach((v, j) => { const c = ws.getCell(5 + i, j + 1); c.value = v === null || v === '' ? null : v; if (typeof v === 'number') c.numFmt = '#,##0.##'; box(c); }));
+    widths.forEach((w, j) => ws.getColumn(j + 1).width = w);
+    ws.views = [{state:'frozen', ySplit:4}];
+  };
+  sheet('Tổng hợp dự án', ['Dự án', 'Phiếu nhập', 'Phiếu xuất', 'Dầu DO (lít)', 'Dầu kỳ trước (lít)', 'Dầu / máy khoan / ngày (lít)', 'Vật tư', 'Dưới định mức', 'Hết hàng', 'Máy', 'Mượn đang mở', 'Mượn quá hạn', 'Phiếu cuối'],
+    ps.map(p => [p.name, p.nhap, p.xuat, p.dau, p.dauPrev, p.dauMayNgay, p.items, p.low, p.out, p.devices, p.openLoans, p.overdue, p.lastAt ? sumAgo(p.lastAt) : 'Chưa có phiếu']),
+    [26, 10, 10, 12, 13, 15, 8, 11, 9, 7, 11, 11, 16]);
+  const cats = [...new Set(ps.flatMap(p => Object.keys(p.cat)))];
+  const catName = id => CATEGORIES.find(c => c.id === id)?.name || 'Khác';
+  sheet('Xuất theo nhóm', ['Dự án', ...cats.map(catName), 'Tổng'], ps.map(p => [p.name, ...cats.map(k => p.cat[k] || 0), p.xuat]), [26, ...cats.map(() => 14), 10]);
+  sheet('Dầu theo tuần', ['Dự án', ...D.weeks.map(w => 'Tuần từ ' + w), 'Cộng 8 tuần'], ps.map(p => [p.name, ...p.week, p.week.reduce((a, b) => a + b, 0)]), [26, ...D.weeks.map(() => 12), 13]);
+  const buf = await wb.xlsx.writeBuffer();
+  const d = new Date();
+  lastExport = new File([buf], `TongHop_DuAn_${D.from}_${D.to}.xlsx`, {type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'});
+  hideLoader();
+  document.getElementById('xf-name').textContent = lastExport.name;
+  document.getElementById('xf-share').style.display = navigator.canShare && navigator.canShare({files:[lastExport]}) ? '' : 'none';
+  openModal('modal-xfile');
 }
 
 // ===== LOGOUT =====
