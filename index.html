@@ -86,9 +86,6 @@ body{font-family:-apple-system,BlinkMacSystemFont,"SF Pro Display","Segoe UI",sa
 .header-menu span{display:block;width:16px;height:2px;background:#fff;border-radius:1px}
 .header-logo{width:min(200px,52vw);height:auto;object-fit:contain;display:block}
 .header-avatar{margin-top:6px;width:44px;height:44px;border-radius:50%;background:rgba(255,255,255,.2);border:2px solid rgba(255,255,255,.4);display:flex;align-items:center;justify-content:center;color:#fff;font-weight:800;font-size:13px;cursor:pointer}
-/* iPhone (app đã cài): nếu vùng hiển thị ngắn hơn màn hình thì kéo đáy trang + thanh dưới xuống sát mép */
-#pg-app{bottom:calc(0px - var(--iosgap,0px))}
-#pg-app .bottom-nav{bottom:calc(0px - var(--iosgap,0px))}
 /* Ô chọn dự án (nằm trong menu) */
 .sb-kho{padding:14px 16px 12px;border-bottom:1px solid var(--border);background:linear-gradient(180deg,rgba(242,101,34,.38),rgba(242,101,34,.13) 45%,rgba(242,101,34,0)),#F7F9FC}
 .sb-kho-lbl{font-size:10.5px;font-weight:800;letter-spacing:.6px;color:#6B3A1F}
@@ -486,6 +483,11 @@ body.can-ql .hide-ql{display:none!important}
 .ln-loan-line span{background:var(--bg);border-radius:6px;padding:2px 8px}
 .ln-dev{margin-top:10px;background:#FFF4EE;border-radius:8px;padding:10px 12px;font-size:13px;color:var(--text);cursor:pointer}
 body.can-admin .lock-note{display:none}
+.srch-box{position:relative}
+.srch-box input{width:100%;box-sizing:border-box;border:1.5px solid var(--border);border-radius:12px;padding:10px 36px 10px 12px;font-size:15px;outline:none;font-family:inherit;background:#fff;-webkit-appearance:none}
+.srch-box input:focus{border-color:var(--primary)}
+.srch-box input::-webkit-search-cancel-button{display:none}
+.srch-box button{position:absolute;right:6px;top:50%;transform:translateY(-50%);border:none;background:var(--bg);color:var(--text3);width:26px;height:26px;border-radius:13px;font-size:12px;cursor:pointer}
 .ri-sub.live{color:#16A34A;font-weight:700}
 .online-sum{display:flex;align-items:center;gap:8px;background:#ECFDF3;color:#166534;border-radius:12px;padding:10px 14px;font-size:13px;font-weight:600;margin-bottom:12px}
 .sess-list{background:var(--bg);border-radius:10px;padding:4px 12px;margin-bottom:10px}
@@ -741,6 +743,7 @@ body.can-admin .lock-note{display:none}
     <div class="sidebar-item" onclick="openChPw()"><span class="sidebar-item-ico">🔒</span>Đổi mật khẩu</div>
     <div class="sidebar-item" onclick="doLogout()"><span class="sidebar-item-ico">🚪</span>Đăng xuất</div>
     <div class="app-ver" id="app-ver"></div>
+    <div class="app-ver" id="scr-diag" style="font-size:9.5px;opacity:.8;padding-top:0"></div>
   </div>
 </div>
 
@@ -1138,7 +1141,7 @@ body.can-admin .lock-note{display:none}
 // ============================================================
 // CONFIG
 // ============================================================
-const APP_VERSION = '5.10';
+const APP_VERSION = '5.11';
 const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbw6Rmi80I7RI3ij2U7RdRF5pYuQTnPrwEmGmUZS5xpxzLwwVynfoFUujZe1lm6HS1ymxw/exec';
 // ============================================================
 
@@ -1625,8 +1628,11 @@ function refreshCurrentView(notify) {
   updateProjSel(); updateLowBadge();
   const modalOpen = [...document.querySelectorAll('.modal-bg')].some(m => m.style.display === 'flex');
   if (modalOpen) return;
-  if (['home','ton','baocao','lsnhap','lsxuat'].includes(curTab)) goTab(curTab);
+  // Đang gõ ô tìm kiếm / kéo thanh định mức thì không vẽ lại chỗ đó (tránh mất bàn phím)
+  const ae = document.activeElement, typing = el => ae && /^(INPUT|TEXTAREA|SELECT)$/.test(ae.tagName) && el && el.contains(ae);
+  if (['home','ton','baocao','lsnhap','lsxuat'].includes(curTab) && !typing(document.getElementById('main-body'))) goTab(curTab);
   document.querySelectorAll('.detail-page.show').forEach(p => {
+    if (typing(p)) return;
     if (p.id === 'dp-device') { if (currentDeviceId) renderDeviceDetail(currentDeviceId); }
     else if (p.id === 'dp-members' || p.id === 'dp-history-log') { /* tải lại bằng nút ↻ */ }
     else if (DP_RENDER[p.id]) DP_RENDER[p.id]();
@@ -1715,6 +1721,7 @@ function toggleSidebar() {
   const isOpen = sb.classList.contains('open');
   if (isOpen) { sb.classList.remove('open'); ov.classList.remove('show'); }
   else { sb.classList.add('open'); ov.classList.add('show'); }
+  setTimeout(screenDiag, 350);
 }
 function closeSidebar() {
   document.getElementById('sidebar').classList.remove('open');
@@ -1951,12 +1958,14 @@ function drawUnitChart() {
 // ===== DETAIL: VAT TU =====
 function renderDpVatTu() {
   const body = document.getElementById('dp-vattu-body');
+  vtCat = 'all';
   body.innerHTML = `
+    <div style="padding:0 0 10px">${searchBox('vt-q', vtQ, 'Tìm vật tư...', 'setVtQ')}</div>
     <div class="chip-row" style="padding:0 0 8px">
       <div class="chip on" onclick="filterVT('all',event)">Tất cả (${db.items.length})</div>
       ${db.categories.map(c => `<div class="chip" onclick="filterVT('${c.id}',event)">${c.icon} ${c.name}</div>`).join('')}
     </div>
-    <div class="card" id="vt-list">${renderVTRows(db.items)}</div>
+    <div class="card" id="vt-list">${renderVTRows(vtItems())}</div>
   `;
 }
 function renderVTRows(items) {
@@ -1976,11 +1985,13 @@ function renderVTRows(items) {
     </div>`;
   }).join('') || '<div class="empty-state"><div class="e-ico">📭</div><p>Không có vật tư</p></div>';
 }
+function vtItems() { return db.items.filter(i => (vtCat === 'all' || i.cat === vtCat) && matchQ(vtQ, i.name)); }
+function setVtQ(v) { vtQ = v; document.getElementById('vt-list').innerHTML = renderVTRows(vtItems()); updSearchX('vt-q', v, 'setVtQ'); }
 function filterVT(cat, e) {
+  vtCat = cat;
   document.querySelectorAll('#dp-vattu .chip').forEach(c => c.classList.remove('on'));
   e.target.classList.add('on');
-  const items = cat === 'all' ? db.items : db.items.filter(i => i.cat === cat);
-  document.getElementById('vt-list').innerHTML = renderVTRows(items);
+  document.getElementById('vt-list').innerHTML = renderVTRows(vtItems());
 }
 function editVatTu(id) {
   const item = db.items.find(i => i.id === id); if (!item) return;
@@ -2986,16 +2997,38 @@ async function qkSaveAll() {
 }
 
 // ===== TON KHO TAB =====
+let tonQ = '', vtQ = '', vtCat = 'all', devQ = '';
+const matchQ = (q, ...fields) => !q || normVN(fields.filter(Boolean).join(' ')).includes(normVN(q));
+function searchBox(id, val, ph, fn) {
+  return `<div class="srch-box"><input id="${id}" type="search" autocomplete="off" placeholder="🔎 ${ph}" value="${escHtml(val)}" oninput="${fn}(this.value)">${val ? `<button type="button" onclick="${fn}('');document.getElementById('${id}').value='';document.getElementById('${id}').focus()">✕</button>` : ''}</div>`;
+}
+function tonItems() { return db.items.filter(i => (fCat === 'all' || i.cat === fCat) && matchQ(tonQ, i.name)); }
 function renderTon(c) {
+  if (!fCat || (fCat !== 'all' && !db.categories.some(x => x.id === fCat))) fCat = 'all';
   c.innerHTML = `
+    <div style="padding:10px 14px 0">${searchBox('ton-q', tonQ, 'Tìm vật tư trong kho...', 'setTonQ')}</div>
     <div class="chip-row" style="padding:10px 14px 0">
-      <div class="chip on" onclick="setTonFilter('all',event)">Tất cả</div>
-      ${db.categories.map(cat=>`<div class="chip" onclick="setTonFilter('${cat.id}',event)">${cat.icon} ${cat.name}</div>`).join('')}
+      <div class="chip ${fCat==='all'?'on':''}" onclick="setTonFilter('all',event)">Tất cả</div>
+      ${db.categories.map(cat=>`<div class="chip ${fCat===cat.id?'on':''}" onclick="setTonFilter('${cat.id}',event)">${cat.icon} ${cat.name}</div>`).join('')}
     </div>
     <div style="padding:10px 14px">
-      <div class="card" id="ton-list">${renderTonRows(db.items)}</div>
+      <div class="card" id="ton-list">${renderTonRows(tonItems())}</div>
     </div>
   `;
+}
+function setTonQ(v) { tonQ = v; document.getElementById('ton-list').innerHTML = renderTonRows(tonItems()); updSearchX('ton-q', v, 'setTonQ'); }
+function updSearchX(id, v, fn) {
+  const box = document.getElementById(id)?.parentElement; if (!box) return;
+  const btn = box.querySelector('button');
+  if (v && !btn) box.insertAdjacentHTML('beforeend', `<button type="button" onclick="${fn}('');document.getElementById('${id}').value='';document.getElementById('${id}').focus()">✕</button>`);
+  if (!v && btn) btn.remove();
+}
+function toggleMinEdit(id) {
+  if (!can('ql')) return;
+  const el = document.getElementById('me-' + id); if (!el) return;
+  const open = el.style.display === 'none';
+  document.querySelectorAll('#ton-list .min-edit').forEach(x => x.style.display = 'none');
+  el.style.display = open ? '' : 'none';
 }
 function renderTonRows(items) {
   if (!items.length) return '<div class="empty-state"><p>Không có vật tư</p></div>';
@@ -3005,7 +3038,8 @@ function renderTonRows(items) {
     else if(isLow(i)){cls='badge-out';s='Sắp hết';fc='var(--orange)';}
     const maxVal = Math.max(i.minStock*2, i.stock, 1);
     const pct = Math.min(100, Math.round(i.stock/maxVal*100));
-    return `<div class="progress-item">
+    const ql = can('ql');
+    return `<div class="progress-item"${ql ? ` onclick="toggleMinEdit(${i.id})" style="cursor:pointer"` : ''}>
       <div class="prog-top">
         <div class="prog-name">${itemIcon(i)}<span>${i.name}</span></div>
         <span class="txn-badge ${cls}">${s}</span>
@@ -3015,12 +3049,12 @@ function renderTonRows(items) {
         <div class="prog-nums">${fmtNum(i.stock)} ${i.unit}</div>
       </div>
       ${itemLoanLine(i)}
-      ${can('tk')?`<div style="margin-top:8px">
+      ${ql ? `<div class="min-edit" id="me-${i.id}" style="display:none;margin-top:8px" onclick="event.stopPropagation()">
         <label style="font-size:10px;font-weight:700;color:var(--text3);text-transform:uppercase">Cảnh báo khi tồn ≤</label>
         <input type="range" style="width:100%;accent-color:var(--orange);margin:4px 0" min="0" max="${maxVal}" value="${i.minStock}" step="1"
           oninput="updateMinStock(${i.id},+this.value,this.nextElementSibling)">
         <div style="text-align:center;font-size:12px;font-weight:700;color:var(--orange)">${fmtNum(i.minStock)} ${i.unit}</div>
-      </div>`:''}
+      </div>` : ''}
     </div>`;
   }).join('');
 }
@@ -3028,8 +3062,7 @@ function setTonFilter(cat, e) {
   fCat = cat;
   document.querySelectorAll('#main-body .chip').forEach(c=>c.classList.remove('on'));
   e.target.classList.add('on');
-  const items = cat==='all' ? db.items : db.items.filter(i=>i.cat===cat);
-  document.getElementById('ton-list').innerHTML = renderTonRows(items);
+  document.getElementById('ton-list').innerHTML = renderTonRows(tonItems());
 }
 const _minTimers = {};
 function updateMinStock(id, val, labelEl) {
@@ -3159,11 +3192,19 @@ function setRepFilter(period, e) {
 }
 
 // ===== DEVICES =====
+function setDevQ(v) {
+  devQ = v; renderDevicesList();
+  const inp = document.getElementById('dev-q'); if (inp) { inp.focus(); inp.setSelectionRange(v.length, v.length); }
+}
 function renderDevicesList() {
   const body = document.getElementById('dp-devices-list-body');
   const catGroups = {};
-  db.devices.forEach(d => { if(!catGroups[d.cat]) catGroups[d.cat]=[]; catGroups[d.cat].push(d); });
-  body.innerHTML = Object.entries(catGroups).sort((a,b) => DEVICE_CATS.findIndex(c=>c.id===a[0]) - DEVICE_CATS.findIndex(c=>c.id===b[0])).map(([cat, devs]) => {
+  db.devices.filter(d => matchQ(devQ, d.name, d.plate, devCatOf(d.cat).name, d.type === 'own' ? 'công ty' : 'thuê'))
+    .forEach(d => { if(!catGroups[d.cat]) catGroups[d.cat]=[]; catGroups[d.cat].push(d); });
+  const hasAny = Object.keys(catGroups).length;
+  body.innerHTML = (db.devices.length ? `<div style="padding:0 0 10px">${searchBox('dev-q', devQ, 'Tìm máy, số hiệu...', 'setDevQ')}</div>` : '')
+    + (!hasAny && devQ ? '<div class="empty-state"><div class="e-ico">🔎</div><p>Không tìm thấy máy phù hợp</p></div>' : '')
+    + Object.entries(catGroups).sort((a,b) => DEVICE_CATS.findIndex(c=>c.id===a[0]) - DEVICE_CATS.findIndex(c=>c.id===b[0])).map(([cat, devs]) => {
     const dc = devCatOf(cat); const catInfo = {n:dc.name, i:dc.icon};
     return `<div style="margin-bottom:10px">
       <div style="font-size:12px;font-weight:700;color:var(--text3);padding:0 0 6px;text-transform:uppercase;letter-spacing:.5px">${catInfo.i} ${catInfo.n}</div>
@@ -4657,18 +4698,22 @@ async function doInstall() {
   openModal('modal-install');
 }
 
-// iPhone app đã cài: một số máy báo chiều cao vùng hiển thị ngắn hơn màn hình → dải trống xám dưới thanh điều hướng.
-function fixIosGap() {
-  if (navigator.standalone !== true) return;
-  const gap = Math.round(screen.height - window.innerHeight);
-  if (gap >= 0 && gap <= 60) document.documentElement.style.setProperty('--iosgap', gap + 'px');   // > 60: bàn phím đang mở, giữ nguyên
+// Tạm thời (tìm nguyên nhân dải trống dưới thanh điều hướng trên iPhone): hiện thông số màn hình ở cuối Menu
+function screenDiag() {
+  const el = document.getElementById('scr-diag'); if (!el) return;
+  const pr = document.createElement('div');
+  pr.style.cssText = 'position:fixed;top:0;left:0;visibility:hidden;padding:env(safe-area-inset-top,0px) 0 env(safe-area-inset-bottom,0px)';
+  document.body.appendChild(pr); const cs = getComputedStyle(pr);
+  const st = parseFloat(cs.paddingTop) || 0, sb = parseFloat(cs.paddingBottom) || 0; pr.remove();
+  const nav = document.getElementById('bottom-nav')?.getBoundingClientRect();
+  el.textContent = `Màn hình ${screen.width}×${screen.height} · Vùng app ${innerWidth}×${innerHeight}`
+    + ` · VV ${Math.round(window.visualViewport?.height || 0)} · Trang ${document.documentElement.clientHeight}`
+    + ` · An toàn ${st}/${sb} · Thanh dưới ${nav ? Math.round(nav.top) + '→' + Math.round(nav.bottom) : '-'}`
+    + ` · ${navigator.standalone ? 'Đã cài' : matchMedia('(display-mode: standalone)').matches ? 'standalone' : 'Trình duyệt'}`;
 }
-window.addEventListener('resize', fixIosGap);
-window.addEventListener('orientationchange', () => setTimeout(fixIosGap, 300));
 
 // ===== KHỞI ĐỘNG =====
 (function boot() {
-  fixIosGap();
   updInstallUI();
   const lg = document.querySelector('.login-logo img'); document.querySelectorAll('img[data-logo]').forEach(i => i.src = lg.src);
   loadLocal();
