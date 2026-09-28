@@ -535,9 +535,20 @@ body:not(.can-cost) .need-cost{display:none!important}
 .sum-custom{display:flex;gap:6px;align-items:center;margin-top:8px}
 .sum-custom input{flex:1;min-width:0;border:1.5px solid var(--border);border-radius:10px;padding:8px;font-family:inherit;font-size:13px}
 .sum-custom button{border:none;background:var(--primary);color:#fff;border-radius:10px;padding:9px 14px;font-weight:700;font-family:inherit}
-.sum-tabs{display:flex;margin:12px 0 6px}
-.sum-tabs button{flex:1;border:none;background:none;padding:9px 0;font-size:14px;font-weight:800;color:var(--text3);border-bottom:3px solid #E1E5EC;font-family:inherit;cursor:pointer}
-.sum-tabs button.on{color:var(--primary);border-bottom-color:var(--primary)}
+.sum-tabs{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:4px;background:#DDE2E8;border-radius:12px;padding:4px;margin:12px 0 10px}
+.sum-tabs button{border:none;background:transparent;border-radius:9px;height:42px;font-size:15px;font-weight:800;color:#2F3B4C;font-family:inherit;cursor:pointer}
+.sum-tabs button.on{background:#fff;color:var(--primary);font-weight:900;box-shadow:0 1px 4px rgba(0,0,0,.18)}
+.cost-go{display:inline-flex;align-items:center;gap:2px;font-size:12px;font-weight:700}
+.cost-big,.cost-kpi2>div{cursor:pointer;-webkit-tap-highlight-color:transparent}
+.cost-big:active,.cost-kpi2>div:active{transform:scale(.98)}
+.cd-top{border-radius:var(--r);padding:14px 16px;margin-bottom:12px}.cd-top .k{font-size:13px;font-weight:700}.cd-top .v{font-size:30px;font-weight:900;line-height:1.25}.cd-top .s{font-size:12px}
+.cd-list{padding:4px 14px;margin-bottom:12px}
+.cd-row{padding:11px 0;border-bottom:1px solid #EEF1F4}.cd-row:last-child{border-bottom:none}
+.cd-row .a{display:flex;align-items:center;gap:8px}.cd-row .a i{width:10px;height:10px;border-radius:3px;flex-shrink:0}.cd-row .a span{flex:1;min-width:0;font-size:14px;font-weight:700}.cd-row .a b{font-size:14px;font-weight:800;white-space:nowrap}
+.cd-row .tr{height:6px;background:#EEF1F4;border-radius:3px;margin:6px 0}.cd-row .tr i{display:block;height:6px;border-radius:3px}
+.cd-row .c{display:flex;justify-content:space-between;gap:8px;font-size:12px;color:var(--text2)}
+.cd-tag{display:inline-block;font-size:13px;font-weight:800;border-radius:8px;padding:3px 8px;margin-right:8px}
+.cd-note{font-size:13px;color:var(--text2);line-height:1.5;margin:0 2px 20px}
 .sum-range{font-size:12px;color:var(--text3);margin:4px 2px 10px}
 .sum-kpis{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin-bottom:12px}
 .sum-kpi{padding:12px}.sum-kpi .k{font-size:11px;font-weight:700}.sum-kpi .v{font-size:21px;font-weight:900;margin-top:2px}.sum-kpi .s{font-size:11px;color:var(--text3)}
@@ -779,6 +790,14 @@ body:not(.can-cost) .need-cost{display:none!important}
     <button onclick="sumReload()" style="background:var(--bg);border:none;border-radius:8px;padding:6px 10px;font-size:15px;cursor:pointer" aria-label="Tải lại">↻</button>
   </div>
   <div class="detail-body" id="dp-summary-body"></div>
+</div>
+
+<div class="detail-page" id="dp-costd">
+  <div class="detail-header">
+    <button class="back-btn" onclick="closeDp('dp-costd')">‹</button>
+    <div class="detail-title" id="costd-title">Chi tiết</div>
+  </div>
+  <div class="detail-body" id="dp-costd-body"></div>
 </div>
 
 <div class="detail-page" id="dp-price">
@@ -1267,7 +1286,7 @@ body:not(.can-cost) .need-cost{display:none!important}
 // ============================================================
 // CONFIG
 // ============================================================
-const APP_VERSION = '5.15';
+const APP_VERSION = '5.16';
 const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbw6Rmi80I7RI3ij2U7RdRF5pYuQTnPrwEmGmUZS5xpxzLwwVynfoFUujZe1lm6HS1ymxw/exec';
 // ============================================================
 
@@ -1480,7 +1499,7 @@ let outbox = [], serverVer = 0, syncing = false, syncTimer = null, flushing = nu
 // Mỗi lần đăng nhập / đăng xuất là một "phiên" mới. Yêu cầu của phiên cũ trả về muộn thì bỏ qua,
 // không được ghi dữ liệu của người trước vào máy, không được làm người mới bị đăng xuất.
 let sessionGen = 0;
-function newSessionGen() { sessionGen++; syncing = false; flushing = null; }
+function newSessionGen() { sessionGen++; syncing = false; flushing = null; resetLeadState(); }
 function saveLocal() {
   try {
     const { categories, ...rest } = db;
@@ -1879,7 +1898,8 @@ const DP_RENDER = {
   'dp-dc-hist': () => renderDcHist(), 'dp-members': () => renderMembers(),
   'dp-loans': () => renderLoans(),
   'dp-summary': () => renderSummary(),
-  'dp-price': () => renderPrice()
+  'dp-price': () => renderPrice(),
+  'dp-costd': () => renderCostDetail()
 };
 function openDp(id, renderFn) {
   const fn = renderFn || DP_RENDER[id];
@@ -4707,7 +4727,7 @@ async function deleteLoanAdmin() {
 // ===== TỔNG HỢP DỰ ÁN (v5.13 · chỉ Admin và Lãnh đạo) =====
 // Máy chủ tính sẵn số liệu mọi dự án (getSummary); điện thoại chỉ vẽ.
 const SUM_COLORS = ['#0056A4', '#F26522', '#2E9F5A', '#7357C9', '#0E8C8C', '#B8860B', '#D64532', '#5B6577'];
-let sumPer = 'month', sumTab = 0, sumData = null, sumLoading = false, sumFrom = '', sumTo = '';
+let sumPer = 'month', sumTab = -1, sumData = null, sumLoading = false, sumFrom = '', sumTo = '';
 const canLead = () => role === 'admin' || role === 'ld';
 function sumRange(per) {
   const n = new Date(), d0 = new Date(n.getFullYear(), n.getMonth(), n.getDate());
@@ -4725,9 +4745,10 @@ function setSumTab(i) {
 }
 async function loadSummary() {
   if (!canLead() || sumLoading) return;
-  const r = sumRange(sumPer);
+  const r = sumRange(sumPer), gen = sessionGen;
   sumLoading = true; renderSummary();
   const res = await api('getSummary', r, 60000);
+  if (gen !== sessionGen) return;                       // trả lời của phiên đăng nhập trước → bỏ qua
   sumLoading = false;
   if (res && res.success) { sumData = res; sumData.per = sumPer; sumData._at = Date.now(); }
   else toast('⚠️ ' + (res && res.error || 'Không tải được số liệu tổng hợp — kiểm tra mạng'));
@@ -4737,7 +4758,7 @@ function openSummary() {
   closeSidebar();
   if (role === 'ld') { goTab('lead'); return; }
   if (!canLead()) { setTimeout(() => { sumTab = 2; openDp('dp-summary'); renderSummary(); }, 300); return; }   // Quản lý: chỉ có tab Chi phí
-  setTimeout(() => { openDp('dp-summary'); if (sumTab === 2) { renderSummary(); return; } if (!sumData || Date.now() - (sumData._at || 0) > 5 * 60e3) loadSummary(); }, 300);
+  setTimeout(() => { if (sumTab < 0) sumTab = 0; openDp('dp-summary'); if (sumTab === 2) { renderSummary(); return; } if (!sumData || Date.now() - (sumData._at || 0) > 5 * 60e3) loadSummary(); }, 300);
 }
 function sumReload() { if (sumTab === 2) loadCost(true); else loadSummary(); }
 function setSumPer(p) {
@@ -4773,6 +4794,7 @@ function renderSummary() {
   if (!body) return;
   if (!canCost()) { body.innerHTML = '<div class="empty-state"><p>Chỉ Quản lý, Admin và Lãnh đạo xem được mục này</p></div>'; return; }
   if (!canLead()) sumTab = 2;
+  if (sumTab < 0) sumTab = role === 'ld' ? 2 : 0;          // v5.16: Lãnh đạo mở app vào thẳng tab Chi phí
   const tabs = !canLead() ? '' : `<div class="sum-tabs">${['Tổng quan', 'So sánh', 'Chi phí'].map((t, i) => `<button class="${sumTab === i ? 'on' : ''}" onclick="setSumTab(${i})">${t}</button>`).join('')}</div>`;
   if (sumTab === 2) { body.innerHTML = tabs + costView(); ensureCost(); return; }
   const chip = p => `<button class="sum-chip ${sumPer === p ? 'on' : ''}" onclick="setSumPer('${p}')">${sumPerLabel(p)}</button>`;
@@ -4781,7 +4803,7 @@ function renderSummary() {
   if (sumPer === 'custom') h += `<div class="sum-custom"><input type="date" id="sum-from" value="${r.from}"><span>→</span><input type="date" id="sum-to" value="${r.to}"><button onclick="applySumCustom()">Xem</button></div>`;
   h += tabs;
   if (sumLoading && !sumData) { body.innerHTML = h + '<div class="empty-state"><div class="e-ico">⏳</div><p>Đang tính số liệu các dự án…</p></div>'; return; }
-  if (!sumData) { body.innerHTML = h + '<div class="empty-state"><div class="e-ico">📈</div><p>Chưa có số liệu</p></div>'; return; }
+  if (!sumData) { body.innerHTML = h + '<div class="empty-state"><div class="e-ico">📈</div><p>Chưa có số liệu</p><button class="cost-small" style="margin-top:10px" onclick="loadSummary()">↻ Tải lại</button></div>'; return; }
   const D = sumData, ps = D.projects;
   const fr = s => s.split('-').reverse().map(Number).join('/');
   h += `<div class="sum-range">${fr(D.from)} → ${fr(D.to)} · ${ps.length} dự án${sumLoading ? ' · ⏳ đang cập nhật…' : ''}</div>`;
@@ -4912,6 +4934,16 @@ async function exportSummary() {
 
 // ===== v5.15: CHI PHÍ VẬT TƯ (Quản lý / Admin / Lãnh đạo) — máy chủ tính sẵn, điện thoại chỉ vẽ =====
 const canCost = () => ['ql', 'admin', 'ld'].includes(role);
+// v5.15.1: mỗi lần đăng nhập / đăng xuất xóa số liệu tổng hợp, chi phí, giá của người trước
+// (trước đây: đổi tài khoản khi máy chủ đang tính dở → cờ "đang tải" bị kẹt, tài khoản sau không tải lại được)
+function resetLeadState() {
+  try {
+    sumData = null; sumLoading = false; sumTab = -1;
+    costData = {}; costLoading = false; costErrAt = {}; costProj = ''; costSel = -1;
+    priceData = null; priceQ = ''; priceAll = false; priceEdit = null;
+    costDetail = 'buy'; costDetailG = -1; costDetailAll = false;
+  } catch (e) {}                                          // lúc mở app, các biến này chưa khai báo → bỏ qua
+}
 let costProj = '', costData = {}, costLoading = false, costErrAt = {}, costPer = 'week', costSel = -1;
 const vnMoney = v => { v = Math.round(+v || 0); return v >= 1e9 ? (v / 1e9).toLocaleString('vi-VN', {maximumFractionDigits:1}) + ' tỷ' : v >= 1e6 ? Math.round(v / 1e6).toLocaleString('vi-VN') + ' triệu' : fmtNum(v) + ' đ'; };
 const vnQty = (v, u) => (+v || 0).toLocaleString('vi-VN', {maximumFractionDigits: u === 'tấn' ? 1 : 0});
@@ -4930,8 +4962,10 @@ function ensureCost() {
 }
 async function loadCost(force) {
   const p = pickCostProj(); if (!p || costLoading) return;
+  const gen = sessionGen;
   costLoading = true; renderSummary();
   const res = await api('getCost', {project:p}, 60000);
+  if (gen !== sessionGen) return;                       // trả lời của phiên đăng nhập trước → bỏ qua
   costLoading = false;
   if (res && res.success) { costData[p] = res; costData[p]._at = Date.now(); delete costErrAt[p]; }
   else { costErrAt[p] = Date.now(); if (force || !costData[p]) toast('⚠️ ' + (res && (res.error || res.reason) || 'Không tải được số liệu chi phí — kiểm tra mạng')); }
@@ -4942,13 +4976,14 @@ function costView() {
   let h = `<div class="card cost-proj"><small>Dự án</small><select aria-label="Chọn dự án" onchange="setCostProj(this.value)">${ps.map(x => `<option value="${escHtml(x)}" ${x === p ? 'selected' : ''}>${escHtml(x)}</option>`).join('')}</select>
     <small>${D ? 'Số liệu đến ' + D.today + (costLoading ? ' · ⏳ đang cập nhật…' : '') : ''}</small></div>`;
   if (!p) return h + '<div class="empty-state"><p>Chưa có dự án nào</p></div>';
-  if (!D) return h + `<div class="empty-state"><div class="e-ico">${costLoading ? '⏳' : '💰'}</div><p>${costLoading ? 'Đang tính chi phí vật tư…' : 'Chưa tải được số liệu — bấm ↻ để thử lại'}</p></div>`;
+  if (!D) return h + `<div class="empty-state"><div class="e-ico">${costLoading ? '⏳' : '💰'}</div><p>${costLoading ? 'Đang tính chi phí vật tư…' : 'Chưa tải được số liệu'}</p>${costLoading ? '' : '<button class="cost-small" style="margin-top:10px" onclick="loadCost(true)">↻ Tải lại</button>'}</div>`;
   const b = D.bought, st = D.stock, G = ['Thép', 'Dầu mỡ', 'Khác'];
   const split = a => a.map((v, i) => v ? `${G[i]} ${vnMoney(v)}` : '').filter(Boolean).join(' · ') || 'Chưa có vật tư nào có giá';
   const hasPlan = D.rows.length > 0;
-  h += `<div class="cost-big"><div class="k">Đã mua vào</div><div class="v">${vnMoney(D.boughtT)}</div><div class="s">${split(b)}</div></div>
-    <div class="cost-kpi2"><div class="card"><div class="k">Tồn kho đang giữ</div><div class="v">${vnMoney(D.stockT)}</div><div class="s">${split(st)}</div></div>
-    <div class="card need"><div class="k">Còn phải mua</div><div class="v">${hasPlan ? vnMoney(D.need) : '—'}</div><div class="s">${hasPlan ? (D.needParts.length ? escHtml(D.needParts.join(' · ')) : 'Đã đủ theo kế hoạch') : 'Chưa có kế hoạch vật tư'}</div></div></div>`;
+  const go = c => `<span class="cost-go" style="color:${c}">Xem chi tiết<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="${c}" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></svg></span>`;
+  h += `<div class="cost-big" role="button" tabindex="0" onclick="openCostDetail('buy')"><div class="cost-t" style="margin:0"><div class="k">Đã mua vào</div>${go('#fff')}</div><div class="v">${vnMoney(D.boughtT)}</div><div class="s">${split(b)}</div></div>
+    <div class="cost-kpi2"><div class="card" role="button" tabindex="0" onclick="openCostDetail('stock')"><div class="cost-t" style="margin:0"><div class="k">Tồn kho đang giữ</div>${go('var(--text2)').replace('Xem chi tiết', '')}</div><div class="v">${vnMoney(D.stockT)}</div><div class="s">${split(st)}</div></div>
+    <div class="card need" role="button" tabindex="0" onclick="openCostDetail('need')"><div class="cost-t" style="margin:0"><div class="k">Còn phải mua</div>${go('#A8440F').replace('Xem chi tiết', '')}</div><div class="v">${hasPlan ? vnMoney(D.need) : '—'}</div><div class="s">${hasPlan ? (D.needParts.length ? escHtml(D.needParts.join(' · ')) : 'Đã đủ theo kế hoạch') : 'Chưa có kế hoạch vật tư'}</div></div></div>`;
   // tiến độ
   if (D.prog !== null || D.hangMuc.length) {
     const pr = Math.round((D.prog || 0) * 100), mp = D.matPct === null ? null : Math.round(D.matPct * 100);
@@ -5001,6 +5036,44 @@ function costView() {
   return h;
 }
 
+
+// ---- v5.16: bấm 3 ô số → xem chi tiết ----
+let costDetail = 'buy', costDetailG = -1, costDetailAll = false;
+function openCostDetail(k) { costDetail = k; costDetailG = -1; costDetailAll = false; openDp('dp-costd'); }
+function renderCostDetail() {
+  const body = document.getElementById('dp-costd-body'), D = costData[costProj]; if (!body) return;
+  const T = {buy:'Đã mua vào', stock:'Tồn kho đang giữ', need:'Còn phải mua'};
+  document.getElementById('costd-title').textContent = T[costDetail];
+  if (!D || !D.buyList) { body.innerHTML = '<div class="empty-state"><p>Chưa có số liệu chi tiết — cần máy chủ 5.12 trở lên. Quay lại và bấm ↻.</p></div>'; return; }
+  const C = ['var(--primary)', 'var(--orange)', '#7FA9D4'], G = ['Tất cả', 'Thép', 'Dầu mỡ', 'Khác'];
+  const sub = `<div style="font-size:13px;color:var(--text2);margin:0 2px 10px"><b style="color:var(--primary)">${escHtml(D.project)}</b> · đến ${escHtml(D.today)}</div>`;
+  const lu = u => escHtml(String(u).toLowerCase());
+  let h = sub;
+  if (costDetail === 'buy') {
+    const list = D.buyList.filter(x => costDetailG < 0 || x.g === costDetailG), tot = list.reduce((s, x) => s + x.v, 0), max = Math.max(1, ...list.map(x => x.v));
+    h += `<div class="cd-top" style="background:var(--primary);color:#fff"><div class="k" style="color:#D6E6F7">${costDetailG < 0 ? 'Tổng tiền đã mua' : 'Tiền đã mua – ' + G[costDetailG + 1].toLowerCase()}</div><div class="v">${vnMoney(tot)}</div><div class="s" style="color:#D6E6F7">${list.length} vật tư có giá · xếp theo tiền</div></div>
+      <div class="sum-tabs" style="grid-template-columns:repeat(4,minmax(0,1fr));margin-top:0">${G.map((t, i) => `<button class="${costDetailG === i - 1 ? 'on' : ''}" onclick="costDetailG=${i - 1};renderCostDetail()">${t}</button>`).join('')}</div>
+      <div class="card cd-list">${list.map(x => `<div class="cd-row"><div class="a"><i style="background:${C[x.g]}"></i><span>${escHtml(x.n)}</span><b>${vnMoney(x.v)}</b></div>
+        <div class="tr"><i style="width:${Math.max(1, Math.round(x.v / max * 100))}%;background:${C[x.g]}"></i></div>
+        <div class="c"><span>Đã nhập ${vnQty(x.q)} ${lu(x.u)}</span><span>${(x.v / (tot || 1) * 100).toLocaleString('vi-VN', {maximumFractionDigits:1})}% tổng</span></div></div>`).join('') || '<div class="sum-empty">Chưa có vật tư nào</div>'}</div>
+      ${D.buyNoPrice ? `<div class="cd-note">Còn ${D.buyNoPrice} vật tư đã nhập nhưng chưa có giá, chưa tính vào tổng.${D.canEdit ? ' <button class="cost-link" onclick="openPrices()">Đặt giá ›</button>' : ''}</div>` : ''}`;
+  } else if (costDetail === 'stock') {
+    const priced = D.stockList.filter(x => x.v > 0), list = costDetailAll ? D.stockList : D.stockList.slice(0, 15);
+    h += `<div class="card cd-top"><div class="k" style="color:var(--text2)">Giá trị tồn kho</div><div class="v">${vnMoney(D.stockT)}</div><div class="s" style="color:var(--text2)">${D.stockList.length} vật tư còn trong kho · ${priced.length} vật tư có giá</div></div>
+      <div class="card cd-list">${list.map(x => `<div class="cd-row"><div class="a"><i style="background:${C[x.g]}"></i><span>${escHtml(x.n)}<br><small style="font-weight:600;color:var(--text2);font-size:12px">Tồn ${vnQty(x.q)} ${lu(x.u)}</small></span><b style="${x.v > 0 ? '' : 'color:#8A6A00;font-weight:700'}">${x.v > 0 ? vnMoney(x.v) : 'chưa có giá'}</b></div></div>`).join('') || '<div class="sum-empty">Kho đang trống</div>'}
+      ${!costDetailAll && D.stockList.length > 15 ? `<button class="cost-link" style="width:100%;height:48px" onclick="costDetailAll=true;renderCostDetail()">Xem thêm ${D.stockList.length - 15} vật tư ›</button>` : ''}</div>`;
+  } else {
+    h += `<div class="cd-top" style="background:#FFF4EE;border:1px solid #FFD4B8"><div class="k" style="color:#A8440F">Cần mua thêm theo kế hoạch</div><div class="v" style="color:#A8440F">${vnMoney(D.need)}</div><div class="s" style="color:#7A4A2E">${D.needParts.length ? 'Cho phần còn lại: ' + escHtml(D.needParts.join(' · ')) : 'Đã đủ theo kế hoạch'}</div></div>
+      <div class="card cd-list">${D.needList.map(x => {
+        const dp = x.u === 'tấn' ? 1 : 0, ok = x.need <= 0, n = v => (+v).toLocaleString('vi-VN', {maximumFractionDigits:dp});
+        return `<div class="cd-row"><div class="a"><span style="font-size:15px;font-weight:800">${escHtml(x.n)}</span><b style="font-size:15px;color:${ok ? '#1E7B45' : '#A8440F'}">${ok ? 'Đủ' : vnMoney(x.v)}</b></div>
+          <div style="margin-top:6px;font-size:12px;color:var(--text2)"><span class="cd-tag" style="${ok ? 'color:#1E7B45;background:#E6F4EC' : 'color:#A8440F;background:#FFF1E8'}">${ok ? 'Không cần mua' : 'Cần thêm ' + n(x.need) + ' ' + escHtml(x.u)}</span>Còn phải dùng ${n(x.remain)}${x.mode === 'dm' ? ' (theo mức dùng thực tế)' : ''} · có sẵn ${n(x.stock)}</div></div>`;
+      }).join('') || '<div class="sum-empty">Chưa có kế hoạch vật tư</div>'}</div>
+      <div class="cd-note">Chưa trừ vật tư đang nằm ở bãi thầu phụ. Thép thường còn ở bãi, nên kiểm kê trước khi đặt hàng.</div>`;
+  }
+  body.innerHTML = h;
+}
+
 // ---- Cập nhật tiến độ ----
 function openProgress() {
   const D = costData[costProj]; if (!D || !D.canEdit) return;
@@ -5024,7 +5097,9 @@ function openPrices() { pickCostProj(); openDp('dp-price'); if (!priceData || pr
 async function loadPrices() {
   const p = costProj; if (!p) return;
   document.getElementById('dp-price-body').innerHTML = '<div class="empty-state"><div class="e-ico">⏳</div><p>Đang tải bảng giá…</p></div>';
+  const gen = sessionGen;
   const res = await api('getPrices', {project:p}, 45000);
+  if (gen !== sessionGen) return;
   if (res && res.success) priceData = res;
   else toast('⚠️ ' + (res && (res.error || res.reason) || 'Không tải được bảng giá'));
   renderPrice();
