@@ -1286,7 +1286,7 @@ body:not(.can-cost) .need-cost{display:none!important}
 // ============================================================
 // CONFIG
 // ============================================================
-const APP_VERSION = '5.16';
+const APP_VERSION = '5.16.1';
 const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbw6Rmi80I7RI3ij2U7RdRF5pYuQTnPrwEmGmUZS5xpxzLwwVynfoFUujZe1lm6HS1ymxw/exec';
 // ============================================================
 
@@ -1829,7 +1829,7 @@ function goTab(tab) {
     const body = document.getElementById('main-body');
     body.innerHTML = '<div id="lead-body" style="padding:12px 14px 20px"></div>';
     renderSummary();
-    if (!sumData || Date.now() - (sumData._at || 0) > 5 * 60e3) loadSummary();
+    if (sumTab !== 2 && (!sumData || Date.now() - (sumData._at || 0) > 5 * 60e3)) loadSummary();   // đang ở Chi phí thì chưa cần tính Tổng quan
     return;
   }
   if (!curProj) {
@@ -4939,18 +4939,19 @@ const canCost = () => ['ql', 'admin', 'ld'].includes(role);
 function resetLeadState() {
   try {
     sumData = null; sumLoading = false; sumTab = -1;
-    costData = {}; costLoading = false; costErrAt = {}; costProj = ''; costSel = -1;
+    costData = {}; costLoading = false; costErrAt = {}; costProj = ''; costProjs = []; costSel = -1;
     priceData = null; priceQ = ''; priceAll = false; priceEdit = null;
     costDetail = 'buy'; costDetailG = -1; costDetailAll = false;
   } catch (e) {}                                          // lúc mở app, các biến này chưa khai báo → bỏ qua
 }
-let costProj = '', costData = {}, costLoading = false, costErrAt = {}, costPer = 'week', costSel = -1;
+let costProj = '', costProjs = [], costData = {}, costLoading = false, costErrAt = {}, costPer = 'week', costSel = -1;
 const vnMoney = v => { v = Math.round(+v || 0); return v >= 1e9 ? (v / 1e9).toLocaleString('vi-VN', {maximumFractionDigits:1}) + ' tỷ' : v >= 1e6 ? Math.round(v / 1e6).toLocaleString('vi-VN') + ' triệu' : fmtNum(v) + ' đ'; };
 const vnQty = (v, u) => (+v || 0).toLocaleString('vi-VN', {maximumFractionDigits: u === 'tấn' ? 1 : 0});
-function costProjects() { return (db.projects || []).slice(); }
+function costProjects() { return (db.projects && db.projects.length ? db.projects : costProjs).slice(); }
+// v5.16.1: chưa chọn dự án thì để máy chủ tự chọn (ưu tiên dự án có kế hoạch) → không phải chờ tải kho xong mới tải chi phí
 function pickCostProj() {
   const ps = costProjects();
-  if (!costProj || !ps.includes(costProj)) costProj = ps.includes(curProj) ? curProj : (ps[0] || '');
+  if (costProj && ps.length && !ps.includes(costProj)) costProj = '';
   return costProj;
 }
 function setCostProj(p) { costProj = p; costSel = -1; renderSummary(); }
@@ -4958,16 +4959,19 @@ function setCostPer(p) { costPer = p; costSel = -1; renderSummary(); }
 function setCostSel(i) { costSel = i; renderSummary(); }
 function ensureCost() {
   const p = pickCostProj();
-  if (p && !costData[p] && !costLoading && Date.now() - (costErrAt[p] || 0) > 60e3) loadCost();
+  if (!costData[p] && !costLoading && Date.now() - (costErrAt[p] || 0) > 60e3) loadCost();
 }
 async function loadCost(force) {
-  const p = pickCostProj(); if (!p || costLoading) return;
+  const p = pickCostProj(); if (costLoading) return;
   const gen = sessionGen;
   costLoading = true; renderSummary();
   const res = await api('getCost', {project:p}, 60000);
   if (gen !== sessionGen) return;                       // trả lời của phiên đăng nhập trước → bỏ qua
   costLoading = false;
-  if (res && res.success) { costData[p] = res; costData[p]._at = Date.now(); delete costErrAt[p]; }
+  if (res && res.success) {
+    if (res.projects) costProjs = res.projects;
+    if (!res.empty && res.project) { costProj = res.project; costData[res.project] = res; res._at = Date.now(); delete costErrAt[p]; }
+  }
   else { costErrAt[p] = Date.now(); if (force || !costData[p]) toast('⚠️ ' + (res && (res.error || res.reason) || 'Không tải được số liệu chi phí — kiểm tra mạng')); }
   renderSummary();
 }
@@ -4975,7 +4979,8 @@ function costView() {
   const ps = costProjects(), p = pickCostProj(), D = costData[p];
   let h = `<div class="card cost-proj"><small>Dự án</small><select aria-label="Chọn dự án" onchange="setCostProj(this.value)">${ps.map(x => `<option value="${escHtml(x)}" ${x === p ? 'selected' : ''}>${escHtml(x)}</option>`).join('')}</select>
     <small>${D ? 'Số liệu đến ' + D.today + (costLoading ? ' · ⏳ đang cập nhật…' : '') : ''}</small></div>`;
-  if (!p) return h + '<div class="empty-state"><p>Chưa có dự án nào</p></div>';
+  if (!p && !D) return h + (costLoading || !costProjs.length && !(db.projects || []).length
+    ? '<div class="empty-state"><div class="e-ico">⏳</div><p>Đang tính chi phí vật tư…</p></div>' : '<div class="empty-state"><p>Chưa có dự án nào</p></div>');
   if (!D) return h + `<div class="empty-state"><div class="e-ico">${costLoading ? '⏳' : '💰'}</div><p>${costLoading ? 'Đang tính chi phí vật tư…' : 'Chưa tải được số liệu'}</p>${costLoading ? '' : '<button class="cost-small" style="margin-top:10px" onclick="loadCost(true)">↻ Tải lại</button>'}</div>`;
   const b = D.bought, st = D.stock, G = ['Thép', 'Dầu mỡ', 'Khác'];
   const split = a => a.map((v, i) => v ? `${G[i]} ${vnMoney(v)}` : '').filter(Boolean).join(' · ') || 'Chưa có vật tư nào có giá';
