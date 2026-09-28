@@ -1286,7 +1286,7 @@ body:not(.can-cost) .need-cost{display:none!important}
 // ============================================================
 // CONFIG
 // ============================================================
-const APP_VERSION = '5.16.1';
+const APP_VERSION = '5.16.2';
 const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbw6Rmi80I7RI3ij2U7RdRF5pYuQTnPrwEmGmUZS5xpxzLwwVynfoFUujZe1lm6HS1ymxw/exec';
 // ============================================================
 
@@ -4939,12 +4939,12 @@ const canCost = () => ['ql', 'admin', 'ld'].includes(role);
 function resetLeadState() {
   try {
     sumData = null; sumLoading = false; sumTab = -1;
-    costData = {}; costLoading = false; costErrAt = {}; costProj = ''; costProjs = []; costSel = -1;
+    costData = {}; costLoading = false; costErrAt = {}; costProj = ''; costProjs = []; costErr = ''; costSel = -1;
     priceData = null; priceQ = ''; priceAll = false; priceEdit = null;
     costDetail = 'buy'; costDetailG = -1; costDetailAll = false;
   } catch (e) {}                                          // lúc mở app, các biến này chưa khai báo → bỏ qua
 }
-let costProj = '', costProjs = [], costData = {}, costLoading = false, costErrAt = {}, costPer = 'week', costSel = -1;
+let costProj = '', costProjs = [], costErr = '', costData = {}, costLoading = false, costErrAt = {}, costPer = 'week', costSel = -1;
 const vnMoney = v => { v = Math.round(+v || 0); return v >= 1e9 ? (v / 1e9).toLocaleString('vi-VN', {maximumFractionDigits:1}) + ' tỷ' : v >= 1e6 ? Math.round(v / 1e6).toLocaleString('vi-VN') + ' triệu' : fmtNum(v) + ' đ'; };
 const vnQty = (v, u) => (+v || 0).toLocaleString('vi-VN', {maximumFractionDigits: u === 'tấn' ? 1 : 0});
 function costProjects() { return (db.projects && db.projects.length ? db.projects : costProjs).slice(); }
@@ -4958,7 +4958,8 @@ function setCostProj(p) { costProj = p; costSel = -1; renderSummary(); }
 function setCostPer(p) { costPer = p; costSel = -1; renderSummary(); }
 function setCostSel(i) { costSel = i; renderSummary(); }
 function ensureCost() {
-  const p = pickCostProj();
+  let p = pickCostProj();
+  if (!p && costErrAt[''] && (db.projects || []).length) { costProj = p = db.projects.includes(curProj) ? curProj : db.projects[0]; }   // máy chủ không tự chọn được → dùng dự án đã tải
   if (!costData[p] && !costLoading && Date.now() - (costErrAt[p] || 0) > 60e3) loadCost();
 }
 async function loadCost(force) {
@@ -4969,19 +4970,26 @@ async function loadCost(force) {
   if (gen !== sessionGen) return;                       // trả lời của phiên đăng nhập trước → bỏ qua
   costLoading = false;
   if (res && res.success) {
+    costErr = '';
     if (res.projects) costProjs = res.projects;
     if (!res.empty && res.project) { costProj = res.project; costData[res.project] = res; res._at = Date.now(); delete costErrAt[p]; }
+  } else if (!p && (db.projects || []).length && !(res && res.stale)) {
+    // máy chủ cũ chưa tự chọn được dự án → chọn dự án đang mở rồi thử lại ngay
+    costProj = db.projects.includes(curProj) ? curProj : db.projects[0];
+    renderSummary(); return loadCost(force);
   }
-  else { costErrAt[p] = Date.now(); if (force || !costData[p]) toast('⚠️ ' + (res && (res.error || res.reason) || 'Không tải được số liệu chi phí — kiểm tra mạng')); }
+  else { costErrAt[p] = Date.now(); costErr = res && (res.error || res.reason) || 'Không kết nối được máy chủ'; if (force || !costData[p]) toast('⚠️ ' + (res && (res.error || res.reason) || 'Không tải được số liệu chi phí — kiểm tra mạng')); }
   renderSummary();
 }
 function costView() {
   const ps = costProjects(), p = pickCostProj(), D = costData[p];
   let h = `<div class="card cost-proj"><small>Dự án</small><select aria-label="Chọn dự án" onchange="setCostProj(this.value)">${ps.map(x => `<option value="${escHtml(x)}" ${x === p ? 'selected' : ''}>${escHtml(x)}</option>`).join('')}</select>
     <small>${D ? 'Số liệu đến ' + D.today + (costLoading ? ' · ⏳ đang cập nhật…' : '') : ''}</small></div>`;
-  if (!p && !D) return h + (costLoading || !costProjs.length && !(db.projects || []).length
-    ? '<div class="empty-state"><div class="e-ico">⏳</div><p>Đang tính chi phí vật tư…</p></div>' : '<div class="empty-state"><p>Chưa có dự án nào</p></div>');
-  if (!D) return h + `<div class="empty-state"><div class="e-ico">${costLoading ? '⏳' : '💰'}</div><p>${costLoading ? 'Đang tính chi phí vật tư…' : 'Chưa tải được số liệu'}</p>${costLoading ? '' : '<button class="cost-small" style="margin-top:10px" onclick="loadCost(true)">↻ Tải lại</button>'}</div>`;
+  const errBox = () => `<div class="empty-state"><div class="e-ico">⚠️</div><p><b>Chưa tải được số liệu chi phí</b><br><span style="font-size:13px">${escHtml(costErr)}</span></p><button class="cost-small" style="margin-top:10px" onclick="costErrAt={};loadCost(true)">↻ Thử lại</button></div>`;
+  if (!p && !D) return h + (costLoading ? '<div class="empty-state"><div class="e-ico">⏳</div><p>Đang tính chi phí vật tư…</p></div>'
+    : costErr ? errBox() : (db.projects || []).length || costProjs.length ? '<div class="empty-state"><p>Chưa có dự án nào có số liệu</p></div>'
+    : '<div class="empty-state"><div class="e-ico">⏳</div><p>Đang tải…</p></div>');
+  if (!D) return h + (costLoading ? '<div class="empty-state"><div class="e-ico">⏳</div><p>Đang tính chi phí vật tư…</p></div>' : errBox());
   const b = D.bought, st = D.stock, G = ['Thép', 'Dầu mỡ', 'Khác'];
   const split = a => a.map((v, i) => v ? `${G[i]} ${vnMoney(v)}` : '').filter(Boolean).join(' · ') || 'Chưa có vật tư nào có giá';
   const hasPlan = D.rows.length > 0;
