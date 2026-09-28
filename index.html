@@ -486,6 +486,47 @@ body.can-ql .hide-ql{display:none!important}
 .ln-dev{margin-top:10px;background:#FFF4EE;border-radius:8px;padding:10px 12px;font-size:13px;color:var(--text);cursor:pointer}
 body.can-admin .lock-note{display:none}
 body:not(.can-lead) .need-lead{display:none!important}
+body:not(.can-cost) .need-cost{display:none!important}
+.cost-proj{padding:12px 14px;margin-bottom:10px}
+.cost-proj small{display:block;font-size:12px;color:var(--text3);font-weight:600}
+.cost-proj select{width:100%;border:none;background:none;font-size:15px;font-weight:800;color:var(--primary);font-family:inherit;padding:2px 0;-webkit-appearance:none;appearance:none;outline:none;text-overflow:ellipsis}
+.cost-big{background:var(--primary);color:#fff;border-radius:var(--r);padding:14px 16px;margin-bottom:8px}
+.cost-big .k{font-size:13px;font-weight:700;color:#D6E6F7}.cost-big .v{font-size:32px;font-weight:900;letter-spacing:-.5px;line-height:1.2}.cost-big .s{font-size:12px;color:#D6E6F7}
+.cost-kpi2{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin-bottom:12px}
+.cost-kpi2>div{padding:12px 14px}.cost-kpi2 .k{font-size:13px;font-weight:700;color:var(--text2)}.cost-kpi2 .v{font-size:22px;font-weight:900;margin:2px 0}.cost-kpi2 .s{font-size:12px;color:var(--text3)}
+.cost-kpi2 .need{background:#FFF4EE;border:1px solid #FFD4B8;box-shadow:none}.cost-kpi2 .need .k,.cost-kpi2 .need .v{color:#A8440F}.cost-kpi2 .need .s{color:#7A4A2E}
+.cost-card{padding:14px 16px;margin-bottom:12px}
+.cost-t{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:10px}.cost-t b{font-size:15px}
+.cost-chip{font-size:12px;font-weight:800;border-radius:20px;padding:4px 10px;white-space:nowrap}
+.cost-bar{margin-bottom:10px}.cost-bar .l{display:flex;justify-content:space-between;font-size:13px;font-weight:700;margin-bottom:5px}
+.cost-bar .tr{height:12px;background:#E8ECF0;border-radius:6px;overflow:hidden}.cost-bar .tr i{display:block;height:12px;border-radius:6px}
+.cost-bar small{display:block;font-size:12px;color:var(--text3);margin-top:4px}
+.cost-al{border-top:4px solid #C0392B}
+.cost-al-i{display:flex;gap:10px;align-items:flex-start;padding:5px 0;font-size:14px;line-height:1.45}.cost-al-i>i{width:8px;height:8px;border-radius:4px;margin-top:7px;flex-shrink:0}
+.cost-seg{display:flex;background:#E3E7EC;border-radius:10px;padding:3px;gap:3px}.cost-seg button{border:none;background:none;border-radius:8px;min-width:60px;height:34px;font-size:13px;font-weight:800;color:var(--text2);font-family:inherit;cursor:pointer}.cost-seg button.on{background:#fff;color:var(--primary);box-shadow:0 1px 3px rgba(0,0,0,.12)}
+.cost-sel{background:#F7F9FC;border-radius:10px;padding:10px 12px;margin-bottom:10px}.cost-sel small{display:block;font-size:12px;color:var(--text2);font-weight:700}.cost-sel b{font-size:22px;font-weight:900}.cost-sel span{display:block;font-size:12px;color:var(--text2)}
+.cost-chart{height:170px;display:flex;align-items:flex-end;border-bottom:1px solid #C9D1DB;padding-bottom:2px}
+.cost-chart button{flex:1 1 0;height:168px;border:none;padding:0;background:none;display:flex;flex-direction:column;justify-content:flex-end;cursor:pointer;min-width:0}
+.cost-chart button i{display:block}
+.cost-lbl{display:flex;margin-top:4px}.cost-lbl span{flex:1 1 0;text-align:center;font-size:10px;color:var(--text2);font-weight:600;min-width:0;white-space:nowrap}
+.cost-row{padding:10px 0;border-bottom:1px solid #EEF1F4}
+.cost-row .a{display:flex;align-items:center;gap:8px;font-size:14px;font-weight:700}.cost-row .a i{width:10px;height:10px;border-radius:5px;flex-shrink:0}.cost-row .a span{flex:1;min-width:0}.cost-row .a b{font-size:13px;white-space:nowrap}
+.cost-row .tr{position:relative;height:8px;background:#EEF1F4;border-radius:4px;margin:6px 0}.cost-row .tr i{display:block;height:8px;border-radius:4px}.cost-row .tr em{position:absolute;left:76.9%;top:-3px;width:2px;height:14px;background:var(--text)}
+.cost-row .c{display:flex;justify-content:space-between;gap:8px;font-size:12px;color:var(--text2)}.cost-row .c b{font-weight:800;white-space:nowrap}
+.cost-leg{display:flex;flex-wrap:wrap;gap:6px 14px;font-size:12px;color:var(--text2);margin-top:10px}.cost-leg span{display:inline-flex;align-items:center;gap:6px}.cost-leg i{width:10px;height:10px;border-radius:3px;display:inline-block}
+.cost-btns{display:flex;gap:8px;margin:4px 0 20px}.cost-btns button{flex:1;height:48px;border-radius:12px;font-size:14px;font-weight:800;font-family:inherit;cursor:pointer}
+.cost-link{border:none;background:none;color:var(--primary);font-weight:800;font-size:14px;padding:0;font-family:inherit;cursor:pointer}
+.cost-small{border:1.5px solid var(--border);background:#fff;border-radius:10px;height:36px;padding:0 12px;font-size:13px;font-weight:800;color:var(--primary);font-family:inherit;cursor:pointer}
+.pr-info{background:#EAF2FB;border-radius:12px;padding:10px 12px;font-size:13px;line-height:1.5;color:#1A3A5C;margin-bottom:12px}
+.pr-search{width:100%;box-sizing:border-box;border:1.5px solid var(--border);border-radius:12px;height:46px;padding:0 14px;font-size:14px;font-family:inherit;outline:none;background:#fff}
+.pr-h{font-size:13px;font-weight:800;color:var(--text2);margin:14px 2px 8px}.pr-h.miss{color:#A8440F}
+.pr-list.miss{border:1px solid #FFD4B8}
+.pr-it{display:flex;align-items:center;gap:10px;padding:11px 12px;border-bottom:1px solid #EEF1F4;cursor:pointer}.pr-it:last-child{border-bottom:none}
+.pr-it .n{flex:1;min-width:0}.pr-it .n b{display:block;font-size:14px}.pr-it .n small{font-size:12px;color:var(--text3)}
+.pr-it .p{text-align:right;white-space:nowrap}.pr-it .p b{display:block;font-size:15px}.pr-it .p small{font-size:12px;color:var(--text3)}
+.pr-set{height:36px;padding:0 12px;border-radius:10px;border:none;background:var(--orange);color:#fff;font-size:13px;font-weight:800;font-family:inherit}
+.pr-hist{background:#F7F9FC;border-radius:12px;padding:10px 12px;margin-bottom:12px;font-size:13px}.pr-hist>div{display:flex;justify-content:space-between;gap:8px;padding:3px 0}
+.pr-kg{background:#F7F9FC;border-radius:12px;padding:10px 12px;margin-bottom:14px}.pr-kg label.ck{display:flex;gap:8px;align-items:center;font-size:13px;margin-top:8px}
 .lead-back{margin:10px 14px 0;background:#E1F1FB;border:1.5px solid #9DC1E8;color:var(--primary);border-radius:12px;padding:10px 14px;font-size:14px;font-weight:800;cursor:pointer}
 .lead-back span{display:block;font-size:11.5px;font-weight:600;color:var(--text3);margin-top:2px}
 .sum-chips{display:flex;gap:8px;overflow-x:auto;padding-bottom:2px}
@@ -735,9 +776,50 @@ body:not(.can-lead) .need-lead{display:none!important}
   <div class="detail-header">
     <button class="back-btn" onclick="closeDp('dp-summary')">‹</button>
     <div class="detail-title">📈 Tổng hợp dự án</div>
-    <button onclick="loadSummary()" style="background:var(--bg);border:none;border-radius:8px;padding:6px 10px;font-size:15px;cursor:pointer" aria-label="Tải lại">↻</button>
+    <button onclick="sumReload()" style="background:var(--bg);border:none;border-radius:8px;padding:6px 10px;font-size:15px;cursor:pointer" aria-label="Tải lại">↻</button>
   </div>
   <div class="detail-body" id="dp-summary-body"></div>
+</div>
+
+<div class="detail-page" id="dp-price">
+  <div class="detail-header">
+    <button class="back-btn" onclick="closeDp('dp-price')">‹</button>
+    <div class="detail-title">💰 Bảng giá vật tư</div>
+    <button onclick="loadPrices()" style="background:var(--bg);border:none;border-radius:8px;padding:6px 10px;font-size:15px;cursor:pointer" aria-label="Tải lại">↻</button>
+  </div>
+  <div class="detail-body" id="dp-price-body"></div>
+</div>
+
+<div class="modal-bg" id="modal-price" style="display:none" onclick="closeModalBg(event,'modal-price')">
+  <div class="modal-sheet">
+    <div class="modal-handle"></div>
+    <div class="modal-title" id="pe-title">Đổi giá</div>
+    <div style="font-size:13px;color:var(--text2);margin:-6px 0 14px" id="pe-cur"></div>
+    <div class="pr-kg" id="pe-kg-wrap" style="display:none">
+      <div class="fg" style="margin-bottom:0"><label>Giá thép theo kg (đ/kg)</label><input type="number" id="pe-kg" inputmode="numeric" placeholder="VD: 15.500" oninput="peKg()"></div>
+      <label class="ck"><input type="checkbox" id="pe-all"> <span id="pe-all-t">Áp dụng cùng giá/kg cho tất cả thép cây</span></label>
+    </div>
+    <div class="fg"><label id="pe-price-l">Giá mới</label><input type="number" id="pe-price" inputmode="numeric" placeholder="Nhập giá"></div>
+    <div class="fg"><label>Áp dụng từ ngày</label><input type="date" id="pe-from"></div>
+    <div class="fg"><label>Ghi chú (nguồn giá)</label><input type="text" id="pe-note" maxlength="200" placeholder="VD: báo giá nhà cung cấp kỳ 01/10"></div>
+    <div id="pe-hist"></div>
+    <div class="modal-actions">
+      <button class="btn-cancel" onclick="closeModal('modal-price')">Hủy</button>
+      <button class="btn-ok" id="pe-save" onclick="savePrice()">Lưu giá mới</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-bg" id="modal-progress" style="display:none" onclick="closeModalBg(event,'modal-progress')">
+  <div class="modal-sheet">
+    <div class="modal-handle"></div>
+    <div class="modal-title">Cập nhật tiến độ thi công</div>
+    <div id="pg-list"></div>
+    <div class="modal-actions">
+      <button class="btn-cancel" onclick="closeModal('modal-progress')">Hủy</button>
+      <button class="btn-ok" id="pg-save" onclick="saveProgress()">Lưu tiến độ</button>
+    </div>
+  </div>
 </div>
 
 <!-- ===================== SIDEBAR ===================== -->
@@ -770,7 +852,7 @@ body:not(.can-lead) .need-lead{display:none!important}
     <div class="sidebar-item" onclick="goTabSb('ton')"><span class="sidebar-item-ico">📦</span>Tồn kho</div>
     <div class="sidebar-item" onclick="openDpSb('dp-loans')"><span class="sidebar-item-ico">🔁</span>Cho mượn / Trả</div>
     <div class="sidebar-item" onclick="goTabSb('baocao')"><span class="sidebar-item-ico">📊</span>Báo cáo</div>
-    <div class="sidebar-item need-lead" onclick="openSummary()"><span class="sidebar-item-ico">📈</span>Tổng hợp dự án</div>
+    <div class="sidebar-item need-cost" onclick="openSummary()"><span class="sidebar-item-ico">📈</span>Tổng hợp dự án</div>
     <div class="sidebar-divider"></div>
     <div class="sidebar-label">Thiết bị & Ghi chú</div>
     <div class="sidebar-item" onclick="openDpSb('dp-devices-list')"><span class="sidebar-item-ico">🏗️</span>Máy móc & Thiết bị</div>
@@ -1185,7 +1267,7 @@ body:not(.can-lead) .need-lead{display:none!important}
 // ============================================================
 // CONFIG
 // ============================================================
-const APP_VERSION = '5.14';
+const APP_VERSION = '5.15';
 const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbw6Rmi80I7RI3ij2U7RdRF5pYuQTnPrwEmGmUZS5xpxzLwwVynfoFUujZe1lm6HS1ymxw/exec';
 // ============================================================
 
@@ -1348,6 +1430,7 @@ function showPage(id) {
 function applyRoleUI() {
   ['tk','ql','admin'].forEach(r => document.body.classList.toggle('can-' + r, can(r)));
   document.body.classList.toggle('can-lead', role === 'admin' || role === 'ld');
+  document.body.classList.toggle('can-cost', canCost());
   renderAvatar();
   document.getElementById('sb-name').textContent = me?.name || '';
   document.getElementById('sb-role').textContent = `${ROLE_NAME[role] || role} · @${me?.username || ''}`;
@@ -1795,7 +1878,8 @@ const DP_RENDER = {
   'dp-history-log': () => renderHistoryLog(),
   'dp-dc-hist': () => renderDcHist(), 'dp-members': () => renderMembers(),
   'dp-loans': () => renderLoans(),
-  'dp-summary': () => renderSummary()
+  'dp-summary': () => renderSummary(),
+  'dp-price': () => renderPrice()
 };
 function openDp(id, renderFn) {
   const fn = renderFn || DP_RENDER[id];
@@ -4635,6 +4719,10 @@ function sumRange(per) {
   return {from: isoDay(a), to: isoDay(d0)};
 }
 const sumPerLabel = per => ({week:'Tuần này', month:'Tháng ' + (new Date().getMonth() + 1), quarter:'Quý ' + ['I','II','III','IV'][Math.floor(new Date().getMonth() / 3)], custom:'📅 Tự chọn'})[per];
+function setSumTab(i) {
+  sumTab = i; renderSummary();
+  if (i !== 2 && (!sumData || Date.now() - (sumData._at || 0) > 5 * 60e3)) loadSummary();
+}
 async function loadSummary() {
   if (!canLead() || sumLoading) return;
   const r = sumRange(sumPer);
@@ -4648,8 +4736,10 @@ async function loadSummary() {
 function openSummary() {
   closeSidebar();
   if (role === 'ld') { goTab('lead'); return; }
-  setTimeout(() => { openDp('dp-summary'); if (!sumData || Date.now() - (sumData._at || 0) > 5 * 60e3) loadSummary(); }, 300);
+  if (!canLead()) { setTimeout(() => { sumTab = 2; openDp('dp-summary'); renderSummary(); }, 300); return; }   // Quản lý: chỉ có tab Chi phí
+  setTimeout(() => { openDp('dp-summary'); if (sumTab === 2) { renderSummary(); return; } if (!sumData || Date.now() - (sumData._at || 0) > 5 * 60e3) loadSummary(); }, 300);
 }
+function sumReload() { if (sumTab === 2) loadCost(true); else loadSummary(); }
 function setSumPer(p) {
   sumPer = p;
   if (p === 'custom') { renderSummary(); return; }
@@ -4681,12 +4771,15 @@ function renderSummary() {
   const body = document.getElementById('dp-summary').classList.contains('show') ? document.getElementById('dp-summary-body')
     : curTab === 'lead' ? document.getElementById('lead-body') : null;
   if (!body) return;
-  if (!canLead()) { body.innerHTML = '<div class="empty-state"><p>Chỉ Admin và Lãnh đạo xem được mục này</p></div>'; return; }
+  if (!canCost()) { body.innerHTML = '<div class="empty-state"><p>Chỉ Quản lý, Admin và Lãnh đạo xem được mục này</p></div>'; return; }
+  if (!canLead()) sumTab = 2;
+  const tabs = !canLead() ? '' : `<div class="sum-tabs">${['Tổng quan', 'So sánh', 'Chi phí'].map((t, i) => `<button class="${sumTab === i ? 'on' : ''}" onclick="setSumTab(${i})">${t}</button>`).join('')}</div>`;
+  if (sumTab === 2) { body.innerHTML = tabs + costView(); ensureCost(); return; }
   const chip = p => `<button class="sum-chip ${sumPer === p ? 'on' : ''}" onclick="setSumPer('${p}')">${sumPerLabel(p)}</button>`;
   const r = sumRange(sumPer);
   let h = `<div class="sum-chips">${chip('week')}${chip('month')}${chip('quarter')}${chip('custom')}</div>`;
   if (sumPer === 'custom') h += `<div class="sum-custom"><input type="date" id="sum-from" value="${r.from}"><span>→</span><input type="date" id="sum-to" value="${r.to}"><button onclick="applySumCustom()">Xem</button></div>`;
-  h += `<div class="sum-tabs"><button class="${sumTab === 0 ? 'on' : ''}" onclick="sumTab=0;renderSummary()">Tổng quan</button><button class="${sumTab === 1 ? 'on' : ''}" onclick="sumTab=1;renderSummary()">So sánh</button></div>`;
+  h += tabs;
   if (sumLoading && !sumData) { body.innerHTML = h + '<div class="empty-state"><div class="e-ico">⏳</div><p>Đang tính số liệu các dự án…</p></div>'; return; }
   if (!sumData) { body.innerHTML = h + '<div class="empty-state"><div class="e-ico">📈</div><p>Chưa có số liệu</p></div>'; return; }
   const D = sumData, ps = D.projects;
@@ -4810,6 +4903,246 @@ async function exportSummary() {
   const buf = await wb.xlsx.writeBuffer();
   const d = new Date();
   lastExport = new File([buf], `TongHop_DuAn_${D.from}_${D.to}.xlsx`, {type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'});
+  hideLoader();
+  document.getElementById('xf-name').textContent = lastExport.name;
+  document.getElementById('xf-share').style.display = navigator.canShare && navigator.canShare({files:[lastExport]}) ? '' : 'none';
+  openModal('modal-xfile');
+}
+
+
+// ===== v5.15: CHI PHÍ VẬT TƯ (Quản lý / Admin / Lãnh đạo) — máy chủ tính sẵn, điện thoại chỉ vẽ =====
+const canCost = () => ['ql', 'admin', 'ld'].includes(role);
+let costProj = '', costData = {}, costLoading = false, costErrAt = {}, costPer = 'week', costSel = -1;
+const vnMoney = v => { v = Math.round(+v || 0); return v >= 1e9 ? (v / 1e9).toLocaleString('vi-VN', {maximumFractionDigits:1}) + ' tỷ' : v >= 1e6 ? Math.round(v / 1e6).toLocaleString('vi-VN') + ' triệu' : fmtNum(v) + ' đ'; };
+const vnQty = (v, u) => (+v || 0).toLocaleString('vi-VN', {maximumFractionDigits: u === 'tấn' ? 1 : 0});
+function costProjects() { return (db.projects || []).slice(); }
+function pickCostProj() {
+  const ps = costProjects();
+  if (!costProj || !ps.includes(costProj)) costProj = ps.includes(curProj) ? curProj : (ps[0] || '');
+  return costProj;
+}
+function setCostProj(p) { costProj = p; costSel = -1; renderSummary(); }
+function setCostPer(p) { costPer = p; costSel = -1; renderSummary(); }
+function setCostSel(i) { costSel = i; renderSummary(); }
+function ensureCost() {
+  const p = pickCostProj();
+  if (p && !costData[p] && !costLoading && Date.now() - (costErrAt[p] || 0) > 60e3) loadCost();
+}
+async function loadCost(force) {
+  const p = pickCostProj(); if (!p || costLoading) return;
+  costLoading = true; renderSummary();
+  const res = await api('getCost', {project:p}, 60000);
+  costLoading = false;
+  if (res && res.success) { costData[p] = res; costData[p]._at = Date.now(); delete costErrAt[p]; }
+  else { costErrAt[p] = Date.now(); if (force || !costData[p]) toast('⚠️ ' + (res && (res.error || res.reason) || 'Không tải được số liệu chi phí — kiểm tra mạng')); }
+  renderSummary();
+}
+function costView() {
+  const ps = costProjects(), p = pickCostProj(), D = costData[p];
+  let h = `<div class="card cost-proj"><small>Dự án</small><select aria-label="Chọn dự án" onchange="setCostProj(this.value)">${ps.map(x => `<option value="${escHtml(x)}" ${x === p ? 'selected' : ''}>${escHtml(x)}</option>`).join('')}</select>
+    <small>${D ? 'Số liệu đến ' + D.today + (costLoading ? ' · ⏳ đang cập nhật…' : '') : ''}</small></div>`;
+  if (!p) return h + '<div class="empty-state"><p>Chưa có dự án nào</p></div>';
+  if (!D) return h + `<div class="empty-state"><div class="e-ico">${costLoading ? '⏳' : '💰'}</div><p>${costLoading ? 'Đang tính chi phí vật tư…' : 'Chưa tải được số liệu — bấm ↻ để thử lại'}</p></div>`;
+  const b = D.bought, st = D.stock, G = ['Thép', 'Dầu mỡ', 'Khác'];
+  const split = a => a.map((v, i) => v ? `${G[i]} ${vnMoney(v)}` : '').filter(Boolean).join(' · ') || 'Chưa có vật tư nào có giá';
+  const hasPlan = D.rows.length > 0;
+  h += `<div class="cost-big"><div class="k">Đã mua vào</div><div class="v">${vnMoney(D.boughtT)}</div><div class="s">${split(b)}</div></div>
+    <div class="cost-kpi2"><div class="card"><div class="k">Tồn kho đang giữ</div><div class="v">${vnMoney(D.stockT)}</div><div class="s">${split(st)}</div></div>
+    <div class="card need"><div class="k">Còn phải mua</div><div class="v">${hasPlan ? vnMoney(D.need) : '—'}</div><div class="s">${hasPlan ? (D.needParts.length ? escHtml(D.needParts.join(' · ')) : 'Đã đủ theo kế hoạch') : 'Chưa có kế hoạch vật tư'}</div></div></div>`;
+  // tiến độ
+  if (D.prog !== null || D.hangMuc.length) {
+    const pr = Math.round((D.prog || 0) * 100), mp = D.matPct === null ? null : Math.round(D.matPct * 100);
+    const gap = mp === null ? 0 : mp - pr;
+    const chip = mp === null ? '' : Math.abs(gap) <= 10 ? '<span class="cost-chip" style="color:#1E7B45;background:#E6F4EC">Cân đối</span>'
+      : gap > 0 ? '<span class="cost-chip" style="color:#A8440F;background:#FFF1E8">Mua nhanh hơn</span>' : '<span class="cost-chip" style="color:#C0392B;background:#FDECEC">Mua chậm hơn</span>';
+    const parts = D.hangMuc.map(x => x.done >= x.total && x.total > 0 ? `${escHtml(x.name)} xong` : `${escHtml(x.name)} ${vnQty(x.done)}/${vnQty(x.total)} ${escHtml(x.unit)}`).join(' · ');
+    h += `<div class="card cost-card"><div class="cost-t"><b>Vật tư có theo kịp thi công?</b>${chip}</div>
+      <div class="cost-bar"><div class="l"><span>Thi công</span><span>${pr}%</span></div><div class="tr"><i style="width:${pr}%;background:var(--primary)"></i></div><small>${parts}</small></div>
+      ${mp === null ? '' : `<div class="cost-bar"><div class="l"><span>Vật tư chính đã mua</span><span>${mp}%</span></div><div class="tr"><i style="width:${Math.min(100, mp)}%;background:var(--orange)"></i></div><small>${vnMoney(D.boughtPlan)} / ${vnMoney(D.planVal)} theo kế hoạch</small></div>`}
+      ${D.canEdit && D.hangMuc.length ? '<button class="cost-small" onclick="openProgress()">Cập nhật tiến độ</button>' : ''}</div>`;
+  }
+  // việc cần xử lý
+  if (D.alerts.length) h += `<div class="card cost-card cost-al"><div class="cost-t"><b>⚠️ Cần xử lý</b><b style="color:#C0392B;font-size:13px">${D.alerts.length} việc</b></div>
+    ${D.alerts.map(a => `<div class="cost-al-i"><i style="background:${a.lvl === 'r' ? '#C0392B' : '#B7791F'}"></i><div><b>${escHtml(a.b)}</b> ${escHtml(a.t)}${a.price && D.canEdit ? ' <button class="cost-link" onclick="openPrices()">Đặt giá ›</button>' : ''}</div></div>`).join('')}</div>`;
+  // biểu đồ tiền mua
+  const data = costPer === 'week' ? D.weeks : D.months;
+  h += `<div class="card cost-card"><div class="cost-t"><b>Tiền mua vật tư</b><div class="cost-seg"><button class="${costPer === 'week' ? 'on' : ''}" onclick="setCostPer('week')">Tuần</button><button class="${costPer === 'month' ? 'on' : ''}" onclick="setCostPer('month')">Tháng</button></div></div>`;
+  if (!data.length) h += '<div class="sum-empty">Chưa có phiếu nhập nào có giá</div>';
+  else {
+    let sel = costSel;
+    if (sel < 0 || sel >= data.length) { sel = data.length - 1; while (sel > 0 && !(data[sel][1] + data[sel][2] + data[sel][3])) sel--; }   // mặc định: kỳ gần nhất có tiền mua
+    const x = data[sel];
+    const max = Math.max(1, ...data.map(d => d[1] + d[2] + d[3])), H = 160, gap = costPer === 'week' ? 4 : 14, every = Math.ceil(data.length / 6);
+    h += `<div class="cost-sel"><small>${escHtml(x[4])}</small><b>${vnMoney(x[1] + x[2] + x[3])}</b><span>${G.map((g, i) => `${g} ${vnMoney(x[i + 1])}`).join(' · ')}</span></div>
+      <div class="cost-chart" style="gap:${gap}px">${data.map((d, i) => `<button onclick="setCostSel(${i})" aria-label="${escHtml(d[4])}" style="${i === sel ? 'outline:2px solid #1A2332;outline-offset:1px;border-radius:2px' : ''}">
+        <i style="height:${Math.round(d[3] / max * H)}px;background:#7FA9D4"></i><i style="height:${Math.round(d[2] / max * H)}px;background:var(--orange)"></i><i style="height:${Math.round(d[1] / max * H)}px;background:var(--primary)"></i></button>`).join('')}</div>
+      <div class="cost-lbl" style="gap:${gap}px">${data.map((d, i) => `<span style="${i === sel ? 'color:#1A2332;font-weight:900' : ''}">${costPer === 'month' || i === sel || (i % every === 0 && Math.abs(i - sel) > 1) ? escHtml(d[0]) : ''}</span>`).join('')}</div>
+      <div class="cost-leg"><span><i style="background:var(--primary)"></i>Thép</span><span><i style="background:var(--orange)"></i>Dầu mỡ</span><span><i style="background:#7FA9D4"></i>Khác</span></div>`;
+  }
+  h += '</div>';
+  // so với thiết kế
+  if (hasPlan) {
+    const C = {g:'#1E7B45', y:'#B7791F', r:'#C0392B'};
+    h += `<div class="card cost-card"><div class="cost-t" style="margin-bottom:0"><b>So với thiết kế (phần đã làm)</b></div><div style="font-size:12px;color:var(--text2)">Vạch đen = thiết kế</div>
+      ${D.rows.map(r => {
+        const dev = r.dev, a = Math.abs(dev || 0), dm = r.mode === 'dm';
+        const c = dev === null ? '#8A9AB0' : dm ? (dev > 0.10 ? C.r : dev > 0.05 ? C.y : C.g) : a < 0.05 ? C.g : a <= 0.10 ? C.y : C.r;
+        const w = r.expect > 0 ? Math.min(100, r.actual / r.expect * 76.9) : 0;
+        const lab = dev === null ? 'Chưa đến hạng mục' : dm ? (dev <= 0 ? 'Tiết kiệm ' + Math.round(a * 100) + '%' : 'Vượt định mức ' + Math.round(a * 100) + '%')
+          : (dev > 0 ? '+' : '−') + (a * 100).toLocaleString('vi-VN', {maximumFractionDigits:1}) + '% ' + (dev > 0 ? 'vượt' : 'dưới');
+        return `<div class="cost-row"><div class="a"><i style="background:${c}"></i><span>${escHtml(r.name)}</span><b>${vnMoney(r.value)}</b></div>
+          <div class="tr"><i style="width:${w}%;background:${c}"></i><em></em></div>
+          <div class="c"><span>${vnQty(r.actual, r.unit)} / ${vnQty(r.expect, r.unit)} ${escHtml(r.unit)}${dm ? ' (định mức)' : ''}</span><b style="color:${c}">${lab}</b></div></div>`;
+      }).join('')}
+      <div class="cost-leg"><span><i style="background:#1E7B45;border-radius:5px"></i>Khớp (dưới 5%)</span><span><i style="background:#B7791F;border-radius:5px"></i>Lệch 5–10%</span><span><i style="background:#C0392B;border-radius:5px"></i>Lệch trên 10%</span></div></div>`;
+  }
+  h += `<div class="cost-btns"><button style="background:#fff;border:1.5px solid var(--primary);color:var(--primary)" onclick="openPrices()">Bảng giá vật tư</button>
+    <button style="background:var(--green);border:none;color:#fff" onclick="exportCost()">⬇ Xuất Excel</button></div>`;
+  return h;
+}
+
+// ---- Cập nhật tiến độ ----
+function openProgress() {
+  const D = costData[costProj]; if (!D || !D.canEdit) return;
+  document.getElementById('pg-list').innerHTML = D.hangMuc.map(x => `<div class="fg"><label>${escHtml(x.name)} — tổng ${vnQty(x.total)} ${escHtml(x.unit)}</label>
+    <input type="number" inputmode="decimal" step="any" min="0" max="${x.total}" data-id="${escHtml(x.id)}" value="${x.done}"></div>`).join('');
+  openModal('modal-progress');
+}
+async function saveProgress() {
+  const list = [...document.querySelectorAll('#pg-list input')].map(i => ({id:i.dataset.id, done:+i.value}));
+  if (list.some(x => !(x.done >= 0))) { toast('⚠️ Số đã làm không hợp lệ'); return; }
+  const btn = document.getElementById('pg-save'); btn.disabled = true;
+  const res = await api('setProgress', {project:costProj, list});
+  btn.disabled = false;
+  if (!res || !res.success) { toast('⚠️ ' + (res && (res.error || res.reason) || 'Không lưu được')); return; }
+  closeModal('modal-progress'); toast('✅ Đã cập nhật tiến độ'); loadCost();
+}
+
+// ---- Bảng giá (Quản lý / Admin sửa; Lãnh đạo chỉ xem) ----
+let priceData = null, priceQ = '', priceEdit = null, priceAll = false;
+function openPrices() { pickCostProj(); openDp('dp-price'); if (!priceData || priceData.project !== costProj) loadPrices(); }
+async function loadPrices() {
+  const p = costProj; if (!p) return;
+  document.getElementById('dp-price-body').innerHTML = '<div class="empty-state"><div class="e-ico">⏳</div><p>Đang tải bảng giá…</p></div>';
+  const res = await api('getPrices', {project:p}, 45000);
+  if (res && res.success) priceData = res;
+  else toast('⚠️ ' + (res && (res.error || res.reason) || 'Không tải được bảng giá'));
+  renderPrice();
+}
+function renderPrice() {
+  const body = document.getElementById('dp-price-body'); if (!body) return;
+  if (!priceData) { body.innerHTML = '<div class="empty-state"><p>Chưa tải được bảng giá — bấm ↻ để thử lại</p></div>'; return; }
+  body.innerHTML = `<div style="font-size:13px;color:var(--text2);margin:0 2px 10px"><b style="color:var(--primary)">${escHtml(priceData.project)}</b>${priceData.canEdit ? '' : ' · chỉ xem'}</div>
+    ${priceData.canEdit ? '<div class="pr-info">Giá mới áp dụng cho phiếu nhập <b>từ ngày anh chọn trở đi</b>. Phiếu trước đó giữ nguyên giá cũ. Thủ kho không thấy giá.</div>' : ''}
+    <input class="pr-search" type="search" placeholder="Tìm vật tư (gõ không dấu)" value="${escHtml(priceQ)}" oninput="priceQ=this.value;renderPriceList()">
+    <div id="pr-lists"></div>`;
+  renderPriceList();
+}
+function renderPriceList() {
+  const el = document.getElementById('pr-lists'); if (!el || !priceData) return;
+  const q = priceQ.trim();
+  const hit = it => matchQ(q, it.name);
+  const its = priceData.items.filter(hit);
+  const miss = its.filter(it => !it.hist.length && (it.nhap > 0 || it.stock > 0)).sort((a, b) => b.nhap - a.nhap);
+  const has = its.filter(it => it.hist.length).sort((a, b) => a.name.localeCompare(b.name, 'vi'));
+  const rest = its.filter(it => !it.hist.length && !(it.nhap > 0 || it.stock > 0));
+  const row = it => {
+    const x = it.hist[0];
+    return `<div class="pr-it" onclick="openPriceEdit('${escHtml(it.id)}')"><div class="n"><b>${escHtml(it.name)}</b><small>${x ? 'từ ' + escHtml(x.from) + (x.note ? ' · ' + escHtml(x.note) : '') : escHtml(it.unit) + ' · ' + it.nhap + ' phiếu nhập'}</small></div>
+      ${x ? `<div class="p"><b>${fmtNum(x.price)} đ</b><small>/ ${escHtml(it.unit.toLowerCase())}</small></div>` : priceData.canEdit ? '<button class="pr-set">Đặt giá</button>' : ''}</div>`;
+  };
+  let h = '';
+  if (miss.length) {
+    const show = priceAll || q ? miss : miss.slice(0, 5);
+    h += `<div class="pr-h miss">CHƯA CÓ GIÁ · ${miss.length}</div><div class="card pr-list miss">${show.map(row).join('')}
+      ${show.length < miss.length ? `<div class="pr-it" style="justify-content:center" onclick="priceAll=true;renderPriceList()"><b style="color:var(--primary);font-size:14px">Xem thêm ${miss.length - show.length} vật tư chưa có giá ›</b></div>` : ''}</div>`;
+  }
+  if (has.length) h += `<div class="pr-h">ĐANG ÁP DỤNG · ${has.length}</div><div class="card pr-list">${has.map(row).join('')}</div>`;
+  if (rest.length && q) h += `<div class="pr-h">CHƯA NHẬP LẦN NÀO · ${rest.length}</div><div class="card pr-list">${rest.map(row).join('')}</div>`;
+  el.innerHTML = h || '<div class="empty-state"><p>Không tìm thấy vật tư</p></div>';
+}
+const steelOf = n => { const m = String(n).match(/^Thép cây\s+D(\d+)\s*x\s*([\d.,]+)\s*m/i); return m ? {d:+m[1], L:+m[2].replace(',', '.')} : null; };
+const steelKgPer = s => Math.round(s.L * 0.0061654 * s.d * s.d * 1000) / 1000;     // kg / cây
+function openPriceEdit(id) {
+  if (!priceData || !priceData.canEdit) return;
+  const it = priceData.items.find(x => x.id === id); if (!it) return;
+  priceEdit = it;
+  const x = it.hist[0], u = it.unit.toLowerCase(), s = steelOf(it.name);
+  document.getElementById('pe-title').textContent = (x ? 'Đổi giá – ' : 'Đặt giá – ') + it.name;
+  document.getElementById('pe-cur').textContent = x ? `Đang áp dụng: ${fmtNum(x.price)} đ/${u} từ ${x.from}` : 'Vật tư này chưa có giá';
+  document.getElementById('pe-price-l').textContent = `Giá mới (đ/${u})`;
+  document.getElementById('pe-price').value = '';
+  document.getElementById('pe-from').value = priceData.today;
+  document.getElementById('pe-note').value = '';
+  const nSteel = priceData.items.filter(i => steelOf(i.name)).length;
+  document.getElementById('pe-kg-wrap').style.display = s ? '' : 'none';
+  document.getElementById('pe-kg').value = '';
+  document.getElementById('pe-all').checked = false;
+  document.getElementById('pe-all-t').textContent = `Áp dụng cùng giá/kg cho tất cả thép cây (${nSteel} loại)`;
+  document.getElementById('pe-hist').innerHTML = it.hist.length ? `<div class="pr-hist"><b>Lịch sử giá</b>${it.hist.map(h => `<div><span>Từ ${escHtml(h.from)}${h.note ? ' · ' + escHtml(h.note) : ''}${h.byName ? ' · ' + escHtml(h.byName) : ''}</span><b>${fmtNum(h.price)} đ</b></div>`).join('')}</div>` : '';
+  openModal('modal-price');
+}
+function peKg() {
+  const s = steelOf(priceEdit?.name || ''), kg = +document.getElementById('pe-kg').value;
+  if (s && kg > 0) document.getElementById('pe-price').value = Math.round(kg * steelKgPer(s));
+}
+async function savePrice() {
+  const it = priceEdit; if (!it) return;
+  const from = document.getElementById('pe-from').value, note = document.getElementById('pe-note').value.trim();
+  const kg = +document.getElementById('pe-kg').value, all = document.getElementById('pe-all').checked && steelOf(it.name);
+  let list;
+  if (all) {
+    if (!(kg > 0)) { toast('⚠️ Nhập giá theo kg để áp dụng cho tất cả thép cây'); return; }
+    list = priceData.items.filter(i => steelOf(i.name)).map(i => ({itemId:i.id, price:Math.round(kg * steelKgPer(steelOf(i.name)))}));
+  } else {
+    const price = Math.round(+document.getElementById('pe-price').value);
+    if (!(price > 0)) { toast('⚠️ Nhập giá lớn hơn 0'); return; }
+    list = [{itemId:it.id, price}];
+  }
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(from)) { toast('⚠️ Chọn ngày áp dụng'); return; }
+  const btn = document.getElementById('pe-save'); btn.disabled = true;
+  const res = await api('setPrice', {project:priceData.project, from, note, list});
+  btn.disabled = false;
+  if (!res || !res.success) { toast('⚠️ ' + (res && (res.error || res.reason) || 'Không lưu được giá')); return; }
+  closeModal('modal-price'); toast(`✅ Đã lưu giá${list.length > 1 ? ' cho ' + list.length + ' loại thép' : ''}`);
+  delete costData[priceData.project];
+  await loadPrices();
+  if (document.getElementById('dp-summary').classList.contains('show') || curTab === 'lead') loadCost();
+}
+
+// ---- Xuất Excel chi phí ----
+async function exportCost() {
+  const D = costData[costProj]; if (!D) return;
+  showLoader('Đang tạo file Excel…');
+  if (!(await ensureExcelJS())) { hideLoader(); toast('⚠️ Không tải được công cụ Excel — cần có mạng'); return; }
+  const wb = new ExcelJS.Workbook(), F = {name:'Times New Roman', size:11}, B = {style:'thin', color:{argb:'FF999999'}};
+  const box = c => { c.border = {top:B, left:B, bottom:B, right:B}; c.font = c.font || F; };
+  const sheet = (name, head, rows, widths) => {
+    const ws = wb.addWorksheet(name);
+    ws.mergeCells(1, 1, 1, head.length);
+    Object.assign(ws.getCell(1, 1), {value:`${name.toUpperCase()} — ${D.project}`, font:{...F, bold:true, size:14}});
+    ws.getCell(2, 1).value = `Số liệu đến ${D.today} · xuất lúc ${nowStr()} · ${me?.name || ''}`; ws.getCell(2, 1).font = {...F, italic:true, size:9, color:{argb:'FF777777'}};
+    head.forEach((t, j) => { const c = ws.getCell(4, j + 1); c.value = t; c.font = {...F, bold:true, color:{argb:'FFFFFFFF'}}; c.fill = {type:'pattern', pattern:'solid', fgColor:{argb:'FF0056A4'}}; c.alignment = {wrapText:true, vertical:'middle', horizontal:'center'}; box(c); });
+    rows.forEach((r, i) => r.forEach((v, j) => { const c = ws.getCell(5 + i, j + 1); c.value = v === null || v === '' ? null : v; if (typeof v === 'number') c.numFmt = '#,##0.##'; box(c); }));
+    widths.forEach((w, j) => ws.getColumn(j + 1).width = w);
+    ws.views = [{state:'frozen', ySplit:4}];
+  };
+  const G = ['Thép', 'Dầu mỡ', 'Khác'];
+  sheet('Tổng quan', ['Chỉ số', 'Giá trị (đồng)', 'Ghi chú'], [
+    ['Đã mua vào', D.boughtT, G.map((g, i) => `${g}: ${vnMoney(D.bought[i])}`).join(' · ')],
+    ['Tồn kho đang giữ', D.stockT, G.map((g, i) => `${g}: ${vnMoney(D.stock[i])}`).join(' · ')],
+    ['Còn phải mua', D.need, D.needParts.join(' · ')],
+    ['Tiến độ thi công', D.prog === null ? '' : Math.round(D.prog * 1000) / 10 + '%', D.hangMuc.map(x => `${x.name} ${x.done}/${x.total} ${x.unit}`).join(' · ')],
+    ['Vật tư chính đã mua / kế hoạch', D.matPct === null ? '' : Math.round(D.matPct * 1000) / 10 + '%', `${vnMoney(D.boughtPlan)} / ${vnMoney(D.planVal)}`]
+  ], [30, 18, 70]);
+  sheet('So với thiết kế', ['Vật tư', 'Đơn vị', 'Thực tế đã xuất', 'Thiết kế phần đã làm', 'Chênh lệch', 'Chênh %', 'Giá trị đã xuất (đồng)', 'Còn phải mua'],
+    D.rows.map(r => [r.name + (r.mode === 'dm' ? ' (định mức)' : ''), r.unit, r.actual, r.expect, Math.round((r.actual - r.expect) * 10) / 10, r.dev === null ? '' : Math.round(r.dev * 1000) / 10 + '%', r.value, r.need]),
+    [26, 8, 15, 15, 13, 10, 18, 13]);
+  sheet('Cần xử lý', ['Mức', 'Nội dung'], D.alerts.map(a => [a.lvl === 'r' ? 'Cao' : 'Lưu ý', a.b + ' ' + a.t]), [8, 100]);
+  sheet('Tiền mua theo tháng', ['Tháng', 'Thép', 'Dầu mỡ', 'Khác', 'Cộng'], D.months.map(m => [m[4], m[1], m[2], m[3], m[1] + m[2] + m[3]]), [24, 16, 16, 16, 16]);
+  sheet('Tiền mua theo tuần', ['Tuần', 'Thép', 'Dầu mỡ', 'Khác', 'Cộng'], D.weeks.map(m => [m[4], m[1], m[2], m[3], m[1] + m[2] + m[3]]), [28, 16, 16, 16, 16]);
+  const buf = await wb.xlsx.writeBuffer();
+  lastExport = new File([buf], `ChiPhi_${slugVN(D.project)}_${D.today.split('/').reverse().join('-')}.xlsx`, {type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'});
   hideLoader();
   document.getElementById('xf-name').textContent = lastExport.name;
   document.getElementById('xf-share').style.display = navigator.canShare && navigator.canShare({files:[lastExport]}) ? '' : 'none';
