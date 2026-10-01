@@ -109,6 +109,64 @@ body{font-family:-apple-system,BlinkMacSystemFont,"SF Pro Display","Segoe UI",sa
 }
 .bnav-btn{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:6px 2px 4px;border:none;background:none;color:var(--text3);font-size:11px;font-weight:700;gap:3px;cursor:pointer;transition:.15s;position:relative}
 .bnav-btn.on{color:var(--orange)}
+.bnav-btn{font-size:10px}
+.bnav-btn.nav-off{opacity:.35}
+/* v5.17 phiếu yêu cầu */
+.pyc-card,.pyc-head{border:1.5px solid;border-radius:14px;padding:11px 12px;margin-bottom:8px;display:flex;flex-direction:column;gap:5px;cursor:pointer}
+.pyc-head{cursor:default;margin-bottom:12px}
+.pyc-top{display:flex;justify-content:space-between;align-items:center;gap:8px}
+.pyc-chip{color:#fff;font-size:11px;font-weight:800;padding:3px 8px;border-radius:20px;white-space:nowrap}
+.pyc-title{font-weight:700;font-size:14px}
+.pyc-sum{font-size:12.5px;color:var(--text2)}
+.pyc-foot{display:flex;justify-content:space-between;align-items:center;gap:6px;font-size:11px;color:var(--text3)}
+.pyc-ap{font-size:11px;font-weight:700;padding:2px 7px;border-radius:6px}
+.pyc-grp{display:flex;justify-content:space-between;padding-top:10px}
+.pyc-empty{background:#fff;border-radius:12px;padding:12px;text-align:center;color:var(--text3);font-size:13px;margin-bottom:8px}
+.pyc-home{margin:12px 14px 0}
+.pyc-home-h{display:flex;justify-content:space-between;align-items:center;background:#fff;border-radius:12px;padding:10px 12px;margin-bottom:8px;box-shadow:var(--shadow);cursor:pointer}
+.pyc-home-h b{color:var(--red);font-size:14px}.pyc-home-h span{font-size:12px;color:var(--text3);white-space:nowrap}
+.pyc-links{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:6px}
+.pyc-links button{border:1.5px solid var(--border);background:#fff;border-radius:10px;padding:8px 10px;font-size:12px;font-weight:700;cursor:pointer;color:var(--text)}
+.pyc-line{border-top:1px solid var(--border);padding:7px 0}
+.pyc-lrow{display:grid;grid-template-columns:1.6fr .9fr .9fr 1.1fr;gap:4px;align-items:center;font-size:13.5px}
+.pyc-lrow>span{text-align:right}
+.pyc-lh{font-size:11px;font-weight:800;color:var(--text3);padding:4px 0}
+.pyc-br{font-size:11px;color:var(--text3);margin-top:2px}
+.pyc-in{width:72px;padding:6px;border:1.5px solid var(--border);border-radius:8px;font-size:14px;text-align:right;justify-self:end}
+.pyc-kk{background:#FFF0EE;border-radius:10px;padding:8px;margin-top:6px;font-size:12px;color:var(--red);font-weight:600;display:flex;flex-direction:column;gap:6px}
+.pyc-kk-btn{border:1.5px solid var(--primary);background:#fff;color:var(--primary);border-radius:8px;padding:8px;font-weight:800;cursor:pointer}
+.pyc-kk-row{display:flex;gap:6px}.pyc-kk-row input{flex:1;padding:8px;border:1.5px solid var(--border);border-radius:8px;font-size:14px}
+.pyc-kk-row button{border:none;background:var(--primary);color:#fff;border-radius:8px;padding:0 12px;font-weight:800;cursor:pointer}
+.pyc-hint{font-size:11.5px;color:var(--text3);text-align:center;margin:4px 0 10px}
+.pyc-rej{display:flex;gap:6px;margin:6px 0 4px}.pyc-rej input{flex:1;padding:10px;border:1.5px solid var(--border);border-radius:10px;font-size:13.5px}
+.pyc-rej button{border:1.5px solid #8A9AB0;background:#fff;border-radius:10px;padding:0 14px;font-weight:800;cursor:pointer;color:var(--text2)}
+.pyc-note-o{background:rgba(242,101,34,.12);border-radius:8px;padding:8px;font-size:12.5px;color:#8A3A12;font-weight:600}
+.pyc-note-g{background:#E3E7ED;border-radius:8px;padding:8px;font-size:12.5px;color:var(--text2);font-weight:600}
+.pyc-log{display:flex;gap:10px;font-size:12.5px;padding:5px 0;border-bottom:1px solid var(--border)}.pyc-log span:first-child{color:var(--text3);min-width:118px;font-size:11.5px}
+.pyc-segs{display:flex;background:#E3E7ED;border-radius:12px;padding:3px;gap:3px;margin-bottom:12px}
+.pyc-seg{flex:1;border:none;background:transparent;border-radius:10px;padding:10px 4px;font-weight:800;font-size:13px;color:var(--text2);cursor:pointer}
+.pyc-seg.on{background:#fff;color:var(--orange)}
+.pyc-opt{width:100%;display:flex;justify-content:space-between;align-items:center;border:1.5px solid var(--border);background:#fff;border-radius:10px;padding:12px;margin-bottom:6px;font-weight:700;font-size:13.5px;cursor:pointer;color:var(--text)}
+.pyc-opt.on{background:var(--primary);border-color:var(--primary);color:#fff}
+.pyc-grid{display:grid;grid-template-columns:1fr 1fr 1fr 1fr 1fr;gap:4px;font-size:13.5px;padding:6px 0;border-top:1px solid var(--border)}.pyc-grid>*:not(:first-child){text-align:right}
+.pyc-bs{width:100%;border:1.5px dashed var(--orange);background:#fff;color:#C2410C;border-radius:10px;padding:12px;font-weight:800;cursor:pointer}
+.pyc-bs.on{background:rgba(242,101,34,.08)}
+.pyc-done{background:rgba(39,174,96,.13);border:1px solid rgba(39,174,96,.5);border-radius:10px;padding:10px;font-size:12.5px;color:#1E7A45;font-weight:700;margin-bottom:10px}
+.pyc-may{background:var(--bg);border-radius:12px;padding:10px;margin-bottom:8px}
+.pyc-tag{display:inline-block;font-size:10.5px;font-weight:800;padding:2px 7px;border-radius:6px;background:#E7F0FB;color:#1864AB;margin:2px 4px 0 0}
+.pyc-tag.gray{background:#EEF0F3;color:var(--text2)}.pyc-tag.warn{background:#FFE9A8;color:#7A4E00}
+.kk-row{display:grid;grid-template-columns:1.7fr .9fr .9fr;gap:6px;align-items:center;padding:7px 0;border-top:1px solid var(--border);font-size:13px}
+.kk-row small,.kk-hist small{display:block;font-size:10.5px;color:var(--text3);font-weight:400}
+.kk-row input{width:100%;box-sizing:border-box;padding:8px;border:1.5px solid var(--border);border-radius:8px;font-size:14px;text-align:right}.kk-row input.diff{border-color:var(--orange)}
+.kk-hist{display:grid;grid-template-columns:1.8fr .9fr .6fr;gap:6px;align-items:center;padding:7px 0;border-top:1px solid var(--border);font-size:12.5px}
+.kk-moc{font-size:11px;color:var(--text3);margin-top:4px}
+.coc-row{display:grid;grid-template-columns:.6fr 1fr 1fr 1fr 1fr .8fr;gap:4px;padding:7px 0;border-top:1px solid var(--border);font-size:12.5px}.coc-row>*:not(:first-child){text-align:right}
+.perm-row{display:grid;grid-template-columns:1fr 50px 50px 50px;gap:4px;align-items:center;padding:4px 0;border-top:1px solid var(--border);font-size:12.5px}
+.perm-b{border:1.5px solid var(--border);background:#fff;border-radius:8px;padding:7px 4px;font-size:11.5px;font-weight:800;color:var(--text3);cursor:pointer}
+.perm-b.on{background:#E3F4EA;border-color:#7BC59A;color:#1E7A45}
+.flag-gh{display:flex;flex-direction:column;gap:6px;padding:6px 0}.flag-gh span{display:flex;flex-wrap:wrap;gap:4px}
+.flag-gh button{border:1px solid var(--border);background:var(--bg);border-radius:8px;padding:5px 8px;font-size:11px;font-weight:700;cursor:pointer}
+.flag-row{display:grid;grid-template-columns:1fr 84px 70px;gap:6px;align-items:center;padding:5px 0;border-top:1px solid var(--border);font-size:12.5px}
 .bnav-btn.on .bnav-icon-wrap::after{content:'';position:absolute;bottom:-18px;left:50%;transform:translateX(-50%);width:20px;height:3px;background:var(--orange);border-radius:2px}
 .bnav-icon-wrap{position:relative;width:36px;height:34px;display:flex;align-items:center;justify-content:center}
 .bnav-icon{font-size:28px;line-height:1}
@@ -653,7 +711,10 @@ body:not(.can-cost) .need-cost{display:none!important}
 
   <!-- BOTTOM NAV -->
   <nav class="bottom-nav" id="bottom-nav">
-    <button class="bnav-btn on" id="bn-home" onclick="goHome()">
+    <button class="bnav-btn" id="bn-pyc" onclick="goTab('pyc')">
+      <div class="bnav-icon-wrap"><span class="bnav-icon">📝</span><span class="bnav-badge" id="pyc-badge" style="display:none">0</span></div>Phiếu YC
+    </button>
+    <button class="bnav-btn on" id="bn-home" onclick="goTab(role === 'ld' ? 'lead' : 'home')">
       <div class="bnav-icon-wrap"><span class="bnav-icon">🏠</span></div>Tổng quan
     </button>
     <button class="bnav-btn" id="bn-lsnhap" onclick="goTab('lsnhap')">
@@ -749,6 +810,30 @@ body:not(.can-cost) .need-cost{display:none!important}
   <div class="detail-body" id="dp-quick-body"></div>
 </div>
 
+<div class="detail-page" id="dp-req">
+  <div class="detail-header"><button class="back-btn" onclick="closeDp('dp-req')">‹</button><div class="detail-title" id="dp-req-title">📝 Phiếu yêu cầu</div></div>
+  <div class="detail-body" id="dp-req-body"></div>
+</div>
+<div class="detail-page" id="dp-req-new">
+  <div class="detail-header"><button class="back-btn" onclick="closeDp('dp-req-new')">‹</button><div class="detail-title">📝 Tạo phiếu yêu cầu</div></div>
+  <div class="detail-body" id="dp-req-new-body"></div>
+</div>
+<div class="detail-page" id="dp-kk">
+  <div class="detail-header"><button class="back-btn" onclick="closeDp('dp-kk')">‹</button><div class="detail-title">🔢 Đợt kiểm kê</div></div>
+  <div class="detail-body" id="dp-kk-body"></div>
+</div>
+<div class="detail-page" id="dp-coc">
+  <div class="detail-header"><button class="back-btn" onclick="closeDp('dp-coc')">‹</button><div class="detail-title">🔗 Đối chiếu cóc nối</div></div>
+  <div class="detail-body" id="dp-coc-body"></div>
+</div>
+<div class="detail-page" id="dp-pycfg">
+  <div class="detail-header"><button class="back-btn" onclick="closeDp('dp-pycfg')">‹</button><div class="detail-title">⚙️ Cài đặt phiếu yêu cầu</div></div>
+  <div class="detail-body" id="dp-pycfg-body"></div>
+</div>
+<div class="detail-page" id="dp-tg">
+  <div class="detail-header"><button class="back-btn" onclick="closeDp('dp-tg')">‹</button><div class="detail-title">🔔 Cảnh báo Telegram</div></div>
+  <div class="detail-body" id="dp-tg-body"></div>
+</div>
 <div class="detail-page" id="dp-dc-hist">
   <div class="detail-header">
     <button class="back-btn" onclick="closeDp('dp-dc-hist')">‹</button>
@@ -865,6 +950,7 @@ body:not(.can-cost) .need-cost{display:none!important}
   </div>
   <div class="sidebar-body">
     <div class="sidebar-label">Chức năng</div>
+    <div class="sidebar-item" onclick="goTabSb('pyc')"><span class="sidebar-item-ico">📝</span>Phiếu yêu cầu</div>
     <div class="sidebar-item" onclick="goTabSb('home')"><span class="sidebar-item-ico">🏠</span>Tổng quan</div>
     <div class="sidebar-item need-tk" onclick="goTabSb('nhap')"><span class="sidebar-item-ico">📥</span>Nhập kho</div>
     <div class="sidebar-item need-tk" onclick="goTabSb('xuat')"><span class="sidebar-item-ico">📤</span>Xuất kho</div>
@@ -876,18 +962,21 @@ body:not(.can-cost) .need-cost{display:none!important}
     <div class="sidebar-label">Thiết bị & Ghi chú</div>
     <div class="sidebar-item" onclick="openDpSb('dp-devices-list')"><span class="sidebar-item-ico">🏗️</span>Máy móc & Thiết bị</div>
     <div class="sidebar-item" onclick="openDpSb('dp-notes')"><span class="sidebar-item-ico">📝</span>Ghi chú trong ngày</div>
-    <div class="sidebar-item" onclick="openDpSb('dp-dc-hist')"><span class="sidebar-item-ico">⚖️</span>Phiếu điều chỉnh</div>
+    <div class="sidebar-item" onclick="openDpSb('dp-dc-hist')"><span class="sidebar-item-ico">⚖️</span>Điều chỉnh & kiểm kê</div>
+    <div class="sidebar-item need-tk" onclick="closeSidebar();setTimeout(openKK,300)"><span class="sidebar-item-ico">🔢</span>Đợt kiểm kê</div>
+    <div class="sidebar-item need-cost" onclick="openDpSb('dp-coc')"><span class="sidebar-item-ico">🔗</span>Đối chiếu cóc nối</div>
+    <div class="sidebar-item" onclick="openDpSb('dp-tg')"><span class="sidebar-item-ico">🔔</span>Nhận cảnh báo Telegram</div>
     <div class="sidebar-divider need-ql"></div>
     <div class="sidebar-label need-ql">Quản lý</div>
     <div class="sidebar-item need-ql" onclick="openDpSb('dp-members')"><span class="sidebar-item-ico">👥</span>Thành viên<span class="sb-badge" id="sb-pend" style="display:none">0</span></div>
     <div class="sidebar-item need-ql" onclick="openModal('modal-add-proj')"><span class="sidebar-item-ico">🏢</span>Thêm dự án</div>
     <div class="sidebar-item need-ql" onclick="openDpSb('dp-history-log')"><span class="sidebar-item-ico">📋</span>Nhật ký hoạt động</div>
+    <div class="sidebar-item need-admin" onclick="openDpSb('dp-pycfg')"><span class="sidebar-item-ico">⚙️</span>Cài đặt phiếu yêu cầu</div>
     <div class="sidebar-divider"></div>
     <div class="sidebar-item inst-btn" style="display:none" onclick="closeSidebar();doInstall()"><span class="sidebar-item-ico">📲</span>Cài app vào điện thoại</div>
     <div class="sidebar-item" onclick="openChPw()"><span class="sidebar-item-ico">🔒</span>Đổi mật khẩu</div>
     <div class="sidebar-item" onclick="doLogout()"><span class="sidebar-item-ico">🚪</span>Đăng xuất</div>
     <div class="app-ver" id="app-ver"></div>
-    <div class="app-ver" id="scr-diag" style="font-size:9.5px;opacity:.8;padding-top:0"></div>
   </div>
 </div>
 
@@ -1182,10 +1271,10 @@ body:not(.can-cost) .need-cost{display:none!important}
     <div class="adj-info" id="adj-info"></div>
     <div class="fg"><label id="adj-label">Số lượng đúng</label><input type="number" id="adj-val" min="0" step="0.1" inputmode="decimal" oninput="adjPreview()"></div>
     <div class="combo-hint" id="adj-preview" style="margin:-6px 0 14px"></div>
-    <div class="fg"><label>Lý do điều chỉnh (bắt buộc)</label><textarea id="adj-reason" rows="3" placeholder="VD: Nhập nhầm 1200 thành 12000 · Kiểm kê cuối tháng thiếu 20 lít..."></textarea></div>
+    <div class="fg"><label id="adj-rlabel">Lý do điều chỉnh (bắt buộc)</label><textarea id="adj-reason" rows="3" placeholder="VD: Nhập nhầm 1200 thành 12000 · Kiểm kê cuối tháng thiếu 20 lít..."></textarea></div>
     <div class="modal-actions">
       <button class="btn-cancel" onclick="closeModal('modal-adjust')">Hủy</button>
-      <button class="btn-ok" style="background:var(--primary)" onclick="saveAdjust()">Tạo phiếu điều chỉnh</button>
+      <button class="btn-ok" id="adj-save" style="background:var(--primary)" onclick="saveAdjust()">Tạo phiếu điều chỉnh</button>
     </div>
   </div>
 </div>
@@ -1203,6 +1292,9 @@ body:not(.can-cost) .need-cost{display:none!important}
       <select id="mm-role" onchange="renderMemberProjects()">
         <option value="xem">👁 Chỉ xem — xem số liệu, không ghi</option>
         <option value="ld">🏛 Lãnh đạo — xem mọi dự án + Tổng hợp dự án, không ghi</option>
+        <option value="ktv">🛠 Kỹ thuật viên — tạo phiếu yêu cầu cấp vật tư</option>
+        <option value="chp">🦺 Chỉ huy phó — tạo / duyệt phiếu yêu cầu</option>
+        <option value="cht">👷 Chỉ huy trưởng — tạo / duyệt phiếu yêu cầu</option>
         <option value="tk">🏗 Thủ kho — nhập, xuất, điều chỉnh, ghi chú</option>
         <option value="ql">👔 Quản lý — thêm sửa danh mục, dự án, nhật ký</option>
         <option value="admin">⭐ Admin — toàn quyền + quản lý thành viên</option>
@@ -1286,7 +1378,7 @@ body:not(.can-cost) .need-cost{display:none!important}
 // ============================================================
 // CONFIG
 // ============================================================
-const APP_VERSION = '5.16.2';
+const APP_VERSION = '5.17.0';
 const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbw6Rmi80I7RI3ij2U7RdRF5pYuQTnPrwEmGmUZS5xpxzLwwVynfoFUujZe1lm6HS1ymxw/exec';
 // ============================================================
 
@@ -1370,12 +1462,13 @@ const UNITS = ['Lít','Phuy','Thùng','Xô','Kg','Tấn','Cái','Bộ','Cây','T
 // Dữ liệu chỉ tải từ máy chủ SAU KHI đăng nhập (không còn nhúng trong file này)
 const isLow = i => (+i.minStock > 0) && (+i.stock <= +i.minStock);
 const DEVICE_FUEL_DEFAULT = Object.fromEntries(DEVICE_CATS.map(c => [c.id, c.fuel]));
-const emptyDb = () => ({categories: CATEGORIES, projects: [], items: [], devices: [], transactions: [], repairs: [], notes: [], photos: [], loans: [], txnTotal: 0, txnLastId: ''});
+const emptyDb = () => ({categories: CATEGORIES, projects: [], items: [], devices: [], transactions: [], repairs: [], notes: [], photos: [], loans: [], txnTotal: 0, txnLastId: '',
+  reqs: [], cauKien: [], projCfg: {haoHut:0}, rolePerm: {}, kkMoc: {}, tg: {}});
 let db = emptyDb();
 
 // ===== QUYỀN =====
-const RANK = {xem:1, ld:1, tk:2, ql:3, admin:4};   // ld = Lãnh đạo: xem mọi dự án + Tổng hợp, không ghi
-const ROLE_NAME = {admin:'Admin', ql:'Quản lý', tk:'Thủ kho', xem:'Chỉ xem', ld:'Lãnh đạo'};
+const RANK = {xem:1, ld:1, ktv:1, chp:1, cht:1, tk:2, ql:3, admin:4};   // cht/chp/ktv: phiếu yêu cầu theo bảng quyền (Admin cài)   // ld = Lãnh đạo: xem mọi dự án + Tổng hợp, không ghi
+const ROLE_NAME = {admin:'Admin', ql:'Quản lý', tk:'Thủ kho', xem:'Chỉ xem', ld:'Lãnh đạo', cht:'Chỉ huy trưởng', chp:'Chỉ huy phó', ktv:'Kỹ thuật viên'};
 const allProjRole = r => RANK[r] >= RANK.ql || r === 'ld';
 const can = r => (RANK[role] || 0) >= RANK[r];
 const newId = () => Date.now() * 100 + Math.floor(Math.random() * 100);
@@ -1644,7 +1737,8 @@ function applyServer(r) {
   const P = curProj;
   // Xóa dữ liệu lưu trên máy của dự án không còn được giao
   Object.keys(localStorage).filter(k => k.startsWith(LS_DB + '|') && !db.projects.includes(k.slice(LS_DB.length + 1))).forEach(k => localStorage.removeItem(k));
-  if (r.items) db.items = r.items.map(i => ({...i, id:+i.id, stock:+i.stock||0, minStock:+i.minStock||0}));
+  if (r.items) db.items = r.items.map(i => ({...i, id:+i.id, stock:+i.stock||0, minStock:+i.minStock||0, capThang:+i.capThang||0, canMay:+i.canMay||0}));
+  ['reqs','cauKien','projCfg','rolePerm','kkMoc','tg'].forEach(k => { if (r[k] !== undefined) db[k] = r[k]; });   // máy chủ 5.13
   if (r.devices) db.devices = r.devices.map(d => ({...d, id:+d.id, fuelRate:+d.fuelRate||20}));
   db.repairs = (r.repairs||[]).map(rp => ({...rp, id:+rp.id, deviceId:+rp.deviceId, cost:+rp.cost||0}));
   db.notes = (r.notes||[]).map(n => ({...n, id:+n.id}));
@@ -1658,7 +1752,7 @@ function applyServer(r) {
   // Phiếu: máy chủ 5.2 gửi dạng mảng gọn và chỉ gửi phần mới (txnFrom > 0)
   let rows = r.transactions || [];
   if (r.txnCols) rows = rows.map(a => { const o = {}; r.txnCols.forEach((c, i) => o[c] = a[i]); return o; });
-  rows = rows.map(t => ({...t, id:+t.id, itemId:+t.itemId, qty:+t.qty||0, refId: t.refId ? +t.refId : ''}));
+  rows = rows.map(t => ({...t, id:+t.id, itemId:+t.itemId, qty:+t.qty||0, refId: t.refId ? (isPycRef(String(t.refId)) ? String(t.refId) : +t.refId) : ''}));
   const base = r.txnCols && r.txnFrom > 0 ? db.transactions.filter(t => !t._local).concat(rows) : rows;
   const ids = new Set(base.map(t => t.id));
   db.transactions = base.concat(db.transactions.filter(t => t._local && !ids.has(t.id) && t.project === P));  // giữ phiếu tạm chưa thấy trên máy chủ
@@ -1778,7 +1872,7 @@ function refreshCurrentView(notify) {
   if (modalOpen) return;
   // Đang gõ ô tìm kiếm / kéo thanh định mức thì không vẽ lại chỗ đó (tránh mất bàn phím)
   const ae = document.activeElement, typing = el => ae && /^(INPUT|TEXTAREA|SELECT)$/.test(ae.tagName) && el && el.contains(ae);
-  if (['home','ton','baocao','lsnhap','lsxuat','lead'].includes(curTab) && !typing(document.getElementById('main-body'))) goTab(curTab);
+  if (['home','pyc','ton','baocao','lsnhap','lsxuat','lead'].includes(curTab) && !typing(document.getElementById('main-body'))) goTab(curTab);
   document.querySelectorAll('.detail-page.show').forEach(p => {
     if (typing(p)) return;
     if (p.id === 'dp-device') { if (currentDeviceId) renderDeviceDetail(currentDeviceId); }
@@ -1821,6 +1915,7 @@ async function switchProject(p) {
 function goTab(tab) {
   if ((tab === 'nhap' || tab === 'xuat') && !can('tk')) tab = 'home';
   if (tab === 'lead' && !canLead()) tab = 'home';
+  if (tab === 'ton' && NEW_ROLES[role] && !canP('ton')) { toast('Chức danh của bạn chưa được bật quyền xem tồn kho'); tab = 'pyc'; }
   curTab = tab;
   if (tab === 'lead') {                                   // Lãnh đạo: màn hình chính là Tổng hợp các dự án
     document.querySelectorAll('.bnav-btn').forEach(b => b.classList.remove('on'));
@@ -1844,12 +1939,13 @@ function goTab(tab) {
   if (el) el.classList.add('on');
   // fix for home
   document.querySelectorAll('.bnav-btn').forEach(b => b.classList.remove('on'));
-  const tabMap = {home:'bn-home', lsnhap:'bn-lsnhap', lsxuat:'bn-lsxuat', ton:'bn-ton', baocao:'bn-baocao'};
+  const tabMap = {home:'bn-home', pyc:'bn-pyc', lsnhap:'bn-lsnhap', lsxuat:'bn-lsxuat', ton:'bn-ton', baocao:'bn-baocao'};
   if (tabMap[tab]) document.getElementById(tabMap[tab])?.classList.add('on');
 
   destroyCharts();
   const body = document.getElementById('main-body');
   if (tab === 'home') renderHome(body);
+  else if (tab === 'pyc') renderPyc(body);
   else if (tab === 'nhap') renderNhap(body);
   else if (tab === 'xuat') renderXuat(body);
   else if (tab === 'ton') renderTon(body);
@@ -1858,7 +1954,7 @@ function goTab(tab) {
   if (role === 'ld') body.insertAdjacentHTML('afterbegin', `<div class="lead-back" onclick="goTab('lead')">‹ Về tổng hợp các dự án<span>Đang xem: ${escHtml(curProj)}</span></div>`);
   body.scrollTop = 0;
 }
-const goHome = () => goTab(role === 'ld' ? 'lead' : 'home');
+const goHome = () => goTab(role === 'ld' ? 'lead' : role === 'ktv' ? 'pyc' : 'home');   // KTV mở app vào thẳng Phiếu YC
 // Đếm phiếu lập hôm nay
 function todayCount(type) {
   const n = new Date();
@@ -1866,10 +1962,13 @@ function todayCount(type) {
     return d && d.getDate() === n.getDate() && d.getMonth() === n.getMonth() && d.getFullYear() === n.getFullYear(); }).length;
 }
 function renderHistTab(c, type) {
-  const txns = filtTxns().filter(t => t.type === type);
+  let txns = filtTxns().filter(t => t.type === type);
+  if (type === 'xuat' && xuatF !== 'all') txns = txns.filter(t => xuatF === 'pyc' ? isPycRef(t.refId) : !isPycRef(t.refId));
+  const fchip = (k, l) => `<div class="chip ${xuatF === k ? 'on' : ''}" onclick="xuatF='${k}';goTab('lsxuat')">${l}</div>`;
   const lbl = type === 'nhap' ? 'phiếu nhập' : 'phiếu xuất';
   c.innerHTML = `
     <div class="hist-head"><b>${fmtNum(txns.length)} ${lbl}</b><span>Hôm nay: ${todayCount(type)} · ${escHtml(curProj === 'all' ? 'Tất cả dự án' : curProj)}</span></div>
+    ${type === 'xuat' ? `<div class="chip-row" style="margin-bottom:10px">${fchip('all', 'Tất cả')}${fchip('pyc', 'Theo phiếu YC')}${fchip('thang', 'Xuất thẳng')}</div>` : ''}
     <div style="padding:0 14px 14px">${renderTxnList(txns, type)}</div>`;
 }
 function goTabSb(tab) { closeSidebar(); goTab(tab); }
@@ -1882,7 +1981,6 @@ function toggleSidebar() {
   const isOpen = sb.classList.contains('open');
   if (isOpen) { sb.classList.remove('open'); ov.classList.remove('show'); }
   else { sb.classList.add('open'); ov.classList.add('show'); }
-  setTimeout(screenDiag, 350);
 }
 function closeSidebar() {
   document.getElementById('sidebar').classList.remove('open');
@@ -1899,7 +1997,8 @@ const DP_RENDER = {
   'dp-loans': () => renderLoans(),
   'dp-summary': () => renderSummary(),
   'dp-price': () => renderPrice(),
-  'dp-costd': () => renderCostDetail()
+  'dp-costd': () => renderCostDetail(),
+  'dp-req': () => renderReqDetail(), 'dp-coc': () => renderCoc(), 'dp-pycfg': () => renderPycCfg(), 'dp-tg': () => renderTg()
 };
 function openDp(id, renderFn) {
   const fn = renderFn || DP_RENDER[id];
@@ -1927,6 +2026,7 @@ function updateLowBadge() {
   const low = db.items.filter(isLow).length;
   const badge = document.getElementById('low-badge');
   if (badge) { badge.style.display = low > 0 ? '' : 'none'; badge.textContent = low; }
+  updatePycBadge();
 }
 function destroyCharts() {
   Object.values(charts).forEach(c => { try{c.destroy()}catch(e){} });
@@ -1967,7 +2067,7 @@ function renderHome(c) {
   if (!homeUnit || !units.some(([u]) => u === homeUnit)) homeUnit = units[0]?.[0] || null;
   const recent = byTimeDesc(txns.filter(t => !LOAN_T[t.type])).slice(0, 6);
 
-  c.innerHTML = `
+  c.innerHTML = `${reqHomeHtml()}
     <div class="act-grid need-tk">
       <button class="act-tile nhap" onclick="goTab('nhap')">
         <div class="act-ico">📥</div>
@@ -2241,9 +2341,27 @@ function parseVN(s) {
 function txnRow(t) {
   const it = db.items.find(i => i.id === t.itemId);
   const unit = it?.unit || t.unit || '';
+  if (t.type === 'kiemke') {
+    const d = kkDelta(t);
+    return `<div class="row-item" onclick="openTxn(${t.id})">
+    <div class="txn-ico adj">🔢</div>
+    <div style="flex:1;min-width:0">
+      <div class="txn-name">${escHtml(it?.name||t.itemName||'?')}</div>
+      <div class="txn-sub">Kiểm kê · ${escHtml(t.datetime||'')}</div>
+      <div class="txn-sub">${escHtml(t.reason||'')}</div>
+      ${t.createdByName ? `<div class="txn-sub">👤 ${escHtml(t.createdByName)}</div>` : ''}
+    </div>
+    <div style="flex-shrink:0;margin-left:8px"><span class="txn-badge badge-blue">= ${fmtNum(t.qty)} ${escHtml(unit)}</span>
+      <div class="adj-tag" style="color:${d<0?'var(--red)':'var(--green)'}">${d>0?'+':''}${fmtNum(d)}</div></div>
+  </div>`;
+  }
   const dc = t.type === 'dieuchinh';
   const fixed = !dc && adjMap()[t.id];
   const sign = dc ? (t.qty > 0 ? '+' : '') : t.type === 'nhap' ? '+' : '-';
+  const pr = t.type === 'xuat' && isPycRef(t.refId) ? (db.reqs || []).find(r => r.id === t.refId) : null;
+  const xTag = t.type !== 'xuat' ? '' : isPycRef(t.refId)
+    ? `<div class="txn-sub"><span class="pyc-tag">📝 Theo ${escHtml(t.refId)}</span>${pr && pr.duyet === 'chua' ? '<span class="pyc-tag warn">Chưa CHT/CHP duyệt</span>' : ''}</div>`
+    : `<div class="txn-sub"><span class="pyc-tag gray">Xuất thẳng</span></div>`;
   return `<div class="row-item" onclick="openTxn(${t.id})">
     <div class="txn-ico ${dc?'adj':t.type==='nhap'?'in':'out'}">${dc?'⚖️':t.type==='nhap'?'📥':'📤'}</div>
     <div style="flex:1;min-width:0">
@@ -2253,6 +2371,7 @@ function txnRow(t) {
       ${t.thietBi ? `<div class="ri-sub">🏗 ${escHtml(t.thietBi)}</div>` : ''}
       ${dc && t.reason ? `<div class="txn-sub">📝 ${escHtml(t.reason)}</div>` : ''}
       ${t.createdByName ? `<div class="txn-sub">👤 ${escHtml(t.createdByName)}</div>` : ''}
+      ${xTag}
     </div>
     <div style="flex-shrink:0;margin-left:8px">
       <span class="txn-badge ${dc?'badge-blue':t.type==='nhap'?'badge-in':'badge-out'}" ${fixed?'style="text-decoration:line-through;opacity:.55"':''}>${sign}${fmtNum(t.qty)} ${escHtml(unit)}</span>
@@ -2267,24 +2386,25 @@ function openTxn(id) {
   curTxnId = id;
   const it = db.items.find(i => i.id === t.itemId);
   const unit = escHtml(it?.unit || t.unit || '');
-  const dc = t.type === 'dieuchinh';
-  const ref = dc && t.refId ? db.transactions.find(x => x.id === +t.refId) : null;
+  const dc = t.type === 'dieuchinh' || t.type === 'kiemke', kk = t.type === 'kiemke';
+  const ref = t.type === 'dieuchinh' && t.refId ? db.transactions.find(x => x.id === +t.refId) : null;
   const adjs = dc ? [] : db.transactions.filter(x => x.type === 'dieuchinh' && +x.refId === t.id);
   const kv = (k, v) => (v === '' || v == null) ? '' : `<div class="kv"><span>${k}</span><b>${v}</b></div>`;
   const ct = parseVN(t.clientTime), st = parseVN(t.datetime);
   const late = ct && st && Math.abs(st - ct) > 10 * 60000;
-  document.getElementById('mt-title').textContent = dc ? '⚖️ Phiếu điều chỉnh' : t.type === 'nhap' ? '📥 Phiếu nhập kho' : '📤 Phiếu xuất kho';
+  document.getElementById('mt-title').textContent = kk ? '🔢 Phiếu kiểm kê' : dc ? '⚖️ Phiếu điều chỉnh' : t.type === 'nhap' ? '📥 Phiếu nhập kho' : '📤 Phiếu xuất kho';
   document.getElementById('mt-body').innerHTML = `
     <div class="kv-box">
       ${kv('Vật tư', escHtml(it?.name || t.itemName || '?'))}
-      ${kv(dc ? 'Điều chỉnh tồn' : 'Số lượng', `${dc && t.qty > 0 ? '+' : ''}${fmtNum(t.qty)} ${unit}`)}
+      ${kv(kk ? 'Số đếm thực tế (mốc)' : dc ? 'Điều chỉnh tồn' : 'Số lượng', `${!kk && dc && t.qty > 0 ? '+' : ''}${fmtNum(t.qty)} ${unit}`)}
+      ${t.type === 'xuat' ? kv('Hình thức', isPycRef(t.refId) ? `<a onclick="closeModal('modal-txn');openReq('${escHtml(t.refId)}')">Theo phiếu ${escHtml(t.refId)}</a>` : 'Xuất thẳng') : ''}
       ${adjs.length ? kv('Số lượng sau điều chỉnh', `${fmtNum(effQty(t))} ${unit}`) : ''}
       ${kv('Dự án', escHtml(t.project || ''))}
       ${dc ? '' : kv(t.type === 'nhap' ? 'Nhà cung cấp' : 'Người nhận', escHtml(t.supplierOrReceiver || ''))}
       ${kv('Thiết bị', escHtml(t.thietBi || ''))}
       ${kv('Ghi chú', escHtml(t.note && t.note !== t.supplierOrReceiver ? t.note : ''))}
       ${kv('Lý do', escHtml(t.reason || ''))}
-      ${ref ? kv('Sửa cho phiếu', `<a onclick="openTxn(${ref.id})">${ref.type==='nhap'?'Nhập':'Xuất'} ${fmtNum(ref.qty)} · ${escHtml(ref.datetime||'')}</a>`) : (dc ? kv('Loại', 'Kiểm kê / điều chỉnh tồn') : '')}
+      ${ref ? kv('Sửa cho phiếu', `<a onclick="openTxn(${ref.id})">${ref.type==='nhap'?'Nhập':'Xuất'} ${fmtNum(ref.qty)} · ${escHtml(ref.datetime||'')}</a>`) : (kk ? kv('Loại', 'Kiểm kê thực tế — mốc tính tồn kho') : dc ? kv('Loại', 'Điều chỉnh tồn') : '')}
       ${kv('Người lập', escHtml(t.createdByName || (t.createdBy ? '' : 'Dữ liệu cũ (trước khi có tài khoản)')))}
       ${kv(t.createdByName ? 'Giờ máy chủ ghi nhận' : 'Thời gian', escHtml(t.datetime || ''))}
       ${late ? kv('Lập trên máy lúc', escHtml(t.clientTime) + ' (gửi khi có mạng)') : ''}
@@ -2306,6 +2426,8 @@ function adjustFromTxn() {
   document.getElementById('adj-title').textContent = '⚖️ Điều chỉnh phiếu ' + (t.type === 'nhap' ? 'nhập' : 'xuất');
   document.getElementById('adj-info').innerHTML = `<b>${escHtml(it.name)}</b><br>Phiếu ${t.type==='nhap'?'nhập':'xuất'} lúc ${escHtml(t.datetime||'')}${t.thietBi?' · '+escHtml(t.thietBi):''}<br>Đang ghi: <b>${fmtNum(adjCtx.cur)} ${escHtml(it.unit)}</b>`;
   document.getElementById('adj-label').textContent = 'Số lượng ĐÚNG của phiếu này (nhập 0 nếu phiếu ghi nhầm hoàn toàn)';
+  document.getElementById('adj-rlabel').textContent = 'Lý do điều chỉnh (bắt buộc)';
+  document.getElementById('adj-save').textContent = 'Tạo phiếu điều chỉnh';
   document.getElementById('adj-val').value = adjCtx.cur;
   document.getElementById('adj-reason').value = '';
   adjPreview(); openModal('modal-adjust');
@@ -2314,9 +2436,11 @@ function openCountAdjust(itemId) {
   const it = db.items.find(i => i.id === itemId); if (!it) return;
   closeModal('modal-edit-vattu');
   adjCtx = {mode:'count', item:it, cur:+it.stock || 0};
-  document.getElementById('adj-title').textContent = '⚖️ Kiểm kê / Điều chỉnh tồn';
+  document.getElementById('adj-title').textContent = '🔢 Kiểm kê thực tế (làm mốc)';
   document.getElementById('adj-info').innerHTML = `<b>${escHtml(it.name)}</b><br>Tồn trên hệ thống: <b>${fmtNum(it.stock)} ${escHtml(it.unit)}</b>`;
   document.getElementById('adj-label').textContent = 'Số lượng THỰC TẾ đếm được trong kho';
+  document.getElementById('adj-rlabel').textContent = 'Ghi chú (không bắt buộc)';
+  document.getElementById('adj-save').textContent = 'Lưu số đếm (làm mốc)';
   document.getElementById('adj-val').value = '';
   document.getElementById('adj-reason').value = '';
   adjPreview(); openModal('modal-adjust');
@@ -2335,6 +2459,13 @@ function adjPreview() {
   el.innerHTML = `<span style="color:${d>0?'var(--green)':'var(--red)'};font-weight:700">Tồn kho ${d>0?'+':''}${fmtNum(d)} ${unit}</span> <span style="color:var(--text3)">→ còn ${fmtNum(after)} ${unit}</span>`;
 }
 async function saveAdjust() {
+  if (adjCtx.mode === 'count') {                       // v5.17: kiểm kê = số đếm làm mốc (cần mạng)
+    const raw = document.getElementById('adj-val').value;
+    if (raw === '' || +raw < 0) { toast('⚠️ Nhập số đếm thực tế'); return; }
+    closeModal('modal-adjust');
+    if (await saveCounts([{itemId:adjCtx.item.id, qty:+raw}], document.getElementById('adj-reason').value.trim())) refreshCurrentView(false);
+    return;
+  }
   const d = adjDelta(), reason = document.getElementById('adj-reason').value.trim();
   if (d === null) { toast('⚠️ Nhập số lượng hợp lệ'); return; }
   if (!d) { toast('⚠️ Số lượng không đổi — không cần điều chỉnh'); return; }
@@ -2353,7 +2484,7 @@ async function saveAdjust() {
   refreshCurrentView(false);
 }
 function renderDcHist() {
-  const txns = filtTxns().filter(t => t.type === 'dieuchinh');
+  const txns = filtTxns().filter(t => t.type === 'dieuchinh' || t.type === 'kiemke');
   document.getElementById('dp-dc-hist-body').innerHTML = `
     <div class="info-box">Phiếu nhập/xuất đã lưu không sửa hay xóa được.<br>• Sửa phiếu ghi sai: mở phiếu trong Lịch sử nhập/xuất → <b>Tạo phiếu điều chỉnh</b>.<br>• Kiểm kê: Tổng quan → Loại vật tư → chọn vật tư → <b>Kiểm kê</b>.</div>
     ${renderTxnList(txns, 'dieuchinh')}`;
@@ -3213,6 +3344,7 @@ function renderTonRows(items) {
         <div class="prog-nums">${fmtNum(i.stock)} ${i.unit}</div>
       </div>
       ${itemLoanLine(i)}
+      ${kkMocTxt(i) ? `<div class="kk-moc">🔢 ${kkMocTxt(i)}</div>` : ''}
       ${ql ? `<div class="min-edit" id="me-${i.id}" style="display:none;margin-top:8px" onclick="event.stopPropagation()">
         <label style="font-size:10px;font-weight:700;color:var(--text3);text-transform:uppercase">Cảnh báo khi tồn ≤</label>
         <input type="range" style="width:100%;accent-color:var(--orange);margin:4px 0" min="0" max="${maxVal}" value="${i.minStock}" step="1"
@@ -3866,7 +3998,7 @@ async function buildNxtWorkbook() {
   const isFuelGroup = i => i.cat === 'nhienLieu' || isFuelItem(i);
   const itemById = id => db.items.find(i => i.id === id);
   // Phiếu điều chỉnh có "phiếu gốc" đã được cộng vào số lượng của phiếu gốc (effQty) → không tính lại
-  const moves = db.transactions.filter(t => !(t.type === 'dieuchinh' && t.refId));
+  const moves = db.transactions.map(kkAsDc).filter(t => !(t.type === 'dieuchinh' && t.refId));   // kiểm kê → điều chỉnh bằng phần lệch
   const net = t => t.type === 'nhap' ? effQty(t) : t.type === 'xuat' ? -effQty(t) : LOAN_T[t.type] ? LOAN_T[t.type] * (+t.qty || 0) : (+t.qty || 0);
   const sorted = arr => arr.slice().sort((a, b) => ((parseVN(a.datetime) || 0) - (parseVN(b.datetime) || 0)) || (a.id - b.id));
   const kho = moves.filter(t => !LOAN_T[t.type]);                     // nhập / xuất / điều chỉnh (mượn – trả để ở sheet riêng)
@@ -3906,9 +4038,9 @@ async function buildNxtWorkbook() {
   function body(ws, r, c1, c2) { for (let c = c1; c <= c2; c++) { const cell = ws.getCell(r, c); cell.border = BORDER; cell.font = cell.font?.bold ? cell.font : FONT; } }
 
   // ---------- 1 & 2. SỔ NHẬP XUẤT HẰNG NGÀY (Dầu nhớt | Vật tư) ----------
-  const LOG_COLS = ['Ngày', 'Tên vật tư', 'Đơn vị', 'Xuất/nhập', 'NCC/NTP/Đội', 'Thiết bị', 'Khối lượng', 'Thời gian', 'Ghi chú', 'Người lập'];
+  const LOG_COLS = ['Ngày', 'Tên vật tư', 'Đơn vị', 'Xuất/nhập', 'NCC/NTP/Đội', 'Thiết bị', 'Khối lượng', 'Thời gian', 'Ghi chú', 'Người lập', 'Hình thức xuất'];
   function logSheet(name, fuel) {
-    const ws = sheet(name, [3.5, 12, 30, 9, 11, 26, 32, 13, 9, 30, 20], 5);
+    const ws = sheet(name, [3.5, 12, 30, 9, 11, 26, 32, 13, 9, 30, 20, 18], 5);
     title(ws, 'BẢNG THEO DÕI XUẤT NHẬP KHO' + (fuel ? ' — DẦU NHỚT' : ' — VẬT TƯ'), 11);
     header(ws, 5, LOG_COLS, 2);
     const rows = sorted(kho.filter(t => inRange(t) && (() => { const it = itemById(t.itemId); return it ? isFuelGroup(it) === fuel : false; })()));
@@ -3920,15 +4052,15 @@ async function buildNxtWorkbook() {
       let note = t.type === 'dieuchinh' ? (t.reason || 'Kiểm kê') : (t.note && t.note !== t.supplierOrReceiver ? t.note : '');
       if (adj) note = [note, `Đã điều chỉnh: ghi ${fmtNum(t.qty)} → đúng ${fmtNum(q)}`].filter(Boolean).join(' · ');
       const vals = [xd(d), it?.name || t.itemName, it?.unit || t.unit, TYPE[t.type], t.type === 'dieuchinh' ? '' : (t.supplierOrReceiver || ''),
-        t.thietBi || '', q, tm, note, t.createdByName || ''];
+        t.thietBi || '', q, tm, note, t.createdByName || '', t.type === 'xuat' ? (isPycRef(t.refId) ? 'Theo ' + t.refId : 'Xuất thẳng') : ''];
       vals.forEach((v, i) => ws.getCell(r, 2 + i).value = v === '' ? null : v);
       ws.getCell(r, 2).numFmt = 'dd/mm/yyyy';
       ws.getCell(r, 8).numFmt = nf(q);
-      body(ws, r, 2, 11);
+      body(ws, r, 2, 12);
       r++;
     });
     if (!rows.length) { ws.mergeCells(6, 2, 6, 11); Object.assign(ws.getCell(6, 2), {value:'Không có phiếu trong khoảng thời gian này', font:{...FONT, italic:true}, alignment:{horizontal:'center'}}); }
-    ws.autoFilter = {from:{row:5, column:2}, to:{row:5, column:11}};
+    ws.autoFilter = {from:{row:5, column:2}, to:{row:5, column:12}};
     return {ws, first:6, last:Math.max(6, r - 1), name};
   }
   const logFuel = logSheet('Số liệu ngày (dầu nhớt)', true);
@@ -4933,7 +5065,7 @@ async function exportSummary() {
 
 
 // ===== v5.15: CHI PHÍ VẬT TƯ (Quản lý / Admin / Lãnh đạo) — máy chủ tính sẵn, điện thoại chỉ vẽ =====
-const canCost = () => ['ql', 'admin', 'ld'].includes(role);
+const canCost = () => ['ql', 'admin', 'ld'].includes(role) || (!!NEW_ROLES[role] && canP('chiPhi'));
 // v5.15.1: mỗi lần đăng nhập / đăng xuất xóa số liệu tổng hợp, chi phí, giá của người trước
 // (trước đây: đổi tài khoản khi máy chủ đang tính dở → cờ "đang tải" bị kẹt, tài khoản sau không tải lại được)
 function resetLeadState() {
@@ -5007,7 +5139,7 @@ function costView() {
     h += `<div class="card cost-card"><div class="cost-t"><b>Vật tư có theo kịp thi công?</b>${chip}</div>
       <div class="cost-bar"><div class="l"><span>Thi công</span><span>${pr}%</span></div><div class="tr"><i style="width:${pr}%;background:var(--primary)"></i></div><small>${parts}</small></div>
       ${mp === null ? '' : `<div class="cost-bar"><div class="l"><span>Vật tư chính đã mua</span><span>${mp}%</span></div><div class="tr"><i style="width:${Math.min(100, mp)}%;background:var(--orange)"></i></div><small>${vnMoney(D.boughtPlan)} / ${vnMoney(D.planVal)} theo kế hoạch</small></div>`}
-      ${D.canEdit && D.hangMuc.length ? '<button class="cost-small" onclick="openProgress()">Cập nhật tiến độ</button>' : ''}</div>`;
+      ${(D.canEdit || D.canProgress) && D.hangMuc.length ? '<button class="cost-small" onclick="openProgress()">Cập nhật tiến độ</button>' : ''}</div>`;
   }
   // việc cần xử lý
   if (D.alerts.length) h += `<div class="card cost-card cost-al"><div class="cost-t"><b>⚠️ Cần xử lý</b><b style="color:#C0392B;font-size:13px">${D.alerts.length} việc</b></div>
@@ -5395,20 +5527,6 @@ async function doInstall() {
   openModal('modal-install');
 }
 
-// Tạm thời (tìm nguyên nhân dải trống dưới thanh điều hướng trên iPhone): hiện thông số màn hình ở cuối Menu
-function screenDiag() {
-  const el = document.getElementById('scr-diag'); if (!el) return;
-  const pr = document.createElement('div');
-  pr.style.cssText = 'position:fixed;top:0;left:0;visibility:hidden;padding:env(safe-area-inset-top,0px) 0 env(safe-area-inset-bottom,0px)';
-  document.body.appendChild(pr); const cs = getComputedStyle(pr);
-  const st = parseFloat(cs.paddingTop) || 0, sb = parseFloat(cs.paddingBottom) || 0; pr.remove();
-  const nav = document.getElementById('bottom-nav')?.getBoundingClientRect();
-  el.textContent = `Màn hình ${screen.width}×${screen.height} · Vùng app ${innerWidth}×${innerHeight}`
-    + ` · VV ${Math.round(window.visualViewport?.height || 0)} · Trang ${document.documentElement.clientHeight}`
-    + ` · An toàn ${st}/${sb} · Thanh dưới ${nav ? Math.round(nav.top) + '→' + Math.round(nav.bottom) : '-'}`
-    + ` · ${navigator.standalone ? 'Đã cài' : matchMedia('(display-mode: standalone)').matches ? 'standalone' : 'Trình duyệt'}`;
-}
-
 function iosGapCheck() {
   if (!isIOS || !isStandalone()) return;
   const gap = screen.height - window.innerHeight;
@@ -5416,6 +5534,526 @@ function iosGapCheck() {
   document.documentElement.classList.toggle('ios-gap', gap >= 20);
 }
 window.addEventListener('resize', iosGapCheck);
+
+// =====================================================================
+// v5.17.0 — PHIẾU YÊU CẦU CẤP VẬT TƯ · KIỂM KÊ LÀM MỐC · TELEGRAM
+// (máy chủ 5.13.0). Thao tác phiếu yêu cầu / kiểm kê cần có mạng (máy chủ kiểm tra và tự tính số).
+// =====================================================================
+const NEW_ROLES = {cht:1, chp:1, ktv:1};
+const PERM_DEF = {
+  cht:{tao:1, bs:1, duyet:1, nhan:1, xemMoi:1, ton:1, tienDo:1, chiPhi:1},
+  chp:{tao:1, bs:1, duyet:1, nhan:1, xemMoi:1, ton:1, tienDo:1, chiPhi:0},
+  ktv:{tao:1, bs:1, duyet:0, nhan:1, xemMoi:1, ton:1, tienDo:0, chiPhi:0}
+};
+const PERM_LABEL = [['tao','Tạo phiếu yêu cầu'], ['bs','Xin bổ sung vượt định mức'], ['duyet','Duyệt phiếu của KTV'], ['nhan','Bấm "Đã nhận"'],
+  ['xemMoi','Xem mọi phiếu trong dự án'], ['ton','Xem tồn kho (không giá)'], ['tienDo','Cập nhật tiến độ thi công'], ['chiPhi','Xem giá và màn Chi phí']];
+const permOf = r => Object.assign({}, PERM_DEF[r] || {}, (db.rolePerm || {})[r] || {});
+function canP(k) { if (role === 'admin' || role === 'ql') return true; if (!NEW_ROLES[role]) return false; return !!permOf(role)[k]; }
+const isPycRef = v => typeof v === 'string' && /^PYC-/.test(v);
+const reqRemain = r => (r.lines || []).reduce((a, l) => a + Math.max(0, (+l.req || 0) - (+l.sent || 0)), 0);
+const reqOpen = r => ['cho','gui','chohang'].includes(r.status);
+const shortNm = n => String(n || '').trim().split(/\s+/).pop();
+const cocShort = s => String(s || '').replace(/Cóc nối thép /i, 'Cóc ');
+let reqListMode = 'open', curReqId = null, reqUI = {}, rf = null, kkCat = 'cocNoi', kkIn = {}, xuatF = 'all';
+
+function reqLook(r) {
+  const yellow = r.duyet === 'chua' && r.status === 'cho' && (NEW_ROLES[role]);
+  if (r.status === 'tuchoi' || r.status === 'huy') return {bg:'#EEF0F3', bd:'#C9D3E3', chip:r.status === 'huy' ? 'Đã hủy' : 'Từ chối', cb:'#8A9AB0'};
+  if (yellow) return {bg:'rgba(242,201,76,.22)', bd:'rgba(183,121,31,.6)', chip:'Chờ duyệt', cb:'#B7791F'};
+  if (r.status === 'cho') return {bg:'rgba(231,76,60,.20)', bd:'rgba(192,57,43,.6)', chip:'Chờ kho cấp', cb:'#C0392B'};
+  if (r.status === 'gui') return {bg:'rgba(41,128,185,.14)', bd:'rgba(41,128,185,.55)', chip:reqRemain(r) ? 'Đang gửi (một phần)' : 'Đang gửi', cb:'#1F6FA8'};
+  if (r.status === 'chohang') return {bg:'rgba(242,101,34,.15)', bd:'rgba(194,65,12,.55)', chip:'Chờ hàng – còn thiếu', cb:'#C2410C'};
+  return {bg:'rgba(39,174,96,.15)', bd:'rgba(30,132,73,.55)', chip:'Hoàn thành', cb:'#1E8449'};
+}
+function reqAp(r) {
+  if (r.duyet === 'tudong') return ['CHT/CHP lập – không cần duyệt', '#E7F0FB', '#1864AB'];
+  if (r.duyet === 'da') return ['Đã duyệt · ' + shortNm(r.duyetBy), '#E3F4EA', '#1E7A45'];
+  if (r.duyet === 'sau') return ['Duyệt sau khi cấp · ' + shortNm(r.duyetBy), '#FFF1D6', '#8A5A00'];
+  if (r.status === 'tuchoi' || r.status === 'huy') return ['Không duyệt', '#E3E7ED', '#3A4A5A'];
+  if (r.status === 'cho') return ['Chưa CHT/CHP duyệt', '#FFE9A8', '#7A4E00'];
+  return ['Đã cấp – chưa CHT/CHP duyệt', '#FFD9A8', '#7A3A00'];
+}
+function reqCard(r) {
+  const L = reqLook(r), A = reqAp(r);
+  const sum = (r.lines || []).map(l => cocShort(l.itemName) + ': ' + fmtNum(l.req) + (l.sent && l.sent < l.req ? ` (đã gửi ${fmtNum(l.sent)})` : '')).join(' · ');
+  return `<div class="pyc-card" style="background:${L.bg};border-color:${L.bd}" onclick="openReq('${escHtml(r.id)}')">
+    <div class="pyc-top"><b>${escHtml(r.id)}</b><span class="pyc-chip" style="background:${L.cb}">${L.chip}</span></div>
+    <div class="pyc-title">${escHtml(r.title)}</div>
+    <div class="pyc-sum">${escHtml(sum)}</div>
+    <div class="pyc-foot"><span class="pyc-ap" style="background:${A[1]};color:${A[2]}">${A[0]}</span><span>${escHtml(shortNm(r.createdByName))} · ${escHtml(r.datetime || '')}</span></div>
+  </div>`;
+}
+const projReqs = () => (db.reqs || []).filter(r => r.project === curProj);
+function pycPending() {
+  const R = projReqs();
+  if (role === 'tk') return R.filter(r => r.status === 'cho' || r.status === 'chohang').length;
+  if (role === 'ktv') return R.filter(r => r.createdBy === me?.id && r.status === 'gui').length;
+  if (canP('duyet') && NEW_ROLES[role]) return R.filter(r => r.duyet === 'chua' && r.status !== 'tuchoi' && r.status !== 'huy').length;
+  if (role === 'admin' || role === 'ql') return R.filter(r => r.status === 'cho' || r.status === 'chohang').length;
+  return 0;
+}
+function updatePycBadge() {
+  const n = pycPending(), b = document.getElementById('pyc-badge');
+  if (b) { b.textContent = n > 99 ? '99+' : n; b.style.display = n ? '' : 'none'; }
+  document.getElementById('bn-ton')?.classList.toggle('nav-off', !!NEW_ROLES[role] && !canP('ton'));
+}
+function pycSection(title, arr, emptyTxt) {
+  return `<div class="grp-label pyc-grp"><span>${title}</span><span>${arr.length} phiếu</span></div>` +
+    (arr.length ? arr.map(reqCard).join('') : `<div class="pyc-empty">${emptyTxt || 'Không có phiếu'}</div>`);
+}
+const newestFirst = arr => arr.slice().sort((a, b) => String(b.id).localeCompare(String(a.id)));
+function renderPyc(c) {
+  const R = newestFirst(projReqs()), mine = r => r.createdBy === me?.id;
+  const canNew = canP('tao') && (NEW_ROLES[role] || role === 'ql' || role === 'admin');
+  let sec = '';
+  if (reqListMode !== 'open') {
+    const arr = reqListMode === 'done' ? R.filter(r => !reqOpen(r)) : R;
+    sec = arr.length ? arr.slice(0, 200).map(reqCard).join('') : '<div class="pyc-empty">Không có phiếu</div>';
+  } else if (role === 'tk') {
+    sec = pycSection('🔴 Cần cấp gấp', R.filter(r => r.status === 'cho'), 'Không có phiếu chờ cấp') +
+      pycSection('🟠 Chờ hàng – còn thiếu', R.filter(r => r.status === 'chohang')) +
+      pycSection('🚚 Đang gửi – chờ bên nhận xác nhận', R.filter(r => r.status === 'gui'));
+  } else if (NEW_ROLES[role] && canP('duyet')) {
+    sec = pycSection('🟡 Chờ bạn duyệt', R.filter(r => r.duyet === 'chua' && r.status === 'cho'), 'Không có phiếu chờ duyệt') +
+      pycSection('⚠️ Kho đã cấp – chưa duyệt', R.filter(r => r.duyet === 'chua' && ['gui','chohang','xong'].includes(r.status))) +
+      pycSection('🚚 Hàng đang tới – bấm "Đã nhận"', R.filter(r => r.status === 'gui' && r.duyet !== 'chua')) +
+      pycSection('📋 Phiếu đang mở khác', R.filter(r => r.duyet !== 'chua' && ['cho','chohang'].includes(r.status)));
+  } else if (NEW_ROLES[role]) {
+    sec = pycSection('🚚 Hàng đang tới – bấm "Đã nhận"', R.filter(r => mine(r) && r.status === 'gui'), 'Chưa có hàng đang gửi') +
+      pycSection('📋 Phiếu của tôi đang mở', R.filter(r => mine(r) && ['cho','chohang'].includes(r.status)));
+  } else {
+    sec = pycSection('🔴 Chờ kho cấp', R.filter(r => r.status === 'cho' || r.status === 'chohang'), 'Không có phiếu chờ cấp') +
+      pycSection('🟡 Chưa CHT/CHP duyệt', R.filter(r => r.duyet === 'chua' && r.status !== 'tuchoi' && r.status !== 'huy')) +
+      pycSection('🚚 Đang gửi', R.filter(r => r.status === 'gui'));
+  }
+  const chip = (k, t) => `<div class="chip ${reqListMode === k ? 'on' : ''}" onclick="reqListMode='${k}';goTab('pyc')">${t}</div>`;
+  c.innerHTML = `
+    <div class="hist-head"><b>📝 Phiếu yêu cầu</b><span>${escHtml(curProj)}</span></div>
+    <div class="chip-row" style="margin-bottom:10px">${chip('open', 'Đang xử lý')}${chip('done', 'Đã xong')}${chip('all', 'Tất cả')}</div>
+    <div style="padding:0 14px 20px">
+      ${canNew ? `<button class="btn-full btn-orange" style="margin:0 0 12px" onclick="openReqNew()">+ Tạo phiếu yêu cầu</button>` : ''}
+      <div class="pyc-links">
+        ${can('tk') ? `<button onclick="openKK()">🔢 Đợt kiểm kê</button>` : ''}
+        ${canCost() ? `<button onclick="openDp('dp-coc')">🔗 Đối chiếu cóc nối</button>` : ''}
+        ${can('admin') ? `<button onclick="openDp('dp-pycfg')">⚙️ Cài đặt phiếu</button>` : ''}
+      </div>
+      ${sec}
+    </div>`;
+}
+// Thẻ đầu Tổng quan (thủ kho / CHT / CHP / Quản lý / Admin)
+function reqHomeHtml() {
+  if (!curProj || role === 'ktv' || role === 'xem' || role === 'ld') return '';
+  const n = pycPending(); if (!n) return '';
+  const R = newestFirst(projReqs());
+  let arr, title;
+  if (role === 'tk' || role === 'ql' || role === 'admin') { arr = R.filter(r => r.status === 'cho' || r.status === 'chohang'); title = `${n} phiếu yêu cầu đang chờ kho cấp`; }
+  else { arr = R.filter(r => r.duyet === 'chua' && r.status !== 'tuchoi' && r.status !== 'huy'); title = `${n} phiếu yêu cầu chờ bạn duyệt`; }
+  return `<div class="pyc-home">
+    <div class="pyc-home-h" onclick="goTab('pyc')"><b>🔴 ${title}</b><span>Xem tất cả ›</span></div>
+    ${arr.slice(0, 3).map(reqCard).join('')}
+  </div>`;
+}
+
+// ---------- Chi tiết phiếu ----------
+function openReq(id) { curReqId = id; reqUI = {kk:-1, sl:false}; openDp('dp-req', renderReqDetail); }
+function upsertReq(r) {
+  if (!r) return;
+  db.reqs = db.reqs || [];
+  const i = db.reqs.findIndex(x => x.id === r.id);
+  if (i < 0) db.reqs.unshift(r); else db.reqs[i] = r;
+  saveLocal(); updatePycBadge();
+}
+function renderReqDetail() {
+  const r = (db.reqs || []).find(x => x.id === curReqId), body = document.getElementById('dp-req-body');
+  if (!r) { body.innerHTML = '<div class="empty-state"><p>Không tìm thấy phiếu</p></div>'; return; }
+  document.getElementById('dp-req-title').textContent = '📝 ' + r.id;
+  const L = reqLook(r), A = reqAp(r);
+  const kho = can('tk') && reqOpen(r) && reqRemain(r) > 0 && r.status !== 'gui';
+  const khoMore = can('tk') && r.status === 'gui' && reqRemain(r) > 0;
+  const nhan = r.status === 'gui' && (r.createdBy === me?.id || (canP('nhan') && (NEW_ROLES[role])));
+  const duyet = canP('duyet') && (NEW_ROLES[role] || role === 'admin' || role === 'ql') && r.duyet === 'chua' && r.status !== 'tuchoi' && r.status !== 'huy';
+  const sentAny = (r.lines || []).some(l => +l.sent > 0);
+  const huy = r.status === 'cho' && !sentAny && (r.createdBy === me?.id || (canP('duyet') && NEW_ROLES[role]) || can('ql'));
+  const rejKho = can('tk') && r.status === 'cho' && !sentAny;
+  const rejDuyet = !rejKho && duyet && r.status === 'cho' && !sentAny;
+  const editIssue = kho || (khoMore && reqUI.more);
+  const col4 = editIssue ? 'Gửi lần này' : (nhan && reqUI.sl ? 'Thực nhận' : (canP('ton') || can('tk') ? 'Tồn kho' : ''));
+  const lines = (r.lines || []).map((l, k) => {
+    const it = db.items.find(i => i.id === +l.itemId), ton = it ? +it.stock || 0 : 0, rem = Math.max(0, l.req - (l.sent || 0));
+    let c4 = '';
+    if (editIssue) c4 = `<input type="number" inputmode="decimal" class="pyc-in" id="ri-${k}" value="${Math.min(rem, Math.max(0, ton))}" min="0">`;
+    else if (nhan && reqUI.sl) c4 = `<input type="number" inputmode="decimal" class="pyc-in" id="rr-${k}" value="${+l.last || 0}" min="0">`;
+    else if (col4) c4 = `<span style="color:${ton < rem ? 'var(--red)' : 'var(--text3)'};font-weight:700">${fmtNum(ton)}</span>`;
+    const short = editIssue && ton < rem;
+    return `<div class="pyc-line">
+      <div class="pyc-lrow"><b>${escHtml(cocShort(l.itemName))}</b><span>${fmtNum(l.req)}</span><span>${fmtNum(l.sent || 0)}</span><span>${c4}</span></div>
+      <div class="pyc-br">${escHtml(l.br || '')}${editIssue ? ` · còn phải cấp ${fmtNum(rem)}` : ''}</div>
+      ${short ? `<div class="pyc-kk">
+        <div>App báo không đủ hàng (tồn ${fmtNum(ton)} ${escHtml(it?.unit || '')}). Nếu trong kho thực tế còn, kiểm kê để sửa số.</div>
+        ${reqUI.kk === k ? `<div class="pyc-kk-row"><input type="number" inputmode="decimal" id="kkv-${k}" placeholder="Số đếm thực tế"><button onclick="reqCountNow(${k})">Lưu mốc</button></div>`
+          : `<button class="pyc-kk-btn" onclick="reqUI.kk=${k};renderReqDetail()">🔢 Kiểm kê ngay ${escHtml(cocShort(l.itemName))}</button>`}
+      </div>` : ''}
+    </div>`;
+  }).join('');
+  const px = byTimeDesc(db.transactions.filter(t => t.type === 'xuat' && t.refId === r.id));
+  body.innerHTML = `
+    <div class="pyc-head" style="background:${L.bg};border-color:${L.bd}">
+      <div class="pyc-top"><b style="font-size:15px">${escHtml(r.title)}</b><span class="pyc-chip" style="background:${L.cb}">${L.chip}</span></div>
+      ${r.opt && r.opt.text ? `<div class="pyc-sum">${escHtml(r.opt.text)}${r.opt.haoHut ? ` · hao hụt ${r.opt.haoHut}%` : ''}</div>` : ''}
+      ${r.may ? `<div class="pyc-sum">🏗 Máy: ${escHtml(r.may)}</div>` : ''}
+      ${r.note ? `<div class="pyc-sum">📝 ${escHtml(r.note)}</div>` : ''}
+      <div class="pyc-sum">👤 ${escHtml(r.createdByName)} (${escHtml(ROLE_NAME[r.createdRole] || r.createdRole || '')}) · ${escHtml(r.datetime || '')}</div>
+      <span class="pyc-ap" style="background:${A[1]};color:${A[2]};align-self:flex-start">${A[0]}</span>
+      ${r.bs ? `<div class="pyc-note-o">Lý do bổ sung: ${escHtml(r.bs.reason)}${r.bs.note ? ' – ' + escHtml(r.bs.note) : ''} (${fmtNum(r.bs.qty)} cóc ${escHtml(r.bs.size)})</div>` : ''}
+      ${r.reject ? `<div class="pyc-note-g">Lý do từ chối: ${escHtml(r.reject)}</div>` : ''}
+    </div>
+    <div class="card" style="padding:10px 14px;margin-bottom:12px">
+      <div class="pyc-lrow pyc-lh"><span>Vật tư</span><span>Yêu cầu</span><span>Đã gửi</span><span>${col4}</span></div>
+      ${lines}
+    </div>
+    ${kho || (khoMore && reqUI.more) ? `
+      <button class="btn-full" style="background:var(--primary)" onclick="reqIssue()">🚚 Đã gửi – trừ tồn kho</button>
+      <div class="pyc-hint">Gửi ít hơn số còn phải cấp = cấp một phần, phần thiếu chuyển "Chờ hàng"</div>` : ''}
+    ${khoMore && !reqUI.more ? `<button class="btn-full" style="background:var(--bg);color:var(--text)" onclick="reqUI.more=1;renderReqDetail()">Cấp thêm phần còn thiếu</button>` : ''}
+    ${rejKho || rejDuyet ? `<div class="pyc-rej"><input id="req-rej" placeholder="Lý do từ chối (bắt buộc)"><button onclick="reqReject()">Từ chối</button></div>` : ''}
+    ${duyet ? `<button class="btn-full" style="background:#B7791F" onclick="reqAction('approveReq',{id:curReqId},'✅ Đã duyệt')">${r.status === 'cho' ? '✅ Duyệt phiếu' : '✅ Duyệt sau khi cấp'}</button>` : ''}
+    ${nhan ? `<button class="btn-full" style="background:var(--green)" onclick="reqReceive()">${reqUI.sl ? '✅ Xác nhận số thực nhận' : '✅ Đã nhận đủ'}</button>
+      <button class="btn-full" style="background:#fff;color:var(--red);border:1.5px solid var(--red)" onclick="reqUI.sl=!reqUI.sl;renderReqDetail()">${reqUI.sl ? 'Bỏ báo sai lệch' : '⚠️ Báo sai lệch (nhận thiếu)'}</button>` : ''}
+    <button class="btn-full" style="background:#0068FF" onclick="shareReq()">📤 Gửi Zalo</button>
+    ${huy ? `<button class="btn-full" style="background:var(--bg);color:var(--text2)" onclick="if(confirm('Hủy phiếu ${escHtml(r.id)}?'))reqAction('cancelReq',{id:curReqId},'Đã hủy phiếu')">Hủy phiếu</button>` : ''}
+    ${px.length ? `<div class="grp-label" style="margin-top:10px">Phiếu xuất đã tạo (${px.length})</div><div class="card" style="margin-bottom:12px">${px.map(txnRow).join('')}</div>` : ''}
+    <div class="grp-label" style="margin-top:10px">Lịch sử phiếu</div>
+    <div class="card" style="padding:8px 14px">${(r.log || []).slice().reverse().map(g => `<div class="pyc-log"><span>${escHtml(g.t || '')}</span><span>${escHtml(g.x || '')}</span></div>`).join('')}</div>`;
+}
+// Gửi phiếu qua Zalo (thủ công): soạn sẵn nội dung → bảng chia sẻ của điện thoại (máy tính: chép để dán)
+function reqShareText(r) {
+  const L = reqLook(r), A = reqAp(r), next = {
+    cho: r.duyet === 'chua' ? '👉 Kho cần cấp · CHT/CHP cần duyệt' : '👉 Kho cần cấp',
+    gui: '👉 Bên nhận kiểm hàng và bấm "Đã nhận" trên app',
+    chohang: '👉 Kho cấp nốt phần còn thiếu khi có hàng'}[r.status] || '';
+  const out = [`📝 PHIẾU YÊU CẦU ${r.id} — ${r.project}`, r.title, `Trạng thái: ${L.chip} · ${A[0]}`];
+  if (r.opt && r.opt.text) out.push(r.opt.text);
+  if (r.may) out.push('Máy: ' + r.may);
+  (r.lines || []).forEach(l => out.push(`• ${cocShort(l.itemName)}: yêu cầu ${fmtNum(l.req)} ${l.unit || ''}${l.sent ? ` · đã gửi ${fmtNum(l.sent)}` : ''}`));
+  if (r.bs) out.push(`Bổ sung: ${r.bs.reason}${r.bs.note ? ' – ' + r.bs.note : ''}`);
+  if (r.reject) out.push('Từ chối: ' + r.reject);
+  if (r.note) out.push('Ghi chú: ' + r.note);
+  out.push(`Người yêu cầu: ${r.createdByName} · ${r.datetime || ''}`);
+  if (next) out.push(next);
+  out.push('Mở app: ' + location.origin + location.pathname);
+  return out.join('\n');
+}
+function shareReq() {
+  const r = (db.reqs || []).find(x => x.id === curReqId); if (!r) return;
+  shareOut(reqShareText(r), [], 'Phiếu yêu cầu ' + r.id);
+}
+async function reqAction(action, data, okMsg, needSync) {
+  if (!navigator.onLine) { toast('📴 Cần có mạng để thao tác phiếu yêu cầu'); return null; }
+  showLoader('Đang gửi...');
+  const r = await api(action, data, 40000);
+  hideLoader();
+  if (!r || !r.success) { toast('⚠️ ' + ((r && (r.error || r.reason)) || 'Không lưu được, thử lại')); return null; }
+  if (r.req) upsertReq(r.req);
+  if (needSync) await syncAll(true);
+  toast(okMsg);
+  reqUI.more = 0; reqUI.sl = false; reqUI.kk = -1;
+  if (document.getElementById('dp-req').classList.contains('show')) renderReqDetail();
+  refreshCurrentView(false);
+  return r;
+}
+function reqIssue() {
+  const r = db.reqs.find(x => x.id === curReqId); if (!r) return;
+  const send = r.lines.map((l, k) => { const el = document.getElementById('ri-' + k); return el ? +el.value || 0 : 0; });
+  if (!send.some(v => v > 0)) { toast('⚠️ Nhập số thực gửi'); return; }
+  reqAction('issueReq', {id:curReqId, send}, '🚚 Đã gửi, đã trừ tồn kho và tạo phiếu xuất', true);
+}
+function reqReject() {
+  const v = (document.getElementById('req-rej')?.value || '').trim();
+  if (!v) { toast('⚠️ Nhập lý do từ chối'); return; }
+  reqAction('rejectReq', {id:curReqId, reason:v}, 'Đã từ chối phiếu');
+}
+function reqReceive() {
+  const r = db.reqs.find(x => x.id === curReqId); if (!r) return;
+  const recv = reqUI.sl ? r.lines.map((l, k) => { const el = document.getElementById('rr-' + k); return el ? el.value : ''; }) : [];
+  reqAction('receiveReq', {id:curReqId, recv}, '✅ Đã xác nhận nhận hàng', reqUI.sl);
+}
+async function reqCountNow(k) {
+  const r = db.reqs.find(x => x.id === curReqId), l = r && r.lines[k];
+  const v = document.getElementById('kkv-' + k)?.value;
+  if (!l || v === '' || v === undefined || +v < 0) { toast('⚠️ Nhập số đếm thực tế'); return; }
+  const ok = await saveCounts([{itemId:+l.itemId, qty:+v}], '', r.id);
+  if (ok) { reqUI.kk = -1; renderReqDetail(); }
+}
+
+// ---------- Tạo phiếu ----------
+const ckList = () => (db.cauKien || []).map(a => ({id:a[0], hm:a[1], name:a[2], loai:a[3], banVe:a[4], fixed:(() => { try { return JSON.parse(a[5] || '{}'); } catch (e) { return {}; } })(), optKind:a[6], optN:+a[7] || 0}));
+const OPT_COC_L = [['Không nối cóc', 0], ['4 cóc D25', 4], ['8 cóc D25', 8]];
+function ckLinesLocal(ck, ch, hh) {
+  const add = {};
+  if (ck.optKind === 'coc') add.D25 = OPT_COC_L[ch][1]; else add.D32 = [0, ck.optN, 2 * ck.optN][ch];
+  const sz = {}; Object.keys(ck.fixed).concat(Object.keys(add)).forEach(s => sz[s] = 1);
+  return Object.keys(sz).sort().map(s => { const dm = +ck.fixed[s] || 0, op = +add[s] || 0, h = Math.ceil((dm + op) * (+hh || 0) / 100); return {size:s, dm, opt:op, hh:h, sum:dm + op + h}; }).filter(x => x.sum > 0);
+}
+const ckOpenReq = ckId => projReqs().find(r => r.ckId === ckId && r.status !== 'tuchoi' && r.status !== 'huy' && r.opt && r.opt.base);
+function openReqNew() {
+  const cks = ckList();
+  rf = {mode: cks.length ? 'coc' : 'vt', hm: cks.some(c => c.hm === 'coc') ? 'coc' : 'tv', q:'', ck:'', opt:null, bsOn:false, bsSize:'D25', bsQty:'', bsReason:'', bsNote:'',
+    itemId:'', qty:'', may:'', mayNote:'', note:''};
+  openDp('dp-req-new', renderReqNew);
+}
+function rfSet(k, v, re) { rf[k] = v; if (re) renderReqNew(); }
+function renderReqNew() {
+  const body = document.getElementById('dp-req-new-body'), cks = ckList();
+  const hh = +(db.projCfg || {}).haoHut || 0;
+  const tab = (k, t) => `<button class="pyc-seg ${rf.mode === k ? 'on' : ''}" onclick="rfSet('mode','${k}',1)">${t}</button>`;
+  let html = `<div class="pyc-segs">${tab('coc', 'Cóc nối theo cấu kiện')}${tab('vt', 'Vật tư khác')}</div>`;
+  if (rf.mode === 'coc') {
+    if (!cks.length) html += `<div class="info-box">Dự án này chưa có định mức cấu kiện. Gửi bản vẽ thi công để nạp định mức, hoặc dùng "Vật tư khác".</div>`;
+    else {
+      const hms = [['coc', 'Cọc khoan nhồi'], ['tv', 'Tường vây']].filter(h => cks.some(c => c.hm === h[0]));
+      const q = rf.q.trim().toLowerCase();
+      const opts = cks.filter(c => c.hm === rf.hm && (!q || c.name.toLowerCase().includes(q)));
+      if (rf.ck && !cks.some(c => c.id === rf.ck && c.hm === rf.hm)) rf.ck = '';
+      const ck = cks.find(c => c.id === rf.ck), done = ck && ckOpenReq(ck.id);
+      html += `<div class="form-section">
+        <div class="fg"><label>Hạng mục</label><div class="pyc-segs" style="margin:0">${hms.map(h => `<button class="pyc-seg ${rf.hm === h[0] ? 'on' : ''}" onclick="rf.hm='${h[0]}';rf.ck='';rf.opt=null;renderReqNew()">${h[1]}</button>`).join('')}</div></div>
+        <div class="fg"><label>Tìm cấu kiện</label><input id="rf-q" value="${escHtml(rf.q)}" placeholder="VD: P3.11" oninput="rf.q=this.value;rfFillCk()"></div>
+        <div class="fg"><label>Cấu kiện</label><select id="rf-ck" onchange="rf.ck=this.value;rf.opt=null;renderReqNew()">${rfCkOptions(opts)}</select></div>
+        ${ck ? `<div class="pyc-hint" style="text-align:left">${escHtml(ck.loai)} · bản vẽ ${escHtml(ck.banVe)}</div>` : ''}
+        ${done ? `<div class="pyc-done">Cấu kiện này đã có phiếu ${escHtml(done.id)} theo định mức. Không xin trùng được — chỉ còn cách "Xin bổ sung" kèm lý do.</div>` : ''}
+      </div>`;
+      if (ck && !done) {
+        const lab = ck.optKind === 'coc' ? 'Thép chờ đầu cọc 4Ø18 nối vào lồng' : '2 mối nối trong phân đoạn trên (Ø32)';
+        const ch = ck.optKind === 'coc' ? OPT_COC_L.map(o => [o[0], '+' + o[1] + ' D25']) : [['Không nối cóc', '+0'], ['50% thanh nối cóc', '+' + ck.optN + ' D32'], ['100% thanh nối cóc', '+' + 2 * ck.optN + ' D32']];
+        html += `<div class="form-section"><div class="form-section-title">${lab} <span style="color:var(--red)">*</span></div>
+          <div class="pyc-hint" style="text-align:left;margin:-4px 0 8px">Bắt buộc chọn theo thực tế thi công</div>
+          ${ch.map((o, i) => `<button class="pyc-opt ${rf.opt === i ? 'on' : ''}" onclick="rfSet('opt',${i},1)"><span>${o[0]}</span><span>${o[1]}</span></button>`).join('')}
+        </div>`;
+        if (rf.opt !== null) {
+          const ls = ckLinesLocal(ck, rf.opt, hh);
+          html += `<div class="form-section"><div class="form-section-title">Số lượng (theo bản vẽ)</div>
+            <div class="pyc-grid pyc-lh"><span>Cóc</span><span>Định mức</span><span>Hao hụt ${hh}%</span><span>Tùy chọn</span><span>Cộng</span></div>
+            ${ls.map(x => `<div class="pyc-grid"><b>${x.size}</b><span>${x.dm}</span><span>${x.hh}</span><span>${x.opt}</span><b style="color:var(--primary)">${x.sum}</b></div>`).join('')}
+            <div class="pyc-grid" style="border-top:2px solid var(--text)"><b>Tổng</b><span></span><span></span><span></span><b>${ls.reduce((a, x) => a + x.sum, 0)}</b></div>
+          </div>`;
+        }
+      }
+      if (ck && canP('bs')) {
+        const sizes = [...new Set(db.items.filter(i => /cóc/i.test(i.name)).map(i => (i.name.match(/D\d{2}/) || [''])[0]).filter(Boolean))].sort();
+        html += `<div class="form-section">
+          <button class="pyc-bs ${rf.bsOn ? 'on' : ''}" onclick="rfSet('bsOn',!rf.bsOn,1)">${rf.bsOn ? 'Bỏ xin bổ sung' : '+ Xin bổ sung (ngoài định mức)'}</button>
+          ${rf.bsOn ? `<div class="fg-row" style="margin-top:10px">
+              <div class="fg"><label>Cỡ cóc</label><select onchange="rf.bsSize=this.value">${sizes.map(s => `<option ${s === rf.bsSize ? 'selected' : ''}>${s}</option>`).join('')}</select></div>
+              <div class="fg"><label>Số lượng thêm</label><input type="number" inputmode="numeric" value="${escHtml(rf.bsQty)}" oninput="rf.bsQty=this.value"></div>
+            </div>
+            <div class="fg"><label>Lý do bổ sung <span style="color:var(--red)">*</span></label>
+              <div class="chip-row" style="padding:0;flex-wrap:wrap">${['Rơi mất', 'Thi công khác bản vẽ', 'Hỏng ren / gãy', 'Khác'].map(x => `<div class="chip ${rf.bsReason === x ? 'on' : ''}" onclick="rfSet('bsReason','${x}',1)">${x}</div>`).join('')}</div></div>
+            <div class="fg"><label>Ghi chú thêm</label><input value="${escHtml(rf.bsNote)}" oninput="rf.bsNote=this.value" placeholder="VD: rơi 4 con khi hạ lồng đoạn 3"></div>` : ''}
+        </div>`;
+      }
+    }
+  } else {
+    const items = db.items.filter(i => +i.capThang !== 1);
+    const it = items.find(i => i.id === +rf.itemId);
+    const groups = catGroups().map(([c, arr]) => [c, arr.filter(i => +i.capThang !== 1)]).filter(([, a]) => a.length);
+    html += `<div class="form-section">
+      <div class="fg"><label>Vật tư</label><select onchange="rf.itemId=this.value;rf.may='';renderReqNew()">
+        <option value="">— Chọn vật tư —</option>
+        ${groups.map(([c, arr]) => `<optgroup label="${escHtml(c.name)}">${arr.map(i => `<option value="${i.id}" ${+rf.itemId === i.id ? 'selected' : ''}>${escHtml(i.name)}</option>`).join('')}</optgroup>`).join('')}
+      </select></div>
+      ${it && (canP('ton') || can('tk')) ? `<div class="pyc-hint" style="text-align:left">Tồn kho: ${fmtNum(it.stock)} ${escHtml(it.unit)}</div>` : ''}
+      <div class="fg"><label>Số lượng${it ? ' (' + escHtml(it.unit) + ')' : ''}</label><input type="number" inputmode="decimal" value="${escHtml(rf.qty)}" oninput="rf.qty=this.value"></div>
+      ${it && +it.canMay === 1 ? `<div class="pyc-may"><div class="fg"><label>Máy sử dụng <span style="color:var(--red)">*</span></label>
+          <select onchange="rf.may=this.value;renderReqNew()"><option value="">— Chọn máy —</option>
+          ${db.devices.map(d => `<option ${rf.may === d.name ? 'selected' : ''}>${escHtml(d.name)}</option>`).join('')}
+          <option value="chung" ${rf.may === 'chung' ? 'selected' : ''}>Dùng chung, không theo máy</option></select></div>
+          ${rf.may === 'chung' ? `<div class="fg"><label>Lý do dùng chung <span style="color:var(--red)">*</span></label><input value="${escHtml(rf.mayNote)}" oninput="rf.mayNote=this.value"></div>` : ''}
+          <div class="pyc-hint" style="text-align:left">Phiếu xuất sẽ ghi tên máy để báo cáo tiêu hao theo máy</div></div>` : ''}
+      <div class="info-box" style="margin:6px 0 0">Thép, ống siêu âm, đai, kẽm, bentonite… cấp thẳng cho tổ đội nên không có trong danh sách.</div>
+    </div>`;
+  }
+  html += `<div class="form-section"><div class="fg"><label>Ghi chú</label><input value="${escHtml(rf.note)}" oninput="rf.note=this.value" placeholder="VD: ca đêm, giao tại máy"></div>
+    <button class="btn-full btn-orange" onclick="submitReq()">Gửi phiếu</button>
+    <div class="pyc-hint">${NEW_ROLES[role] && role === 'ktv' ? 'Phiếu tới kho ngay và chờ CHT/CHP duyệt song song' : 'Phiếu tới thẳng kho, không cần duyệt'}</div></div>`;
+  body.innerHTML = html;
+}
+function rfCkOptions(opts) {
+  return `<option value="">— Chọn (${opts.length}) —</option>` + opts.slice(0, 400).map(c => {
+    const d = ckOpenReq(c.id);
+    return `<option value="${escHtml(c.id)}" ${c.id === rf.ck ? 'selected' : ''}>${escHtml(c.name)}${d ? ' · đã có ' + d.id : ''}</option>`;
+  }).join('');
+}
+function rfFillCk() {
+  const q = rf.q.trim().toLowerCase(), opts = ckList().filter(c => c.hm === rf.hm && (!q || c.name.toLowerCase().includes(q)));
+  const sel = document.getElementById('rf-ck'); if (sel) sel.innerHTML = rfCkOptions(opts);
+}
+async function submitReq() {
+  const d = {project:curProj, kind:rf.mode, note:rf.note, clientTime:nowStr()};
+  if (rf.mode === 'coc') {
+    if (!rf.ck) { toast('⚠️ Chọn cấu kiện'); return; }
+    const done = ckOpenReq(rf.ck);
+    d.ckId = rf.ck;
+    if (!done) { if (rf.opt === null) { toast('⚠️ Chọn mức cho phần tùy chọn trước khi gửi'); return; } d.opt = rf.opt; }
+    if (rf.bsOn) {
+      if (!(+rf.bsQty > 0)) { toast('⚠️ Nhập số lượng bổ sung'); return; }
+      if (!rf.bsReason) { toast('⚠️ Chọn lý do bổ sung'); return; }
+      d.bs = {size:rf.bsSize, qty:+rf.bsQty, reason:rf.bsReason, note:rf.bsNote};
+    } else if (done) { toast('⚠️ Cấu kiện đã có phiếu — bấm "Xin bổ sung" nếu cần thêm'); return; }
+  } else {
+    const it = db.items.find(i => i.id === +rf.itemId);
+    if (!it) { toast('⚠️ Chọn vật tư'); return; }
+    if (!(+rf.qty > 0)) { toast('⚠️ Nhập số lượng'); return; }
+    if (+it.canMay === 1) {
+      if (!rf.may) { toast('⚠️ Chọn máy sử dụng'); return; }
+      if (rf.may === 'chung' && !rf.mayNote.trim()) { toast('⚠️ Ghi lý do dùng chung'); return; }
+    }
+    Object.assign(d, {itemId:it.id, qty:+rf.qty, may:rf.may, mayNote:rf.mayNote});
+  }
+  const r = await reqAction('createReq', d, '✅ Đã gửi phiếu — bấm "Gửi Zalo" nếu cần báo thêm qua Zalo');
+  if (r) { closeDp('dp-req-new'); reqListMode = 'open'; goTab('pyc'); if (r.req) openReq(r.req.id); }
+}
+
+// ---------- Kiểm kê làm mốc ----------
+async function saveCounts(list, note, reqId) {
+  if (!navigator.onLine) { toast('📴 Cần có mạng để kiểm kê'); return false; }
+  showLoader('Đang lưu kiểm kê...');
+  const r = await api('addCount', {items:list, note:note || '', reqId:reqId || '', clientTime:nowStr()}, 40000);
+  hideLoader();
+  if (!r || !r.success) { toast('⚠️ ' + ((r && (r.error || r.reason)) || 'Không lưu được')); return false; }
+  (r.counted || []).forEach(c => { const it = db.items.find(i => i.id === +c.itemId); if (it) it.stock = +c.dem; });
+  updateLowBadge();
+  await syncAll(true);
+  toast(`✅ Đã lưu ${(r.counted || []).length} mốc kiểm kê — tồn kho tính tiếp từ số đếm`);
+  return true;
+}
+const kkDelta = t => { const m = String(t.reason || '').match(/trên app (-?[\d.]+)/); return m ? Math.round((+t.qty - +m[1]) * 1000) / 1000 : 0; };
+const kkAsDc = t => t.type === 'kiemke' ? {...t, type:'dieuchinh', qty:kkDelta(t), refId:'', reason:t.reason || 'Kiểm kê'} : t;
+function kkMocTxt(i) {
+  const ms = +(db.kkMoc || {})[String(i.id)]; if (!ms) return '';
+  const d = new Date(ms); return `Mốc kiểm kê ${d.getDate()}/${d.getMonth() + 1} ${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`;
+}
+function openKK() { kkIn = {}; openDp('dp-kk', renderKK); }
+function renderKK() {
+  const groups = catGroups();
+  if (!groups.some(([c]) => c.id === kkCat) && kkCat !== 'all') kkCat = groups[0]?.[0].id || 'all';
+  const items = kkCat === 'all' ? db.items : (groups.find(([c]) => c.id === kkCat)?.[1] || []);
+  const hist = byTimeDesc(filtTxns().filter(t => t.type === 'kiemke')).slice(0, 30);
+  document.getElementById('dp-kk-body').innerHTML = `
+    <div class="info-box">Nhập số đếm thực tế. Ô bỏ trống = chưa đếm, giữ nguyên. Số đếm là <b>mốc</b>: tồn kho tính tiếp từ đây; phiếu ghi bù có giờ trước mốc không làm đổi tồn.</div>
+    <div class="chip-row" style="padding:0 0 10px;flex-wrap:wrap">${groups.map(([c]) => `<div class="chip ${kkCat === c.id ? 'on' : ''}" onclick="kkCat='${c.id}';renderKK()">${c.icon} ${escHtml(c.name)}</div>`).join('')}<div class="chip ${kkCat === 'all' ? 'on' : ''}" onclick="kkCat='all';renderKK()">Toàn kho</div></div>
+    <div class="card" style="padding:4px 14px;margin-bottom:12px">
+      <div class="kk-row pyc-lh"><span>Vật tư</span><span>Trên app</span><span>Số đếm</span></div>
+      ${items.map(i => `<div class="kk-row"><span><b>${escHtml(i.name)}</b><small>${kkMocTxt(i)}</small></span><span>${fmtNum(i.stock)} ${escHtml(i.unit)}</span>
+        <input type="number" inputmode="decimal" value="${kkIn[i.id] ?? ''}" placeholder="—" oninput="kkIn[${i.id}]=this.value;this.classList.toggle('diff',this.value!==''&&+this.value!==${+i.stock || 0})"></div>`).join('')}
+    </div>
+    <div class="fg"><label>Ghi chú đợt kiểm kê</label><input id="kk-note" placeholder="VD: kiểm kê cuối tuần, có anh Đức chứng kiến"></div>
+    <button class="btn-full" style="background:var(--primary)" onclick="saveKK()">Lưu đợt kiểm kê</button>
+    ${hist.length ? `<div class="grp-label" style="margin-top:14px">Lịch sử kiểm kê gần đây</div>
+      <div class="card" style="padding:4px 14px">${hist.map(t => { const d = kkDelta(t); return `<div class="kk-hist"><span><b>${escHtml(t.itemName)}</b><small>${escHtml(t.datetime)} · ${escHtml(shortNm(t.createdByName))}</small></span><span>đếm ${fmtNum(t.qty)}</span><b style="color:${d < 0 ? 'var(--red)' : d > 0 ? 'var(--green)' : 'var(--text3)'}">${d > 0 ? '+' : ''}${fmtNum(d)}</b></div>`; }).join('')}</div>` : ''}`;
+}
+async function saveKK() {
+  const list = Object.keys(kkIn).filter(k => kkIn[k] !== '' && kkIn[k] !== undefined && +kkIn[k] >= 0).map(k => ({itemId:+k, qty:+kkIn[k]}));
+  if (!list.length) { toast('⚠️ Chưa nhập số đếm nào'); return; }
+  if (await saveCounts(list, document.getElementById('kk-note')?.value || '')) { kkIn = {}; renderKK(); }
+}
+
+// ---------- Đối chiếu cóc nối ----------
+function renderCoc() {
+  const body = document.getElementById('dp-coc-body'), hh = +(db.projCfg || {}).haoHut || 0;
+  const cocs = db.items.filter(i => i.cat === 'cocNoi' || /cóc/i.test(i.name));
+  const size = i => (String(i.name).match(/D\d{2}/) || ['?'])[0];
+  const row = {};
+  cocs.forEach(i => { const s = size(i); row[s] = row[s] || {ck:0, kx:0, dm:0}; });
+  filtTxns().filter(t => t.type === 'xuat').forEach(t => {
+    const it = cocs.find(i => i.id === t.itemId); if (!it) return;
+    row[size(it)][isPycRef(t.refId) ? 'ck' : 'kx'] += effQty(t);
+  });
+  const cks = ckList(), base = projReqs().filter(r => r.opt && r.opt.base && r.status !== 'tuchoi' && r.status !== 'huy');
+  base.forEach(r => { const ck = cks.find(c => c.id === r.ckId); if (!ck) return;
+    ckLinesLocal(ck, +r.opt.choice || 0, r.opt.haoHut ?? hh).forEach(x => { row[x.size] = row[x.size] || {ck:0, kx:0, dm:0}; row[x.size].dm += x.sum; }); });
+  const sizes = Object.keys(row).sort();
+  const nCoc = cks.filter(c => c.hm === 'coc').length, nTv = cks.filter(c => c.hm === 'tv').length;
+  const dCoc = new Set(base.filter(r => (cks.find(c => c.id === r.ckId) || {}).hm === 'coc').map(r => r.ckId)).size;
+  const dTv = new Set(base.filter(r => (cks.find(c => c.id === r.ckId) || {}).hm === 'tv').map(r => r.ckId)).size;
+  body.innerHTML = `
+    <div class="info-box">So sánh cóc đã xuất với định mức theo bản vẽ. <b>Không xác định</b> = cóc xuất thẳng, không gắn cấu kiện. Định mức đến nay = tổng định mức của các cấu kiện đã có phiếu (kể cả hao hụt ${hh}% và phần tùy chọn KTV chọn).</div>
+    <div class="card" style="padding:4px 12px;margin-bottom:12px">
+      <div class="coc-row pyc-lh"><span>Cỡ</span><span>Theo cấu kiện</span><span>Không xác định</span><span>Tổng cấp</span><span>Định mức đến nay</span><span>Vượt</span></div>
+      ${sizes.map(s => { const x = row[s], t = x.ck + x.kx, v = Math.round((t - x.dm) * 1000) / 1000;
+        return `<div class="coc-row"><b>${s}</b><span>${fmtNum(x.ck)}</span><span>${fmtNum(x.kx)}</span><b>${fmtNum(t)}</b><span>${fmtNum(x.dm)}</span><b style="color:${v > 0 ? 'var(--red)' : 'var(--green)'}">${v > 0 ? '+' + fmtNum(v) : '0'}</b></div>`; }).join('') || '<div class="pyc-empty">Chưa có vật tư cóc nối</div>'}
+    </div>
+    <div class="kv-box">
+      <div class="kv"><span>Cọc đã có phiếu cóc</span><b>${dCoc} / ${nCoc}</b></div>
+      <div class="kv"><span>Tấm tường vây đã có phiếu cóc</span><b>${dTv} / ${nTv}</b></div>
+    </div>`;
+}
+
+// ---------- Cài đặt (Admin) ----------
+async function cfgAct(action, data, ok) {
+  showLoader('Đang lưu...'); const r = await api(action, data); hideLoader();
+  if (!r || !r.success) { toast('⚠️ ' + ((r && (r.error || r.reason)) || 'Không lưu được')); return null; }
+  toast(ok || '✅ Đã lưu'); return r;
+}
+async function togPerm(r, k) {
+  const cur = permOf(r)[k];
+  const res = await cfgAct('setRolePerm', {role:r, key:k, value:cur ? 0 : 1});
+  if (res) { db.rolePerm = res.rolePerm; saveLocal(); renderPycCfg(); updatePycBadge(); }
+}
+async function saveHaoHut() {
+  const v = document.getElementById('cfg-hh').value;
+  const res = await cfgAct('setProjCfg', {project:curProj, haoHut:+v});
+  if (res) { db.projCfg = res.cfg; saveLocal(); renderPycCfg(); }
+}
+async function setFlags(ids, key, val) {
+  const res = await cfgAct('setItemFlags', {ids, [key]:val ? 1 : 0});
+  if (res) { db.items.forEach(i => { if (ids.includes(i.id)) i[key] = val ? 1 : 0; }); saveLocal(); renderPycCfg(); }
+}
+function renderPycCfg() {
+  const body = document.getElementById('dp-pycfg-body');
+  const tg = db.tg || {};
+  body.innerHTML = `
+    <div class="grp-label">Quyền theo chức danh (bấm để bật / tắt)</div>
+    <div class="card" style="padding:6px 12px;margin-bottom:14px">
+      <div class="perm-row pyc-lh"><span>Quyền</span><span>CHT</span><span>CHP</span><span>KTV</span></div>
+      ${PERM_LABEL.map(([k, t]) => `<div class="perm-row"><span>${t}</span>${['cht','chp','ktv'].map(r => { const on = permOf(r)[k];
+        return `<button class="perm-b ${on ? 'on' : ''}" onclick="togPerm('${r}','${k}')">${on ? 'Có' : '–'}</button>`; }).join('')}</div>`).join('')}
+    </div>
+    <div class="grp-label">Dự án ${escHtml(curProj)}</div>
+    <div class="card" style="padding:12px 14px;margin-bottom:14px">
+      <div class="fg-row" style="align-items:flex-end"><div class="fg" style="margin:0"><label>Hao hụt cóc nối (%)</label><input type="number" id="cfg-hh" inputmode="decimal" value="${+(db.projCfg || {}).haoHut || 0}"></div>
+      <button class="btn-ok" style="flex:0 0 90px" onclick="saveHaoHut()">Lưu</button></div>
+    </div>
+    <div class="grp-label">Cách cấp từng vật tư</div>
+    <div class="info-box">"Cấp thẳng" = cấp cho tổ đội, không cần phiếu yêu cầu. "Chọn máy" = phiếu yêu cầu bắt buộc chọn máy sử dụng.</div>
+    ${catGroups().map(([c, arr]) => { const ids = JSON.stringify(arr.map(i => i.id));
+      return `<div class="card" style="padding:6px 12px;margin-bottom:10px">
+        <div class="flag-gh"><b>${c.icon} ${escHtml(c.name)}</b>
+          <span><button onclick='setFlags(${ids},"capThang",1)'>Cả nhóm cấp thẳng</button><button onclick='setFlags(${ids},"capThang",0)'>Cả nhóm qua phiếu</button><button onclick='setFlags(${ids},"canMay",1)'>Cả nhóm chọn máy</button><button onclick='setFlags(${ids},"canMay",0)'>Bỏ chọn máy</button></span></div>
+        ${arr.map(i => `<div class="flag-row"><span>${escHtml(i.name)}</span>
+          <button class="perm-b ${+i.capThang === 1 ? 'on' : ''}" onclick="setFlags([${i.id}],'capThang',${+i.capThang === 1 ? 0 : 1})">${+i.capThang === 1 ? 'Cấp thẳng' : 'Qua phiếu'}</button>
+          <button class="perm-b ${+i.canMay === 1 ? 'on' : ''}" onclick="setFlags([${i.id}],'canMay',${+i.canMay === 1 ? 0 : 1})">${+i.canMay === 1 ? 'Chọn máy' : '–'}</button></div>`).join('')}
+      </div>`; }).join('')}
+    <div class="grp-label">Telegram</div>
+    <div class="card" style="padding:12px 14px;font-size:13px">${tg.bot ? `Đã kết nối bot <b>@${escHtml(tg.bot)}</b>. Mỗi người tự liên kết trong Menu → Nhận cảnh báo Telegram.` : 'Chưa cài bot. Chủ Google Sheet làm theo hướng dẫn: dán mã bot vào TELEGRAM_BOT_TOKEN rồi chạy hàm CAI_DAT_telegram.'}</div>`;
+}
+
+// ---------- Telegram (mỗi người) ----------
+function renderTg() {
+  const tg = db.tg || {}, body = document.getElementById('dp-tg-body');
+  if (!tg.bot) { body.innerHTML = '<div class="info-box">Admin chưa cài bot Telegram cho app. Khi cài xong, quay lại đây để liên kết.</div>'; return; }
+  body.innerHTML = tg.linked ? `
+    <div class="pyc-done" style="font-size:14px">✅ Đã liên kết Telegram. Bạn sẽ nhận tin khi có phiếu cần xử lý.</div>
+    <button class="btn-full" style="background:var(--primary)" onclick="tgAct('tgTest')">Gửi tin thử</button>
+    <button class="btn-full" style="background:var(--bg);color:var(--text2)" onclick="if(confirm('Hủy liên kết Telegram?'))tgAct('tgUnlink')">Hủy liên kết</button>` : `
+    <div class="info-box">1. Bấm nút dưới để mở Telegram (cần cài app Telegram).<br>2. Trong Telegram bấm <b>Start / Bắt đầu</b>.<br>3. Chờ khoảng 1 phút, bot sẽ nhắn "Đã liên kết". Quay lại đây bấm <b>Kiểm tra</b>.</div>
+    <button class="btn-full btn-orange" onclick="window.open('${escHtml(tg.link)}','_blank')">Mở Telegram để liên kết</button>
+    <button class="btn-full" style="background:var(--bg);color:var(--text)" onclick="tgCheck()">Kiểm tra</button>`;
+}
+async function tgAct(a) {
+  const r = await cfgAct(a, {}, a === 'tgTest' ? '📨 Đã gửi tin thử — xem Telegram' : 'Đã hủy liên kết');
+  if (r && a === 'tgUnlink') { db.tg.linked = false; saveLocal(); renderTg(); }
+}
+async function tgCheck() { showLoader('Đang kiểm tra...'); await syncAll(true); hideLoader(); renderTg(); toast((db.tg || {}).linked ? '✅ Đã liên kết' : 'Chưa thấy liên kết — chờ thêm 1 phút rồi thử lại'); }
 
 // ===== GHI LỖI PHÁT SINH (gửi về tab LoiApp trên Sheet) =====
 const _errSent = new Set(); let _errN = 0;
