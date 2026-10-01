@@ -166,6 +166,11 @@ body{font-family:-apple-system,BlinkMacSystemFont,"SF Pro Display","Segoe UI",sa
 .perm-b.on{background:#E3F4EA;border-color:#7BC59A;color:#1E7A45}
 .flag-gh{display:flex;flex-direction:column;gap:6px;padding:6px 0}.flag-gh span{display:flex;flex-wrap:wrap;gap:4px}
 .flag-gh button{border:1px solid var(--border);background:var(--bg);border-radius:8px;padding:5px 8px;font-size:11px;font-weight:700;cursor:pointer}
+.combo-head{padding:8px 12px 4px;font-size:10.5px;font-weight:800;color:var(--text3);background:var(--bg);text-transform:uppercase;letter-spacing:.3px}
+#rf-ilist .combo-item{display:flex;flex-direction:column;gap:2px;padding:9px 12px;border-top:1px solid var(--border);cursor:pointer}
+#rf-ilist .combo-item small{font-size:11px;color:var(--text3)}
+#rf-ilist .combo-empty{padding:14px;text-align:center;color:var(--text3);font-size:13px}
+#rf-ilist{max-height:300px;overflow-y:auto}
 .flag-row{display:grid;grid-template-columns:1fr 84px 70px;gap:6px;align-items:center;padding:5px 0;border-top:1px solid var(--border);font-size:12.5px}
 .bnav-btn.on .bnav-icon-wrap::after{content:'';position:absolute;bottom:-18px;left:50%;transform:translateX(-50%);width:20px;height:3px;background:var(--orange);border-radius:2px}
 .bnav-icon-wrap{position:relative;width:36px;height:34px;display:flex;align-items:center;justify-content:center}
@@ -1378,7 +1383,7 @@ body:not(.can-cost) .need-cost{display:none!important}
 // ============================================================
 // CONFIG
 // ============================================================
-const APP_VERSION = '5.17.0';
+const APP_VERSION = '5.17.1';
 const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbw6Rmi80I7RI3ij2U7RdRF5pYuQTnPrwEmGmUZS5xpxzLwwVynfoFUujZe1lm6HS1ymxw/exec';
 // ============================================================
 
@@ -5727,10 +5732,7 @@ function renderReqDetail() {
 }
 // Gửi phiếu qua Zalo (thủ công): soạn sẵn nội dung → bảng chia sẻ của điện thoại (máy tính: chép để dán)
 function reqShareText(r) {
-  const L = reqLook(r), A = reqAp(r), next = {
-    cho: r.duyet === 'chua' ? '👉 Kho cần cấp · CHT/CHP cần duyệt' : '👉 Kho cần cấp',
-    gui: '👉 Bên nhận kiểm hàng và bấm "Đã nhận" trên app',
-    chohang: '👉 Kho cấp nốt phần còn thiếu khi có hàng'}[r.status] || '';
+  const L = reqLook(r), A = reqAp(r);
   const out = [`📝 PHIẾU YÊU CẦU ${r.id} — ${r.project}`, r.title, `Trạng thái: ${L.chip} · ${A[0]}`];
   if (r.opt && r.opt.text) out.push(r.opt.text);
   if (r.may) out.push('Máy: ' + r.may);
@@ -5739,8 +5741,6 @@ function reqShareText(r) {
   if (r.reject) out.push('Từ chối: ' + r.reject);
   if (r.note) out.push('Ghi chú: ' + r.note);
   out.push(`Người yêu cầu: ${r.createdByName} · ${r.datetime || ''}`);
-  if (next) out.push(next);
-  out.push('Mở app: ' + location.origin + location.pathname);
   return out.join('\n');
 }
 function shareReq() {
@@ -5798,7 +5798,7 @@ const ckOpenReq = ckId => projReqs().find(r => r.ckId === ckId && r.status !== '
 function openReqNew() {
   const cks = ckList();
   rf = {mode: cks.length ? 'coc' : 'vt', hm: cks.some(c => c.hm === 'coc') ? 'coc' : 'tv', q:'', ck:'', opt:null, bsOn:false, bsSize:'D25', bsQty:'', bsReason:'', bsNote:'',
-    itemId:'', qty:'', may:'', mayNote:'', note:''};
+    itemId:'', itemQ:'', qty:'', may:'', mayNote:'', note:''};
   openDp('dp-req-new', renderReqNew);
 }
 function rfSet(k, v, re) { rf[k] = v; if (re) renderReqNew(); }
@@ -5811,8 +5811,8 @@ function renderReqNew() {
     if (!cks.length) html += `<div class="info-box">Dự án này chưa có định mức cấu kiện. Gửi bản vẽ thi công để nạp định mức, hoặc dùng "Vật tư khác".</div>`;
     else {
       const hms = [['coc', 'Cọc khoan nhồi'], ['tv', 'Tường vây']].filter(h => cks.some(c => c.hm === h[0]));
-      const q = rf.q.trim().toLowerCase();
-      const opts = cks.filter(c => c.hm === rf.hm && (!q || c.name.toLowerCase().includes(q)));
+      const q = vnNorm(rf.q.trim());
+      const opts = cks.filter(c => c.hm === rf.hm && (!q || vnNorm(c.name).includes(q)));
       if (rf.ck && !cks.some(c => c.id === rf.ck && c.hm === rf.hm)) rf.ck = '';
       const ck = cks.find(c => c.id === rf.ck), done = ck && ckOpenReq(ck.id);
       html += `<div class="form-section">
@@ -5853,14 +5853,17 @@ function renderReqNew() {
       }
     }
   } else {
-    const items = db.items.filter(i => +i.capThang !== 1);
-    const it = items.find(i => i.id === +rf.itemId);
-    const groups = catGroups().map(([c, arr]) => [c, arr.filter(i => +i.capThang !== 1)]).filter(([, a]) => a.length);
+    const it = db.items.find(i => i.id === +rf.itemId && +i.capThang !== 1);
     html += `<div class="form-section">
-      <div class="fg"><label>Vật tư</label><select onchange="rf.itemId=this.value;rf.may='';renderReqNew()">
-        <option value="">— Chọn vật tư —</option>
-        ${groups.map(([c, arr]) => `<optgroup label="${escHtml(c.name)}">${arr.map(i => `<option value="${i.id}" ${+rf.itemId === i.id ? 'selected' : ''}>${escHtml(i.name)}</option>`).join('')}</optgroup>`).join('')}
-      </select></div>
+      <div class="fg"><label>Vật tư</label>
+        <div class="combo">
+          <input type="text" id="rf-iq" autocomplete="off" value="${escHtml(rf.itemQ || '')}" placeholder="Gõ tên vật tư để tìm (không cần dấu)…"
+            oninput="rfItemQ(this.value)" onfocus="rfItemShow()" onblur="setTimeout(rfItemHide,200)">
+          <button type="button" class="combo-clear" style="${rf.itemQ ? '' : 'display:none'}" id="rf-iclear" onmousedown="event.preventDefault()" onclick="rfItemClear()">✕</button>
+          <div class="combo-list" id="rf-ilist"></div>
+        </div>
+        ${it ? `<div class="combo-hint">✔ Đã chọn: <b>${escHtml(it.name)}</b></div>` : ''}
+      </div>
       ${it && (canP('ton') || can('tk')) ? `<div class="pyc-hint" style="text-align:left">Tồn kho: ${fmtNum(it.stock)} ${escHtml(it.unit)}</div>` : ''}
       <div class="fg"><label>Số lượng${it ? ' (' + escHtml(it.unit) + ')' : ''}</label><input type="number" inputmode="decimal" value="${escHtml(rf.qty)}" oninput="rf.qty=this.value"></div>
       ${it && +it.canMay === 1 ? `<div class="pyc-may"><div class="fg"><label>Máy sử dụng <span style="color:var(--red)">*</span></label>
@@ -5877,6 +5880,38 @@ function renderReqNew() {
     <div class="pyc-hint">${NEW_ROLES[role] && role === 'ktv' ? 'Phiếu tới kho ngay và chờ CHT/CHP duyệt song song' : 'Phiếu tới thẳng kho, không cần duyệt'}</div></div>`;
   body.innerHTML = html;
 }
+// Ô tìm vật tư (gõ không dấu) cho phiếu "Vật tư khác"
+const vnNorm = x => String(x || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/đ/gi, 'd').toLowerCase();
+function rfItemList() {
+  const el = document.getElementById('rf-ilist'); if (!el) return;
+  const toks = vnNorm(rf.itemQ).split(/\s+/).filter(Boolean), showTon = canP('ton') || can('tk');
+  const row = (i, c) => `<div class="combo-item" onmousedown="event.preventDefault()" onclick="rfItemPick(${i.id})">
+      <b>${escHtml(i.name)}</b><small>${toks.length ? escHtml(c.name) + (showTon ? ' · ' : '') : ''}${showTon ? 'còn ' + fmtNum(i.stock) + ' ' + escHtml(i.unit) : ''}</small></div>`;
+  let html = '';
+  catGroups().forEach(([c, arr]) => {
+    const hit = arr.filter(i => +i.capThang !== 1 && (!toks.length || toks.every(t => vnNorm(i.name + ' ' + c.name).includes(t))));
+    if (!hit.length) return;
+    if (!toks.length) html += `<div class="combo-head">${escHtml(c.name)}</div>`;
+    html += hit.map(i => row(i, c)).join('');
+  });
+  el.innerHTML = html || `<div class="combo-empty">Không tìm thấy "${escHtml(rf.itemQ)}"</div>`;
+  el.style.display = 'block';
+}
+function rfItemShow() { rfItemList(); }
+function rfItemHide() { const el = document.getElementById('rf-ilist'); if (el) el.style.display = 'none'; }
+function rfItemQ(v) {
+  rf.itemQ = v;
+  const it = db.items.find(i => i.id === +rf.itemId);
+  if (!it || it.name !== v) { const had = !!rf.itemId; rf.itemId = ''; rf.may = ''; if (had) { renderReqNew(); const e = document.getElementById('rf-iq'); if (e) { e.focus(); e.setSelectionRange(v.length, v.length); } } }
+  const x = document.getElementById('rf-iclear'); if (x) x.style.display = v ? '' : 'none';
+  rfItemList();
+}
+function rfItemPick(id) {
+  const it = db.items.find(i => i.id === id); if (!it) return;
+  rf.itemId = id; rf.itemQ = it.name; rf.may = ''; rf.mayNote = '';
+  renderReqNew();
+}
+function rfItemClear() { rf.itemId = ''; rf.itemQ = ''; rf.may = ''; renderReqNew(); const e = document.getElementById('rf-iq'); if (e) { e.focus(); rfItemList(); } }
 function rfCkOptions(opts) {
   return `<option value="">— Chọn (${opts.length}) —</option>` + opts.slice(0, 400).map(c => {
     const d = ckOpenReq(c.id);
@@ -5884,7 +5919,7 @@ function rfCkOptions(opts) {
   }).join('');
 }
 function rfFillCk() {
-  const q = rf.q.trim().toLowerCase(), opts = ckList().filter(c => c.hm === rf.hm && (!q || c.name.toLowerCase().includes(q)));
+  const q = vnNorm(rf.q.trim()), opts = ckList().filter(c => c.hm === rf.hm && (!q || vnNorm(c.name).includes(q)));
   const sel = document.getElementById('rf-ck'); if (sel) sel.innerHTML = rfCkOptions(opts);
 }
 async function submitReq() {
@@ -5901,7 +5936,7 @@ async function submitReq() {
     } else if (done) { toast('⚠️ Cấu kiện đã có phiếu — bấm "Xin bổ sung" nếu cần thêm'); return; }
   } else {
     const it = db.items.find(i => i.id === +rf.itemId);
-    if (!it) { toast('⚠️ Chọn vật tư'); return; }
+    if (!it) { toast('⚠️ Chọn vật tư trong danh sách gợi ý'); return; }
     if (!(+rf.qty > 0)) { toast('⚠️ Nhập số lượng'); return; }
     if (+it.canMay === 1) {
       if (!rf.may) { toast('⚠️ Chọn máy sử dụng'); return; }
