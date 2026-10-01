@@ -112,7 +112,28 @@ body{font-family:-apple-system,BlinkMacSystemFont,"SF Pro Display","Segoe UI",sa
 .bnav-btn{font-size:10px}
 .bnav-btn.nav-off{opacity:.35}
 /* v5.17 phiếu yêu cầu */
-.pyc-card,.pyc-head{border:1.5px solid;border-radius:14px;padding:11px 12px;margin-bottom:8px;display:flex;flex-direction:column;gap:5px;cursor:pointer}
+.pyc-card{border:1.5px solid;border-radius:14px;margin-bottom:10px;overflow:hidden;cursor:pointer}
+.pyc-strip{color:#fff;font-size:13px;font-weight:900;padding:8px 12px;line-height:1.3}
+.pyc-in-card{padding:9px 12px 11px;display:flex;flex-direction:column;gap:5px}
+.pyc-id{font-size:12px;font-weight:800;color:var(--text3)}
+.pyc-head{background:#fff;border-radius:14px;padding:11px 12px;margin-bottom:10px;display:flex;flex-direction:column;gap:5px;box-shadow:var(--shadow)}
+.pyc-detail{max-width:640px;margin:0 auto}
+.pyc-banner{border-radius:16px;overflow:hidden;box-shadow:var(--shadow);margin-bottom:10px}
+.pyc-banner-top{color:#fff;padding:12px 14px}.pyc-banner-top small{display:block;font-size:10.5px;font-weight:800;opacity:.85;letter-spacing:.4px}
+.pyc-banner-top b{font-size:17px;line-height:1.3}
+.pyc-banner-bot{background:#fff;padding:9px 14px;display:flex;flex-direction:column;gap:3px}
+.pyc-lcard{background:#fff;border-radius:14px;padding:12px;margin-bottom:10px;box-shadow:var(--shadow);border-left:5px solid;display:flex;flex-direction:column;gap:9px}
+.pyc-lhead{display:flex;justify-content:space-between;align-items:center;gap:8px}.pyc-lhead b{font-size:17px}
+.pyc-lhead span{font-size:11.5px;font-weight:900;padding:4px 9px;border-radius:20px;text-align:right}
+.pyc-boxes{display:grid;gap:6px}
+.pyc-box{border-radius:11px;padding:7px 4px;text-align:center;display:flex;flex-direction:column}
+.pyc-box small{font-size:9.5px;font-weight:800;color:var(--text2);letter-spacing:.2px}.pyc-box b{font-size:22px;font-weight:900;line-height:1.15}.pyc-box i{font-style:normal;font-size:10px;color:var(--text3)}
+.pyc-give{display:flex;align-items:center;gap:8px;background:#F0F6FF;border-radius:12px;padding:8px 10px}
+.pyc-give span{font-size:13px;font-weight:900;color:#0B4A8A;flex-shrink:0}
+.pyc-give input{flex:1;min-width:0;padding:8px 10px;border:2px solid #9DB8DA;border-radius:10px;font-size:20px;font-weight:900;text-align:right;background:#fff}
+.pyc-give button{border:1.5px solid var(--primary);background:#fff;color:var(--primary);border-radius:10px;padding:10px 8px;font-weight:800;font-size:12px;cursor:pointer;flex-shrink:0}
+.pyc-kk-q{display:flex;justify-content:space-between;align-items:center;gap:8px}
+.pyc-kk-q button{border:1.5px solid var(--red);background:#fff;color:var(--red);border-radius:8px;padding:6px 10px;font-weight:800;font-size:12px;cursor:pointer;flex-shrink:0}
 .pyc-head{cursor:default;margin-bottom:12px}
 .pyc-top{display:flex;justify-content:space-between;align-items:center;gap:8px}
 .pyc-chip{color:#fff;font-size:11px;font-weight:800;padding:3px 8px;border-radius:20px;white-space:nowrap}
@@ -5562,30 +5583,51 @@ const cocShort = s => String(s || '').replace(/Cóc nối thép /i, 'Cóc ');
 let reqListMode = 'open', curReqId = null, reqUI = {}, rf = null, kkCat = 'cocNoi', kkIn = {}, xuatF = 'all';
 
 function reqLook(r) {
-  const yellow = r.duyet === 'chua' && r.status === 'cho' && (NEW_ROLES[role]);
-  if (r.status === 'tuchoi' || r.status === 'huy') return {bg:'#EEF0F3', bd:'#C9D3E3', chip:r.status === 'huy' ? 'Đã hủy' : 'Từ chối', cb:'#8A9AB0'};
-  if (yellow) return {bg:'rgba(242,201,76,.22)', bd:'rgba(183,121,31,.6)', chip:'Chờ duyệt', cb:'#B7791F'};
-  if (r.status === 'cho') return {bg:'rgba(231,76,60,.20)', bd:'rgba(192,57,43,.6)', chip:'Chờ kho cấp', cb:'#C0392B'};
-  if (r.status === 'gui') return {bg:'rgba(41,128,185,.14)', bd:'rgba(41,128,185,.55)', chip:reqRemain(r) ? 'Đang gửi (một phần)' : 'Đang gửi', cb:'#1F6FA8'};
-  if (r.status === 'chohang') return {bg:'rgba(242,101,34,.15)', bd:'rgba(194,65,12,.55)', chip:'Chờ hàng – còn thiếu', cb:'#C2410C'};
-  return {bg:'rgba(39,174,96,.15)', bd:'rgba(30,132,73,.55)', chip:'Hoàn thành', cb:'#1E8449'};
+  const part = reqRemain(r) > 0;
+  if (r.status === 'tuchoi') return {bg:'#F3F4F6', bd:'#C9D3E3', chip:'⛔ Bị từ chối', cb:'#6B7A90'};
+  if (r.status === 'huy') return {bg:'#F3F4F6', bd:'#C9D3E3', chip:'Đã hủy', cb:'#8A9AB0'};
+  if (r.duyet === 'chua' && r.status === 'cho' && NEW_ROLES[role]) return {bg:'rgba(242,201,76,.16)', bd:'rgba(183,121,31,.55)', chip:'⏳ Chờ CHT/CHP duyệt · chờ kho giao', cb:'#B7791F'};
+  if (r.status === 'cho') return {bg:'rgba(231,76,60,.10)', bd:'rgba(192,57,43,.5)', chip:'⏳ Chờ kho giao hàng', cb:'#C0392B'};
+  if (r.status === 'gui') return {bg:'rgba(41,128,185,.09)', bd:'rgba(41,128,185,.5)', chip: part ? '🚚 Kho đã giao một phần · chờ người nhận xác nhận' : '🚚 Kho đã giao đủ · chờ người nhận xác nhận', cb:'#1F6FA8'};
+  if (r.status === 'chohang') return {bg:'rgba(242,101,34,.10)', bd:'rgba(194,65,12,.5)', chip:'📦 Đã nhận một phần · còn thiếu, chờ kho giao tiếp', cb:'#C2410C'};
+  return {bg:'rgba(39,174,96,.10)', bd:'rgba(30,132,73,.5)', chip:'✅ Hoàn thành · người nhận đã nhận đủ', cb:'#1E8449'};
 }
 function reqAp(r) {
   if (r.duyet === 'tudong') return ['CHT/CHP lập – không cần duyệt', '#E7F0FB', '#1864AB'];
   if (r.duyet === 'da') return ['Đã duyệt · ' + shortNm(r.duyetBy), '#E3F4EA', '#1E7A45'];
-  if (r.duyet === 'sau') return ['Duyệt sau khi cấp · ' + shortNm(r.duyetBy), '#FFF1D6', '#8A5A00'];
+  if (r.duyet === 'sau') return ['Duyệt sau khi kho giao · ' + shortNm(r.duyetBy), '#FFF1D6', '#8A5A00'];
   if (r.status === 'tuchoi' || r.status === 'huy') return ['Không duyệt', '#E3E7ED', '#3A4A5A'];
   if (r.status === 'cho') return ['Chưa CHT/CHP duyệt', '#FFE9A8', '#7A4E00'];
-  return ['Đã cấp – chưa CHT/CHP duyệt', '#FFD9A8', '#7A3A00'];
+  return ['Kho đã giao khi chưa có CHT/CHP duyệt', '#FFD9A8', '#7A3A00'];
+}
+// Dòng "việc tiếp theo" theo người đang xem
+function reqNext(r) {
+  const mine = r.createdBy === me?.id, kho = can('tk');
+  if (r.status === 'tuchoi' || r.status === 'huy') return ['Phiếu đã đóng', 0];
+  if (r.status === 'xong') return ['Không còn việc cần làm', 0];
+  if (r.status === 'cho') {
+    if (kho) return ['👉 Việc của bạn: kiểm hàng và bấm "Giao hàng"', 1];
+    if (r.duyet === 'chua' && NEW_ROLES[role] && canP('duyet')) return ['👉 Việc của bạn: duyệt phiếu (kho vẫn giao trước được)', 1];
+    return ['Đang chờ kho giao hàng', 0];
+  }
+  if (r.status === 'gui') {
+    if (mine || (NEW_ROLES[role] && canP('nhan'))) return ['👉 Việc của bạn: kiểm hàng rồi bấm "Đã nhận"', 1];
+    return ['Đang chờ người nhận kiểm hàng và xác nhận', 0];
+  }
+  if (kho) return ['👉 Việc của bạn: giao nốt phần còn thiếu khi có hàng', 1];
+  return ['Đang chờ kho giao nốt phần còn thiếu', 0];
 }
 function reqCard(r) {
   const L = reqLook(r), A = reqAp(r);
-  const sum = (r.lines || []).map(l => cocShort(l.itemName) + ': ' + fmtNum(l.req) + (l.sent && l.sent < l.req ? ` (đã gửi ${fmtNum(l.sent)})` : '')).join(' · ');
+  const sum = (r.lines || []).map(l => cocShort(l.itemName) + ': ' + fmtNum(l.req) + (l.sent && l.sent < l.req ? ` (kho đã giao ${fmtNum(l.sent)})` : '')).join(' · ');
   return `<div class="pyc-card" style="background:${L.bg};border-color:${L.bd}" onclick="openReq('${escHtml(r.id)}')">
-    <div class="pyc-top"><b>${escHtml(r.id)}</b><span class="pyc-chip" style="background:${L.cb}">${L.chip}</span></div>
-    <div class="pyc-title">${escHtml(r.title)}</div>
-    <div class="pyc-sum">${escHtml(sum)}</div>
-    <div class="pyc-foot"><span class="pyc-ap" style="background:${A[1]};color:${A[2]}">${A[0]}</span><span>${escHtml(shortNm(r.createdByName))} · ${escHtml(r.datetime || '')}</span></div>
+    <div class="pyc-strip" style="background:${L.cb}">${L.chip}</div>
+    <div class="pyc-in-card">
+      <div class="pyc-id">${escHtml(r.id)}</div>
+      <div class="pyc-title">${escHtml(r.title)}</div>
+      <div class="pyc-sum">${escHtml(sum)}</div>
+      <div class="pyc-foot"><span class="pyc-ap" style="background:${A[1]};color:${A[2]}">${A[0]}</span><span>${escHtml(shortNm(r.createdByName))} · ${escHtml(r.datetime || '')}</span></div>
+    </div>
   </div>`;
 }
 const projReqs = () => (db.reqs || []).filter(r => r.project === curProj);
@@ -5615,21 +5657,21 @@ function renderPyc(c) {
     const arr = reqListMode === 'done' ? R.filter(r => !reqOpen(r)) : R;
     sec = arr.length ? arr.slice(0, 200).map(reqCard).join('') : '<div class="pyc-empty">Không có phiếu</div>';
   } else if (role === 'tk') {
-    sec = pycSection('🔴 Cần cấp gấp', R.filter(r => r.status === 'cho'), 'Không có phiếu chờ cấp') +
-      pycSection('🟠 Chờ hàng – còn thiếu', R.filter(r => r.status === 'chohang')) +
-      pycSection('🚚 Đang gửi – chờ bên nhận xác nhận', R.filter(r => r.status === 'gui'));
+    sec = pycSection('⏳ Cần giao gấp', R.filter(r => r.status === 'cho'), 'Không có phiếu chờ giao') +
+      pycSection('📦 Còn thiếu – cần giao tiếp', R.filter(r => r.status === 'chohang')) +
+      pycSection('🚚 Kho đã giao – chờ người nhận xác nhận', R.filter(r => r.status === 'gui'));
   } else if (NEW_ROLES[role] && canP('duyet')) {
     sec = pycSection('🟡 Chờ bạn duyệt', R.filter(r => r.duyet === 'chua' && r.status === 'cho'), 'Không có phiếu chờ duyệt') +
-      pycSection('⚠️ Kho đã cấp – chưa duyệt', R.filter(r => r.duyet === 'chua' && ['gui','chohang','xong'].includes(r.status))) +
-      pycSection('🚚 Hàng đang tới – bấm "Đã nhận"', R.filter(r => r.status === 'gui' && r.duyet !== 'chua')) +
+      pycSection('⚠️ Kho đã giao – chưa duyệt', R.filter(r => r.duyet === 'chua' && ['gui','chohang','xong'].includes(r.status))) +
+      pycSection('🚚 Kho đã giao – kiểm hàng rồi bấm "Đã nhận"', R.filter(r => r.status === 'gui' && r.duyet !== 'chua')) +
       pycSection('📋 Phiếu đang mở khác', R.filter(r => r.duyet !== 'chua' && ['cho','chohang'].includes(r.status)));
   } else if (NEW_ROLES[role]) {
-    sec = pycSection('🚚 Hàng đang tới – bấm "Đã nhận"', R.filter(r => mine(r) && r.status === 'gui'), 'Chưa có hàng đang gửi') +
+    sec = pycSection('🚚 Kho đã giao – kiểm hàng rồi bấm "Đã nhận"', R.filter(r => mine(r) && r.status === 'gui'), 'Chưa có phiếu kho đã giao') +
       pycSection('📋 Phiếu của tôi đang mở', R.filter(r => mine(r) && ['cho','chohang'].includes(r.status)));
   } else {
-    sec = pycSection('🔴 Chờ kho cấp', R.filter(r => r.status === 'cho' || r.status === 'chohang'), 'Không có phiếu chờ cấp') +
+    sec = pycSection('⏳ Chờ kho giao', R.filter(r => r.status === 'cho' || r.status === 'chohang'), 'Không có phiếu chờ giao') +
       pycSection('🟡 Chưa CHT/CHP duyệt', R.filter(r => r.duyet === 'chua' && r.status !== 'tuchoi' && r.status !== 'huy')) +
-      pycSection('🚚 Đang gửi', R.filter(r => r.status === 'gui'));
+      pycSection('🚚 Kho đã giao – chờ xác nhận', R.filter(r => r.status === 'gui'));
   }
   const chip = (k, t) => `<div class="chip ${reqListMode === k ? 'on' : ''}" onclick="reqListMode='${k}';goTab('pyc')">${t}</div>`;
   c.innerHTML = `
@@ -5651,7 +5693,7 @@ function reqHomeHtml() {
   const n = pycPending(); if (!n) return '';
   const R = newestFirst(projReqs());
   let arr, title;
-  if (role === 'tk' || role === 'ql' || role === 'admin') { arr = R.filter(r => r.status === 'cho' || r.status === 'chohang'); title = `${n} phiếu yêu cầu đang chờ kho cấp`; }
+  if (role === 'tk' || role === 'ql' || role === 'admin') { arr = R.filter(r => r.status === 'cho' || r.status === 'chohang'); title = `${n} phiếu yêu cầu đang chờ kho giao`; }
   else { arr = R.filter(r => r.duyet === 'chua' && r.status !== 'tuchoi' && r.status !== 'huy'); title = `${n} phiếu yêu cầu chờ bạn duyệt`; }
   return `<div class="pyc-home">
     <div class="pyc-home-h" onclick="goTab('pyc')"><b>🔴 ${title}</b><span>Xem tất cả ›</span></div>
@@ -5682,53 +5724,56 @@ function renderReqDetail() {
   const rejKho = can('tk') && r.status === 'cho' && !sentAny;
   const rejDuyet = !rejKho && duyet && r.status === 'cho' && !sentAny;
   const editIssue = kho || (khoMore && reqUI.more);
-  const col4 = editIssue ? 'Gửi lần này' : (nhan && reqUI.sl ? 'Thực nhận' : (canP('ton') || can('tk') ? 'Tồn kho' : ''));
+  const showTonAll = canP('ton') || can('tk');
   const lines = (r.lines || []).map((l, k) => {
-    const it = db.items.find(i => i.id === +l.itemId), ton = it ? +it.stock || 0 : 0, rem = Math.max(0, l.req - (l.sent || 0));
-    let c4 = '';
-    if (editIssue) c4 = `<input type="number" inputmode="decimal" class="pyc-in" id="ri-${k}" value="${Math.min(rem, Math.max(0, ton))}" min="0">`;
-    else if (nhan && reqUI.sl) c4 = `<input type="number" inputmode="decimal" class="pyc-in" id="rr-${k}" value="${+l.last || 0}" min="0">`;
-    else if (col4) c4 = `<span style="color:${ton < rem ? 'var(--red)' : 'var(--text3)'};font-weight:700">${fmtNum(ton)}</span>`;
-    const short = editIssue && ton < rem;
-    return `<div class="pyc-line">
-      <div class="pyc-lrow"><b>${escHtml(cocShort(l.itemName))}</b><span>${fmtNum(l.req)}</span><span>${fmtNum(l.sent || 0)}</span><span>${c4}</span></div>
-      <div class="pyc-br">${escHtml(l.br || '')}${editIssue ? ` · còn phải cấp ${fmtNum(rem)}` : ''}</div>
-      ${short ? `<div class="pyc-kk">
-        <div>App báo không đủ hàng (tồn ${fmtNum(ton)} ${escHtml(it?.unit || '')}). Nếu trong kho thực tế còn, kiểm kê để sửa số.</div>
-        ${reqUI.kk === k ? `<div class="pyc-kk-row"><input type="number" inputmode="decimal" id="kkv-${k}" placeholder="Số đếm thực tế"><button onclick="reqCountNow(${k})">Lưu mốc</button></div>`
-          : `<button class="pyc-kk-btn" onclick="reqUI.kk=${k};renderReqDetail()">🔢 Kiểm kê ngay ${escHtml(cocShort(l.itemName))}</button>`}
-      </div>` : ''}
+    const it = db.items.find(i => i.id === +l.itemId), ton = it ? +it.stock || 0 : 0, rem = Math.max(0, l.req - (l.sent || 0)), u = escHtml(l.unit || it?.unit || '');
+    const short = editIssue && ton < rem, fill = Math.min(rem, Math.max(0, ton));
+    const pill = rem === 0 ? ['Kho đã giao đủ', '#E3F4EA', '#1E7A45', '#27AE60'] : short ? [`Kho không đủ hàng (thiếu ${fmtNum(rem - ton)})`, '#FDECEC', '#B42318', '#E74C3C'] : [`Chưa giao ${fmtNum(rem)}`, '#FFF1E8', '#C2410C', '#F26522'];
+    const box = (k2, v, fg, bg) => `<div class="pyc-box" style="background:${bg}"><small>${k2}</small><b style="color:${fg}">${fmtNum(v)}</b><i>${u}</i></div>`;
+    const boxes = [box('YÊU CẦU', l.req, 'var(--text)', '#F3F5F8'), box('KHO ĐÃ GIAO', l.sent || 0, '#1F6FA8', '#EEF4FF'),
+      box('CHƯA GIAO', rem, rem ? '#C2410C' : '#1E7A45', rem ? '#FFF4EC' : '#E9F7EF')];
+    if (showTonAll && rem) boxes.push(box('TỒN KHO', ton, ton < rem ? '#B42318' : '#1E7A45', ton < rem ? '#FDECEC' : '#E9F7EF'));
+    let input = '';
+    if (editIssue) input = `<div class="pyc-give"><span>Giao lần này</span><input type="number" inputmode="decimal" id="ri-${k}" value="${fill}" min="0">${fill > 0 ? `<button onclick="document.getElementById('ri-${k}').value=${fill}">${fill === rem ? 'Giao đủ' : 'Giao hết tồn'} ${fmtNum(fill)}</button>` : ''}</div>`;
+    else if (nhan && reqUI.sl) input = `<div class="pyc-give"><span>Thực nhận lần này</span><input type="number" inputmode="decimal" id="rr-${k}" value="${+l.last || 0}" min="0"></div>`;
+    return `<div class="pyc-lcard" style="border-left-color:${pill[3]}">
+      <div class="pyc-lhead"><b>${escHtml(cocShort(l.itemName))}</b><span style="background:${pill[1]};color:${pill[2]}">${pill[0]}</span></div>
+      <div class="pyc-boxes" style="grid-template-columns:repeat(${boxes.length},1fr)">${boxes.join('')}</div>
+      ${l.br ? `<div class="pyc-br">${escHtml(l.br)}</div>` : ''}
+      ${input}
+      ${short ? `<div class="pyc-kk"><div class="pyc-kk-q"><span>Tồn trên app không đủ. Kho thực tế còn?</span>${reqUI.kk === k ? '' : `<button onclick="reqUI.kk=${k};renderReqDetail()">🔢 Kiểm kê</button>`}</div>
+        ${reqUI.kk === k ? `<div class="pyc-kk-row"><input type="number" inputmode="decimal" id="kkv-${k}" placeholder="Số đếm thực tế"><button onclick="reqCountNow(${k})">Lưu mốc</button></div>` : ''}</div>` : ''}
     </div>`;
   }).join('');
+  const NX = reqNext(r);
   const px = byTimeDesc(db.transactions.filter(t => t.type === 'xuat' && t.refId === r.id));
-  body.innerHTML = `
-    <div class="pyc-head" style="background:${L.bg};border-color:${L.bd}">
-      <div class="pyc-top"><b style="font-size:15px">${escHtml(r.title)}</b><span class="pyc-chip" style="background:${L.cb}">${L.chip}</span></div>
+  body.innerHTML = `<div class="pyc-detail">
+    <div class="pyc-banner"><div class="pyc-banner-top" style="background:${L.cb}"><small>TRẠNG THÁI PHIẾU</small><b>${L.chip}</b></div>
+      <div class="pyc-banner-bot"><div style="color:${NX[1] ? '#C2410C' : 'var(--text3)'};font-weight:800;font-size:14px">${NX[0]}</div>
+      <div style="font-size:12.5px">Duyệt: <b style="color:${A[2]}">${A[0]}</b></div></div></div>
+    <div class="pyc-head">
+      <div class="pyc-title" style="font-size:16px">${escHtml(r.title)}</div>
       ${r.opt && r.opt.text ? `<div class="pyc-sum">${escHtml(r.opt.text)}${r.opt.haoHut ? ` · hao hụt ${r.opt.haoHut}%` : ''}</div>` : ''}
       ${r.may ? `<div class="pyc-sum">🏗 Máy: ${escHtml(r.may)}</div>` : ''}
       ${r.note ? `<div class="pyc-sum">📝 ${escHtml(r.note)}</div>` : ''}
-      <div class="pyc-sum">👤 ${escHtml(r.createdByName)} (${escHtml(ROLE_NAME[r.createdRole] || r.createdRole || '')}) · ${escHtml(r.datetime || '')}</div>
-      <span class="pyc-ap" style="background:${A[1]};color:${A[2]};align-self:flex-start">${A[0]}</span>
+      <div class="pyc-sum">👤 Người yêu cầu: ${escHtml(r.createdByName)} (${escHtml(ROLE_NAME[r.createdRole] || r.createdRole || '')}) · ${escHtml(r.datetime || '')}</div>
       ${r.bs ? `<div class="pyc-note-o">Lý do bổ sung: ${escHtml(r.bs.reason)}${r.bs.note ? ' – ' + escHtml(r.bs.note) : ''} (${fmtNum(r.bs.qty)} cóc ${escHtml(r.bs.size)})</div>` : ''}
       ${r.reject ? `<div class="pyc-note-g">Lý do từ chối: ${escHtml(r.reject)}</div>` : ''}
     </div>
-    <div class="card" style="padding:10px 14px;margin-bottom:12px">
-      <div class="pyc-lrow pyc-lh"><span>Vật tư</span><span>Yêu cầu</span><span>Đã gửi</span><span>${col4}</span></div>
-      ${lines}
-    </div>
+    ${lines}
     ${kho || (khoMore && reqUI.more) ? `
-      <button class="btn-full" style="background:var(--primary)" onclick="reqIssue()">🚚 Đã gửi – trừ tồn kho</button>
-      <div class="pyc-hint">Gửi ít hơn số còn phải cấp = cấp một phần, phần thiếu chuyển "Chờ hàng"</div>` : ''}
-    ${khoMore && !reqUI.more ? `<button class="btn-full" style="background:var(--bg);color:var(--text)" onclick="reqUI.more=1;renderReqDetail()">Cấp thêm phần còn thiếu</button>` : ''}
+      <button class="btn-full" style="background:var(--primary)" onclick="reqIssue()">🚚 Giao hàng – trừ tồn kho</button>
+      <div class="pyc-hint">Giao ít hơn số chưa giao = giao một phần, phần thiếu giao sau</div>` : ''}
+    ${khoMore && !reqUI.more ? `<button class="btn-full" style="background:var(--bg);color:var(--text)" onclick="reqUI.more=1;renderReqDetail()">🚚 Giao thêm phần còn thiếu</button>` : ''}
     ${rejKho || rejDuyet ? `<div class="pyc-rej"><input id="req-rej" placeholder="Lý do từ chối (bắt buộc)"><button onclick="reqReject()">Từ chối</button></div>` : ''}
-    ${duyet ? `<button class="btn-full" style="background:#B7791F" onclick="reqAction('approveReq',{id:curReqId},'✅ Đã duyệt')">${r.status === 'cho' ? '✅ Duyệt phiếu' : '✅ Duyệt sau khi cấp'}</button>` : ''}
-    ${nhan ? `<button class="btn-full" style="background:var(--green)" onclick="reqReceive()">${reqUI.sl ? '✅ Xác nhận số thực nhận' : '✅ Đã nhận đủ'}</button>
-      <button class="btn-full" style="background:#fff;color:var(--red);border:1.5px solid var(--red)" onclick="reqUI.sl=!reqUI.sl;renderReqDetail()">${reqUI.sl ? 'Bỏ báo sai lệch' : '⚠️ Báo sai lệch (nhận thiếu)'}</button>` : ''}
+    ${duyet ? `<button class="btn-full" style="background:#B7791F" onclick="reqAction('approveReq',{id:curReqId},'✅ Đã duyệt')">${r.status === 'cho' ? '✅ Duyệt phiếu' : '✅ Duyệt (kho đã giao trước)'}</button>` : ''}
+    ${nhan ? `<button class="btn-full" style="background:var(--green)" onclick="reqReceive()">${reqUI.sl ? '✅ Xác nhận số thực nhận' : '✅ Tôi đã nhận đủ hàng'}</button>
+      <button class="btn-full" style="background:#fff;color:var(--red);border:1.5px solid var(--red)" onclick="reqUI.sl=!reqUI.sl;renderReqDetail()">${reqUI.sl ? 'Bỏ báo nhận thiếu' : '⚠️ Nhận thiếu / sai số lượng'}</button>` : ''}
     <button class="btn-full" style="background:#0068FF" onclick="shareReq()">📤 Gửi Zalo</button>
     ${huy ? `<button class="btn-full" style="background:var(--bg);color:var(--text2)" onclick="if(confirm('Hủy phiếu ${escHtml(r.id)}?'))reqAction('cancelReq',{id:curReqId},'Đã hủy phiếu')">Hủy phiếu</button>` : ''}
     ${px.length ? `<div class="grp-label" style="margin-top:10px">Phiếu xuất đã tạo (${px.length})</div><div class="card" style="margin-bottom:12px">${px.map(txnRow).join('')}</div>` : ''}
     <div class="grp-label" style="margin-top:10px">Lịch sử phiếu</div>
-    <div class="card" style="padding:8px 14px">${(r.log || []).slice().reverse().map(g => `<div class="pyc-log"><span>${escHtml(g.t || '')}</span><span>${escHtml(g.x || '')}</span></div>`).join('')}</div>`;
+    <div class="card" style="padding:8px 14px">${(r.log || []).slice().reverse().map(g => `<div class="pyc-log"><span>${escHtml(g.t || '')}</span><span>${escHtml(g.x || '')}</span></div>`).join('')}</div></div>`;
 }
 // Gửi phiếu qua Zalo (thủ công): soạn sẵn nội dung → bảng chia sẻ của điện thoại (máy tính: chép để dán)
 function reqShareText(r) {
@@ -5765,7 +5810,7 @@ function reqIssue() {
   const r = db.reqs.find(x => x.id === curReqId); if (!r) return;
   const send = r.lines.map((l, k) => { const el = document.getElementById('ri-' + k); return el ? +el.value || 0 : 0; });
   if (!send.some(v => v > 0)) { toast('⚠️ Nhập số thực gửi'); return; }
-  reqAction('issueReq', {id:curReqId, send}, '🚚 Đã gửi, đã trừ tồn kho và tạo phiếu xuất', true);
+  reqAction('issueReq', {id:curReqId, send}, '🚚 Đã giao hàng, đã trừ tồn kho và tạo phiếu xuất', true);
 }
 function reqReject() {
   const v = (document.getElementById('req-rej')?.value || '').trim();
