@@ -1230,7 +1230,7 @@ body:not(.can-cost) .need-cost{display:none!important}
 <div class="modal-bg" id="modal-export" style="display:none" onclick="closeModalBg(event,'modal-export')">
   <div class="modal-sheet">
     <div class="modal-handle"></div>
-    <div class="modal-title">⬇️ Xuất báo cáo Excel</div>
+    <div class="modal-title" id="exp-title">⬇️ Xuất báo cáo Excel</div>
     <div class="fg"><label>Khoảng thời gian</label>
       <select id="exp-range">
         <option value="all" selected>Toàn bộ (từ đầu dự án) — như file NXT</option>
@@ -1263,7 +1263,7 @@ body:not(.can-cost) .need-cost{display:none!important}
     <div class="modal-handle"></div>
     <div class="modal-title">✅ Đã tạo file Excel</div>
     <div class="adj-info" id="xf-name"></div>
-    <div class="lock-note" style="text-align:left">Gồm: Số liệu ngày (dầu nhớt) · Vật tư · NXT dầu nhớt · NXT vật tư · Theo dõi dầu thiết bị · Chi tiết phiếu</div>
+    <div class="lock-note" id="xf-gom" style="text-align:left">Gồm: Số liệu ngày (dầu nhớt) · Vật tư · NXT dầu nhớt · NXT vật tư · Theo dõi dầu thiết bị · Chi tiết phiếu</div>
     <button class="btn-full btn-zalo" id="xf-share" onclick="shareExport()" style="margin:0 0 10px">💬 Gửi Zalo / Lưu vào Tệp</button>
     <div class="modal-actions">
       <button class="btn-cancel" onclick="closeModal('modal-xfile')">Đóng</button>
@@ -3428,7 +3428,7 @@ function renderBaoCao(c) {
         <div class="action-btn" onclick="openDailyReport()">
           <span class="ab-ico">💬</span>Báo cáo Zalo
         </div>
-        <div class="action-btn" onclick="openModal('modal-export')">
+        <div class="action-btn" onclick="openExport('all')">
           <span class="ab-ico">⬇️</span>Xuất Excel
         </div>
         <div class="action-btn need-ql" onclick="openDp('dp-history-log', renderHistoryLog)">
@@ -4014,7 +4014,7 @@ function exportRange() {
 async function doExport() {
   showLoader('Đang tạo file Excel...');
   if (!(await ensureExcelJS())) { hideLoader(); toast('⚠️ Không tải được công cụ Excel — cần có mạng'); return; }
-  try { await buildNxtWorkbook(); }
+  try { if (exportMode === 'pyc') await buildPycWorkbook(); else await buildNxtWorkbook(); }
   catch (e) { console.error(e); toast('⚠️ Lỗi tạo file Excel: ' + e.message); }
   hideLoader();
 }
@@ -4066,9 +4066,9 @@ async function buildNxtWorkbook() {
   function body(ws, r, c1, c2) { for (let c = c1; c <= c2; c++) { const cell = ws.getCell(r, c); cell.border = BORDER; cell.font = cell.font?.bold ? cell.font : FONT; } }
 
   // ---------- 1 & 2. SỔ NHẬP XUẤT HẰNG NGÀY (Dầu nhớt | Vật tư) ----------
-  const LOG_COLS = ['Ngày', 'Tên vật tư', 'Đơn vị', 'Xuất/nhập', 'NCC/NTP/Đội', 'Thiết bị', 'Khối lượng', 'Thời gian', 'Ghi chú', 'Người lập', 'Hình thức xuất'];
+  const LOG_COLS = ['Ngày', 'Tên vật tư', 'Đơn vị', 'Xuất/nhập', 'NCC/NTP/Đội', 'Thiết bị', 'Khối lượng', 'Thời gian', 'Ghi chú', 'Người lập', 'Hình thức xuất', 'Duyệt (phiếu YC)'];
   function logSheet(name, fuel) {
-    const ws = sheet(name, [3.5, 12, 30, 9, 11, 26, 32, 13, 9, 30, 20, 18], 5);
+    const ws = sheet(name, [3.5, 12, 30, 9, 11, 26, 32, 13, 9, 30, 20, 18, 22], 5);
     title(ws, 'BẢNG THEO DÕI XUẤT NHẬP KHO' + (fuel ? ' — DẦU NHỚT' : ' — VẬT TƯ'), 11);
     header(ws, 5, LOG_COLS, 2);
     const rows = sorted(kho.filter(t => inRange(t) && (() => { const it = itemById(t.itemId); return it ? isFuelGroup(it) === fuel : false; })()));
@@ -4080,15 +4080,16 @@ async function buildNxtWorkbook() {
       let note = t.type === 'dieuchinh' ? (t.reason || 'Kiểm kê') : (t.note && t.note !== t.supplierOrReceiver ? t.note : '');
       if (adj) note = [note, `Đã điều chỉnh: ghi ${fmtNum(t.qty)} → đúng ${fmtNum(q)}`].filter(Boolean).join(' · ');
       const vals = [xd(d), it?.name || t.itemName, it?.unit || t.unit, TYPE[t.type], t.type === 'dieuchinh' ? '' : (t.supplierOrReceiver || ''),
-        t.thietBi || '', q, tm, note, t.createdByName || '', t.type === 'xuat' ? (isPycRef(t.refId) ? 'Theo ' + t.refId : 'Xuất thẳng') : ''];
+        t.thietBi || '', q, tm, note, t.createdByName || '', t.type === 'xuat' ? (isPycRef(t.refId) ? 'Theo ' + t.refId : 'Xuất thẳng') : '',
+        t.type === 'xuat' && isPycRef(t.refId) ? (r0 => r0 ? AP_PLAIN(r0) : '')((db.reqs || []).find(x => x.id === t.refId)) : ''];
       vals.forEach((v, i) => ws.getCell(r, 2 + i).value = v === '' ? null : v);
       ws.getCell(r, 2).numFmt = 'dd/mm/yyyy';
       ws.getCell(r, 8).numFmt = nf(q);
-      body(ws, r, 2, 12);
+      body(ws, r, 2, 13);
       r++;
     });
     if (!rows.length) { ws.mergeCells(6, 2, 6, 11); Object.assign(ws.getCell(6, 2), {value:'Không có phiếu trong khoảng thời gian này', font:{...FONT, italic:true}, alignment:{horizontal:'center'}}); }
-    ws.autoFilter = {from:{row:5, column:2}, to:{row:5, column:12}};
+    ws.autoFilter = {from:{row:5, column:2}, to:{row:5, column:13}};
     return {ws, first:6, last:Math.max(6, r - 1), name};
   }
   const logFuel = logSheet('Số liệu ngày (dầu nhớt)', true);
@@ -4275,12 +4276,16 @@ async function buildNxtWorkbook() {
     });
   }
 
+  // v5.17.1: thêm 4 trang phiếu yêu cầu / đối chiếu cóc / kiểm kê (nếu dự án có dùng)
+  let pycAdded = false;
+  if (projReqs().length || db.transactions.some(t => t.type === 'kiemke')) { addPycSheets(wb, R, P); pycAdded = true; }
   const buf = await wb.xlsx.writeBuffer();
   const d = new Date();
   const fname = `NXT_${slugVN(P)}_${R.tag}_${d.getDate()}-${d.getMonth() + 1}-${d.getFullYear()}.xlsx`;
   lastExport = new File([buf], fname, {type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'});
   closeModal('modal-export');
   document.getElementById('xf-name').textContent = fname;
+  document.getElementById('xf-gom').textContent = 'Gồm: Số liệu ngày (dầu nhớt) · Vật tư · NXT dầu nhớt · NXT vật tư · Theo dõi dầu thiết bị · Chi tiết phiếu' + (pycAdded ? ' · Tóm tắt phiếu YC · Phiếu yêu cầu · Đối chiếu cóc nối · Kiểm kê' : '');
   document.getElementById('xf-share').style.display = navigator.canShare && navigator.canShare({files:[lastExport]}) ? '' : 'none';
   openModal('modal-xfile');
 }
@@ -5684,6 +5689,7 @@ function renderPyc(c) {
       <div class="pyc-links">
         ${can('tk') ? `<button onclick="openKK()">🔢 Đợt kiểm kê</button>` : ''}
         ${canCost() ? `<button onclick="openDp('dp-coc')">🔗 Đối chiếu cóc nối</button>` : ''}
+        ${canPycExport() ? `<button onclick="openExport('pyc')">📊 Xuất báo cáo phiếu YC</button>` : ''}
         ${can('admin') ? `<button onclick="openDp('dp-pycfg')">⚙️ Cài đặt phiếu</button>` : ''}
       </div>
       ${sec}
@@ -6136,6 +6142,186 @@ async function tgAct(a) {
   if (r && a === 'tgUnlink') { db.tg.linked = false; saveLocal(); renderTg(); }
 }
 async function tgCheck() { showLoader('Đang kiểm tra...'); await syncAll(true); hideLoader(); renderTg(); toast((db.tg || {}).linked ? '✅ Đã liên kết' : 'Chưa thấy liên kết — chờ thêm 1 phút rồi thử lại'); }
+
+// ===== v5.17.1: BÁO CÁO EXCEL PHIẾU YÊU CẦU (kiểu báo cáo văn phòng, một màu) =====
+let exportMode = 'all';
+function openExport(mode) {
+  exportMode = mode;
+  document.getElementById('exp-title').textContent = mode === 'pyc' ? '📊 Xuất báo cáo phiếu yêu cầu' : '⬇️ Xuất báo cáo Excel';
+  openModal('modal-export');
+}
+const canPycExport = () => ['ql','admin','ld','cht','chp','tk'].includes(role);
+const REQ_PLAIN = r => r.status === 'tuchoi' ? 'Từ chối' : r.status === 'huy' ? 'Đã hủy' : r.status === 'xong' ? 'Hoàn thành'
+  : r.status === 'chohang' ? 'Còn thiếu, chờ kho giao tiếp'
+  : r.status === 'gui' ? (reqRemain(r) > 0 ? 'Kho đã giao một phần, chờ xác nhận nhận hàng' : 'Kho đã giao đủ, chờ xác nhận nhận hàng')
+  : r.duyet === 'chua' ? 'Chờ CHT/CHP duyệt, chờ kho giao' : 'Chờ kho giao';
+const AP_PLAIN = r => r.duyet === 'tudong' ? 'CHT/CHP lập, không cần duyệt' : r.duyet === 'da' ? 'Đã duyệt' : r.duyet === 'sau' ? 'Duyệt sau khi kho giao'
+  : (r.status === 'tuchoi' || r.status === 'huy') ? 'Không duyệt' : r.status === 'cho' ? 'CHT/CHP chưa duyệt' : 'Kho đã giao, CHT/CHP chưa duyệt';
+function cocData() {
+  const hh = +(db.projCfg || {}).haoHut || 0;
+  const cocs = db.items.filter(i => i.cat === 'cocNoi' || /cóc/i.test(i.name));
+  const size = i => (String(i.name).match(/D\d{2}/) || ['?'])[0];
+  const row = {};
+  cocs.forEach(i => { row[size(i)] = row[size(i)] || {ck:0, kx:0, dm:0}; });
+  filtTxns().filter(t => t.type === 'xuat').forEach(t => { const it = cocs.find(i => i.id === t.itemId); if (it) row[size(it)][isPycRef(t.refId) ? 'ck' : 'kx'] += effQty(t); });
+  const cks = ckList(), base = projReqs().filter(r => r.opt && r.opt.base && r.status !== 'tuchoi' && r.status !== 'huy');
+  base.forEach(r => { const ck = cks.find(c => c.id === r.ckId); if (!ck) return;
+    ckLinesLocal(ck, +r.opt.choice || 0, r.opt.haoHut ?? hh).forEach(x => { row[x.size] = row[x.size] || {ck:0, kx:0, dm:0}; row[x.size].dm += x.sum; }); });
+  const hmOf = r => (cks.find(c => c.id === r.ckId) || {}).hm;
+  return {hh, sizes:Object.keys(row).sort(), row, nCoc:cks.filter(c => c.hm === 'coc').length, nTv:cks.filter(c => c.hm === 'tv').length,
+    dCoc:new Set(base.filter(r => hmOf(r) === 'coc').map(r => r.ckId)).size, dTv:new Set(base.filter(r => hmOf(r) === 'tv').map(r => r.ckId)).size};
+}
+function addPycSheets(wb, R, P) {
+  const NAVY = 'FF1F3864', TINT = 'FFDCE6F1', BAND = 'FFF5F7FA', FN = 'Arial';
+  const thin = {style:'thin', color:{argb:'FFA6B0BE'}}, BD = {top:thin, left:thin, bottom:thin, right:thin};
+  const now = new Date(), p2 = n => String(n).padStart(2, '0');
+  const INFO = [['Dự án', P], ['Kỳ báo cáo', R.label], ['Ngày xuất', `${p2(now.getDate())}/${p2(now.getMonth() + 1)}/${now.getFullYear()} ${p2(now.getHours())}:${p2(now.getMinutes())}`],
+    ['Người xuất', `${me?.name || ''} (${ROLE_NAME[role] || role})`]];
+  const inR = s => { const d = parseVN(s); return !d || ((!R.from || d >= R.from) && (!R.to || d <= R.to)); };
+  function mk(name, widths, orient) {
+    const ws = wb.addWorksheet(name, {pageSetup:{paperSize:9, orientation:orient, fitToPage:true, fitToWidth:1, fitToHeight:0, horizontalCentered:true,
+      margins:{left:0.4, right:0.4, top:0.5, bottom:0.5, header:0.3, footer:0.3}}});
+    widths.forEach((w, i) => ws.getColumn(i + 1).width = w);
+    return ws;
+  }
+  function top(ws, title, last) {
+    ws.mergeCells(1, 1, 1, last); Object.assign(ws.getCell(1, 1), {value:'CÔNG TY CỔ PHẦN FECON SOUTH', font:{name:FN, size:10, bold:true, color:{argb:NAVY}}});
+    ws.mergeCells(2, 1, 2, last); Object.assign(ws.getCell(2, 1), {value:title, font:{name:FN, size:15, bold:true, color:{argb:NAVY}}, alignment:{horizontal:'center', vertical:'middle'}});
+    ws.getRow(2).height = 26;
+    INFO.forEach(([k, v], i) => { Object.assign(ws.getCell(3 + i, 1), {value:k + ':', font:{name:FN, size:10, bold:true}}); Object.assign(ws.getCell(3 + i, 2), {value:v, font:{name:FN, size:10}}); });
+    return 8;
+  }
+  function header(ws, r, cols) {
+    cols.forEach((h, i) => Object.assign(ws.getCell(r, i + 1), {value:h, font:{name:FN, size:10, bold:true, color:{argb:'FFFFFFFF'}},
+      fill:{type:'pattern', pattern:'solid', fgColor:{argb:NAVY}}, border:BD, alignment:{horizontal:'center', vertical:'middle', wrapText:true}}));
+    ws.getRow(r).height = 30;
+  }
+  function put(ws, r, c, v, o = {}) {
+    const x = ws.getCell(r, c); x.value = v === '' || v === undefined ? null : v; x.border = BD;
+    x.font = {name:FN, size:10, bold:!!(o.bold || o.hl)};
+    x.alignment = {horizontal:o.num ? 'right' : o.center ? 'center' : 'left', vertical:'middle', wrapText:!o.num};
+    if (o.num) x.numFmt = o.fmt || '#,##0';
+    if (o.hl) x.fill = {type:'pattern', pattern:'solid', fgColor:{argb:TINT}};
+    else if (o.band) x.fill = {type:'pattern', pattern:'solid', fgColor:{argb:BAND}};
+    return x;
+  }
+  function totalRow(ws, r, c1, c2, label, sums) {
+    for (let c = c1; c <= c2; c++) put(ws, r, c, null, {hl:true});
+    ws.getCell(r, c1).value = label;
+    sums.forEach(([c, f, v]) => { const x = ws.getCell(r, c); x.value = {formula:f, result:v}; x.numFmt = '#,##0'; x.alignment = {horizontal:'right', vertical:'middle'}; });
+  }
+  const note = (ws, r, t) => { ws.getCell(r, 1).value = t; ws.getCell(r, 1).font = {name:FN, size:9, italic:true, color:{argb:'FF404040'}}; };
+  const t = mk('Tóm tắt', [42, 18, 30, 16], 'portrait');      // tạo trước để nằm đầu
+  // ---------- Phiếu yêu cầu
+  const reqs = projReqs().filter(r => inR(r.datetime)).sort((a, b) => String(b.id).localeCompare(String(a.id)));
+  const ws = mk('Phiếu yêu cầu', [11, 16, 16, 14, 17, 20, 18, 9, 10, 10, 30, 26, 15, 32, 26, 16], 'landscape');
+  const COLS = ['Số phiếu', 'Ngày lập', 'Người yêu cầu', 'Chức danh', 'Cấu kiện / Vật tư', 'Máy sử dụng', 'Vật tư', 'Yêu cầu', 'Kho đã giao', 'Chưa giao',
+    'Trạng thái phiếu', 'Duyệt', 'Người duyệt', 'Tùy chọn / Bổ sung / Ghi chú', 'Lý do từ chối', 'Phiếu xuất (giờ giao)'];
+  const r0 = top(ws, 'BÁO CÁO PHIẾU YÊU CẦU CẤP VẬT TƯ', COLS.length); header(ws, r0, COLS);
+  let r = r0 + 1; const first = r; let sReq = 0, sSent = 0, sRem = 0;
+  reqs.forEach((q, n) => {
+    const band = n % 2 === 1, st = REQ_PLAIN(q), ap = AP_PLAIN(q);
+    const px = db.transactions.filter(t => t.type === 'xuat' && t.refId === q.id).map(t => String(t.datetime || '').replace(/:\d{2}\s/, ' ')).filter((v, i, a) => a.indexOf(v) === i);
+    const extra = [q.opt && q.opt.text, q.bs && `Bổ sung – ${q.bs.reason}${q.bs.note ? ': ' + q.bs.note : ''}`, q.note].filter(Boolean).join('; ');
+    (q.lines || []).forEach(l => {
+      const rem = Math.max(0, (+l.req || 0) - (+l.sent || 0));
+      [q.id, q.datetime, q.createdByName, ROLE_NAME[q.createdRole] || q.createdRole, q.kind === 'coc' ? String(q.title).split(' · ').slice(1).join(' · ') + (/^Bổ sung/.test(q.title) ? ' (bổ sung)' : '') : (q.lines[0]?.itemName || ''),
+        q.may, l.itemName].forEach((v, j) => put(ws, r, j + 1, v, {band, bold:j === 0, center:j < 2}));
+      put(ws, r, 8, +l.req || 0, {num:true, band}); put(ws, r, 9, +l.sent || 0, {num:true, band});
+      put(ws, r, 10, {formula:`H${r}-I${r}`, result:rem}, {num:true, band, hl:rem > 0});
+      put(ws, r, 11, st, {band, bold:true}); put(ws, r, 12, ap, {band, hl:/chưa duyệt/.test(ap)});
+      put(ws, r, 13, q.duyetBy || '', {band}); put(ws, r, 14, extra, {band}); put(ws, r, 15, q.reject || '', {band}); put(ws, r, 16, px.join(', '), {band, center:true});
+      sReq += +l.req || 0; sSent += +l.sent || 0; sRem += rem; r++;
+    });
+  });
+  const last = Math.max(first, r - 1);
+  if (!reqs.length) { ws.mergeCells(r, 1, r, COLS.length); put(ws, r, 1, 'Không có phiếu yêu cầu trong kỳ này', {center:true}); r++; }
+  totalRow(ws, r, 1, COLS.length, 'TỔNG CỘNG', [[8, `SUM(H${first}:H${last})`, sReq], [9, `SUM(I${first}:I${last})`, sSent], [10, `SUM(J${first}:J${last})`, sRem]]);
+  note(ws, r + 2, 'Ô tô nền: Chưa giao > 0 và phiếu CHT/CHP chưa duyệt – cần xử lý.');
+  ws.views = [{state:'frozen', xSplit:7, ySplit:r0}];
+  if (reqs.length) ws.autoFilter = {from:{row:r0, column:1}, to:{row:last, column:COLS.length}};
+  // ---------- Tóm tắt (đặt đầu file báo cáo riêng)
+  top(t, 'TÓM TẮT PHIẾU YÊU CẦU CẤP VẬT TƯ', 4);
+  let k = 8; header(t, k, ['Trạng thái phiếu', 'Số phiếu', 'Ghi chú']); k++;
+  const PY = "'Phiếu yêu cầu'", A = `${PY}!$A$${first}:$A$${last}`, K = `${PY}!$K$${first}:$K$${last}`, LL = `${PY}!$L$${first}:$L$${last}`, U = `COUNTIFS(${A},${A}&"")`;
+  const cnt = f => reqs.filter(f).length;
+  const S = [['Chờ kho giao', `(${K}="Chờ kho giao")`, cnt(q => REQ_PLAIN(q) === 'Chờ kho giao'), ''],
+    ['Chờ CHT/CHP duyệt, chờ kho giao', `(${K}="Chờ CHT/CHP duyệt, chờ kho giao")`, cnt(q => REQ_PLAIN(q) === 'Chờ CHT/CHP duyệt, chờ kho giao'), ''],
+    ['Kho đã giao, chờ xác nhận nhận hàng', `(LEFT(${K},11)="Kho đã giao")`, cnt(q => q.status === 'gui'), 'Gồm giao đủ và giao một phần'],
+    ['Còn thiếu, chờ kho giao tiếp', `(${K}="Còn thiếu, chờ kho giao tiếp")`, cnt(q => q.status === 'chohang'), ''],
+    ['Hoàn thành', `(${K}="Hoàn thành")`, cnt(q => q.status === 'xong'), ''],
+    ['Từ chối / Đã hủy', `((${K}="Từ chối")+(${K}="Đã hủy"))`, cnt(q => q.status === 'tuchoi' || q.status === 'huy'), '']];
+  const k0 = k;
+  S.forEach(([lab, cond, v, nt]) => { put(t, k, 1, lab); put(t, k, 2, reqs.length ? {formula:`SUMPRODUCT(${cond}/${U})`, result:v} : 0, {num:true}); put(t, k, 3, nt); k++; });
+  totalRow(t, k, 1, 3, 'TỔNG SỐ PHIẾU', [[2, `SUM(B${k0}:B${k - 1})`, reqs.length]]); k++;
+  const nUn = cnt(q => /chưa duyệt/.test(AP_PLAIN(q)));
+  put(t, k, 1, 'CHT/CHP chưa duyệt (kể cả kho đã giao)', {hl:true});
+  put(t, k, 2, reqs.length ? {formula:`SUMPRODUCT(ISNUMBER(SEARCH("chưa duyệt",${LL}))/${U})`, result:nUn} : 0, {num:true, hl:true});
+  put(t, k, 3, 'CHT/CHP cần vào app duyệt', {hl:true}); k += 2;
+  const C = cocData();
+  if (C.sizes.length) {
+    header(t, k, ['Cóc nối (lũy kế đến nay)', 'Kho đã giao', 'Định mức đến nay', 'Vượt định mức']); k++; const c0 = k;
+    C.sizes.forEach(s => { const x = C.row[s], g = x.ck + x.kx;
+      put(t, k, 1, 'Cóc nối thép ' + s); put(t, k, 2, g, {num:true}); put(t, k, 3, x.dm, {num:true});
+      put(t, k, 4, {formula:`MAX(0,B${k}-C${k})`, result:Math.max(0, g - x.dm)}, {num:true, hl:g > x.dm}); k++; });
+    const sum = key => C.sizes.reduce((a, s) => a + (key === 'g' ? C.row[s].ck + C.row[s].kx : key === 'dm' ? C.row[s].dm : Math.max(0, C.row[s].ck + C.row[s].kx - C.row[s].dm)), 0);
+    totalRow(t, k, 1, 4, 'TỔNG CỘNG', [[2, `SUM(B${c0}:B${k - 1})`, sum('g')], [3, `SUM(C${c0}:C${k - 1})`, sum('dm')], [4, `SUM(D${c0}:D${k - 1})`, sum('v')]]); k++;
+  }
+  k += 2;
+  ['NGƯỜI LẬP', 'CHỈ HUY TRƯỞNG', 'QUẢN LÝ DỰ ÁN'].forEach((h, i) => {
+    Object.assign(t.getCell(k, i + 1), {value:h, font:{name:FN, size:10, bold:true}, alignment:{horizontal:'center'}});
+    Object.assign(t.getCell(k + 1, i + 1), {value:'(Ký, ghi rõ họ tên)', font:{name:FN, size:9, italic:true, color:{argb:'FF7F7F7F'}}, alignment:{horizontal:'center'}});
+  });
+  // ---------- Đối chiếu cóc nối
+  if (C.sizes.length) {
+    const d = mk('Đối chiếu cóc nối', [22, 18, 18, 16, 16, 14], 'portrait');
+    top(d, 'ĐỐI CHIẾU CÓC NỐI VỚI ĐỊNH MỨC BẢN VẼ', 6);
+    let i = 8; header(d, i, ['Cỡ cóc', 'Theo cấu kiện\n(qua phiếu YC)', 'Không xác định\n(xuất thẳng)', 'Tổng kho đã giao', 'Định mức đến nay', 'Vượt định mức']); i++; const d0 = i;
+    C.sizes.forEach(s => { const x = C.row[s], g = x.ck + x.kx;
+      put(d, i, 1, 'Cóc nối thép ' + s, {bold:true}); put(d, i, 2, x.ck, {num:true}); put(d, i, 3, x.kx, {num:true, hl:x.kx > 0});
+      put(d, i, 4, {formula:`B${i}+C${i}`, result:g}, {num:true}); put(d, i, 5, x.dm, {num:true});
+      put(d, i, 6, {formula:`MAX(0,D${i}-E${i})`, result:Math.max(0, g - x.dm)}, {num:true, hl:g > x.dm}); i++; });
+    const tot = c => C.sizes.reduce((a, s) => { const x = C.row[s], g = x.ck + x.kx; return a + [0, 0, x.ck, x.kx, g, x.dm, Math.max(0, g - x.dm)][c]; }, 0);
+    totalRow(d, i, 1, 6, 'TỔNG CỘNG', [2, 3, 4, 5, 6].map(c => [c, `SUM(${String.fromCharCode(64 + c)}${d0}:${String.fromCharCode(64 + c)}${i - 1})`, tot(c)])); i += 2;
+    header(d, i, ['Hạng mục', 'Đã có phiếu cóc', 'Tổng cấu kiện', 'Tỉ lệ']); i++;
+    [['Cọc khoan nhồi', C.dCoc, C.nCoc], ['Tường vây (tấm)', C.dTv, C.nTv]].forEach(([a, b, c]) => {
+      put(d, i, 1, a, {bold:true}); put(d, i, 2, b, {num:true}); put(d, i, 3, c, {num:true});
+      put(d, i, 4, {formula:`IF(C${i}=0,0,B${i}/C${i})`, result:c ? b / c : 0}, {num:true, fmt:'0.0%'}); i++; });
+    i++;
+    ['Ghi chú:', '– Theo cấu kiện: cóc xuất qua phiếu yêu cầu, gắn với cọc / tấm cụ thể.', '– Không xác định: cóc thủ kho xuất thẳng, không gắn cấu kiện.',
+      `– Định mức đến nay: định mức của các cấu kiện đã có phiếu (gồm hao hụt ${C.hh}% và mức tùy chọn KTV chọn).`, '– Số liệu cóc là lũy kế từ đầu dự án.', '– Ô tô nền: số cần kiểm tra lại.']
+      .forEach(x => { note(d, i, x); if (x === 'Ghi chú:') d.getCell(i, 1).font = {name:FN, size:9, bold:true}; i++; });
+  }
+  // ---------- Kiểm kê
+  const kk = byTimeDesc(filtTxns().filter(x => x.type === 'kiemke' && inR(x.datetime)));
+  const w = mk('Kiểm kê', [18, 26, 8, 13, 15, 10, 42], 'landscape');
+  top(w, 'LỊCH SỬ KIỂM KÊ THỰC TẾ', 7);
+  let j = 8; header(w, j, ['Ngày giờ', 'Vật tư', 'Đơn vị', 'Số trên app', 'Số đếm thực tế', 'Lệch', 'Người đếm / Ghi chú']); j++;
+  kk.forEach((x, n) => {
+    const band = n % 2 === 1, dlt = kkDelta(x), app = Math.round((+x.qty - dlt) * 1000) / 1000, it = db.items.find(i => i.id === x.itemId);
+    put(w, j, 1, x.datetime, {center:true, band}); put(w, j, 2, it?.name || x.itemName, {bold:true, band}); put(w, j, 3, it?.unit || x.unit, {center:true, band});
+    put(w, j, 4, app, {num:true, band}); put(w, j, 5, +x.qty, {num:true, band});
+    put(w, j, 6, {formula:`E${j}-D${j}`, result:dlt}, {num:true, fmt:'+#,##0;-#,##0;0', hl:dlt !== 0, band});
+    put(w, j, 7, [x.createdByName, x.note].filter(Boolean).join(' – '), {band}); j++;
+  });
+  if (!kk.length) { w.mergeCells(j, 1, j, 7); put(w, j, 1, 'Không có lần kiểm kê nào trong kỳ này', {center:true}); j++; }
+  note(w, j + 1, 'Lệch âm: thực tế ít hơn số trên app (thiếu). Lệch dương: thực tế nhiều hơn (thừa). Số đếm là mốc để app tính tồn kho về sau.');
+  w.views = [{state:'frozen', ySplit:8}];
+  return {sheets:['Tóm tắt', 'Phiếu yêu cầu', 'Đối chiếu cóc nối', 'Kiểm kê'].filter(n => wb.getWorksheet(n)), hasData:reqs.length > 0 || kk.length > 0};
+}
+async function buildPycWorkbook() {
+  const R = exportRange(), P = curProj;
+  const wb = new ExcelJS.Workbook(); wb.creator = 'FECON Kho Vật Tư'; wb.created = new Date();
+  addPycSheets(wb, R, P);
+  const buf = await wb.xlsx.writeBuffer(), d = new Date();
+  const fname = `BaoCao_PhieuYC_${slugVN(P)}_${R.tag}_${d.getDate()}-${d.getMonth() + 1}-${d.getFullYear()}.xlsx`;
+  lastExport = new File([buf], fname, {type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'});
+  closeModal('modal-export');
+  document.getElementById('xf-name').textContent = fname;
+  document.getElementById('xf-gom').textContent = 'Gồm: Tóm tắt · Phiếu yêu cầu · Đối chiếu cóc nối · Kiểm kê';
+  document.getElementById('xf-share').style.display = navigator.canShare && navigator.canShare({files:[lastExport]}) ? '' : 'none';
+  openModal('modal-xfile');
+}
 
 // ===== GHI LỖI PHÁT SINH (gửi về tab LoiApp trên Sheet) =====
 const _errSent = new Set(); let _errN = 0;
