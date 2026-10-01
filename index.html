@@ -175,7 +175,9 @@ body{font-family:-apple-system,BlinkMacSystemFont,"SF Pro Display","Segoe UI",sa
 .pyc-done{background:rgba(39,174,96,.13);border:1px solid rgba(39,174,96,.5);border-radius:10px;padding:10px;font-size:12.5px;color:#1E7A45;font-weight:700;margin-bottom:10px}
 .pyc-may{background:var(--bg);border-radius:12px;padding:10px;margin-bottom:8px}
 .pyc-tag{display:inline-block;font-size:10.5px;font-weight:800;padding:2px 7px;border-radius:6px;background:#E7F0FB;color:#1864AB;margin:2px 4px 0 0}
-.pyc-tag.gray{background:#EEF0F3;color:var(--text2)}.pyc-tag.warn{background:#FFE9A8;color:#7A4E00}
+.pyc-tag.gray{background:#EEF0F3;color:var(--text2)}.pyc-tag.warn{background:#FFE8CC;color:#9A3412;border:1.5px solid #EA580C;font-size:11.5px;padding:3px 8px}
+.pyc-ap.warn{border:1.5px solid #EA580C;font-size:12px;font-weight:900;padding:3px 8px}
+.pyc-unapp{background:#FFE8CC;border:2px solid #EA580C;color:#9A3412;border-radius:10px;padding:8px 10px;font-size:14px;font-weight:900;margin-top:4px}
 .kk-row{display:grid;grid-template-columns:1.7fr .9fr .9fr;gap:6px;align-items:center;padding:7px 0;border-top:1px solid var(--border);font-size:13px}
 .kk-row small,.kk-hist small{display:block;font-size:10.5px;color:var(--text3);font-weight:400}
 .kk-row input{width:100%;box-sizing:border-box;padding:8px;border:1.5px solid var(--border);border-radius:8px;font-size:14px;text-align:right}.kk-row input.diff{border-color:var(--orange)}
@@ -2386,7 +2388,7 @@ function txnRow(t) {
   const sign = dc ? (t.qty > 0 ? '+' : '') : t.type === 'nhap' ? '+' : '-';
   const pr = t.type === 'xuat' && isPycRef(t.refId) ? (db.reqs || []).find(r => r.id === t.refId) : null;
   const xTag = t.type !== 'xuat' ? '' : isPycRef(t.refId)
-    ? `<div class="txn-sub"><span class="pyc-tag">📝 Theo ${escHtml(t.refId)}</span>${pr && pr.duyet === 'chua' ? '<span class="pyc-tag warn">Chưa CHT/CHP duyệt</span>' : ''}</div>`
+    ? `<div class="txn-sub"><span class="pyc-tag">📝 Theo ${escHtml(t.refId)}</span>${pr && pr.duyet === 'chua' ? '<span class="pyc-tag warn">⚠️ CHT/CHP chưa duyệt</span>' : ''}</div>`
     : `<div class="txn-sub"><span class="pyc-tag gray">Xuất thẳng</span></div>`;
   return `<div class="row-item" onclick="openTxn(${t.id})">
     <div class="txn-ico ${dc?'adj':t.type==='nhap'?'in':'out'}">${dc?'⚖️':t.type==='nhap'?'📥':'📤'}</div>
@@ -5597,8 +5599,8 @@ function reqAp(r) {
   if (r.duyet === 'da') return ['Đã duyệt · ' + shortNm(r.duyetBy), '#E3F4EA', '#1E7A45'];
   if (r.duyet === 'sau') return ['Duyệt sau khi kho giao · ' + shortNm(r.duyetBy), '#FFF1D6', '#8A5A00'];
   if (r.status === 'tuchoi' || r.status === 'huy') return ['Không duyệt', '#E3E7ED', '#3A4A5A'];
-  if (r.status === 'cho') return ['Chưa CHT/CHP duyệt', '#FFE9A8', '#7A4E00'];
-  return ['Kho đã giao khi chưa có CHT/CHP duyệt', '#FFD9A8', '#7A3A00'];
+  if (r.status === 'cho') return ['⚠️ CHT/CHP chưa duyệt', '#FFE8CC', '#9A3412', 1];
+  return ['⚠️ Kho đã giao – CHT/CHP chưa duyệt', '#FFE8CC', '#9A3412', 1];
 }
 // Dòng "việc tiếp theo" theo người đang xem
 function reqNext(r) {
@@ -5626,7 +5628,7 @@ function reqCard(r) {
       <div class="pyc-id">${escHtml(r.id)}</div>
       <div class="pyc-title">${escHtml(r.title)}</div>
       <div class="pyc-sum">${escHtml(sum)}</div>
-      <div class="pyc-foot"><span class="pyc-ap" style="background:${A[1]};color:${A[2]}">${A[0]}</span><span>${escHtml(shortNm(r.createdByName))} · ${escHtml(r.datetime || '')}</span></div>
+      <div class="pyc-foot"><span class="pyc-ap${A[3] ? ' warn' : ''}" style="background:${A[1]};color:${A[2]}">${A[0]}</span><span>${escHtml(shortNm(r.createdByName))} · ${escHtml(r.datetime || '')}</span></div>
     </div>
   </div>`;
 }
@@ -5670,7 +5672,7 @@ function renderPyc(c) {
       pycSection('📋 Phiếu của tôi đang mở', R.filter(r => mine(r) && ['cho','chohang'].includes(r.status)));
   } else {
     sec = pycSection('⏳ Chờ kho giao', R.filter(r => r.status === 'cho' || r.status === 'chohang'), 'Không có phiếu chờ giao') +
-      pycSection('🟡 Chưa CHT/CHP duyệt', R.filter(r => r.duyet === 'chua' && r.status !== 'tuchoi' && r.status !== 'huy')) +
+      pycSection('⚠️ CHT/CHP chưa duyệt', R.filter(r => r.duyet === 'chua' && r.status !== 'tuchoi' && r.status !== 'huy')) +
       pycSection('🚚 Kho đã giao – chờ xác nhận', R.filter(r => r.status === 'gui'));
   }
   const chip = (k, t) => `<div class="chip ${reqListMode === k ? 'on' : ''}" onclick="reqListMode='${k}';goTab('pyc')">${t}</div>`;
@@ -5750,7 +5752,7 @@ function renderReqDetail() {
   body.innerHTML = `<div class="pyc-detail">
     <div class="pyc-banner"><div class="pyc-banner-top" style="background:${L.cb}"><small>TRẠNG THÁI PHIẾU</small><b>${L.chip}</b></div>
       <div class="pyc-banner-bot"><div style="color:${NX[1] ? '#C2410C' : 'var(--text3)'};font-weight:800;font-size:14px">${NX[0]}</div>
-      <div style="font-size:12.5px">Duyệt: <b style="color:${A[2]}">${A[0]}</b></div></div></div>
+      ${A[3] ? `<div class="pyc-unapp">${A[0]}</div>` : `<div style="font-size:12.5px">Duyệt: <b style="color:${A[2]}">${A[0]}</b></div>`}</div></div>
     <div class="pyc-head">
       <div class="pyc-title" style="font-size:16px">${escHtml(r.title)}</div>
       ${r.opt && r.opt.text ? `<div class="pyc-sum">${escHtml(r.opt.text)}${r.opt.haoHut ? ` · hao hụt ${r.opt.haoHut}%` : ''}</div>` : ''}
