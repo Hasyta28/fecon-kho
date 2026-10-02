@@ -540,6 +540,30 @@ body.can-ql .hide-ql{display:none!important}
 .cp-row{display:flex;align-items:center;gap:10px;padding:9px 0;border-top:1px solid var(--border);font-size:14px;cursor:pointer}
 .cp-row input{width:20px;height:20px;flex-shrink:0}.cp-row span{flex:1}.cp-row small{color:var(--text3);font-size:11.5px}
 .cp-row.have{opacity:.45}
+.rtag{display:inline-flex;flex-direction:column;line-height:1.15;vertical-align:middle}.rtag b{font-weight:900;letter-spacing:.3px}.rtag small{font-size:10px;opacity:.6;font-weight:500}
+.rl-h{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:8px}
+.rl-h>button,.rl-acts button,.rl-sh button{border:1px solid var(--border);background:#fff;border-radius:8px;padding:6px 9px;font-size:12px;font-weight:700;cursor:pointer;color:var(--primary)}
+.rl-acts{display:flex;flex-direction:column;gap:4px}
+.rl-add{background:var(--bg);border-radius:12px;padding:10px;margin-bottom:10px}
+.rl-gl{font-size:10.5px;font-weight:800;color:var(--text3);letter-spacing:.3px;margin:8px 0 5px;text-transform:uppercase}
+.rl-chips{display:flex;flex-wrap:wrap;gap:6px}
+.rl-chip{display:flex;flex-direction:column;align-items:flex-start;border:1.5px solid var(--border);background:#fff;border-radius:10px;padding:6px 10px;cursor:pointer;min-width:62px}
+.rl-chip b{font-size:14px;font-weight:900;color:var(--text);letter-spacing:.3px}.rl-chip small{font-size:10px;color:var(--text3)}
+.rl-chip.on{background:var(--primary);border-color:var(--primary)}.rl-chip.on b{color:#fff}.rl-chip.on small{color:#D6E4F5}
+.rl-abbr{font-size:22px;font-weight:900;color:#0B2545;letter-spacing:.3px}.rl-vn{font-size:12px;color:var(--text3)}.rl-meta{font-size:11.5px;color:var(--text2);margin-top:4px}
+.rl-sec{border:1px solid var(--border);border-radius:12px;overflow:hidden;margin-top:10px}
+.rl-sh{display:flex;justify-content:space-between;align-items:center;background:var(--bg);padding:8px 10px}
+.rl-sh button{border:none;background:none}
+.rl-row{display:flex;align-items:center;gap:10px;padding:10px;border-top:1px solid var(--border);cursor:pointer}
+.rl-row b{display:block;font-size:13.5px}.rl-row small{display:block;font-size:11px;color:var(--text3)}
+.rl-box{width:22px;height:22px;border-radius:6px;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-weight:900;color:#fff;border:2px solid #C9D3E3;background:#fff}
+.rl-box.on{background:var(--primary);border-color:var(--primary)}
+.rl-save{position:fixed;left:0;right:0;bottom:0;background:#fff;border-top:1px solid var(--border);padding:10px 14px calc(10px + env(safe-area-inset-bottom));display:flex;align-items:center;gap:10px;font-size:12.5px;font-weight:700;z-index:5}
+.rl-save span{flex:1}.rl-save button{border:none;border-radius:12px;background:var(--orange);color:#fff;font-weight:900;font-size:15px;padding:12px 24px;cursor:pointer}
+.rl-save button:disabled{background:#9AA7B8}
+.nl-bar{position:fixed;left:12px;right:12px;top:calc(12px + env(safe-area-inset-top));z-index:9000;background:#1A2332;color:#fff;border-radius:14px;padding:12px 14px;box-shadow:0 12px 40px rgba(0,0,0,.35);font-size:13px;display:flex;flex-direction:column;gap:6px}
+.nl-acts{display:flex;gap:6px;flex-wrap:wrap}.nl-acts button{border:1px solid rgba(255,255,255,.3);background:transparent;color:#fff;border-radius:8px;padding:7px 10px;font-weight:700;font-size:12px;cursor:pointer}
+.nl-acts button.red{background:var(--red);border-color:var(--red)}
 .more-btn{display:block;width:calc(100% - 28px);margin:10px 14px;border:1.5px dashed var(--border);background:#fff;border-radius:12px;padding:12px;font-weight:800;color:var(--primary);cursor:pointer}
 
 .diag-out{background:var(--bg);border-radius:10px;padding:10px 12px;font-size:12px;line-height:1.7;color:var(--text2);margin-top:6px;word-break:break-word}
@@ -787,7 +811,7 @@ body:not(.can-cost) .need-cost{display:none!important}
     <button class="bnav-btn" id="bn-pyc" onclick="goTab('pyc')">
       <div class="bnav-icon-wrap"><span class="bnav-icon">📝</span><span class="bnav-badge" id="pyc-badge" style="display:none">0</span></div>Phiếu YC
     </button>
-    <button class="bnav-btn on" id="bn-home" onclick="goTab(role === 'ld' ? 'lead' : 'home')">
+    <button class="bnav-btn on" id="bn-home" onclick="goTab(isLeadRole() ? 'lead' : 'home')">
       <div class="bnav-icon-wrap"><span class="bnav-icon">🏠</span></div>Tổng quan
     </button>
     <button class="bnav-btn" id="bn-lsnhap" onclick="goTab('lsnhap')">
@@ -884,6 +908,10 @@ body:not(.can-cost) .need-cost{display:none!important}
   <div class="detail-body" id="dp-quick-body"></div>
 </div>
 
+<div class="detail-page" id="dp-roles">
+  <div class="detail-header"><button class="back-btn" onclick="closeDp('dp-roles')">‹</button><div class="detail-title">🛡 Phân quyền chức danh</div></div>
+  <div class="detail-body" id="dp-roles-body"></div>
+</div>
 <div class="detail-page" id="dp-copy">
   <div class="detail-header"><button class="back-btn" onclick="closeDp('dp-copy')">‹</button><div class="detail-title">📋 Chép vật tư từ dự án khác</div></div>
   <div class="detail-body" id="dp-copy-body"></div>
@@ -1028,28 +1056,29 @@ body:not(.can-cost) .need-cost{display:none!important}
   </div>
   <div class="sidebar-body">
     <div class="sidebar-label">Chức năng</div>
-    <div class="sidebar-item" onclick="goTabSb('pyc')"><span class="sidebar-item-ico">📝</span>Phiếu yêu cầu</div>
-    <div class="sidebar-item" onclick="goTabSb('home')"><span class="sidebar-item-ico">🏠</span>Tổng quan</div>
-    <div class="sidebar-item need-tk" onclick="goTabSb('nhap')"><span class="sidebar-item-ico">📥</span>Nhập kho</div>
-    <div class="sidebar-item need-tk" onclick="goTabSb('xuat')"><span class="sidebar-item-ico">📤</span>Xuất kho</div>
-    <div class="sidebar-item" onclick="goTabSb('ton')"><span class="sidebar-item-ico">📦</span>Tồn kho</div>
-    <div class="sidebar-item" onclick="openDpSb('dp-loans')"><span class="sidebar-item-ico">🔁</span>Cho mượn / Trả</div>
-    <div class="sidebar-item" onclick="goTabSb('baocao')"><span class="sidebar-item-ico">📊</span>Báo cáo</div>
+    <div class="sidebar-item" data-p="v_pyc" onclick="goTabSb('pyc')"><span class="sidebar-item-ico">📝</span>Phiếu yêu cầu</div>
+    <div class="sidebar-item" data-p="v_home" onclick="goTabSb('home')"><span class="sidebar-item-ico">🏠</span>Tổng quan</div>
+    <div class="sidebar-item" data-p="k_nhap" onclick="goTabSb('nhap')"><span class="sidebar-item-ico">📥</span>Nhập kho</div>
+    <div class="sidebar-item" data-p="k_xuat" onclick="goTabSb('xuat')"><span class="sidebar-item-ico">📤</span>Xuất kho</div>
+    <div class="sidebar-item" data-p="v_ton" onclick="goTabSb('ton')"><span class="sidebar-item-ico">📦</span>Tồn kho</div>
+    <div class="sidebar-item" data-p="v_home|k_loan" onclick="openDpSb('dp-loans')"><span class="sidebar-item-ico">🔁</span>Cho mượn / Trả</div>
+    <div class="sidebar-item" data-p="v_baocao" onclick="goTabSb('baocao')"><span class="sidebar-item-ico">📊</span>Báo cáo</div>
     <div class="sidebar-item need-cost" onclick="openSummary()"><span class="sidebar-item-ico">📈</span>Tổng hợp dự án</div>
     <div class="sidebar-divider"></div>
     <div class="sidebar-label">Thiết bị & Ghi chú</div>
-    <div class="sidebar-item" onclick="openDpSb('dp-devices-list')"><span class="sidebar-item-ico">🏗️</span>Máy móc & Thiết bị</div>
-    <div class="sidebar-item" onclick="openDpSb('dp-notes')"><span class="sidebar-item-ico">📝</span>Ghi chú trong ngày</div>
-    <div class="sidebar-item" onclick="openDpSb('dp-dc-hist')"><span class="sidebar-item-ico">⚖️</span>Điều chỉnh & kiểm kê</div>
-    <div class="sidebar-item need-tk" onclick="closeSidebar();setTimeout(openCopyItems,300)"><span class="sidebar-item-ico">📋</span>Chép vật tư từ dự án khác</div>
-    <div class="sidebar-item need-tk" onclick="closeSidebar();setTimeout(openKK,300)"><span class="sidebar-item-ico">🔢</span>Đợt kiểm kê</div>
+    <div class="sidebar-item" data-p="v_home" onclick="openDpSb('dp-devices-list')"><span class="sidebar-item-ico">🏗️</span>Máy móc & Thiết bị</div>
+    <div class="sidebar-item" data-p="v_home" onclick="openDpSb('dp-notes')"><span class="sidebar-item-ico">📝</span>Ghi chú trong ngày</div>
+    <div class="sidebar-item" data-p="v_nhap|v_xuat" onclick="openDpSb('dp-dc-hist')"><span class="sidebar-item-ico">⚖️</span>Điều chỉnh & kiểm kê</div>
+    <div class="sidebar-item" data-p="k_copy" onclick="closeSidebar();setTimeout(openCopyItems,300)"><span class="sidebar-item-ico">📋</span>Chép vật tư từ dự án khác</div>
+    <div class="sidebar-item" data-p="k_kk" onclick="closeSidebar();setTimeout(openKK,300)"><span class="sidebar-item-ico">🔢</span>Đợt kiểm kê</div>
     <div class="sidebar-item need-cost" onclick="openDpSb('dp-coc')"><span class="sidebar-item-ico">🔗</span>Đối chiếu cóc nối</div>
     <div class="sidebar-item" onclick="openDpSb('dp-tg')"><span class="sidebar-item-ico">🔔</span>Nhận cảnh báo Telegram</div>
     <div class="sidebar-divider need-ql"></div>
     <div class="sidebar-label need-ql">Quản lý</div>
-    <div class="sidebar-item need-ql" onclick="openDpSb('dp-members')"><span class="sidebar-item-ico">👥</span>Thành viên<span class="sb-badge" id="sb-pend" style="display:none">0</span></div>
-    <div class="sidebar-item need-ql" onclick="openModal('modal-add-proj')"><span class="sidebar-item-ico">🏢</span>Thêm dự án</div>
-    <div class="sidebar-item need-ql" onclick="openDpSb('dp-history-log')"><span class="sidebar-item-ico">📋</span>Nhật ký hoạt động</div>
+    <div class="sidebar-item need-admin" onclick="openDpSb('dp-members')"><span class="sidebar-item-ico">👥</span>Thành viên<span class="sb-badge" id="sb-pend" style="display:none">0</span></div>
+    <div class="sidebar-item need-admin" onclick="openModal('modal-add-proj')"><span class="sidebar-item-ico">🏢</span>Thêm dự án</div>
+    <div class="sidebar-item need-admin" onclick="openDpSb('dp-history-log')"><span class="sidebar-item-ico">📋</span>Nhật ký hoạt động</div>
+    <div class="sidebar-item need-admin" onclick="closeSidebar();setTimeout(openRoles,300)"><span class="sidebar-item-ico">🛡</span>Phân quyền chức danh</div>
     <div class="sidebar-item need-admin" onclick="openDpSb('dp-pycfg')"><span class="sidebar-item-ico">⚙️</span>Cài đặt phiếu yêu cầu</div>
     <div class="sidebar-divider"></div>
     <div class="sidebar-item inst-btn" style="display:none" onclick="closeSidebar();doInstall()"><span class="sidebar-item-ico">📲</span>Cài app vào điện thoại</div>
@@ -1457,7 +1486,7 @@ body:not(.can-cost) .need-cost{display:none!important}
 // ============================================================
 // CONFIG
 // ============================================================
-const APP_VERSION = '5.18.0';
+const APP_VERSION = '5.19.0';
 const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbw6Rmi80I7RI3ij2U7RdRF5pYuQTnPrwEmGmUZS5xpxzLwwVynfoFUujZe1lm6HS1ymxw/exec';
 // ============================================================
 
@@ -1546,10 +1575,17 @@ const emptyDb = () => ({categories: CATEGORIES, projects: [], items: [], devices
 let db = emptyDb();
 
 // ===== QUYỀN =====
-const RANK = {xem:1, ld:1, ktv:1, chp:1, cht:1, tk:2, ql:3, admin:4};   // cht/chp/ktv: phiếu yêu cầu theo bảng quyền (Admin cài)   // ld = Lãnh đạo: xem mọi dự án + Tổng hợp, không ghi
-const ROLE_NAME = {admin:'Admin', ql:'Quản lý', tk:'Thủ kho', xem:'Chỉ xem', ld:'Lãnh đạo', cht:'Chỉ huy trưởng', chp:'Chỉ huy phó', ktv:'Kỹ thuật viên'};
-const allProjRole = r => RANK[r] >= RANK.ql || r === 'ld';
-const can = r => (RANK[role] || 0) >= RANK[r];
+let ROLES = (() => { try { return JSON.parse(localStorage.getItem('fecon_roles_v515') || '{}'); } catch (e) { return {}; } })();
+const OLD_ROLE = {admin:'ADM', ql:'QL', tk:'SK', cht:'CM', chp:'DCM', ktv:'TS', ld:'MD', xem:'SUP'};
+const ROLE_NAME = new Proxy({}, {get:(t, k) => { if (typeof k !== 'string') return undefined; const r = ROLES[k] || ROLES[OLD_ROLE[k]]; return r ? `${r.abbr} – ${r.name}` : k; }});
+const roleTag = code => { const r = ROLES[code]; return r ? `<span class="rtag"><b>${escHtml(r.abbr)}</b><small>${escHtml(r.name)}</small></span>` : escHtml(code || ''); };
+const RANK_OLD = {xem:1, ld:1, ktv:1, chp:1, cht:1, tk:2, ql:3, admin:4};
+// v5.18: quyền theo chức danh (máy chủ gửi me.perm). Trước lần đồng bộ đầu (còn vai trò cũ) dùng tạm bậc cũ
+const hp = k => { if (role === 'ADM') return true; if (me && me.perm) return !!me.perm[k];
+  return k === 'v_all' ? ['admin','ld'].includes(role) : k.startsWith('v_') ? true : (RANK_OLD[role] || 0) >= 2; };
+const isLeadRole = () => me && me.perm ? me.group === 'g6' : role === 'ld';
+const allProjRole = r => r === 'ADM' || r === 'QL' || !!(ROLES[r] && ROLES[r].perm && ROLES[r].perm.v_all);
+const can = r => r === 'admin' ? (role === 'ADM' || role === 'ADM') : r === 'ql' ? (role === 'ADM' || role === 'QL' || hp('g_price')) : r === 'tk' ? (hp('k_nhap') || hp('k_xuat')) : true;
 const newId = () => Date.now() * 100 + Math.floor(Math.random() * 100);
 const initials = n => { const w = String(n || '?').trim().split(/\s+/); return ((w.length > 1 ? w[0][0] + w[w.length-1][0] : w[0].slice(0, 2)) || '?').toUpperCase(); };
 
@@ -1620,16 +1656,20 @@ function showPage(id) {
 // ===== APP SETUP =====
 function applyRoleUI() {
   ['tk','ql','admin'].forEach(r => document.body.classList.toggle('can-' + r, can(r)));
-  document.body.classList.toggle('can-lead', role === 'admin' || role === 'ld');
+  document.body.classList.toggle('can-lead', hp('v_all'));
   document.body.classList.toggle('can-cost', canCost());
+  // v5.18: ẩn hẳn màn hình / mục Menu theo bảng quyền chức danh
+  document.querySelectorAll('[data-p]').forEach(el => { el.style.display = el.dataset.p.split('|').some(hp) ? '' : 'none'; });
+  const NAVP = {'bn-pyc':'v_pyc', 'bn-home':'v_home|v_all', 'bn-lsnhap':'v_nhap', 'bn-lsxuat':'v_xuat', 'bn-ton':'v_ton', 'bn-baocao':'v_baocao'};
+  Object.keys(NAVP).forEach(id => { const b = document.getElementById(id); if (b) b.style.display = NAVP[id].split('|').some(hp) ? '' : 'none'; });
   renderAvatar();
   document.getElementById('sb-name').textContent = me?.name || '';
-  document.getElementById('sb-role').textContent = `${ROLE_NAME[role] || role} · @${me?.username || ''}`;
+  document.getElementById('sb-role').innerHTML = `${roleTag(role)} <span style="opacity:.7">· @${escHtml(me?.username || '')}</span>`;
 }
 function renderAvatar() {
   const av = document.getElementById('header-avatar');
   av.innerHTML = escHtml(initials(me?.name)) + (pendingCount && can('admin') ? '<i class="hdr-dot"></i>' : '');
-  av.style.background = role === 'admin' ? 'rgba(242,101,34,.45)' : role === 'tk' ? 'rgba(242,101,34,.3)' : 'rgba(255,255,255,.2)';
+  av.style.background = role === 'ADM' ? 'rgba(242,101,34,.45)' : hp('y_giao') ? 'rgba(242,101,34,.3)' : 'rgba(255,255,255,.2)';
 }
 function setPendingBadge(n) {
   pendingCount = +n || 0;
@@ -1738,12 +1778,14 @@ async function api(action, data, timeoutMs) {
   if (!r) return {success:false};
   if (tok !== token) return {success:false, stale:true};  // trả lời của phiên đăng nhập trước → bỏ qua
   if (r.auth) onAuthLost(r.error);
+  if (r.roles) setRoles(r.roles);
   if (r.me) onMe(r.me, r.pending);
+  if (r.newLogin) showNewLogin(r.newLogin);
   return r;
 }
 function onMe(u, pending) {
   if (!me || u.id !== me.id) return;
-  const changed = u.role !== me.role || u.name !== me.name;
+  const changed = u.role !== me.role || u.name !== me.name || JSON.stringify(u.perm || {}) !== JSON.stringify(me.perm || {});
   me = u; localStorage.setItem(LS_USER, JSON.stringify(me));
   if (pending !== undefined) setPendingBadge(pending);
   if (changed) {
@@ -2001,7 +2043,8 @@ async function switchProject(p) {
 function goTab(tab) {
   if ((tab === 'nhap' || tab === 'xuat') && !can('tk')) tab = 'home';
   if (tab === 'lead' && !canLead()) tab = 'home';
-  if (tab === 'ton' && NEW_ROLES[role] && !canP('ton')) { toast('Chức danh của bạn chưa được bật quyền xem tồn kho'); tab = 'pyc'; }
+  const TABP = {home:'v_home', pyc:'v_pyc', lsnhap:'v_nhap', lsxuat:'v_xuat', ton:'v_ton', baocao:'v_baocao', lead:'v_all'};   // v5.18: chặn màn không có quyền
+  if (TABP[tab] && !hp(TABP[tab])) tab = ['pyc','home','lsxuat','ton','baocao'].find(t => hp(TABP[t])) || 'pyc';
   if (tab !== curTab) listLimit = {nhap:100, xuat:100, dieuchinh:100};
   curTab = tab;
   if (tab === 'lead') {                                   // Lãnh đạo: màn hình chính là Tổng hợp các dự án
@@ -2038,10 +2081,10 @@ function goTab(tab) {
   else if (tab === 'ton') renderTon(body);
   else if (tab === 'baocao') renderBaoCao(body);
   else if (tab === 'lsnhap' || tab === 'lsxuat') renderHistTab(body, tab === 'lsnhap' ? 'nhap' : 'xuat');
-  if (role === 'ld') body.insertAdjacentHTML('afterbegin', `<div class="lead-back" onclick="goTab('lead')">‹ Về tổng hợp các dự án<span>Đang xem: ${escHtml(curProj)}</span></div>`);
+  if (isLeadRole()) body.insertAdjacentHTML('afterbegin', `<div class="lead-back" onclick="goTab('lead')">‹ Về tổng hợp các dự án<span>Đang xem: ${escHtml(curProj)}</span></div>`);
   body.scrollTop = 0;
 }
-const goHome = () => goTab(role === 'ld' ? 'lead' : role === 'ktv' ? 'pyc' : 'home');   // KTV mở app vào thẳng Phiếu YC
+const goHome = () => goTab(isLeadRole() ? 'lead' : hp('v_home') ? 'home' : 'pyc');   // v5.18: không có Tổng quan → vào thẳng Phiếu YC
 // Đếm phiếu lập hôm nay
 function todayCount(type) {
   const n = new Date();
@@ -2360,8 +2403,8 @@ function editVatTu(id) {
   document.getElementById('ev-min-slider').max = Math.max(item.stock * 2, item.minStock * 2, 1000);
   document.getElementById('ev-min-val').textContent = item.minStock;
   // Vật tư đã có phiếu thì không xóa được (giữ lịch sử)
-  document.getElementById('ev-del-btn').style.display = role === 'admin' && !db.transactions.some(t => t.itemId === id) ? '' : 'none';   // v5.18: chỉ Admin xóa
-  const eu = document.getElementById('ev-unit'); eu.disabled = role !== 'admin'; eu.title = role !== 'admin' ? 'Chỉ Admin đổi đơn vị' : '';
+  document.getElementById('ev-del-btn').style.display = role === 'ADM' && !db.transactions.some(t => t.itemId === id) ? '' : 'none';   // v5.18: chỉ Admin xóa
+  const eu = document.getElementById('ev-unit'); eu.disabled = role !== 'ADM'; eu.title = role !== 'ADM' ? 'Chỉ Admin đổi đơn vị' : '';
   openModal('modal-edit-vattu');
 }
 async function saveVatTu() {
@@ -2384,7 +2427,7 @@ async function updateVatTu() {
   if (!name) { toast('⚠️ Nhập tên vật tư'); return; }
   item.name = name;
   item.cat = document.getElementById('ev-cat').value;
-  if (role === 'admin') item.unit = document.getElementById('ev-unit').value;
+  if (role === 'ADM') item.unit = document.getElementById('ev-unit').value;
   if (can('ql')) item.minStock = +document.getElementById('ev-min').value||0;
   closeModal('modal-edit-vattu');
   updateLowBadge();
@@ -3493,10 +3536,10 @@ function renderBaoCao(c) {
         <div class="action-btn" onclick="openDailyReport()">
           <span class="ab-ico">💬</span>Báo cáo Zalo
         </div>
-        <div class="action-btn" onclick="openExport('all')">
+        <div class="action-btn" data-p="x_nxt" onclick="openExport('all')">
           <span class="ab-ico">⬇️</span>Xuất Excel
         </div>
-        <div class="action-btn need-ql" onclick="openDp('dp-history-log', renderHistoryLog)">
+        <div class="action-btn need-admin" onclick="openDp('dp-history-log', renderHistoryLog)">
           <span class="ab-ico">📋</span>Lịch sử
         </div>
         <div class="action-btn" onclick="openDp('dp-devices-list', renderDevicesList)">
@@ -3733,7 +3776,7 @@ function openEditDevice() {
   document.getElementById('ad-plate').value = d.plate||'';
   document.getElementById('ad-note').value = d.note||'';
   document.getElementById('modal-device-title').textContent = '✏️ Sửa thiết bị';
-  document.getElementById('ad-del-btn').style.display = role === 'admin' ? '' : 'none';   // v5.18: chỉ Admin xóa
+  document.getElementById('ad-del-btn').style.display = role === 'ADM' ? '' : 'none';   // v5.18: chỉ Admin xóa
   openModal('modal-add-device');
 }
 
@@ -3897,8 +3940,8 @@ async function renderMembers() {
   clearInterval(memTimer);
   memTimer = setInterval(() => { const pg = document.getElementById('dp-members'); if (!pg.classList.contains('show') || !token) { clearInterval(memTimer); return; } if (!document.hidden && document.getElementById('modal-member').style.display !== 'flex') renderMembers(); }, 30000);
   const pend = can('admin') ? members.filter(u => u.status === 'pending') : [];
-  const admins = members.filter(u => u.status !== 'pending' && u.role === 'admin');
-  const act = members.filter(u => u.status !== 'pending' && (u.role !== 'admin' || showAdmins));
+  const admins = members.filter(u => u.status !== 'pending' && u.role === 'ADM');
+  const act = members.filter(u => u.status !== 'pending' && (u.role !== 'ADM' || showAdmins));
   setPendingBadge(pend.length);
   body.innerHTML = `
     ${pend.length ? `<div class="grp-label">⏳ Chờ duyệt (${pend.length})</div><div class="card" style="margin-bottom:14px">${pend.map(memberRow).join('')}</div>` : ''}
@@ -3910,7 +3953,7 @@ async function renderMembers() {
 function memberRow(u) {
   const badge = u.status === 'pending' ? '<span class="txn-badge badge-out">Chờ duyệt</span>'
     : u.status === 'locked' ? '<span class="txn-badge badge-warn">Đã khóa</span>'
-    : `<span class="txn-badge ${u.role==='admin'?'badge-out':u.role==='ql'?'badge-blue':u.role==='tk'?'badge-in':u.role==='ld'?'badge-warn':'badge-gray'}">${ROLE_NAME[u.role] || u.role}</span>`;
+    : `<span class="txn-badge badge-gray">${ROLE_NAME[u.role] || u.role}</span>`;
   const pr = u.status === 'pending' ? {cls:'', txt:''} : presence(u);
   const sub = u.status === 'pending' ? 'Gửi lúc ' + u.createdAt : pr.txt || (u.lastLogin ? 'Đăng nhập lần cuối ' + u.lastLogin : 'Chưa đăng nhập');
   const nDev = (u.sessions || []).length;
@@ -3943,7 +3986,7 @@ function openMember(id) {
     + (can('admin') && ss.length ? `<button class="btn-full" style="background:#fff;color:var(--red);border:1.5px solid #F5C2C0;margin:0 0 14px" onclick="revokeMember()">🚪 Đăng xuất ${self ? 'các máy khác' : 'khỏi mọi máy'}</button>` : '');
   document.getElementById('mm-name').value = u.name;
   const rs = document.getElementById('mm-role');
-  rs.value = pending ? 'tk' : u.role; rs.disabled = self;
+  fillRoleSelect(rs, pending ? 'SUP' : u.role); rs.disabled = self;
   document.getElementById('mm-pass').value = '';
   const isAdmin = can('admin');
   document.getElementById('mm-pending-box').style.display = isAdmin && pending ? '' : 'none';
@@ -4958,7 +5001,7 @@ async function deleteLoanAdmin() {
 // Máy chủ tính sẵn số liệu mọi dự án (getSummary); điện thoại chỉ vẽ.
 const SUM_COLORS = ['#0056A4', '#F26522', '#2E9F5A', '#7357C9', '#0E8C8C', '#B8860B', '#D64532', '#5B6577'];
 let sumPer = 'month', sumTab = -1, sumData = null, sumLoading = false, sumFrom = '', sumTo = '';
-const canLead = () => role === 'admin' || role === 'ld';
+const canLead = () => hp('v_all');
 function sumRange(per) {
   const n = new Date(), d0 = new Date(n.getFullYear(), n.getMonth(), n.getDate());
   let a = new Date(d0);
@@ -4986,7 +5029,7 @@ async function loadSummary() {
 }
 function openSummary() {
   closeSidebar();
-  if (role === 'ld') { goTab('lead'); return; }
+  if (isLeadRole()) { goTab('lead'); return; }
   if (!canLead()) { setTimeout(() => { sumTab = 2; openDp('dp-summary'); renderSummary(); }, 300); return; }   // Quản lý: chỉ có tab Chi phí
   setTimeout(() => { if (sumTab < 0) sumTab = 0; openDp('dp-summary'); if (sumTab === 2) { renderSummary(); return; } if (!sumData || Date.now() - (sumData._at || 0) > 5 * 60e3) loadSummary(); }, 300);
 }
@@ -5024,7 +5067,7 @@ function renderSummary() {
   if (!body) return;
   if (!canCost()) { body.innerHTML = '<div class="empty-state"><p>Chỉ Quản lý, Admin và Lãnh đạo xem được mục này</p></div>'; return; }
   if (!canLead()) sumTab = 2;
-  if (sumTab < 0) sumTab = role === 'ld' ? 2 : 0;          // v5.16: Lãnh đạo mở app vào thẳng tab Chi phí
+  if (sumTab < 0) sumTab = isLeadRole() ? 2 : 0;          // v5.16: Lãnh đạo mở app vào thẳng tab Chi phí
   const tabs = !canLead() ? '' : `<div class="sum-tabs">${['Tổng quan', 'So sánh', 'Chi phí'].map((t, i) => `<button class="${sumTab === i ? 'on' : ''}" onclick="setSumTab(${i})">${t}</button>`).join('')}</div>`;
   if (sumTab === 2) { body.innerHTML = tabs + costView(); ensureCost(); return; }
   const chip = p => `<button class="sum-chip ${sumPer === p ? 'on' : ''}" onclick="setSumPer('${p}')">${sumPerLabel(p)}</button>`;
@@ -5069,7 +5112,7 @@ async function sumGo(p) {
   closeDp('dp-summary');
   if (p !== curProj) await switchProject(p);
   goTab('home');
-  if (role === 'ld') document.getElementById('main-body').scrollTop = 0;
+  if (isLeadRole()) document.getElementById('main-body').scrollTop = 0;
 }
 // ---- Biểu đồ (SVG, co giãn theo bề ngang) ----
 function hBars(rows, unit, opts = {}) {
@@ -5163,7 +5206,7 @@ async function exportSummary() {
 
 
 // ===== v5.15: CHI PHÍ VẬT TƯ (Quản lý / Admin / Lãnh đạo) — máy chủ tính sẵn, điện thoại chỉ vẽ =====
-const canCost = () => ['ql', 'admin', 'ld'].includes(role) || (!!NEW_ROLES[role] && canP('chiPhi'));
+const canCost = () => hp('g_view') && (hp('v_stat') || hp('v_all'));
 // v5.15.1: mỗi lần đăng nhập / đăng xuất xóa số liệu tổng hợp, chi phí, giá của người trước
 // (trước đây: đổi tài khoản khi máy chủ đang tính dở → cờ "đang tải" bị kẹt, tài khoản sau không tải lại được)
 function resetLeadState() {
@@ -5637,16 +5680,9 @@ window.addEventListener('resize', iosGapCheck);
 // v5.17.0 — PHIẾU YÊU CẦU CẤP VẬT TƯ · KIỂM KÊ LÀM MỐC · TELEGRAM
 // (máy chủ 5.13.0). Thao tác phiếu yêu cầu / kiểm kê cần có mạng (máy chủ kiểm tra và tự tính số).
 // =====================================================================
-const NEW_ROLES = {cht:1, chp:1, ktv:1};
-const PERM_DEF = {
-  cht:{tao:1, bs:1, duyet:1, nhan:1, xemMoi:1, ton:1, tienDo:1, chiPhi:1},
-  chp:{tao:1, bs:1, duyet:1, nhan:1, xemMoi:1, ton:1, tienDo:1, chiPhi:0},
-  ktv:{tao:1, bs:1, duyet:0, nhan:1, xemMoi:1, ton:1, tienDo:0, chiPhi:0}
-};
-const PERM_LABEL = [['tao','Tạo phiếu yêu cầu'], ['bs','Xin bổ sung vượt định mức'], ['duyet','Duyệt phiếu của KTV'], ['nhan','Bấm "Đã nhận"'],
-  ['xemMoi','Xem mọi phiếu trong dự án'], ['ton','Xem tồn kho (không giá)'], ['tienDo','Cập nhật tiến độ thi công'], ['chiPhi','Xem giá và màn Chi phí']];
-const permOf = r => Object.assign({}, PERM_DEF[r] || {}, (db.rolePerm || {})[r] || {});
-function canP(k) { if (role === 'admin' || role === 'ql') return true; if (!NEW_ROLES[role]) return false; return !!permOf(role)[k]; }
+const OLDK = {tao:'y_tao', bs:'y_bs', duyet:'y_duyet', nhan:'y_nhan', xemMoi:'y_xem', ton:'v_ton', tienDo:'g_prog', chiPhi:'g_view'};
+const PERM_LABEL = [];
+function canP(k) { return hp(OLDK[k] || k); }   // v5.18: theo bảng quyền chức danh
 const isPycRef = v => typeof v === 'string' && /^PYC-/.test(v);
 const reqRemain = r => (r.lines || []).reduce((a, l) => a + Math.max(0, (+l.req || 0) - (+l.sent || 0)), 0);
 const reqOpen = r => ['cho','gui','chohang'].includes(r.status);
@@ -5658,7 +5694,7 @@ function reqLook(r) {
   const part = reqRemain(r) > 0;
   if (r.status === 'tuchoi') return {bg:'#F3F4F6', bd:'#C9D3E3', chip:'⛔ Bị từ chối', cb:'#6B7A90'};
   if (r.status === 'huy') return {bg:'#F3F4F6', bd:'#C9D3E3', chip:'Đã hủy', cb:'#8A9AB0'};
-  if (r.duyet === 'chua' && r.status === 'cho' && NEW_ROLES[role]) return {bg:'rgba(242,201,76,.16)', bd:'rgba(183,121,31,.55)', chip:'⏳ Chờ CHT/CHP duyệt · chờ kho giao', cb:'#B7791F'};
+  if (r.duyet === 'chua' && r.status === 'cho' && !hp('y_giao')) return {bg:'rgba(242,201,76,.16)', bd:'rgba(183,121,31,.55)', chip:'⏳ Chờ CHT/CHP duyệt · chờ kho giao', cb:'#B7791F'};
   if (r.status === 'cho') return {bg:'rgba(231,76,60,.10)', bd:'rgba(192,57,43,.5)', chip:'⏳ Chờ kho giao hàng', cb:'#C0392B'};
   if (r.status === 'gui') return {bg:'rgba(41,128,185,.09)', bd:'rgba(41,128,185,.5)', chip: part ? '🚚 Kho đã giao một phần · chờ người nhận xác nhận' : '🚚 Kho đã giao đủ · chờ người nhận xác nhận', cb:'#1F6FA8'};
   if (r.status === 'chohang') return {bg:'rgba(242,101,34,.10)', bd:'rgba(194,65,12,.5)', chip:'📦 Đã nhận một phần · còn thiếu, chờ kho giao tiếp', cb:'#C2410C'};
@@ -5679,11 +5715,11 @@ function reqNext(r) {
   if (r.status === 'xong') return ['Không còn việc cần làm', 0];
   if (r.status === 'cho') {
     if (kho) return ['👉 Việc của bạn: kiểm hàng và bấm "Giao hàng"', 1];
-    if (r.duyet === 'chua' && NEW_ROLES[role] && canP('duyet')) return ['👉 Việc của bạn: duyệt phiếu (kho vẫn giao trước được)', 1];
+    if (r.duyet === 'chua' && hp('y_duyet')) return ['👉 Việc của bạn: duyệt phiếu (kho vẫn giao trước được)', 1];
     return ['Đang chờ kho giao hàng', 0];
   }
   if (r.status === 'gui') {
-    if (mine || (NEW_ROLES[role] && canP('nhan'))) return ['👉 Việc của bạn: kiểm hàng rồi bấm "Đã nhận"', 1];
+    if (mine || hp('y_nhan')) return ['👉 Việc của bạn: kiểm hàng rồi bấm "Đã nhận"', 1];
     return ['Đang chờ người nhận kiểm hàng và xác nhận', 0];
   }
   if (kho) return ['👉 Việc của bạn: giao nốt phần còn thiếu khi có hàng', 1];
@@ -5705,16 +5741,14 @@ function reqCard(r) {
 const projReqs = () => (db.reqs || []).filter(r => r.project === curProj);
 function pycPending() {
   const R = projReqs();
-  if (role === 'tk') return R.filter(r => r.status === 'cho' || r.status === 'chohang').length;
-  if (role === 'ktv') return R.filter(r => r.createdBy === me?.id && r.status === 'gui').length;
-  if (canP('duyet') && NEW_ROLES[role]) return R.filter(r => r.duyet === 'chua' && r.status !== 'tuchoi' && r.status !== 'huy').length;
-  if (role === 'admin' || role === 'ql') return R.filter(r => r.status === 'cho' || r.status === 'chohang').length;
+  if (hp('y_giao')) return R.filter(r => r.status === 'cho' || r.status === 'chohang').length;
+  if (hp('y_duyet')) return R.filter(r => r.duyet === 'chua' && r.status !== 'tuchoi' && r.status !== 'huy').length;
+  if (hp('y_tao') || hp('y_nhan')) return R.filter(r => r.createdBy === me?.id && r.status === 'gui').length;
   return 0;
 }
 function updatePycBadge() {
   const n = pycPending(), b = document.getElementById('pyc-badge');
   if (b) { b.textContent = n > 99 ? '99+' : n; b.style.display = n ? '' : 'none'; }
-  document.getElementById('bn-ton')?.classList.toggle('nav-off', !!NEW_ROLES[role] && !canP('ton'));
 }
 function pycSection(title, arr, emptyTxt) {
   return `<div class="grp-label pyc-grp"><span>${title}</span><span>${arr.length} phiếu</span></div>` +
@@ -5723,21 +5757,21 @@ function pycSection(title, arr, emptyTxt) {
 const newestFirst = arr => arr.slice().sort((a, b) => String(b.id).localeCompare(String(a.id)));
 function renderPyc(c) {
   const R = newestFirst(projReqs()), mine = r => r.createdBy === me?.id;
-  const canNew = canP('tao') && (NEW_ROLES[role] || role === 'ql' || role === 'admin');
+  const canNew = hp('y_tao');
   let sec = '';
   if (reqListMode !== 'open') {
     const arr = reqListMode === 'done' ? R.filter(r => !reqOpen(r)) : R;
     sec = arr.length ? arr.slice(0, 200).map(reqCard).join('') : '<div class="pyc-empty">Không có phiếu</div>';
-  } else if (role === 'tk') {
+  } else if (hp('y_giao')) {
     sec = pycSection('⏳ Cần giao gấp', R.filter(r => r.status === 'cho'), 'Không có phiếu chờ giao') +
       pycSection('📦 Còn thiếu – cần giao tiếp', R.filter(r => r.status === 'chohang')) +
       pycSection('🚚 Kho đã giao – chờ người nhận xác nhận', R.filter(r => r.status === 'gui'));
-  } else if (NEW_ROLES[role] && canP('duyet')) {
+  } else if (hp('y_duyet')) {
     sec = pycSection('🟡 Chờ bạn duyệt', R.filter(r => r.duyet === 'chua' && r.status === 'cho'), 'Không có phiếu chờ duyệt') +
       pycSection('⚠️ Kho đã giao – chưa duyệt', R.filter(r => r.duyet === 'chua' && ['gui','chohang','xong'].includes(r.status))) +
       pycSection('🚚 Kho đã giao – kiểm hàng rồi bấm "Đã nhận"', R.filter(r => r.status === 'gui' && r.duyet !== 'chua')) +
       pycSection('📋 Phiếu đang mở khác', R.filter(r => r.duyet !== 'chua' && ['cho','chohang'].includes(r.status)));
-  } else if (NEW_ROLES[role]) {
+  } else if (hp('y_tao') || hp('y_nhan')) {
     sec = pycSection('🚚 Kho đã giao – kiểm hàng rồi bấm "Đã nhận"', R.filter(r => mine(r) && r.status === 'gui'), 'Chưa có phiếu kho đã giao') +
       pycSection('📋 Phiếu của tôi đang mở', R.filter(r => mine(r) && ['cho','chohang'].includes(r.status)));
   } else {
@@ -5752,7 +5786,7 @@ function renderPyc(c) {
     <div style="padding:0 14px 20px">
       ${canNew ? `<button class="btn-full btn-orange" style="margin:0 0 12px" onclick="openReqNew()">+ Tạo phiếu yêu cầu</button>` : ''}
       <div class="pyc-links">
-        ${can('tk') ? `<button onclick="openKK()">🔢 Đợt kiểm kê</button>` : ''}
+        ${hp('k_kk') ? `<button onclick="openKK()">🔢 Đợt kiểm kê</button>` : ''}
         ${canCost() ? `<button onclick="openDp('dp-coc')">🔗 Đối chiếu cóc nối</button>` : ''}
         ${canPycExport() ? `<button onclick="openExport('pyc')">📊 Xuất báo cáo phiếu YC</button>` : ''}
         ${can('admin') ? `<button onclick="openDp('dp-pycfg')">⚙️ Cài đặt phiếu</button>` : ''}
@@ -5762,11 +5796,11 @@ function renderPyc(c) {
 }
 // Thẻ đầu Tổng quan (thủ kho / CHT / CHP / Quản lý / Admin)
 function reqHomeHtml() {
-  if (!curProj || role === 'ktv' || role === 'xem' || role === 'ld') return '';
+  if (!curProj || !(hp('y_giao') || hp('y_duyet'))) return '';
   const n = pycPending(); if (!n) return '';
   const R = newestFirst(projReqs());
   let arr, title;
-  if (role === 'tk' || role === 'ql' || role === 'admin') { arr = R.filter(r => r.status === 'cho' || r.status === 'chohang'); title = `${n} phiếu yêu cầu đang chờ kho giao`; }
+  if (hp('y_giao')) { arr = R.filter(r => r.status === 'cho' || r.status === 'chohang'); title = `${n} phiếu yêu cầu đang chờ kho giao`; }
   else { arr = R.filter(r => r.duyet === 'chua' && r.status !== 'tuchoi' && r.status !== 'huy'); title = `${n} phiếu yêu cầu chờ bạn duyệt`; }
   return `<div class="pyc-home">
     <div class="pyc-home-h" onclick="goTab('pyc')"><b>🔴 ${title}</b><span>Xem tất cả ›</span></div>
@@ -5788,16 +5822,16 @@ function renderReqDetail() {
   if (!r) { body.innerHTML = '<div class="empty-state"><p>Không tìm thấy phiếu</p></div>'; return; }
   document.getElementById('dp-req-title').textContent = '📝 ' + r.id;
   const L = reqLook(r), A = reqAp(r);
-  const kho = can('tk') && reqOpen(r) && reqRemain(r) > 0 && r.status !== 'gui';
-  const khoMore = can('tk') && r.status === 'gui' && reqRemain(r) > 0;
-  const nhan = r.status === 'gui' && (r.createdBy === me?.id || (canP('nhan') && (NEW_ROLES[role])));
-  const duyet = canP('duyet') && (NEW_ROLES[role] || role === 'admin' || role === 'ql') && r.duyet === 'chua' && r.status !== 'tuchoi' && r.status !== 'huy';
+  const kho = hp('y_giao') && reqOpen(r) && reqRemain(r) > 0 && r.status !== 'gui';
+  const khoMore = hp('y_giao') && r.status === 'gui' && reqRemain(r) > 0;
+  const nhan = r.status === 'gui' && (r.createdBy === me?.id || hp('y_nhan'));
+  const duyet = hp('y_duyet') && r.duyet === 'chua' && r.status !== 'tuchoi' && r.status !== 'huy';
   const sentAny = (r.lines || []).some(l => +l.sent > 0);
-  const huy = r.status === 'cho' && !sentAny && (r.createdBy === me?.id || (canP('duyet') && NEW_ROLES[role]) || can('ql'));
-  const rejKho = can('tk') && r.status === 'cho' && !sentAny;
+  const huy = r.status === 'cho' && !sentAny && (r.createdBy === me?.id || hp('y_duyet'));
+  const rejKho = hp('y_giao') && r.status === 'cho' && !sentAny;
   const rejDuyet = !rejKho && duyet && r.status === 'cho' && !sentAny;
   const editIssue = kho || (khoMore && reqUI.more);
-  const showTonAll = canP('ton') || can('tk');
+  const showTonAll = hp('v_ton') || hp('y_giao');
   const lines = (r.lines || []).map((l, k) => {
     const it = db.items.find(i => i.id === +l.itemId), ton = it ? +it.stock || 0 : 0, rem = Math.max(0, l.req - (l.sent || 0)), u = escHtml(l.unit || it?.unit || '');
     const short = editIssue && ton < rem, fill = Math.min(rem, Math.max(0, ton));
@@ -5814,7 +5848,7 @@ function renderReqDetail() {
       <div class="pyc-boxes" style="grid-template-columns:repeat(${boxes.length},1fr)">${boxes.join('')}</div>
       ${l.br ? `<div class="pyc-br">${escHtml(l.br)}</div>` : ''}
       ${input}
-      ${short ? `<div class="pyc-kk"><div class="pyc-kk-q"><span>Tồn trên app không đủ. Kho thực tế còn?</span>${reqUI.kk === k ? '' : `<button onclick="reqUI.kk=${k};renderReqDetail()">🔢 Kiểm kê</button>`}</div>
+      ${short && hp('k_kk') ? `<div class="pyc-kk"><div class="pyc-kk-q"><span>Tồn trên app không đủ. Kho thực tế còn?</span>${reqUI.kk === k ? '' : `<button onclick="reqUI.kk=${k};renderReqDetail()">🔢 Kiểm kê</button>`}</div>
         ${reqUI.kk === k ? `<div class="pyc-kk-row"><input type="number" inputmode="decimal" id="kkv-${k}" placeholder="Số đếm thực tế"><button onclick="reqCountNow(${k})">Lưu mốc</button></div>` : ''}</div>` : ''}
     </div>`;
   }).join('');
@@ -5982,7 +6016,7 @@ function renderReqNew() {
         </div>
         ${it ? `<div class="combo-hint">✔ Đã chọn: <b>${escHtml(it.name)}</b></div>` : ''}
       </div>
-      ${it && (canP('ton') || can('tk')) ? `<div class="pyc-hint" style="text-align:left">Tồn kho: ${fmtNum(it.stock)} ${escHtml(it.unit)}</div>` : ''}
+      ${it && (hp('v_ton') || hp('y_giao')) ? `<div class="pyc-hint" style="text-align:left">Tồn kho: ${fmtNum(it.stock)} ${escHtml(it.unit)}</div>` : ''}
       <div class="fg"><label>Số lượng${it ? ' (' + escHtml(it.unit) + ')' : ''}</label><input type="number" inputmode="decimal" value="${escHtml(rf.qty)}" oninput="rf.qty=this.value"></div>
       ${it && +it.canMay === 1 ? `<div class="pyc-may"><div class="fg"><label>Máy sử dụng <span style="color:var(--red)">*</span></label>
           <select onchange="rf.may=this.value;renderReqNew()"><option value="">— Chọn máy —</option>
@@ -5995,14 +6029,14 @@ function renderReqNew() {
   }
   html += `<div class="form-section"><div class="fg"><label>Ghi chú</label><input value="${escHtml(rf.note)}" oninput="rf.note=this.value" placeholder="VD: ca đêm, giao tại máy"></div>
     <button class="btn-full btn-orange" onclick="submitReq()">Gửi phiếu</button>
-    <div class="pyc-hint">${NEW_ROLES[role] && role === 'ktv' ? 'Phiếu tới kho ngay và chờ CHT/CHP duyệt song song' : 'Phiếu tới thẳng kho, không cần duyệt'}</div></div>`;
+    <div class="pyc-hint">${hp('y_duyet') ? 'Phiếu tới thẳng kho, không cần duyệt' : 'Phiếu tới kho ngay và chờ CHT/CHP duyệt song song'}</div></div>`;
   body.innerHTML = html;
 }
 // Ô tìm vật tư (gõ không dấu) cho phiếu "Vật tư khác"
 const vnNorm = x => String(x || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/đ/gi, 'd').toLowerCase();
 function rfItemList() {
   const el = document.getElementById('rf-ilist'); if (!el) return;
-  const toks = vnNorm(rf.itemQ).split(/\s+/).filter(Boolean), showTon = canP('ton') || can('tk');
+  const toks = vnNorm(rf.itemQ).split(/\s+/).filter(Boolean), showTon = hp('v_ton') || hp('y_giao');
   const row = (i, c) => `<div class="combo-item" onmousedown="event.preventDefault()" onclick="rfItemPick(${i.id})">
       <b>${escHtml(i.name)}</b><small>${toks.length ? escHtml(c.name) + (showTon ? ' · ' : '') : ''}${showTon ? 'còn ' + fmtNum(i.stock) + ' ' + escHtml(i.unit) : ''}</small></div>`;
   let html = '';
@@ -6147,11 +6181,6 @@ async function cfgAct(action, data, ok) {
   if (!r || !r.success) { toast('⚠️ ' + ((r && (r.error || r.reason)) || 'Không lưu được')); return null; }
   toast(ok || '✅ Đã lưu'); return r;
 }
-async function togPerm(r, k) {
-  const cur = permOf(r)[k];
-  const res = await cfgAct('setRolePerm', {role:r, key:k, value:cur ? 0 : 1});
-  if (res) { db.rolePerm = res.rolePerm; saveLocal(); renderPycCfg(); updatePycBadge(); }
-}
 async function saveHaoHut() {
   const v = document.getElementById('cfg-hh').value;
   const res = await cfgAct('setProjCfg', {project:curProj, haoHut:+v});
@@ -6165,12 +6194,7 @@ function renderPycCfg() {
   const body = document.getElementById('dp-pycfg-body');
   const tg = db.tg || {};
   body.innerHTML = `
-    <div class="grp-label">Quyền theo chức danh (bấm để bật / tắt)</div>
-    <div class="card" style="padding:6px 12px;margin-bottom:14px">
-      <div class="perm-row pyc-lh"><span>Quyền</span><span>CHT</span><span>CHP</span><span>KTV</span></div>
-      ${PERM_LABEL.map(([k, t]) => `<div class="perm-row"><span>${t}</span>${['cht','chp','ktv'].map(r => { const on = permOf(r)[k];
-        return `<button class="perm-b ${on ? 'on' : ''}" onclick="togPerm('${r}','${k}')">${on ? 'Có' : '–'}</button>`; }).join('')}</div>`).join('')}
-    </div>
+    <div class="info-box">Quyền theo chức danh: Menu → <a onclick="openRoles()">🛡 Phân quyền chức danh</a></div>
     <div class="grp-label">Dự án ${escHtml(curProj)}</div>
     <div class="card" style="padding:12px 14px;margin-bottom:14px">
       <div class="fg-row" style="align-items:flex-end"><div class="fg" style="margin:0"><label>Hao hụt cóc nối (%)</label><input type="number" id="cfg-hh" inputmode="decimal" value="${+(db.projCfg || {}).haoHut || 0}"></div>
@@ -6215,7 +6239,7 @@ function openExport(mode) {
   document.getElementById('exp-title').textContent = mode === 'pyc' ? '📊 Xuất báo cáo phiếu yêu cầu' : '⬇️ Xuất báo cáo Excel';
   openModal('modal-export');
 }
-const canPycExport = () => ['ql','admin','ld','cht','chp','tk'].includes(role);
+const canPycExport = () => hp('x_pyc');
 const REQ_PLAIN = r => r.status === 'tuchoi' ? 'Từ chối' : r.status === 'huy' ? 'Đã hủy' : r.status === 'xong' ? 'Hoàn thành'
   : r.status === 'chohang' ? 'Còn thiếu, chờ kho giao tiếp'
   : r.status === 'gui' ? (reqRemain(r) > 0 ? 'Kho đã giao một phần, chờ xác nhận nhận hàng' : 'Kho đã giao đủ, chờ xác nhận nhận hàng')
@@ -6469,6 +6493,110 @@ function itemById(id) {
   return _imap.m[id];
 }
 let listLimit = {nhap:100, xuat:100, dieuchinh:100};
+
+// ===== v5.18.0: CHỨC DANH & PHÂN QUYỀN (Admin cài trong app) =====
+const PERM_UI = [
+  ['Màn hình được thấy', [['v_pyc','Phiếu yêu cầu',''],['v_home','Tổng quan',''],['v_nhap','Phiếu nhập (xem)',''],['v_xuat','Phiếu xuất (xem)',''],['v_ton','Tồn kho (số lượng)',''],['v_baocao','Báo cáo',''],['v_stat','Thống kê dự án đang làm','Chi phí, tiến độ của dự án được giao'],['v_all','Tổng hợp các dự án','Xem mọi dự án, so sánh, chi phí nhiều dự án']]],
+  ['Kho', [['k_nhap','Lập phiếu nhập',''],['k_xuat','Lập phiếu xuất (xuất thẳng)',''],['k_edit','Sửa / điều chỉnh phiếu',''],['k_kk','Kiểm kê',''],['k_dm','Thêm, sửa tên + nhóm vật tư / thiết bị','Đổi đơn vị và xóa: chỉ Admin'],['k_copy','Chép vật tư từ dự án khác',''],['k_loan','Cho mượn / trả dụng cụ','']]],
+  ['Giá & chi phí', [['g_view','Xem giá, chi phí',''],['g_price','Sửa bảng giá',''],['g_prog','Cập nhật tiến độ thi công','']]],
+  ['Phiếu yêu cầu', [['y_tao','Tạo phiếu',''],['y_bs','Xin bổ sung ngoài định mức',''],['y_duyet','Duyệt phiếu',''],['y_giao','Giao hàng theo phiếu (kho)',''],['y_nhan','Xác nhận nhận hàng',''],['y_xem','Xem mọi phiếu của dự án','Tắt = chỉ thấy phiếu của mình']]],
+  ['Xuất file', [['x_nxt','Xuất Excel NXT',''],['x_pyc','Xuất báo cáo phiếu YC','']]]
+];
+const PERM_KEYS = PERM_UI.flatMap(s => s[1].map(p => p[0]));
+const V6 = ['v_pyc','v_home','v_nhap','v_xuat','v_ton','v_baocao'];
+const GROUP_UI = {
+  g1:['① Phiếu YC', ['v_pyc','y_tao','y_bs','y_nhan','y_xem']], g2:['② Giám sát', ['v_pyc','y_xem']],
+  g3:['③ Xem toàn bộ', V6.concat(['v_stat','g_view','y_xem','x_nxt','x_pyc'])],
+  g4:['④ Kho', V6.concat(['k_nhap','k_xuat','k_edit','k_kk','k_dm','k_copy','k_loan','y_giao','y_xem','x_nxt','x_pyc'])],
+  g5:['⑤ Đầy đủ', V6.concat(['v_stat','g_view','g_prog','y_xem','x_nxt','x_pyc'])],
+  g6:['⑥ Lãnh đạo', V6.concat(['v_stat','v_all','g_view','y_xem','x_nxt','x_pyc'])],
+  gq:['Quản lý (cũ)', PERM_KEYS.filter(k => k !== 'v_all')], ga:['Quản trị', PERM_KEYS]
+};
+function presetPerm(code, g) { const o = {}, on = (GROUP_UI[g] || GROUP_UI.g2)[1]; PERM_KEYS.forEach(k => o[k] = on.includes(k) ? 1 : 0); if (code === 'CM' || code === 'DCM') o.y_tao = o.y_bs = o.y_duyet = o.y_nhan = 1; return o; }
+function setRoles(r) { ROLES = r || {}; try { localStorage.setItem('fecon_roles_v515', JSON.stringify(ROLES)); } catch (e) {} }
+let rlSel = '', rlDraft = null, rlUsers = null, rlAdd = false;
+async function openRoles() {
+  rlDraft = null; rlAdd = false; rlSel = rlSel && ROLES[rlSel] ? rlSel : Object.keys(ROLES)[0] || '';
+  openDp('dp-roles', renderRoles);
+  const r = await api('listUsers', {}, 30000);
+  if (r && r.success) { rlUsers = {}; (r.users || []).forEach(u => { rlUsers[u.role] = (rlUsers[u.role] || 0) + 1; }); renderRoles(); }
+}
+const rlDirty = () => !!rlDraft && JSON.stringify(rlDraft) !== JSON.stringify(ROLES[rlSel]?.perm || {});
+function rlPick(code) { if (rlDirty() && !confirm('Chưa lưu thay đổi của ' + rlSel + '. Bỏ thay đổi?')) return; rlSel = code; rlDraft = null; renderRoles(); }
+function rlTog(k) { const r = ROLES[rlSel]; if (!r || r.group === 'ga') return; rlDraft = Object.assign({}, rlDraft || r.perm); rlDraft[k] = rlDraft[k] ? 0 : 1; renderRoles(); }
+function rlSec(i, on) { const r = ROLES[rlSel]; if (!r || r.group === 'ga') return; rlDraft = Object.assign({}, rlDraft || r.perm); PERM_UI[i][1].forEach(p => rlDraft[p[0]] = on ? 1 : 0); renderRoles(); }
+function rlReset() { const r = ROLES[rlSel]; if (!r || r.group === 'ga') return; rlDraft = presetPerm(rlSel, r.group); renderRoles(); toast('Đã đặt lại theo nhóm mẫu — bấm Lưu để áp dụng'); }
+function renderRoles() {
+  const body = document.getElementById('dp-roles-body'); if (!body) return;
+  const r = ROLES[rlSel], d = rlDraft || r?.perm || {}, locked = r?.group === 'ga', dirty = rlDirty();
+  const groups = ['g1','g2','g3','g4','g5','g6','gq','ga'].map(g => [g, Object.keys(ROLES).filter(k => ROLES[k].group === g)]).filter(x => x[1].length);
+  const on = PERM_KEYS.filter(k => d[k]).length, nU = rlUsers ? (rlUsers[rlSel] || 0) : '…';
+  body.innerHTML = `
+    <div class="card" style="padding:12px;margin-bottom:12px">
+      <div class="rl-h"><b>1. Chọn chức danh</b><button onclick="rlAdd=!rlAdd;renderRoles()">${rlAdd ? 'Đóng' : '+ Thêm chức danh'}</button></div>
+      ${rlAdd ? `<div class="rl-add"><div class="fg-row"><div class="fg"><label>Viết tắt (tiếng Anh)</label><input id="rl-n-abbr" maxlength="6" placeholder="VD: QA" oninput="this.value=this.value.toUpperCase().replace(/[^A-Z0-9]/g,'')"></div>
+        <div class="fg"><label>Tên tiếng Việt</label><input id="rl-n-name" placeholder="VD: Kỹ sư chất lượng"></div></div>
+        <div class="fg"><label>Nhóm mẫu (quyền ban đầu)</label><select id="rl-n-group">${['g1','g2','g3','g4','g5','g6'].map(g => `<option value="${g}">${GROUP_UI[g][0]}</option>`).join('')}</select></div>
+        <button class="btn-full" style="background:var(--primary)" onclick="rlCreate()">Thêm chức danh</button></div>` : ''}
+      ${groups.map(([g, codes]) => `<div class="rl-gl">${GROUP_UI[g] ? GROUP_UI[g][0] : g}</div><div class="rl-chips">${codes.map(c => `<button class="rl-chip ${c === rlSel ? 'on' : ''}" onclick="rlPick('${c}')"><b>${escHtml(ROLES[c].abbr)}</b><small>${escHtml(ROLES[c].name)}</small></button>`).join('')}</div>`).join('')}
+    </div>
+    ${r ? `<div class="card" style="padding:12px;margin-bottom:80px">
+      <div class="rl-h" style="align-items:flex-start"><div><div class="rl-abbr">${escHtml(r.abbr)}</div><div class="rl-vn">${escHtml(r.name)}</div>
+        <div class="rl-meta">${GROUP_UI[r.group] ? 'Nhóm mẫu ' + GROUP_UI[r.group][0] : ''} · ${nU} tài khoản · bật ${on}/${PERM_KEYS.length} quyền</div></div>
+        ${locked ? '' : `<span class="rl-acts"><button onclick="rlReset()">Đặt lại theo mẫu</button><button onclick="rlRename()">Đổi tên</button><button style="color:var(--red)" onclick="rlDelete()">Xóa</button></span>`}</div>
+      ${locked ? '<div class="info-box">Quản trị hệ thống luôn có toàn quyền, không chỉnh được.</div>' : ''}
+      ${PERM_UI.map((s, i) => { const all = s[1].every(p => d[p[0]]); return `<div class="rl-sec"><div class="rl-sh"><b>${s[0]}</b>${locked ? '' : `<button onclick="rlSec(${i},${all ? 0 : 1})">${all ? 'Bỏ cả mục' : 'Chọn cả mục'}</button>`}</div>
+        ${s[1].map(p => `<div class="rl-row" onclick="rlTog('${p[0]}')"><span class="rl-box ${d[p[0]] ? 'on' : ''}">${d[p[0]] ? '✓' : ''}</span><span><b>${p[1]}</b>${p[2] ? `<small>${p[2]}</small>` : ''}</span></div>`).join('')}</div>`; }).join('')}
+    </div>
+    <div class="rl-save"><span style="color:${dirty ? '#C2410C' : 'var(--text3)'}">${dirty ? '● Có thay đổi chưa lưu' : 'Đã lưu'}</span><button ${dirty ? '' : 'disabled'} onclick="rlSave()">Lưu</button></div>` : ''}`;
+}
+async function rlCall(action, data, ok) {
+  showLoader('Đang lưu...'); const r = await api(action, data, 30000); hideLoader();
+  if (!r || !r.success) { toast('⚠️ ' + ((r && (r.error || r.reason)) || 'Không lưu được')); return null; }
+  setRoles(r.roles); toast(ok); return r;
+}
+async function rlSave() {
+  const r = ROLES[rlSel]; if (!r || !rlDraft) return;
+  if (await rlCall('saveRole', {code:rlSel, abbr:r.abbr, name:r.name, group:r.group, perm:rlDraft}, `✅ Đã lưu quyền ${r.abbr} — áp dụng ngay cho các tài khoản đang dùng`)) { rlDraft = null; renderRoles(); }
+}
+async function rlCreate() {
+  const abbr = (document.getElementById('rl-n-abbr').value || '').trim(), name = (document.getElementById('rl-n-name').value || '').trim(), g = document.getElementById('rl-n-group').value;
+  if (!abbr || !name) { toast('⚠️ Nhập viết tắt và tên tiếng Việt'); return; }
+  if (ROLES[abbr]) { toast('⚠️ Viết tắt đã có'); return; }
+  if (await rlCall('saveRole', {code:abbr, abbr, name, group:g, perm:presetPerm(abbr, g)}, `✅ Đã thêm ${abbr} (${name})`)) { rlSel = abbr; rlAdd = false; rlDraft = null; renderRoles(); }
+}
+async function rlRename() {
+  const r = ROLES[rlSel]; if (!r) return;
+  const abbr = (prompt('Viết tắt tiếng Anh (tối đa 6 ký tự):', r.abbr) || '').toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 6); if (!abbr) return;
+  const name = (prompt('Tên tiếng Việt:', r.name) || '').trim(); if (!name) return;
+  if (await rlCall('saveRole', {code:rlSel, abbr, name, group:r.group, perm:rlDraft || r.perm}, '✅ Đã đổi tên chức danh')) { rlSel = abbr; rlDraft = null; renderRoles(); }
+}
+async function rlDelete() {
+  const r = ROLES[rlSel]; if (!r || !confirm(`Xóa chức danh ${r.abbr} – ${r.name}?`)) return;
+  if (await rlCall('deleteRole', {code:rlSel}, '🗑 Đã xóa chức danh')) { rlSel = Object.keys(ROLES)[0] || ''; rlDraft = null; renderRoles(); }
+}
+function fillRoleSelect(sel, cur) {
+  const groups = ['g1','g2','g3','g4','g5','g6','gq','ga'];
+  sel.innerHTML = groups.map(g => { const codes = Object.keys(ROLES).filter(k => ROLES[k].group === g); if (!codes.length) return '';
+    return `<optgroup label="${GROUP_UI[g] ? GROUP_UI[g][0] : g}">${codes.map(c => `<option value="${c}" ${c === cur ? 'selected' : ''}>${escHtml(ROLES[c].abbr)} – ${escHtml(ROLES[c].name)}</option>`).join('')}</optgroup>`; }).join('');
+  if (cur) sel.value = cur;
+}
+// ===== v5.18.0: BÁO ĐĂNG NHẬP TRÊN MÁY MỚI =====
+function showNewLogin(info) {
+  if (!info || !info.c || localStorage.getItem('fecon_nl_seen') === String(info.c)) return;
+  if (document.getElementById('nl-bar')) return;
+  const d = new Date(info.c), t = `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')} ${d.getDate()}/${d.getMonth() + 1}`;
+  const el = document.createElement('div'); el.id = 'nl-bar'; el.className = 'nl-bar';
+  el.innerHTML = `<b>🔐 Tài khoản của bạn vừa đăng nhập trên máy khác</b><div>${escHtml(info.d || 'Máy không rõ tên')} · lúc ${t}</div>
+    <div class="nl-acts"><button onclick="nlDone('${info.c}')">Là tôi</button><button onclick="nlDone('${info.c}');openChPw()">Đổi mật khẩu</button>
+    <button class="red" onclick="nlOut('${info.c}')">Đăng xuất các máy khác</button></div>`;
+  document.body.appendChild(el);
+}
+function nlDone(c) { localStorage.setItem('fecon_nl_seen', String(c)); document.getElementById('nl-bar')?.remove(); }
+async function nlOut(c) {
+  showLoader('Đang đăng xuất các máy khác...'); const r = await api('logoutOthers', {}); hideLoader();
+  if (r && r.success) { nlDone(c); toast('🚪 Đã đăng xuất mọi máy khác — chỉ còn máy này'); } else toast('⚠️ ' + ((r && r.error) || 'Không thực hiện được'));
+}
 
 // ===== GHI LỖI PHÁT SINH (gửi về tab LoiApp trên Sheet) =====
 const _errSent = new Set(); let _errN = 0;
