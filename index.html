@@ -586,6 +586,15 @@ body.can-ql .hide-ql{display:none!important}
 .mt-hr{display:grid;grid-template-columns:1.3fr .9fr .7fr .8fr;gap:4px;padding:7px 0;border-top:1px solid var(--border);font-size:12.5px;align-items:center}
 .mt-hr:first-child{border-top:none}.mt-hr>*:not(:first-child){text-align:right}.mt-hr small{display:block;font-size:10.5px;color:var(--text3)}
 .mt-hh{font-size:10.5px;font-weight:800;color:var(--text3)}
+.bk-st{font-size:14px;margin-bottom:6px}.bk-st.bad{color:var(--red);font-weight:700}.bk-auto{font-size:13px;margin-bottom:10px}
+.card .btn-full{margin-bottom:8px}
+.bk-gh{display:flex;justify-content:space-between;padding:9px 0;font-weight:800}.bk-gh span{font-weight:600;color:var(--text3);font-size:12px}
+.bk-row{display:flex;justify-content:space-between;gap:8px;padding:9px 0;border-top:1px solid var(--border);color:var(--text);text-decoration:none;font-size:13.5px}
+.bk-row small{color:var(--text3);white-space:nowrap}.bk-more{font-size:12px;color:var(--text3);padding:8px 0;border-top:1px solid var(--border)}
+#ad-nlist{max-height:320px;overflow-y:auto}
+#ad-nlist .combo-item{display:flex;flex-direction:column;gap:2px;padding:9px 12px;border-top:1px solid var(--border);cursor:pointer}
+#ad-nlist .combo-item small{font-size:11px;color:var(--text3)}#ad-nlist .combo-item.dim{opacity:.55}
+#ad-nlist .combo-item.free{background:#FFF7F0}#ad-nlist .combo-empty{padding:10px;text-align:center;color:var(--text3);font-size:12px}
 .more-btn{display:block;width:calc(100% - 28px);margin:10px 14px;border:1.5px dashed var(--border);background:#fff;border-radius:12px;padding:12px;font-weight:800;color:var(--primary);cursor:pointer}
 
 .diag-out{background:var(--bg);border-radius:10px;padding:10px 12px;font-size:12px;line-height:1.7;color:var(--text2);margin-top:6px;word-break:break-word}
@@ -937,6 +946,10 @@ body:not(.can-cost) .need-cost{display:none!important}
   <div class="detail-body" id="dp-quick-body"></div>
 </div>
 
+<div class="detail-page" id="dp-backup">
+  <div class="detail-header"><button class="back-btn" onclick="closeDp('dp-backup')">‹</button><div class="detail-title">💾 Sao lưu dữ liệu</div></div>
+  <div class="detail-body" id="dp-backup-body"></div>
+</div>
 <div class="detail-page" id="dp-roles">
   <div class="detail-header"><button class="back-btn" onclick="closeDp('dp-roles')">‹</button><div class="detail-title">🛡 Phân quyền chức danh</div></div>
   <div class="detail-body" id="dp-roles-body"></div>
@@ -1107,6 +1120,7 @@ body:not(.can-cost) .need-cost{display:none!important}
     <div class="sidebar-item need-admin" onclick="openDpSb('dp-members')"><span class="sidebar-item-ico">👥</span>Thành viên<span class="sb-badge" id="sb-pend" style="display:none">0</span></div>
     <div class="sidebar-item need-admin" onclick="openModal('modal-add-proj')"><span class="sidebar-item-ico">🏢</span>Thêm dự án</div>
     <div class="sidebar-item need-admin" onclick="openDpSb('dp-history-log')"><span class="sidebar-item-ico">📋</span>Nhật ký hoạt động</div>
+    <div class="sidebar-item need-admin" onclick="closeSidebar();setTimeout(openBackup,300)"><span class="sidebar-item-ico">💾</span>Sao lưu dữ liệu</div>
     <div class="sidebar-item need-admin" onclick="closeSidebar();setTimeout(openRoles,300)"><span class="sidebar-item-ico">🛡</span>Phân quyền chức danh</div>
     <div class="sidebar-item need-admin" onclick="openDpSb('dp-pycfg')"><span class="sidebar-item-ico">⚙️</span>Cài đặt phiếu yêu cầu</div>
     <div class="sidebar-divider"></div>
@@ -1261,7 +1275,14 @@ body:not(.can-cost) .need-cost{display:none!important}
     <div class="modal-handle"></div>
     <div class="modal-title" id="modal-device-title">🏗️ Thêm máy / Thiết bị</div>
     <input type="hidden" id="ad-id">
-    <div class="fg"><label>Tên thiết bị</label><input type="text" id="ad-name" placeholder="VD: Xe khoan XCMG240-01"></div>
+    <div class="fg"><label>Tên thiết bị</label>
+      <div class="combo">
+        <input type="text" id="ad-name" autocomplete="off" placeholder="Bấm để chọn máy có sẵn, hoặc gõ tên mới"
+          oninput="adNameList()" onfocus="adNameList();loadDevCatSrv()" onblur="setTimeout(adNameHide,200)">
+        <div class="combo-list" id="ad-nlist"></div>
+      </div>
+      <div class="combo-hint">Chọn máy có sẵn trong danh sách, không có thì gõ tên tự do.</div>
+    </div>
     <div class="fg-row">
       <div class="fg"><label>Nhóm</label>
         <select id="ad-cat"></select>
@@ -1521,7 +1542,7 @@ body:not(.can-cost) .need-cost{display:none!important}
 // ============================================================
 // CONFIG
 // ============================================================
-const APP_VERSION = '5.20.0';
+const APP_VERSION = '5.22.2';
 const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbw6Rmi80I7RI3ij2U7RdRF5pYuQTnPrwEmGmUZS5xpxzLwwVynfoFUujZe1lm6HS1ymxw/exec';
 // ============================================================
 
@@ -3831,6 +3852,8 @@ async function saveDevice() {
   const editId = +document.getElementById('ad-id').value;
   const name = document.getElementById('ad-name').value.trim();
   if (!name) { toast('⚠️ Nhập tên thiết bị'); return; }
+  const nk = vnNorm(name).replace(/\s+/g, ' ').trim();                       // v5.22.2: không trùng tên trong dự án
+  if (db.devices.some(d => d.id !== editId && vnNorm(d.name).replace(/\s+/g, ' ').trim() === nk)) { toast(`⚠️ Máy "${name}" đã có trong dự án này`); return; }
   let saved;
   if (editId) {
     const d = db.devices.find(x=>x.id===editId); if(!d) return;
@@ -6829,6 +6852,103 @@ function addMeterSheet(wb, R) {
   ws.getCell(r + 1, 1).font = {name:FN, size:9, italic:true, color:{argb:'FF404040'}};
   ws.views = [{state:'frozen', ySplit:5}];
   return true;
+}
+
+// ===== v5.21.0: SAO LƯU DỮ LIỆU (chỉ Admin) =====
+let bkData = null;
+async function openBackup() {
+  bkData = null; openDp('dp-backup', renderBackup);
+  const r = await api('backupInfo', {}, 40000);
+  if (!r || !r.success) { toast('⚠️ ' + ((r && (r.error || r.reason)) || 'Không tải được thông tin sao lưu')); return; }
+  bkData = r; renderBackup();
+}
+function renderBackup() {
+  const body = document.getElementById('dp-backup-body'); if (!body) return;
+  if (!bkData) { body.innerHTML = '<div class="pyc-empty">Đang tải…</div>'; return; }
+  const d = bkData, L = d.last, fmtT = t => { const x = new Date(t); return `${String(x.getHours()).padStart(2,'0')}:${String(x.getMinutes()).padStart(2,'0')} ${x.getDate()}/${x.getMonth() + 1}/${x.getFullYear()}`; };
+  const grp = (title, re) => { const f = d.files.filter(x => re.test(x.name)); return `<div class="card" style="padding:4px 12px;margin-bottom:10px"><div class="bk-gh">${title} <span>${f.length} bản</span></div>
+    ${f.slice(0, 20).map(x => `<a class="bk-row" href="${escHtml(x.url)}" target="_blank" rel="noopener"><span>${escHtml(x.name)}</span><small>${x.size ? fmtNum(Math.round(x.size / 1024)) + ' KB' : ''} ›</small></a>`).join('') || '<div class="pyc-empty">Chưa có</div>'}
+    ${f.length > 20 ? `<div class="bk-more">… và ${f.length - 20} bản cũ hơn trong thư mục Drive</div>` : ''}</div>`; };
+  body.innerHTML = `
+    <div class="card" style="padding:12px;margin-bottom:10px">
+      <div class="bk-st ${L && !L.ok ? 'bad' : ''}">${L ? (L.ok ? '✅ Lần sao lưu gần nhất: <b>' + fmtT(L.t) + '</b>' + (L.by && L.by !== 'auto' ? ' · ' + escHtml(L.by) + ' bấm' : ' · tự động') : '⚠️ Lần sao lưu gần nhất BỊ LỖI (' + fmtT(L.t) + '): ' + escHtml(L.err || '')) : 'Chưa sao lưu lần nào'}</div>
+      <div class="bk-auto">${d.auto ? '🟢 Sao lưu tự động: <b>BẬT</b> · 23:00 mỗi ngày' : '🔴 Sao lưu tự động: <b>CHƯA BẬT</b>'}</div>
+      ${d.auto ? '' : `<button class="btn-full" style="background:var(--green)" onclick="bkSetup()">Bật sao lưu tự động (23:00 mỗi ngày)</button>`}
+      <button class="btn-full btn-orange" onclick="bkNow()">💾 Sao lưu ngay</button>
+      <a class="btn-full" style="display:block;text-align:center;background:#fff;color:var(--primary);border:1.5px solid var(--primary);text-decoration:none" href="${escHtml(d.folderUrl)}" target="_blank" rel="noopener">📁 Mở thư mục sao lưu trên Drive</a>
+      <div class="pyc-hint">Giữ 30 ngày gần nhất (1 bản/ngày) · bản đầu mỗi tháng giữ 12 tháng · Excel hằng tuần giữ 12 tuần. Ảnh biên bản nằm sẵn trên Drive nên không sao chép lại.</div>
+    </div>
+    ${grp('🗓 Hằng ngày', /^Sao lưu \d{4}-/)}
+    ${grp('📅 Hằng tháng', /^Sao lưu tháng /)}
+    ${grp('📊 Excel hằng tuần', /^Excel /)}
+    <div class="card" style="padding:12px;margin-bottom:20px"><b>Cách khôi phục khi cần</b>
+      <div class="pyc-hint" style="text-align:left;margin-top:6px">Mở bản sao lưu → tìm đúng trang (TonKho, GiaoDich…) → chép phần dữ liệu bị mất sang file chính. Không xóa file chính. Nếu cần khôi phục cả file, báo người phụ trách kỹ thuật để đổi file trước khi làm.</div></div>`;
+}
+async function bkNow() {
+  showLoader('Đang sao lưu... (khoảng 10–30 giây)'); const r = await api('backupNow', {}, 120000); hideLoader();
+  if (!r || !r.success) { toast('⚠️ ' + ((r && (r.error || r.reason)) || 'Sao lưu lỗi')); return; }
+  bkData = r; renderBackup(); toast('✅ Đã sao lưu: ' + (r.made || []).join(', '));
+}
+async function bkSetup() {
+  showLoader('Đang bật sao lưu tự động...'); const r = await api('backupSetup', {}, 60000); hideLoader();
+  if (!r || !r.success) { toast('⚠️ ' + ((r && (r.error || r.reason)) || 'Không bật được')); return; }
+  bkData = r; renderBackup(); toast('✅ Đã bật sao lưu tự động 23:00 mỗi ngày');
+}
+
+// v5.22: danh mục máy FCS (BM02 Tổng hợp tình trạng MMTB 09/2026) — gợi ý khi thêm máy
+const DEV_FILE = [["Máy khoan cọc nhồi SANY SR285R - 00280 (2020)_22RC_13758", "mayKhoan", "110126", "FCS_TBC_KHO_KRT_0001_285", "h", "U.0192_Palm Q2", "Đang thi công"], ["Máy khoan cọc nhồi SANY SR360R - 00281 (TCE_SCT A05608)", "mayKhoan", "110123", "FCS_TBC_KHO_KRT_0002_360", "h", "U.0199_SUN- Nha Trang DV21", "Dừng chờ"], ["Máy khoan cọc nhồi SUNWARD 300HS413 - 00309 2020", "mayKhoan", "110666", "FCS_TBC_KHO_KRT_0003_300", "h", "U.0192_Palm Q2", "Đang thi công"], ["Máy khoan cọc nhồi SUNWARD 300HS528 - 00310 2021", "mayKhoan", "110777", "FCS_TBC_KHO_KRT_0004_300", "h", "U.0192_Palm Q2", "Đang thi công"], ["Máy khoan cọc nhồi SANY SR285R 2020 - 00368 (TCE_21RC_15808)", "mayKhoan", "110444", "FCS_TBC_KHO_KRT_0005_285", "h", "U.0195_TTHC Q2 - Bến xe ngầm", "Đang thi công"], ["Máy khoan cọc nhồi SUNWARD SWDM300H 2020 - 00367 (SCT S00153A)", "mayKhoan", "110991", "FCS_TBC_KHO_KRT_0006_300", "h", "U.0195_TTHC Q2 - Bến xe ngầm", "Đang thi công"], ["Máy khoan cọc nhồi SANY SR360R 39215 - B260219303 (MP_SCT A06098)", "mayKhoan", "110127", "FCS_TBC_KHO_KRT_0007_360", "h", "U.0199_SUN- Nha Trang DV21", "Dừng chờ"], ["Máy khoan cọc nhồi XCMG XR240E 7918 - B260319203 (SK J01495)", "mayKhoan", "110128", "FCS_TBC_KHO_KRT_0008_240", "h", "U.0192_Palm Q2", "Đang thi công"], ["Máy khoan cọc nhồi XCMG XR400E - 40.26.07 (MP SCT J01221)", "mayKhoan", "110124", "FCS_TBC_KHO_KRT_0009_400", "h", "U.0199_SUN- Nha Trang DV21", "Dừng chờ"], ["Máy khoan cọc nhồi XCMG XR240E - 40.26.08 (J01883_MP 2020)", "mayKhoan", "110129", "FCS_TBC_KHO_KRT_0010_240", "h", "U.0195_TTHC Q2 - Bến xe ngầm", "Đang thi công"], ["Máy khoan XCMG 240E 2021 - 02.086/2026VTBL (J02016_MP 2021)", "mayKhoan", "110130", "FCS_TBC_KHO_KRT_0011_240", "h", "U.0195_TTHC Q2 - Bến xe ngầm", "Đang thi công"], ["Máy khoan Sany SR285R 2019 - 02.099/2026VTBL (MP (2019)_6030RC)", "mayKhoan", "110999", "FCS_TBC_KHO_KRT_0012_285", "h", "U.0192_Palm Q2", "Dừng chờ"], ["Máy khoan Sany SR360R (FMS_SCT A08618)", "mayKhoan", "110888", "FCS_TBC_KHO_KRT_0013_360", "h", "U.0199_SUN- Nha Trang DV21", "Dừng chờ"], ["Cẩu Cạp tường vây BM900", "mayCap", "110219", "FCS_TBC_CAU_CBX_0007_90T", "h", "U.0195_TTHC Q2 - Bến xe ngầm", "Dừng chờ"], ["Cẩu cạp tường vây Sumitomo SC800_1996_TCE", "mayCap", "110131", "FCS_TBC_CAU_CBX_0008_80T", "h", "U.0195_TTHC Q2 - Bến xe ngầm", "Dừng chờ"], ["Cẩu Cần trục bánh lốp KATO KR-35H-V (35T)", "mayCau", "110171", "FCS_TBC_CAU_CBL_0001_35T", "h", "U.0173_Điện rác Củ Chi", "Đang thi công"], ["Xe Cẩu thùng Cheng Long (13,5T) 51C-709.35", "mayCau", "110183", "FCS_TBC_CAU_XCT_0001_13,5T", "km", "U.0173_Điện rác Củ Chi", "Đang thi công"], ["Cẩu Cần trục bánh xích IHI DCH800 (80T)", "mayCau", "110153", "FCS_TBC_CAU_CBX_0001_80T", "h", "U.0192_Palm Q2", "Dừng chờ"], ["Cẩu Cần trục bánh xích SUMITOMO LS218RH (80T)", "mayCau", "110165", "FCS_TBC_CAU_CBX_0002_80T", "h", "U.0195_TTHC Q2 - Bến xe ngầm", "Đang thi công"], ["Cẩu Cần trục bánh xích SCC550A 2020 (55T) B251049803", "mayCau", "110222", "FCS_TBC_CAU_CBX_0003_55T", "h", "U.0192_Palm Q2", "Đang thi công"], ["Cẩu Cần trục bánh xích SCC600A-6 2021 (60T) B25104980", "mayCau", "110333", "FCS_TBC_CAU_CBX_0004_60T", "h", "U.0192_Palm Q2", "Đang thi công"], ["Cẩu Cần trục bánh xích XCMGXGC75 3740 (75T) B26021930", "mayCau", "110125", "FCS_TBC_CAU_CBX_0005_75T", "h", "U.0199_SUN- Nha Trang DV21", "Dừng chờ"], ["Cẩu Cần trục bánh xích sany SCC600A-1 - 2019", "mayCau", "110345", "FCS_TBC_CAU_CBX_0006_60T", "h", "U.0192_Palm Q2", "Đang thi công"], ["Cẩu Cần trục Sumitomo SCX800_Mỹ Thủy_FMS", "mayCau", "110134", "FCS_TBC_CAU_CBX_0009_80T", "h", "Garage", "Dừng chờ"], ["Máy đào bánh xích KOMATSU PC210-7K (0,86m3)", "mayDao", "110155", "FCS_TBC_DAT_DBX_0001_086", "h", "U.0195_TTHC Q2 - Bến xe ngầm", "Đang thi công"], ["Máy đào bánh xích KOBELCO SK210LC-6 (0,86m3)", "mayDao", "110156", "FCS_TBC_DAT_DBX_0002_086", "h", "U.0195_TTHC Q2 - Bến xe ngầm", "Đang thi công"], ["Máy đào bánh xích KOMATSU HB205-2 (0,7m3)", "mayDao", "110590", "FCS_TBC_DAT_DBX_0003_07", "h", "U.0192_Palm Q2", "Đang thi công"], ["Máy đào bánh xích KOBELCO SK200-9 (0,7m3)", "mayDao", "110589", "FCS_TBC_DAT_DBX_0004_07", "h", "U.0195_TTHC Q2 - Bến xe ngầm", "Đang thi công"], ["Máy đào bánh xích KOBELCO SK200-9-16 (0,7m3)", "mayDao", "110640", "FCS_TBC_DAT_DBX_0005_07", "h", "U.0192_Palm Q2", "Đang thi công"], ["Máy đào bánh xích KOMATSU HB215-2 (0,86m3) - 00311", "mayDao", "110555", "FCS_TBC_DAT_DBX_0006_086", "h", "U.0192_Palm Q2", "Đang thi công"], ["Máy đào bánh xích KOMATSU HB205-1-2629-2013 (0,7m3)", "mayDao", "111111", "FCS_TBC_DAT_DBX_0007_07", "h", "U.0192_Palm Q2", "Đang thi công"], ["Xe Xúc Lật LonKing SZM920B (0,8m3)", "xucLat", "110158", "FCS_TBC_DAT_XXL_0001_08", "h", "U.0195_TTHC Q2 - Bến xe ngầm", "Đang thi công"], ["SHAFT Máy bơm vữa 1 TECSYSTEM IN00039 AL-203 (57Kw)", "mayBom", "110159", "FCS_TBC_VUA_SHA_0001_AL203", "h", "U.0192_Palm Q2", "Đang thi công"], ["SAFT Máy bơm vữa 2 TECSYSTEM IN00038 AR-103 (57Kw)", "mayBom", "110160", "FCS_TBC_VUA_SHA_0002_AR103", "h", "U.0192_Palm Q2", "Dừng chờ"], ["SHAFT Máy bơm vữa 3 TECSYSTEM IN00038 AR-257 (57Kw)", "mayBom", "110173", "FCS_TBC_VUA_SHA_0003_AR257", "h", "U.0192_Palm Q2", "Dừng chờ"], ["SHAFT Máy bơm vữa 4 TECSYSTEM IN00038 AR-267 (57Kw)", "mayBom", "110174", "FCS_TBC_VUA_SHA_0004_AR267", "h", "U.0192_Palm Q2", "Dừng chờ"], ["Máy ủi bánh xích KOMATSU D21P-8 (30Kw)", "khac", "110591", "FCS_TBC_DAT_MUI_0001_30Kw", "h", "Kho bãi - Đồng Nai", "Dừng chờ"], ["Máy ủi bánh xích KOMATSU D31AM-20 (53Kw)", "khac", "110595", "FCS_TBC_DAT_MUI_0002_53Kw", "h", "U.0192_Palm Q2", "Đang thi công"], ["Máy ép cọc ZYJ680B (S00863A)", "khac", "110170", "FCS_TBC_COC_MEC_0001_300T", "h", "Cho thuê", "Đang thi công"], ["Máy lu tay 550kg VR600", "khac", "", "", "h", "Dự án diện rác Củ Chi", "Đang thi công"], ["Máy lu tay 600kg SAKAI", "khac", "", "", "h", "Kho bãi - Đồng Nai", "Dừng chờ"], ["Máy phát điện 150KVA", "mayPhat", "", "", "h", "Kho bãi - Đồng Nai", "Dừng chờ"], ["Cừ tường vây CWS D800", "khac", "", "", "none", "Dự án TTHC Quận 2", "Dừng chờ"], ["Cừ tường vây CWS D600", "khac", "", "", "none", "Dự án Palm Quận 2", "Dừng chờ"], ["Gàu đào tường vây D800", "khac", "", "", "none", "Dự án TTHC Quận 2", "Đang thi công"], ["Gàu đào tường vây D1000", "khac", "", "", "none", "Kho bãi - Đồng Nai", "Dừng chờ"], ["Máy sàng cát HEMCO - HDP-250", "khac", "", "", "none", "Dự án TTHC Quận 2", "Đang thi công"], ["Máy sàng cát HEMCO - HDP-250", "khac", "", "", "none", "Dự án Sun Nha Trang", "Dừng chờ"], ["Hệ thống silo", "khac", "", "", "none", "Dự án Palm, dự án TTHC Q2", "Đang thi công"], ["Hệ thống tank nước", "khac", "", "", "none", "Dự án Palm, dự án TTHC Q2", "Đang thi công"], ["Cần Kelly 508*6*17m - B250815803", "khac", "", "FCS_TBC_KHO_CKD_0001_17m", "none", "", ""], ["Cần Kelly D508*6*17 - 00368", "khac", "", "FCS_TBC_KHO_CKD_0002_17m", "none", "", ""], ["Cần Kelly 508*6*17m - 00367", "khac", "", "FCS_TBC_KHO_CKD_0003_17m", "none", "", ""]];
+
+let devCatSrv = null;                                    // máy đã khai báo ở các dự án (lấy từ máy chủ, 1 lần mỗi phiên)
+async function loadDevCatSrv() {
+  if (devCatSrv || !navigator.onLine) return;
+  const r = await api('deviceCatalog', {}, 20000);
+  if (r && r.success) { devCatSrv = r.devices || []; adNameList(); }
+}
+function devCatalog() {
+  const seen = new Set(), out = [], key = n => vnNorm(n).replace(/\s+/g, ' ').trim();
+  const srv = devCatSrv || [];
+  DEV_FILE.forEach(([n, c, code, ts, u, loc, st]) => {
+    const k = key(n); seen.add(k);
+    const app = srv.find(d => key(d.name) === k);
+    out.push({name:n, cat:app?.cat || c, code, ts, u:app?.meterUnit || u, loc:String(loc || '').replace(/^U\.\d+_/, ''), st, fuel:app?.fuelRate || 0, plate:app?.plate || '', type:app?.type || 'own', src:'file'});
+  });
+  srv.forEach(d => { const k = key(d.name); if (seen.has(k)) return; seen.add(k);
+    out.push({name:d.name, cat:d.cat, code:'', ts:'', u:d.meterUnit || 'h', loc:d.project, st:d.out ? 'Đã rời' : 'Đang dùng', fuel:d.fuelRate, plate:d.plate, type:d.type || 'own', src:'app'}); });
+  return out;
+}
+function adNameList() {
+  const el = document.getElementById('ad-nlist'), inp = document.getElementById('ad-name');
+  if (!el || !inp || document.activeElement !== inp) return;
+  const toks = vnNorm(inp.value).split(/\s+/).filter(Boolean), editId = +document.getElementById('ad-id').value;
+  const have = new Set(db.devices.filter(d => d.id !== editId).map(d => vnNorm(d.name).replace(/\s+/g, ' ').trim()));   // máy đã thêm: không hiện nữa
+  const full = devCatalog(), ord = c => { const i = DEVICE_CATS.findIndex(d => d.id === c); return i < 0 ? 99 : i; };
+  const all = full.map((x, i) => Object.assign({}, x, {i})).filter(x => !have.has(vnNorm(x.name).replace(/\s+/g, ' ').trim())).filter(x => !toks.length || toks.every(t => vnNorm(x.name + ' ' + x.code + ' ' + devCatOf(x.cat).name).includes(t)))
+    .sort((a, b) => ord(a.cat) - ord(b.cat) || a.i - b.i);
+  let html = '', last = '';
+  all.slice(0, 120).forEach(x => {
+    const g = devCatOf(x.cat).name;
+    if (g !== last) { html += `<div class="combo-head">${escHtml(devCatOf(x.cat).icon + ' ' + g)}</div>`; last = g; }
+    html += `<div class="combo-item" onmousedown="event.preventDefault()" onclick="adPick(${x.i})">
+      <b>${escHtml(x.name)}</b>${x.code ? `<small>Mã ${escHtml(x.code)}</small>` : ''}</div>`;
+  });
+  const dupFree = have.has(vnNorm(inp.value).replace(/\s+/g, ' ').trim());
+  el.innerHTML = html + (dupFree ? `<div class="combo-empty" style="color:var(--red)">Máy "${escHtml(inp.value.trim())}" đã có trong dự án này</div>` : '') + (inp.value.trim() && !dupFree ? `<div class="combo-item free" onmousedown="event.preventDefault()" onclick="adFree()"><b>✏️ Dùng tên tự nhập: "${escHtml(inp.value.trim())}"</b><small>Máy không có trong danh sách</small></div>` : '')
+    ;
+  el.style.display = 'block';
+}
+function adNameHide() { const el = document.getElementById('ad-nlist'); if (el) el.style.display = 'none'; }
+function adFree() { adNameHide(); document.getElementById('ad-name').blur(); }
+function adPick(i) {
+  const x = devCatalog()[i]; if (!x) return;
+  document.getElementById('ad-name').value = x.name;
+  document.getElementById('ad-cat').value = DEVICE_CATS.some(c => c.id === x.cat) ? x.cat : 'khac';
+  document.getElementById('ad-type').value = x.type === 'hire' ? 'hire' : 'own';
+  document.getElementById('ad-fuel').value = x.fuel || devCatOf(x.cat).fuel || 20;
+  if (!document.getElementById('ad-plate').value) document.getElementById('ad-plate').value = x.plate || x.code || '';
+  const note = document.getElementById('ad-note'); if (x.ts && !note.value.includes(x.ts)) note.value = (note.value ? note.value + '\n' : '') + 'Mã TS: ' + x.ts;
+  document.getElementById('ad-meter-unit').value = x.u || 'h'; adMeterUnit();
+  adNameHide();
+  toast('✅ Đã điền sẵn thông tin máy — kiểm tra lại rồi nhập giờ máy lúc vào');
 }
 
 // ===== GHI LỖI PHÁT SINH (gửi về tab LoiApp trên Sheet) =====
