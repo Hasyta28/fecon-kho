@@ -503,6 +503,45 @@ body.can-ql .hide-ql{display:none!important}
 .hist-head span{font-size:12px;color:var(--text3)}
 .app-ver{font-size:11px;color:var(--text3);padding:14px 20px 4px;line-height:1.5}
 .login-ver{color:rgba(255,255,255,.55);font-size:11px;text-align:center;margin-top:14px}
+/* v5.18 màn chào + đăng nhập nền ảnh công trường */
+#pg-login{background:linear-gradient(180deg,rgba(6,18,40,.25) 0%,rgba(6,18,40,.55) 40%,rgba(6,18,40,.85) 100%),url('bg-login.jpg') 46% center/cover no-repeat,#0B1B33}
+#pg-login .login-logo img{background:rgba(255,255,255,.93);border-radius:18px;padding:12px 20px;height:76px;box-shadow:0 12px 40px rgba(0,0,0,.3)}
+#pg-login .login-sub{color:#fff;opacity:.92;font-weight:600;text-shadow:0 2px 8px rgba(0,0,0,.5);margin-top:10px}
+#pg-login .login-card{background:rgba(255,255,255,.9);-webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px);border:1px solid rgba(255,255,255,.6);box-shadow:0 24px 64px rgba(0,0,0,.35);animation:cardUp .55s ease-out both}
+#pg-login .role-row{background:#E9EDF2;border-radius:12px}
+#pg-login .role-btn{font-weight:800;font-size:14px;padding:11px 8px;border-radius:10px;color:#5A6A7A}
+#pg-login .role-btn.on{color:var(--orange);box-shadow:0 2px 8px rgba(0,0,0,.12)}
+#pg-login .fg input{min-height:50px;border-radius:12px}
+#pg-login .btn-orange{background:linear-gradient(135deg,#F26522,#E0531A);box-shadow:0 10px 24px rgba(242,101,34,.4);min-height:52px;font-size:16px;font-weight:900;border-radius:14px}
+#pg-login .login-ver{color:rgba(255,255,255,.75)}
+@keyframes cardUp{from{opacity:0;transform:translateY(24px)}to{opacity:1;transform:none}}
+.net-chip{display:inline-flex;align-items:center;gap:8px;border:1px solid #DDE3EA;background:#fff;color:var(--text);border-radius:20px;padding:7px 14px;font-size:12.5px;font-weight:800;cursor:pointer}
+.net-dot{width:9px;height:9px;border-radius:50%;background:#9AA5B1;animation:netPulse 1.4s ease-in-out infinite}
+.net-chip.good .net-dot{background:#16A34A}.net-chip.good{border-color:rgba(22,163,74,.45)}
+.net-chip.mid .net-dot{background:#EAB308}.net-chip.mid{border-color:rgba(234,179,8,.5)}
+.net-chip.bad .net-dot{background:#DC2626}.net-chip.bad{border-color:rgba(220,38,38,.5)}
+.net-chip.off .net-dot{background:#6B7280;animation:none}
+@keyframes netPulse{0%,100%{opacity:1}50%{opacity:.35}}
+#pg-splash{position:fixed;inset:0;z-index:9999;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:18px;transition:opacity .45s;background:linear-gradient(180deg,rgba(6,18,40,.35) 0%,rgba(6,18,40,.55) 55%,rgba(6,18,40,.85) 100%),url('bg-login.jpg') 46% center/cover no-repeat,#0B1B33}
+#pg-splash.hide{opacity:0;pointer-events:none}
+.sp-box{background:rgba(255,255,255,.93);border-radius:24px;padding:22px 30px;box-shadow:0 20px 60px rgba(0,0,0,.35);animation:spIn 1s cubic-bezier(.2,.8,.2,1) both}
+.sp-box img{width:min(220px,56vw);height:auto;display:block}
+.sp-line{height:3px;border-radius:2px;background:var(--orange);animation:spLine .7s .55s ease-out both}
+.sp-sub{color:#fff;font-size:15px;font-weight:700;letter-spacing:.4px;text-shadow:0 2px 10px rgba(0,0,0,.5);animation:spSub .6s .8s ease-out both}
+.sp-load{position:absolute;bottom:calc(44px + env(safe-area-inset-bottom));display:flex;align-items:center;gap:8px;color:rgba(255,255,255,.85);font-size:12px;animation:spSub .6s .8s ease-out both}
+.sp-load span{width:7px;height:7px;border-radius:50%;background:#fff;animation:netPulse 1.4s ease-in-out infinite}
+@keyframes spIn{0%{opacity:0;transform:scale(.86)}60%{opacity:1;transform:scale(1.03)}100%{opacity:1;transform:scale(1)}}
+@keyframes spLine{from{width:0;opacity:0}to{width:120px;opacity:1}}
+@keyframes spSub{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+/* v5.18 chép vật tư */
+.cp-bar{display:flex;justify-content:space-between;align-items:center;gap:8px;font-size:12.5px;color:var(--text2);margin:4px 0 10px;flex-wrap:wrap}
+.cp-bar button,.cp-gh button{border:1px solid var(--border);background:#fff;border-radius:8px;padding:6px 10px;font-size:12px;font-weight:700;cursor:pointer;margin-left:4px}
+.cp-gh{display:flex;justify-content:space-between;align-items:center;gap:6px;padding:8px 0;flex-wrap:wrap}
+.cp-row{display:flex;align-items:center;gap:10px;padding:9px 0;border-top:1px solid var(--border);font-size:14px;cursor:pointer}
+.cp-row input{width:20px;height:20px;flex-shrink:0}.cp-row span{flex:1}.cp-row small{color:var(--text3);font-size:11.5px}
+.cp-row.have{opacity:.45}
+.more-btn{display:block;width:calc(100% - 28px);margin:10px 14px;border:1.5px dashed var(--border);background:#fff;border-radius:12px;padding:12px;font-weight:800;color:var(--primary);cursor:pointer}
+
 .diag-out{background:var(--bg);border-radius:10px;padding:10px 12px;font-size:12px;line-height:1.7;color:var(--text2);margin-top:6px;word-break:break-word}
 /* ===== v5.3: ảnh biên bản & Zalo ===== */
 .ph-row{display:flex;flex-wrap:wrap;gap:8px}
@@ -677,6 +716,12 @@ body:not(.can-cost) .need-cost{display:none!important}
 <body>
 
 <!-- ===================== LOGIN PAGE ===================== -->
+<div id="pg-splash" style="display:none">
+  <div class="sp-box"><img src="" data-logo alt="FECON South"></div>
+  <div class="sp-line"></div>
+  <div class="sp-sub">Hệ thống quản lý kho vật tư</div>
+  <div class="sp-load"><span></span>Đang mở ứng dụng…</div>
+</div>
 <div class="page active" id="pg-login">
   <div class="login-logo">
     <img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjYwIDE5MCA0MjIwIDE4MjAiPjxnIHRyYW5zZm9ybT0idHJhbnNsYXRlKDAuMDAwMDAwLDIwNzAuMDAwMDAwKSBzY2FsZSgwLjEwMDAwMCwtMC4xMDAwMDApIiBmaWxsPSIjRjI2NTIyIiBzdHJva2U9Im5vbmUiPiA8cGF0aCBkPSJNMTk3NzAgMTg0OTMgYy0xMDYgLTYgLTI1NiAtMjUgLTM1MCAtNDQgLTUyIC0xMSAtMTY1IC0zMSAtMjUwIC00NCAtODYgLTEzIC0xOTIgLTM1IC0yMzUgLTQ5IC00NCAtMTQgLTEyNiAtMzYgLTE4MiAtNTAgLTU2IC0xNSAtMTUwIC00NCAtMjEwIC02NiAtNTkgLTIyIC0xMTIgLTQwIC0xMTcgLTQwIC0zOCAwIC00NTAgLTE5MyAtNjIwIC0yODkgLTExNzQgLTY2OCAtMTk3MyAtMTc4NyAtMjI0MSAtMzEzNCAtMTUxIC03NjQgLTExNSAtMTgyMiA4NSAtMjQ2MiAxNSAtNDkgMzggLTEyNCA1MCAtMTY1IDMzMSAtMTE0MyAxMzI2IC0yMjY2IDI0NjEgLTI3NzggMjQ2IC0xMTEgNjMyIC0yNDYgNzc5IC0yNzIgMzYgLTYgMTI1IC0yNyAxOTkgLTQ2IDEwNiAtMjcgMTkyIC00MCA0MzAgLTY0IDY0MyAtNjUgNzM5IC02NCAxNTQxIDE5IDUyIDYgMTU2IDI2IDIzMCA0NSA3NCAxOSAxNjQgNDAgMTk5IDQ2IDYzMSAxMTIgMTQ4NyA1OTQgMjA2OSAxMTY0IDIzNSAyMzEgMjYwIDI4MCAxOTIgMzc1IC0zNSA0OCAtMTUwOCAxNTE3IC0xNTQ4IDE1NDMgLTc1IDQ5IC0xMDggMzMgLTI4MSAtMTM1IC02MjUgLTYxMCAtMTMyMCAtODA4IC0yMjgxIC02NTEgLTE2MzAgMjY2IC0yNDAxIDI0MjQgLTEzNjEgMzgwOCA3ODMgMTA0MSAyNDUyIDEyMjUgMzQ1MCAzODAgMTcxIC0xNDUgMTgzIC0xNTQgMjIyIC0xNjUgODEgLTI1IDczIC0zMSA1NTkgNDExIDE3OSAxNjIgNDc0IDQzMCA2NTUgNTk1IDE4MiAxNjQgMzcxIDMzNyA0MjIgMzgyIDE3MSAxNTYgMTY3IDIwMCAtMzggMzk5IC01MzcgNTIwIC0xMjQ2IDkzMiAtMTg5OSAxMTAzIC02MyAxNiAtMTMzIDM2IC0xNTYgNDUgLTQ0IDE1IC0xNjYgNDAgLTI0OSA1MSAtMjcgNCAtMTI5IDIyIC0yMjUgNDAgLTI1NSA0OSAtODc0IDcyIC0xMzAwIDQ4eiBNMjgwNTkgMTg0ODkgYy02MyAtNSAtMTk2IC0yNCAtMjk1IC00MyAtOTggLTE5IC0yMDQgLTM3IC0yMzQgLTQxIC05MyAtMTEgLTE2MSAtMjUgLTI2MCAtNTUgLTUyIC0xNiAtMTMzIC0zOCAtMTgwIC01MCAtOTczIC0yMzggLTIwMTYgLTEwNDkgLTI2MDMgLTIwMjIgLTIwNSAtMzM5IC00MzQgLTg3OSAtNDg2IC0xMTQzIC03IC0zMyAtMzAgLTEyNSAtNTEgLTIwNSAtMjcgLTk4IC00NCAtMTkyIC01NCAtMjkwIC04IC04MCAtMjcgLTIxNSAtNDEgLTMwMCAtNjMgLTM4NCAtNjEgLTgzMiA1IC0xMjUwIDE2IC0xMDIgMzQgLTIzNSA0MCAtMjk2IDYgLTYyIDE5IC0xNDUgMzAgLTE4NSAxMSAtNDEgMzEgLTEyMyA0NiAtMTg0IDI2OCAtMTE0NiAxMDc5IC0yMjIyIDIxNTAgLTI4NTMgMjU3IC0xNTIgNDMyIC0yMjUgNDk4IC0yMDggNjYgMTYgNjAgLTE1OCA2NiAyMjI2IDUgMjE1NSA1IDIxNTUgMzMgMjIxNSAzNyA4MCAxNjk4IDE3NDUgMTc4MCAxNzg0IDE0MSA2OCAxNjEgNTMgNzIyIC01MTEgMTIzMSAtMTIzOSAxMjEyIC0xMjIwIDEyNDIgLTEyODMgMjggLTYwIDI4IC02MCAzMyAtMjIxMCA1IC0yMDMyIDYgLTIxNTIgMjMgLTIxODIgMzUgLTY2IDEwMiAtNTggMjg1IDM0IDExNzEgNTg2IDIxMjUgMTc2NCAyMzk3IDI5NTggMTQgNjEgMzYgMTUxIDQ5IDIwMCAxMyA1MCAzMiAxNTEgNDEgMjI1IDkgNzQgMjggMjE2IDQyIDMxNSA1MCAzNDUgNDUgODQ4IC0xMSAxMjcwIC0xNCA5OSAtMzAgMjIzIC0zNiAyNzUgLTcgNTIgLTIzIDEzNiAtMzYgMTg1IC0xMyA1MCAtMzUgMTQwIC00OSAyMDAgLTMzMSAxNDUzIC0xNzE0IDI4ODYgLTMxMjAgMzIzNSAtNDUgMTAgLTEyNCAzMyAtMTc2IDQ5IC01MyAxNiAtMTQyIDM3IC0yMDAgNDYgLTU3IDkgLTE4NyAzMiAtMjg5IDUxIC0yODUgNTIgLTk0MCA3MyAtMTM2MSA0M3ogTTEyMDAgMTgyNzAgYy0yMzIgLTYgLTI0MyAtOSAtMjc2IC04MiAtMzEgLTY5IC0zMCAtODg2NSAxIC04OTE4IDQ4IC04MSAtNjEgLTc1IDEyODUgLTc1IDEzMzUgMCAxMjQxIC01IDEyOTQgNjggMjEgMjggMjEgMzEgMjYgMTY0MCA2IDE3OTYgMCAxNjU4IDcwIDE3MDkgNTAgMzYgMTIzIDM4IDE1MjUgMzggMTU3MyAwIDE0NDMgLTggMTQ5MyA5MCAzMyA2NiAzNSAxOTA2IDIgMTk3NSAtNDIgODggMTA0IDc5IC0xNTI1IDg1IC0xNjMwIDYgLTE0OTcgLTIgLTE1NDEgODcgLTI5IDU4IC0yOSAxMDc3IDAgMTEzNSA0NSA5MSAtMTQwIDgyIDE4ODYgODggMTc3MiA1IDE3OTUgNSAxODI5IDI1IDkzIDU1IDkzIDQ5IDg5IDExMjMgLTMgMTAxMCAyIDk1MSAtOTQgOTkzIC00NiAyMSAtNTMzMiAzNyAtNjA2NCAxOXogTTg1NTAgMTgyNzAgYy0xNzcgLTYgLTE5NCAtMTIgLTIyNiAtODIgLTMxIC02OSAtMzAgLTg4NjUgMSAtODkxOCAxMiAtMTkgMzYgLTQzIDU1IC01NSA1OSAtMzQgNjIyNCAtMzEgNjI4OCAzIDg3IDQ2IDgyIC0yMiA4MiAxMDQyIDAgOTg1IDAgOTg3IC00NyAxMDMyIC01OSA1NiA1MSA1MyAtMTg4MCA1OCAtMjAzNiA2IC0xODIyIC01IC0xODcxIDkxIC0zMiA2MyAtMzEgMTA3MSAyIDExMjYgNTIgODUgLTExNyA3NyAxODkxIDgzIDE4NjEgNSAxODE5IDQgMTg1NyA0NyA0OSA1NCA0OCAyNyA0OCAxMDM1IDAgMTA1NiA0IDk5NyAtNzIgMTA0MyAtMzIgMjAgLTYyIDIwIC0xODI4IDI1IC0xOTQ2IDUgLTE4MzUgMiAtMTg4MSA1NiAtMzcgNDMgLTM5IDc2IC0zOSA1OTkgMCA1MjMgMiA1NTYgMzkgNTk5IDQ3IDU0IC04MCA1MSAxODcxIDU2IDIwMzkgNiAxODQwIC00IDE4ODggOTAgMjQgNDkgMzYgMTg3NCAxMiAxOTYxIC0xMSA0MCAtNTEgODIgLTk1IDEwMCAtMzEgMTIgLTU3NDIgMjAgLTYwOTUgOXogTTM0NDc4IDE4MjcwIGMtODEgLTggLTExNCAtMjggLTEzOSAtODUgLTI5IC02NiAtMzEgLTg4NDUgLTIgLTg5MDMgNDggLTk2IDEwIC05MyAxMzQ5IC05MCAxMTM5IDMgMTEzOSAzIDExODEgMjYgODYgNDUgNzcgLTE3NCA4MyAyMTYyIDUgMjE5NyAzIDIxMDUgNTAgMjEzMCA1MyAyOSA5MiAtMTcgMzI3IC0zOTAgNDI4IC02NzcgMTE1NiAtMTgyOSAxMjk4IC0yMDU1IDQ1IC03MSAxMzEgLTIwOSAxOTIgLTMwNSA2MSAtOTYgMjM3IC0zNzcgMzkzIC02MjUgMTU2IC0yNDcgMzIyIC01MTMgMzcxIC01OTAgMTk1IC0zMTEgMjE2IC0zMzAgMzYyIC0zNDYgMTg4IC0yMSAyMzU3IC02IDI0MDIgMTYgNTUgMjggODIgNzIgOTAgMTQ4IDIwIDE5OCAwIDg3ODIgLTIxIDg4MjIgLTQ5IDk2IDM1IDkwIC0xMjk5IDkwIC0xMzI4IC0xIC0xMjMzIDUgLTEyODAgLTc1IC0yMCAtMzUgLTIwIC00OCAtMjUgLTIxMTAgLTYgLTIzMDQgLTEgLTIxNDkgLTY3IC0yMTU4IC01NiAtOCAtNTggLTYgLTU1MyA3ODMgLTIxMSAzMzYgLTQyMCA2NjkgLTQ2NSA3NDAgLTQ1IDcyIC0xMjYgMjAwIC0xODAgMjg1IC01NCA4NSAtMTM1IDIxNCAtMTgwIDI4NSAtNDUgNzIgLTEzMSAyMDcgLTE5MCAzMDAgLTU5IDk0IC0xNDAgMjIyIC0xODAgMjg1IC0zOSA2MyAtMTE1IDE4MyAtMTY3IDI2NSAtNTIgODMgLTE3NiAyNzggLTI3NSA0MzUgLTU2OCA5MDIgLTU3NCA5MTEgLTY1OCA5NDYgLTQxIDE3IC0yMjQzIDMwIC0yNDE3IDE0eiBNMjcyNzUgMTI3NjUgYy0xMjIgLTQzIC0xMTQgLTIwMCAxMyAtMjM0IDg2IC0yNCAyNjIxIC0xMCAyNjYyIDE0IDkzIDU1IDY5IDE5NSAtMzkgMjI1IC02MiAxNyAtMjU4NiAxMyAtMjYzNiAtNXogTTI3MjYzIDEyMDM1IGMtODggLTM4IC05NCAtMTU3IC0xMCAtMjAyIDM4IC0yMSAyNTgxIC0zNCAyNjU3IC0xMyAxMTAgMzAgMTI3IDE3MyAyNCAyMTYgLTUwIDIxIC0yNjIzIDIwIC0yNjcxIC0xeiBNMjczMDMgMTE1MTAgYy0xNTQgLTMxIC0xODQgLTI2MiAtNDEgLTMyNiA2OSAtMzEgMjYyNSAtMzAgMjY3OCAyIDEyOSA3NiAxMDMgMjkwIC00MCAzMjMgLTU1IDEzIC0yNTMzIDEzIC0yNTk3IDF6IE0yNzI3NSAxMDg1NSBjLTEzOSAtNTAgLTE1NCAtMzgyIC0xOSAtNDUwIDY2IC0zNCAyNjI5IC0zMSAyNjkyIDMgMTExIDU5IDExMCAzNzAgMCA0MzcgLTQ0IDI3IC0yNjAwIDM2IC0yNjczIDEweiBNMjczMjUgMTAxNDEgYy0xMzQgLTE3IC0xNDkgLTQ5IC0xNTMgLTMyNiAtNSAtMzAxIDkgLTM1MSAxMDcgLTM4NCA3NiAtMjUgMjYxMCAtMTUgMjY2MSAxMiA3OSAzOSA4NSA2MiA4NSAzMzcgMCAzMDUgLTE0IDMzOCAtMTUwIDM2MCAtNjYgMTEgLTI0NjUgMTIgLTI1NTAgMXoiLz4gPC9nPjxnIHRyYW5zZm9ybT0idHJhbnNsYXRlKDAuMDAwMDAwLDIwNzAuMDAwMDAwKSBzY2FsZSgwLjEwMDAwMCwtMC4xMDAwMDApIiBmaWxsPSIjMDA1NkE0IiBzdHJva2U9Im5vbmUiPiA8cGF0aCBkPSJNMzkyODEgNjUyMCBjLTQ2IC0xMSAtODMgLTQwIC0xMDMgLTgxIC0zMiAtNjEgLTI3IC01Mjg3IDUgLTUzNDkgNDIgLTg1IDQ0IC04NSA0MjcgLTg1IDM4MiAwIDM5MyAyIDQzNCA4MSAyMSAzOSAyMSA1MCAyNiAxMzI5IDYgMTU0MCAtMTggMTM4MiAyMjggMTQ5NyA2MTcgMjg5IDEwOTcgMTYzIDEyMzAgLTMyMSAyNyAtOTYgMjcgLTk2IDMyIC0xMjgxIDYgLTE0ODUgLTU2IC0xMzA1IDQ1MCAtMTMwNSAzODIgMCAzOTMgMiA0MzQgODEgMjUgNDYgMzkgMjMxNiAxNiAyNTg5IC04MSAxMDAwIC04ODQgMTQxMiAtMjA1NSAxMDU0IC0xODcgLTU3IC0yMzcgLTYzIC0yNzggLTM2IC01MyAzNCAtNTIgMTQgLTU3IDg5NyAtNiA5MzIgMCA4NjkgLTg1IDkxNCAtNDMgMjMgLTYyMyAzNiAtNzA0IDE2eiBNMjUwNDUgNjIzMCBjLTI2OSAtMTkgLTM3MiAtMzcgLTU5MyAtMTA3IC03OTMgLTI0OSAtMTE3MyAtOTExIC05NzMgLTE2OTMgMTI2IC00ODkgMzM2IC03MDUgMTAxMSAtMTAzNyAyMDYgLTEwMiA0NzQgLTIzNCA1OTUgLTI5MyA0OTggLTI0NiA2OTAgLTQ1MSA2OTAgLTczOSAwIC0zMzkgLTI1NyAtNTQ4IC03NjQgLTYyMSAtMjE5IC0zMiAtNjE1IDIzIC0xMTA2IDE1NSAtMjczIDc0IC0zMDkgNDcgLTM5NSAtMjk1IC0xMiAtNDcgLTM0IC0xMjcgLTUxIC0xNzggLTUxIC0xNjAgLTI1IC0yNDUgODYgLTI4NiA5NiAtMzYgMzk2IC0xMTMgNTUyIC0xNDIgODc4IC0xNjEgMTUzMyAtNjggMjA5MCAyOTggNzU4IDQ5OSA4NDQgMTU3MiAxNzkgMjIzMyAtMTg2IDE4NSAtMzczIDI4OSAtMTEzMSA2MzUgLTY3MCAzMDUgLTg1MiA1MDYgLTc2NSA4NDYgOTIgMzU3IDY1NSA1MTQgMTI2OCAzNTMgNjQgLTE3IDE2MyAtNDIgMjE5IC01NSA1NyAtMTMgMTM1IC0zMyAxNzQgLTQ1IDE1MiAtNDYgMjAyIC05IDI4MyAyMTMgMTU0IDQyMSAxNTIgNDE0IDEzMiA0NjIgLTMxIDc0IC0yMjggMTQzIC02ODggMjQxIC0xODEgMzkgLTYxNiA2OCAtODEzIDU1eiBNMzY1MDcgNTc4NiBjLTk0IC0zNCAtOTEgLTIxIC05NyAtNDk2IC02IC01MTEgLTExIC01MjggLTE2OCAtNTQ1IC0yMzcgLTI2IC0yNDcgLTQxIC0yNDcgLTM5MCAwIC0zMDUgMTYgLTMzMiAyMDggLTM1NCAyMjEgLTI1IDIwMSA5MiAyMDcgLTEyMjEgNiAtMTE5MCAwIC0xMTA3IDEwMiAtMTM3MCAxODAgLTQ2NCA4NjUgLTY2MiAxNjIzIC00NjkgNDczIDEyMSA0NzIgMTE5IDI5MyA2MTQgLTg1IDIzMyAtMTA5IDI0OCAtMzEzIDE4NSAtNDA5IC0xMjYgLTY4MyAtODAgLTc2NyAxMjkgLTM0IDgzIC0zNyAxOTgzIC0zIDIwNDAgNDQgNzUgNDkgNzUgNTIyIDgxIDU2MCA3IDUxOCAtMjUgNTE4IDM4NSAwIDQxOSA0MSAzODggLTUzMCAzOTUgLTU4MyA3IC01MjggLTQ3IC01MzUgNTIwIC03IDU1NCAzNiA1MDQgLTQ0MCA1MDcgLTI2MyAyIC0zNDMgMCAtMzczIC0xMXogTTI5MTcwIDQ4NDMgYy02MTEgLTQ1IC0xMDYzIC0yOTggLTEzODkgLTc3OCAtMTk0IC0yODUgLTI2MCAtNDgwIC0zMzMgLTk5MCAtNSAtMzggLTggLTE0NCAtNSAtMjM1IDQgLTE1NCAxMSAtMjExIDYyIC01MTAgMjggLTE2MiAxMzQgLTQwOSAyNjAgLTYwNSA2ODkgLTEwNzMgMjQxMSAtMTA4OCAzMTI2IC0yNiAyMzMgMzQ1IDMyOSA2OTUgMzI5IDExOTAgLTEgMTIzNCAtODUwIDIwNDMgLTIwNTAgMTk1NHogbTM4NCAtODA4IGM0OTAgLTE0MiA3NTkgLTc3OCA2MzYgLTE1MDUgLTE3NSAtMTAzNiAtMTQyNCAtMTEzNSAtMTY3OSAtMTMzIC0yNTYgMTAwMiAyODggMTg1NyAxMDQzIDE2Mzh6IE0zMjA2NyA0NzU2IGMtNTAgLTE4IC04MyAtNTAgLTk5IC05NSAtMjMgLTY0IC0xOCAtMjUxMiA1IC0yNjU5IDk3IC02MTUgNDY5IC05NDUgMTE5MiAtMTA1OSAxNDAgLTIzIDY0MCAtMjUgNzgwIC01IDMwOSA0NSA2MzMgMTIyIDk5NSAyMzQgMzIyIDEwMCAzNTAgMTI2IDMzNSAzMTQgLTMgNDMgLTkgNzcyIC0xMyAxNjE5IC04IDE3MjggLTEgMTU4OCAtODEgMTYzNyAtNTMgMzQgLTY5NCAzNiAtNzUwIDMgLTk1IC01NiAtOTEgMTEgLTkwIC0xNDg2IDEgLTE0MjcgNSAtMTMzNyAtNjIgLTEzOTMgLTQzIC0zNyAtNTIgLTQwIC0yNzQgLTk4IC00MzggLTExNiAtNzg0IC02MCAtOTgzIDE1NyAtMTU4IDE3MiAtMTYyIDIxMyAtMTYyIDE2NjAgMCAxMTg0IDUgMTExMSAtODAgMTE2MCAtNDYgMjYgLTY0NSAzNSAtNzEzIDExeiIvPiA8L2c+PC9zdmc+" alt="Fecon South">
@@ -688,7 +733,7 @@ body:not(.can-cost) .need-cost{display:none!important}
       <button class="role-btn" id="tab-reg" onclick="authTab('reg')">📝 Xin tham gia</button>
     </div>
     <div id="auth-login">
-      <div class="fg"><label>Tên đăng nhập</label><input type="text" id="li-user" autocomplete="username" autocapitalize="none" autocorrect="off" spellcheck="false" placeholder="VD: hasyta"></div>
+      <div class="fg"><label>Tên đăng nhập</label><input type="text" id="li-user" autocomplete="username" autocapitalize="none" autocorrect="off" spellcheck="false" placeholder="Fecon South"></div>
       <div class="fg"><label>Mật khẩu</label><div class="pw-wrap"><input type="password" id="li-pass" autocomplete="current-password" placeholder="••••••" onkeydown="if(event.key==='Enter')doLogin()"><button type="button" class="pw-eye" onclick="togglePw('li-pass',this)">👁</button></div></div>
       <button class="btn-full btn-orange" onclick="doLogin()">Đăng nhập</button>
     </div>
@@ -712,7 +757,7 @@ body:not(.can-cost) .need-cost{display:none!important}
     </div>
     <div class="pin-err" id="auth-err"></div>
     <div id="zalo-hint" class="auth-note" style="display:none;margin:10px 0 0">Bạn đang mở trong Zalo. Nếu không đăng nhập được, bấm <b>⋯</b> góc trên → <b>Mở bằng trình duyệt</b>.</div>
-    <div style="text-align:center"><button class="link-btn" onclick="runDiag()">🔧 Kiểm tra kết nối</button></div>
+    <div style="text-align:center;margin-top:12px"><button class="net-chip wait" id="net-chip" onclick="netCheck()"><span class="net-dot"></span><span id="net-txt">Đang kiểm tra mạng…</span></button></div>
     <div id="diag-out" class="diag-out" style="display:none"></div>
   </div>
   <button class="login-inst inst-btn" style="display:none" onclick="doInstall()">📲 Cài app vào điện thoại</button>
@@ -765,6 +810,7 @@ body:not(.can-cost) .need-cost{display:none!important}
   <div class="detail-header">
     <button class="back-btn" onclick="closeDp('dp-vattu')">‹</button>
     <div class="detail-title">Danh sách vật tư</div>
+    <button class="need-tk" onclick="openCopyItems()" style="background:#fff;color:var(--primary);border:1.5px solid var(--primary);border-radius:8px;padding:5px 9px;font-size:12px;font-weight:700;cursor:pointer;margin-right:6px">📋 Chép từ dự án khác</button>
     <button class="need-tk" onclick="openModal('modal-add-vattu')" style="background:var(--orange);color:#fff;border:none;border-radius:8px;padding:6px 12px;font-size:12px;font-weight:700;cursor:pointer">+ Thêm</button>
   </div>
   <div class="detail-body" id="dp-vattu-body"></div>
@@ -838,6 +884,10 @@ body:not(.can-cost) .need-cost{display:none!important}
   <div class="detail-body" id="dp-quick-body"></div>
 </div>
 
+<div class="detail-page" id="dp-copy">
+  <div class="detail-header"><button class="back-btn" onclick="closeDp('dp-copy')">‹</button><div class="detail-title">📋 Chép vật tư từ dự án khác</div></div>
+  <div class="detail-body" id="dp-copy-body"></div>
+</div>
 <div class="detail-page" id="dp-req">
   <div class="detail-header"><button class="back-btn" onclick="closeDp('dp-req')">‹</button><div class="detail-title" id="dp-req-title">📝 Phiếu yêu cầu</div></div>
   <div class="detail-body" id="dp-req-body"></div>
@@ -991,6 +1041,7 @@ body:not(.can-cost) .need-cost{display:none!important}
     <div class="sidebar-item" onclick="openDpSb('dp-devices-list')"><span class="sidebar-item-ico">🏗️</span>Máy móc & Thiết bị</div>
     <div class="sidebar-item" onclick="openDpSb('dp-notes')"><span class="sidebar-item-ico">📝</span>Ghi chú trong ngày</div>
     <div class="sidebar-item" onclick="openDpSb('dp-dc-hist')"><span class="sidebar-item-ico">⚖️</span>Điều chỉnh & kiểm kê</div>
+    <div class="sidebar-item need-tk" onclick="closeSidebar();setTimeout(openCopyItems,300)"><span class="sidebar-item-ico">📋</span>Chép vật tư từ dự án khác</div>
     <div class="sidebar-item need-tk" onclick="closeSidebar();setTimeout(openKK,300)"><span class="sidebar-item-ico">🔢</span>Đợt kiểm kê</div>
     <div class="sidebar-item need-cost" onclick="openDpSb('dp-coc')"><span class="sidebar-item-ico">🔗</span>Đối chiếu cóc nối</div>
     <div class="sidebar-item" onclick="openDpSb('dp-tg')"><span class="sidebar-item-ico">🔔</span>Nhận cảnh báo Telegram</div>
@@ -1121,13 +1172,13 @@ body:not(.can-cost) .need-cost{display:none!important}
     <div class="stock-box"><span>Tồn kho hiện tại</span><b id="ev-stock-txt">0</b></div>
     <button class="btn-full btn-adj need-tk" onclick="openCountAdjust(+document.getElementById('ev-id').value)">⚖️ Kiểm kê / Điều chỉnh tồn</button>
     <div class="lock-note">Tồn kho chỉ thay đổi qua phiếu nhập, xuất hoặc điều chỉnh (có lý do, ghi tên người lập).</div>
-    <div class="need-ql">
+    <div class="need-tk">
       <div class="fg"><label>Tên vật tư</label><input type="text" id="ev-name"></div>
       <div class="fg-row">
         <div class="fg"><label>Nhóm</label><select id="ev-cat"></select></div>
         <div class="fg"><label>Đơn vị</label><select id="ev-unit"></select></div>
       </div>
-      <div class="fg"><label>Ngưỡng cảnh báo</label>
+      <div class="fg need-ql"><label>Ngưỡng cảnh báo</label>
         <input type="number" id="ev-min" min="0">
         <div class="slider-wrap">
           <input type="range" id="ev-min-slider" min="0" max="10000" step="10" oninput="document.getElementById('ev-min').value=this.value;document.getElementById('ev-min-val').textContent=this.value">
@@ -1406,7 +1457,7 @@ body:not(.can-cost) .need-cost{display:none!important}
 // ============================================================
 // CONFIG
 // ============================================================
-const APP_VERSION = '5.17.1';
+const APP_VERSION = '5.18.0';
 const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbw6Rmi80I7RI3ij2U7RdRF5pYuQTnPrwEmGmUZS5xpxzLwwVynfoFUujZe1lm6HS1ymxw/exec';
 // ============================================================
 
@@ -1525,7 +1576,7 @@ async function doLogin() {
   const password = document.getElementById('li-pass').value;
   if (!username || !password) return authErr('Nhập tên đăng nhập và mật khẩu');
   authErr(''); showLoader('Đang đăng nhập...');
-  const r = await api('login', {username, password, device: deviceName()}, 45000);
+  const r = await api('login', {username, password, device: deviceName()}, 30000);
   hideLoader();
   if (r.pending) { authTab('pending'); return; }
   if (!r.success) return authErr(r.offline ? (r.reason || 'Không có mạng — cần kết nối để đăng nhập') : (r.error || 'Đăng nhập thất bại'));
@@ -1601,14 +1652,13 @@ async function setupApp() {
     tick = setInterval(() => { document.getElementById('loader-msg').textContent = `Đang tải dữ liệu lần đầu... ${Math.round((Date.now() - t0) / 1000)} giây`; }, 1000);
   }
   const gen = sessionGen;
-  let ok = await syncAll();
-  if (!ok && token && gen === sessionGen && !loadedOnce) {      // lần đầu chưa tải được: thử lại ngay, không để trống 15 giây
-    await new Promise(r => setTimeout(r, 1500));
-    if (gen === sessionGen) ok = await syncAll();
-  }
+  const ok = await syncAll();                                    // v5.18: syncAll đã tự thử lại 1 lần, tối đa ~1 phút
   clearInterval(tick); hideLoader();
   if (!token || gen !== sessionGen) return;                     // đã đăng xuất / người khác đăng nhập trong lúc tải
   if (ok || !hasCache) refreshCurrentView(false);
+  if (!ok && !hasCache) document.getElementById('main-body').innerHTML = `<div class="empty-state" style="padding-top:70px"><div class="e-ico">📶</div>
+    <p><b>Chưa tải được dữ liệu</b><br>Mạng yếu hoặc máy chủ Google đang chậm.</p>
+    <button class="btn-full btn-orange" style="max-width:260px;margin:14px auto 0" onclick="retryFirstLoad()">↻ Thử lại</button></div>`;
   startAutoSync();
 }
 
@@ -1707,7 +1757,7 @@ function onAuthLost(msg) {
   stopAutoSync(); closeSidebar(); hideLoader();
   document.querySelectorAll('.modal-bg').forEach(m => m.style.display = 'none');
   document.querySelectorAll('.detail-page.show').forEach(p => p.classList.remove('show'));
-  showPage('pg-login'); authTab('login');
+  showPage('pg-login'); authTab('login'); netStart();
   if (me) document.getElementById('li-user').value = me.username;
   authErr((msg || 'Phiên đăng nhập đã hết hạn') + (outbox.length ? ` · ${outbox.length} thay đổi chờ gửi vẫn được giữ lại` : ''));
 }
@@ -1766,7 +1816,7 @@ function applyServer(r) {
   // Xóa dữ liệu lưu trên máy của dự án không còn được giao
   Object.keys(localStorage).filter(k => k.startsWith(LS_DB + '|') && !db.projects.includes(k.slice(LS_DB.length + 1))).forEach(k => localStorage.removeItem(k));
   if (r.items) db.items = r.items.map(i => ({...i, id:+i.id, stock:+i.stock||0, minStock:+i.minStock||0, capThang:+i.capThang||0, canMay:+i.canMay||0}));
-  ['reqs','cauKien','projCfg','rolePerm','kkMoc','tg'].forEach(k => { if (r[k] !== undefined) db[k] = r[k]; });   // máy chủ 5.13
+  ['reqs','cauKien','ckv','projCfg','rolePerm','kkMoc','tg'].forEach(k => { if (r[k] !== undefined) db[k] = r[k]; });   // máy chủ 5.13+
   if (r.devices) db.devices = r.devices.map(d => ({...d, id:+d.id, fuelRate:+d.fuelRate||20}));
   db.repairs = (r.repairs||[]).map(rp => ({...rp, id:+rp.id, deviceId:+rp.deviceId, cost:+rp.cost||0}));
   db.notes = (r.notes||[]).map(n => ({...n, id:+n.id}));
@@ -1841,8 +1891,9 @@ async function syncAll(silent) {
     if (!token || gen !== sessionGen) return false;
     const inc = {project: curProj};
     if (curProj && db.scope === curProj && db.txnTotal && db.txnLastId && db.transactions.length) Object.assign(inc, {since: db.txnTotal, lastId: db.txnLastId, scope: curProj, txnRev: db.txnRev || 0});
-    let r = await api('getAll', inc, 45000);
-    if (!r.success && !r.auth && !r.stale && token) r = await api('getAll', inc, 45000);   // lỗi mạng: thử lại ngay, không chờ 15 giây
+    if (db.ckv && (db.cauKien || []).length) inc.ckv = db.ckv;                     // v5.14: cấu kiện chỉ gửi khi đổi
+    let r = await api('getAll', inc, 25000);
+    if (!r.success && !r.auth && !r.stale && token) r = await api('getAll', inc, 35000);   // tối đa ~1 phút   // lỗi mạng: thử lại ngay, không chờ 15 giây
     if (gen !== sessionGen || r.stale) return false;
     if (!r.success) {
       if (token) setSyncBar((outbox.length ? `📴 ${outbox.length} thay đổi đang chờ gửi · ` : '⚠️ ') + (r.reason || r.error || 'Không kết nối được máy chủ') + ' — đang dùng dữ liệu lưu trên máy', '#E74C3C');
@@ -1886,8 +1937,14 @@ async function autoSyncTick() {
   if (outbox.length && !(await flushOutbox())) return;
   const v = await api('getVersion');
   if (v.success && v.version && v.version !== serverVer) {
-    if (await syncAll(true)) refreshCurrentView(true);
+    const before = dataSig();
+    if (await syncAll(true) && dataSig() !== before) refreshCurrentView(true);   // v5.18: không đổi gì thì không vẽ lại
   }
+}
+async function retryFirstLoad() {
+  showLoader('Đang tải dữ liệu...');
+  const ok = await syncAll(); hideLoader();
+  if (ok) refreshCurrentView(false); else toast('⚠️ Vẫn chưa tải được — kiểm tra mạng rồi thử lại');
 }
 function startAutoSync() { clearInterval(syncTimer); syncTimer = setInterval(autoSyncTick, 15000); }
 function stopAutoSync() { clearInterval(syncTimer); syncTimer = null; }
@@ -1901,7 +1958,8 @@ function refreshCurrentView(notify) {
   // Đang gõ ô tìm kiếm / kéo thanh định mức thì không vẽ lại chỗ đó (tránh mất bàn phím)
   const ae = document.activeElement, typing = el => ae && /^(INPUT|TEXTAREA|SELECT)$/.test(ae.tagName) && el && el.contains(ae);
   if (['home','pyc','ton','baocao','lsnhap','lsxuat','lead'].includes(curTab) && !typing(document.getElementById('main-body'))) goTab(curTab);
-  document.querySelectorAll('.detail-page.show').forEach(p => {
+  const shown = [...document.querySelectorAll('.detail-page.show')].sort((a, b) => (+a.style.zIndex || 0) - (+b.style.zIndex || 0));
+  shown.slice(-1).forEach(p => {                                  // v5.18: chỉ vẽ lại trang đang nằm trên cùng
     if (typing(p)) return;
     if (p.id === 'dp-device') { if (currentDeviceId) renderDeviceDetail(currentDeviceId); }
     else if (p.id === 'dp-members' || p.id === 'dp-history-log') { /* tải lại bằng nút ↻ */ }
@@ -1944,6 +2002,7 @@ function goTab(tab) {
   if ((tab === 'nhap' || tab === 'xuat') && !can('tk')) tab = 'home';
   if (tab === 'lead' && !canLead()) tab = 'home';
   if (tab === 'ton' && NEW_ROLES[role] && !canP('ton')) { toast('Chức danh của bạn chưa được bật quyền xem tồn kho'); tab = 'pyc'; }
+  if (tab !== curTab) listLimit = {nhap:100, xuat:100, dieuchinh:100};
   curTab = tab;
   if (tab === 'lead') {                                   // Lãnh đạo: màn hình chính là Tổng hợp các dự án
     document.querySelectorAll('.bnav-btn').forEach(b => b.classList.remove('on'));
@@ -1998,6 +2057,9 @@ function renderHistTab(c, type) {
     <div class="hist-head"><b>${fmtNum(txns.length)} ${lbl}</b><span>Hôm nay: ${todayCount(type)} · ${escHtml(curProj === 'all' ? 'Tất cả dự án' : curProj)}</span></div>
     ${type === 'xuat' ? `<div class="chip-row" style="margin-bottom:10px">${fchip('all', 'Tất cả')}${fchip('pyc', 'Theo phiếu YC')}${fchip('thang', 'Xuất thẳng')}</div>` : ''}
     <div style="padding:0 14px 14px">${renderTxnList(txns, type)}</div>`;
+}
+function refreshListOnly(type) {
+  if (type === 'dieuchinh') renderDcHist(); else goTab(type === 'nhap' ? 'lsnhap' : 'lsxuat');
 }
 function goTabSb(tab) { closeSidebar(); goTab(tab); }
 function openDpSb(id) { closeSidebar(); setTimeout(() => openDp(id), 300); }
@@ -2298,7 +2360,8 @@ function editVatTu(id) {
   document.getElementById('ev-min-slider').max = Math.max(item.stock * 2, item.minStock * 2, 1000);
   document.getElementById('ev-min-val').textContent = item.minStock;
   // Vật tư đã có phiếu thì không xóa được (giữ lịch sử)
-  document.getElementById('ev-del-btn').style.display = db.transactions.some(t => t.itemId === id) ? 'none' : '';
+  document.getElementById('ev-del-btn').style.display = role === 'admin' && !db.transactions.some(t => t.itemId === id) ? '' : 'none';   // v5.18: chỉ Admin xóa
+  const eu = document.getElementById('ev-unit'); eu.disabled = role !== 'admin'; eu.title = role !== 'admin' ? 'Chỉ Admin đổi đơn vị' : '';
   openModal('modal-edit-vattu');
 }
 async function saveVatTu() {
@@ -2321,8 +2384,8 @@ async function updateVatTu() {
   if (!name) { toast('⚠️ Nhập tên vật tư'); return; }
   item.name = name;
   item.cat = document.getElementById('ev-cat').value;
-  item.unit = document.getElementById('ev-unit').value;
-  item.minStock = +document.getElementById('ev-min').value||0;
+  if (role === 'admin') item.unit = document.getElementById('ev-unit').value;
+  if (can('ql')) item.minStock = +document.getElementById('ev-min').value||0;
   closeModal('modal-edit-vattu');
   updateLowBadge();
   showLoader('Đang lưu...');
@@ -2367,7 +2430,7 @@ function parseVN(s) {
   return m ? new Date(+m[6], +m[5]-1, +m[4], +(m[1]||0), +(m[2]||0), +(m[3]||0)) : null;
 }
 function txnRow(t) {
-  const it = db.items.find(i => i.id === t.itemId);
+  const it = itemById(t.itemId);
   const unit = it?.unit || t.unit || '';
   if (t.type === 'kiemke') {
     const d = kkDelta(t);
@@ -2551,8 +2614,10 @@ function renderDpXuatHist() {
 function renderTxnList(txns, type) {
   if (!txns.length) return '<div class="empty-state" style="padding-top:60px"><div class="e-ico">📭</div><p>Chưa có phiếu</p></div>';
   const total = txns.reduce((s,t) => s + effQty(t), 0);
+  const lim = listLimit[type] || 100, sorted = byTimeDesc(txns), more = sorted.length - lim;   // v5.18: vẽ 100 phiếu mới nhất trước
   return `<div class="card">
-    ${byTimeDesc(txns).map(txnRow).join('')}
+    ${sorted.slice(0, lim).map(txnRow).join('')}
+    ${more > 0 ? `<button class="more-btn" onclick="listLimit['${type}']=${lim + 100};refreshListOnly('${type}')">Xem thêm ${Math.min(100, more)} phiếu (còn ${fmtNum(more)})</button>` : ''}
     ${type === 'dieuchinh' ? '' : `<div class="total-row">
       <span class="total-label">Tổng ${type==='nhap'?'nhập':'xuất'}</span>
       <span class="total-val">${fmtNum(total)}</span>
@@ -3668,7 +3733,7 @@ function openEditDevice() {
   document.getElementById('ad-plate').value = d.plate||'';
   document.getElementById('ad-note').value = d.note||'';
   document.getElementById('modal-device-title').textContent = '✏️ Sửa thiết bị';
-  document.getElementById('ad-del-btn').style.display = can('ql')?'':'none';
+  document.getElementById('ad-del-btn').style.display = role === 'admin' ? '' : 'none';   // v5.18: chỉ Admin xóa
   openModal('modal-add-device');
 }
 
@@ -5413,7 +5478,7 @@ function doLogout() {
   destroyCharts(); stopAutoSync(); setSyncBar('');
   document.querySelectorAll('.detail-page.show').forEach(p => p.classList.remove('show'));
   document.getElementById('li-pass').value = '';
-  showPage('pg-login'); authTab('login');
+  showPage('pg-login'); authTab('login'); netStart();
 }
 
 // ===== TOAST / LOADER =====
@@ -6323,6 +6388,88 @@ async function buildPycWorkbook() {
   openModal('modal-xfile');
 }
 
+// ===== v5.18.0: CHÉP VẬT TƯ TỪ DỰ ÁN KHÁC =====
+let cpSrc = '', cpList = [], cpProjects = [], cpSel = {};
+async function openCopyItems() {
+  if (!navigator.onLine) { toast('📴 Cần có mạng để chép vật tư'); return; }
+  cpSel = {}; cpList = [];
+  openDp('dp-copy', renderCopy);
+  const r = await api('listItemsOf', {target:curProj, project:cpSrc}, 30000);
+  if (!r || !r.success) { toast('⚠️ ' + ((r && (r.error || r.reason)) || 'Không tải được danh sách')); return; }
+  cpProjects = r.projects || []; if (!cpSrc && cpProjects.length) { cpSrc = cpProjects[0]; return cpLoad(); }
+  cpList = r.items || []; renderCopy();
+}
+async function cpLoad() {
+  cpSel = {}; cpList = []; renderCopy();
+  showLoader('Đang tải vật tư...');
+  const r = await api('listItemsOf', {target:curProj, project:cpSrc}, 30000);
+  hideLoader();
+  if (!r || !r.success) { toast('⚠️ ' + ((r && (r.error || r.reason)) || 'Không tải được danh sách')); return; }
+  cpList = r.items || []; renderCopy();
+}
+function cpHave(it) { return db.items.some(i => vnNorm(i.name).replace(/\s+/g, ' ').trim() === vnNorm(it.name).replace(/\s+/g, ' ').trim()); }
+function cpToggle(id) { cpSel[id] = !cpSel[id]; renderCopy(); }
+function cpGroup(cat, on) { cpList.filter(i => i.cat === cat && !cpHave(i)).forEach(i => cpSel[i.id] = on); renderCopy(); }
+function cpAll(on) { cpList.filter(i => !cpHave(i)).forEach(i => cpSel[i.id] = on); renderCopy(); }
+function renderCopy() {
+  const body = document.getElementById('dp-copy-body'); if (!body) return;
+  const n = Object.keys(cpSel).filter(k => cpSel[k]).length, avail = cpList.filter(i => !cpHave(i));
+  const cats = db.categories.filter(c => cpList.some(i => i.cat === c.id)).concat(cpList.some(i => !db.categories.find(c => c.id === i.cat)) ? [{id:'__x', name:'Khác', icon:'📦'}] : []);
+  body.innerHTML = `
+    <div class="info-box">Chép <b>tên, nhóm, đơn vị</b> (và cách cấp) sang dự án <b>${escHtml(curProj)}</b>. Tồn kho và mức tối thiểu bắt đầu từ 0. Thiết bị, máy móc không chép. Vật tư đã có (trùng tên) tự bỏ qua.</div>
+    <div class="fg"><label>Dự án nguồn</label><select onchange="cpSrc=this.value;cpLoad()">${cpProjects.map(p => `<option ${p === cpSrc ? 'selected' : ''}>${escHtml(p)}</option>`).join('') || '<option>— Không có dự án khác —</option>'}</select></div>
+    ${cpList.length ? `<div class="cp-bar"><span>${cpList.length} vật tư · ${avail.length} chưa có ở dự án này</span>
+      <span><button onclick="cpAll(true)">Chọn tất cả</button><button onclick="cpAll(false)">Bỏ chọn</button></span></div>` : ''}
+    ${cats.map(c => { const arr = cpList.filter(i => c.id === '__x' ? !db.categories.find(x => x.id === i.cat) : i.cat === c.id); if (!arr.length) return '';
+      return `<div class="card" style="padding:4px 12px;margin-bottom:10px">
+        <div class="cp-gh"><b>${c.icon} ${escHtml(c.name)} (${arr.length})</b><span><button onclick="cpGroup('${c.id}',true)">Chọn cả nhóm</button><button onclick="cpGroup('${c.id}',false)">Bỏ</button></span></div>
+        ${arr.map(i => { const have = cpHave(i); return `<label class="cp-row ${have ? 'have' : ''}"><input type="checkbox" ${have ? 'disabled' : ''} ${cpSel[i.id] ? 'checked' : ''} onchange="cpToggle('${escHtml(i.id)}')">
+          <span>${escHtml(i.name)}</span><small>${have ? 'Đã có' : escHtml(i.unit)}</small></label>`; }).join('')}
+      </div>`; }).join('')}
+    ${cpList.length ? `<button class="btn-full btn-orange" onclick="cpDo()" ${n ? '' : 'disabled style="opacity:.5"'}>Thêm ${n} vật tư vào ${escHtml(curProj)}</button>` : '<div class="pyc-empty">Chọn dự án nguồn để xem danh sách vật tư</div>'}`;
+}
+async function cpDo() {
+  const ids = Object.keys(cpSel).filter(k => cpSel[k]);
+  if (!ids.length) return;
+  if (!confirm(`Thêm ${ids.length} vật tư từ "${cpSrc}" vào "${curProj}"?`)) return;
+  showLoader('Đang chép vật tư...');
+  const r = await api('copyItems', {fromProject:cpSrc, toProject:curProj, ids}, 45000);
+  hideLoader();
+  if (!r || !r.success) { toast('⚠️ ' + ((r && (r.error || r.reason)) || 'Không chép được')); return; }
+  await syncAll(true);
+  toast(`✅ Đã thêm ${r.added || 0} vật tư` + (r.skipped && r.skipped.length ? ` · bỏ qua ${r.skipped.length} đã có` : ''));
+  cpSel = {}; renderCopy(); refreshCurrentView(false);
+}
+
+// ===== v5.18.0: BÁO MẠNG Ở MÀN ĐĂNG NHẬP =====
+let netTimer = null;
+async function netCheck() {
+  const el = document.getElementById('net-chip'); if (!el) return;
+  const set = (cls, txt) => { el.className = 'net-chip ' + cls; document.getElementById('net-txt').textContent = txt; };
+  if (!navigator.onLine) return set('off', 'Mất mạng');
+  if (!el.dataset.done) set('wait', 'Đang kiểm tra mạng…');
+  const t0 = Date.now(); const r = await api('ping', {}, 10000); const ms = Date.now() - t0;
+  el.dataset.done = 1;
+  if (!r || !r.success) return set(navigator.onLine ? 'bad' : 'off', navigator.onLine ? 'Mạng yếu / không tới được máy chủ' : 'Mất mạng');
+  set(ms < 1500 ? 'good' : ms < 4000 ? 'mid' : 'bad', (ms < 1500 ? 'Mạng tốt' : ms < 4000 ? 'Mạng trung bình' : 'Mạng yếu') + ` · ${(ms / 1000).toFixed(1).replace('.', ',')} giây`);
+}
+function netStart() { clearInterval(netTimer); netCheck(); netTimer = setInterval(() => { if (document.getElementById('pg-login').classList.contains('active') && !document.hidden) netCheck(); else clearInterval(netTimer); }, 20000); }
+
+// ===== v5.18.0: CHỈ VẼ LẠI KHI DỮ LIỆU THỰC SỰ ĐỔI =====
+function dataSig() {
+  let s = 0; db.items.forEach(i => { s += (+i.stock || 0) * 7 + String(i.name).length; });
+  return [curProj, db.transactions.length, db.txnLastId, db.items.length, Math.round(s * 1000), db.devices.length, (db.loans || []).length, (db.notes || []).length,
+    (db.repairs || []).length, (db.photos || []).length, (db.reqs || []).map(r => r.id + r.status + r.duyet + (r.lines || []).map(l => l.sent).join(',')).join(';'),
+    JSON.stringify(db.rolePerm || {}).length, JSON.stringify(db.projCfg || {})].join('|');
+}
+// Bảng tra vật tư theo id (dùng khi vẽ danh sách dài)
+let _imap = {src:null, len:-1, m:{}};
+function itemById(id) {
+  if (_imap.src !== db.items || _imap.len !== db.items.length) { const m = {}; db.items.forEach(i => m[i.id] = i); _imap = {src:db.items, len:db.items.length, m}; }
+  return _imap.m[id];
+}
+let listLimit = {nhap:100, xuat:100, dieuchinh:100};
+
 // ===== GHI LỖI PHÁT SINH (gửi về tab LoiApp trên Sheet) =====
 const _errSent = new Set(); let _errN = 0;
 function reportError(msg, src, line, col, stack) {
@@ -6354,8 +6501,11 @@ window.addEventListener('unhandledrejection', e => { const r = e.reason; reportE
     showPage('pg-app');
     setupApp();
   } else {
-    showPage('pg-login'); authTab('login');
+    showPage('pg-login'); authTab('login'); netStart();
     if (me) document.getElementById('li-user').value = me.username;
+    const sp = document.getElementById('pg-splash');               // v5.18: màn chào khi chưa đăng nhập
+    sp.style.display = 'flex';
+    setTimeout(() => { sp.classList.add('hide'); setTimeout(() => sp.style.display = 'none', 500); }, 1900);
   }
 })();
 </script>
