@@ -522,7 +522,16 @@ body.can-ql .hide-ql{display:none!important}
 .net-chip.bad .net-dot{background:#DC2626}.net-chip.bad{border-color:rgba(220,38,38,.5)}
 .net-chip.off .net-dot{background:#6B7280;animation:none}
 @keyframes netPulse{0%,100%{opacity:1}50%{opacity:.35}}
-#pg-splash{position:fixed;inset:0;z-index:9999;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:18px;transition:opacity .45s;background:linear-gradient(180deg,rgba(6,18,40,.35) 0%,rgba(6,18,40,.55) 55%,rgba(6,18,40,.85) 100%),url('bg-login.jpg') 46% center/cover no-repeat,#0B1B33}
+#pg-splash{position:fixed;inset:0;z-index:9999;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:18px;transition:opacity .45s;background:#0B1B33}
+.sp-photo{position:absolute;inset:0;z-index:-1;background:linear-gradient(180deg,rgba(6,18,40,.35) 0%,rgba(6,18,40,.55) 55%,rgba(6,18,40,.85) 100%),url('bg-login.jpg') 46% center/cover no-repeat}
+#pg-splash>*:not(.sp-photo){position:relative}
+/* App cài trên Android: khớp màn chờ hệ thống (icon 288dp, khung logo 178×99) rồi ảnh hiện dần */
+#pg-splash.and .sp-photo{animation:spFade .9s .15s ease-out both}
+#pg-splash.and .sp-box{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:178px;height:99px;padding:0;border-radius:20px;display:flex;align-items:center;justify-content:center;animation:none}
+#pg-splash.and .sp-box img{width:139px}
+#pg-splash.and .sp-line{position:absolute;top:calc(50% + 70px);left:50%;margin-left:-60px}
+#pg-splash.and .sp-sub{position:absolute;top:calc(50% + 88px);left:0;right:0;text-align:center}
+@keyframes spFade{from{opacity:0}to{opacity:1}}
 #pg-splash.hide{opacity:0;pointer-events:none}
 .sp-box{background:rgba(255,255,255,.93);border-radius:24px;padding:22px 30px;box-shadow:0 20px 60px rgba(0,0,0,.35);animation:spIn 1s cubic-bezier(.2,.8,.2,1) both}
 .sp-box img{width:min(220px,56vw);height:auto;display:block}
@@ -564,6 +573,19 @@ body.can-ql .hide-ql{display:none!important}
 .nl-bar{position:fixed;left:12px;right:12px;top:calc(12px + env(safe-area-inset-top));z-index:9000;background:#1A2332;color:#fff;border-radius:14px;padding:12px 14px;box-shadow:0 12px 40px rgba(0,0,0,.35);font-size:13px;display:flex;flex-direction:column;gap:6px}
 .nl-acts{display:flex;gap:6px;flex-wrap:wrap}.nl-acts button{border:1px solid rgba(255,255,255,.3);background:transparent;color:#fff;border-radius:8px;padding:7px 10px;font-weight:700;font-size:12px;cursor:pointer}
 .nl-acts button.red{background:var(--red);border-color:var(--red)}
+.dev-by{font-size:10.5px;color:var(--text3);opacity:.8;margin-top:2px}
+.mt-box{background:#F0F6FF;border:1.5px solid #C9D9EF;border-radius:12px;padding:10px;display:flex;flex-direction:column;gap:8px;margin:6px 0 10px}
+.mt-h{display:flex;justify-content:space-between;align-items:baseline;gap:8px}.mt-h span{font-size:11.5px;color:var(--text2)}
+.mt-box input[type=number]{min-height:46px;border:2px solid #9DB8DA;border-radius:10px;padding:0 10px;font-size:19px;font-weight:900;text-align:right;background:#fff}
+.mt-box input:not([type]){min-height:44px;border:1.5px solid var(--border);border-radius:10px;padding:0 10px;font-size:14px;background:#fff}
+.mt-msg{font-size:12px;font-weight:700;color:var(--red)}
+.mt-ck{display:flex;align-items:center;gap:8px;font-size:13px;cursor:pointer}.mt-ck input{width:20px;height:20px}
+.mt-grid{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:10px}
+.mt-st{background:var(--bg);border-radius:10px;padding:8px}.mt-st small{display:block;font-size:10px;font-weight:800;color:var(--text2)}.mt-st b{font-size:17px;font-weight:900}
+.mt-hist{border:1px solid var(--border);border-radius:12px;padding:0 10px;margin-bottom:10px}
+.mt-hr{display:grid;grid-template-columns:1.3fr .9fr .7fr .8fr;gap:4px;padding:7px 0;border-top:1px solid var(--border);font-size:12.5px;align-items:center}
+.mt-hr:first-child{border-top:none}.mt-hr>*:not(:first-child){text-align:right}.mt-hr small{display:block;font-size:10.5px;color:var(--text3)}
+.mt-hh{font-size:10.5px;font-weight:800;color:var(--text3)}
 .more-btn{display:block;width:calc(100% - 28px);margin:10px 14px;border:1.5px dashed var(--border);background:#fff;border-radius:12px;padding:12px;font-weight:800;color:var(--primary);cursor:pointer}
 
 .diag-out{background:var(--bg);border-radius:10px;padding:10px 12px;font-size:12px;line-height:1.7;color:var(--text2);margin-top:6px;word-break:break-word}
@@ -740,12 +762,19 @@ body:not(.can-cost) .need-cost{display:none!important}
 <body>
 
 <!-- ===================== LOGIN PAGE ===================== -->
-<div id="pg-splash" style="display:none">
-  <div class="sp-box"><img src="" data-logo alt="FECON South"></div>
+<div id="pg-splash">
+  <div class="sp-photo"></div>
+  <div class="sp-box"><img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjYwIDE5MCA0MjIwIDE4MjAiPjxnIHRyYW5zZm9ybT0idHJhbnNsYXRlKDAuMDAwMDAwLDIwNzAuMDAwMDAwKSBzY2FsZSgwLjEwMDAwMCwtMC4xMDAwMDApIiBmaWxsPSIjRjI2NTIyIiBzdHJva2U9Im5vbmUiPiA8cGF0aCBkPSJNMTk3NzAgMTg0OTMgYy0xMDYgLTYgLTI1NiAtMjUgLTM1MCAtNDQgLTUyIC0xMSAtMTY1IC0zMSAtMjUwIC00NCAtODYgLTEzIC0xOTIgLTM1IC0yMzUgLTQ5IC00NCAtMTQgLTEyNiAtMzYgLTE4MiAtNTAgLTU2IC0xNSAtMTUwIC00NCAtMjEwIC02NiAtNTkgLTIyIC0xMTIgLTQwIC0xMTcgLTQwIC0zOCAwIC00NTAgLTE5MyAtNjIwIC0yODkgLTExNzQgLTY2OCAtMTk3MyAtMTc4NyAtMjI0MSAtMzEzNCAtMTUxIC03NjQgLTExNSAtMTgyMiA4NSAtMjQ2MiAxNSAtNDkgMzggLTEyNCA1MCAtMTY1IDMzMSAtMTE0MyAxMzI2IC0yMjY2IDI0NjEgLTI3NzggMjQ2IC0xMTEgNjMyIC0yNDYgNzc5IC0yNzIgMzYgLTYgMTI1IC0yNyAxOTkgLTQ2IDEwNiAtMjcgMTkyIC00MCA0MzAgLTY0IDY0MyAtNjUgNzM5IC02NCAxNTQxIDE5IDUyIDYgMTU2IDI2IDIzMCA0NSA3NCAxOSAxNjQgNDAgMTk5IDQ2IDYzMSAxMTIgMTQ4NyA1OTQgMjA2OSAxMTY0IDIzNSAyMzEgMjYwIDI4MCAxOTIgMzc1IC0zNSA0OCAtMTUwOCAxNTE3IC0xNTQ4IDE1NDMgLTc1IDQ5IC0xMDggMzMgLTI4MSAtMTM1IC02MjUgLTYxMCAtMTMyMCAtODA4IC0yMjgxIC02NTEgLTE2MzAgMjY2IC0yNDAxIDI0MjQgLTEzNjEgMzgwOCA3ODMgMTA0MSAyNDUyIDEyMjUgMzQ1MCAzODAgMTcxIC0xNDUgMTgzIC0xNTQgMjIyIC0xNjUgODEgLTI1IDczIC0zMSA1NTkgNDExIDE3OSAxNjIgNDc0IDQzMCA2NTUgNTk1IDE4MiAxNjQgMzcxIDMzNyA0MjIgMzgyIDE3MSAxNTYgMTY3IDIwMCAtMzggMzk5IC01MzcgNTIwIC0xMjQ2IDkzMiAtMTg5OSAxMTAzIC02MyAxNiAtMTMzIDM2IC0xNTYgNDUgLTQ0IDE1IC0xNjYgNDAgLTI0OSA1MSAtMjcgNCAtMTI5IDIyIC0yMjUgNDAgLTI1NSA0OSAtODc0IDcyIC0xMzAwIDQ4eiBNMjgwNTkgMTg0ODkgYy02MyAtNSAtMTk2IC0yNCAtMjk1IC00MyAtOTggLTE5IC0yMDQgLTM3IC0yMzQgLTQxIC05MyAtMTEgLTE2MSAtMjUgLTI2MCAtNTUgLTUyIC0xNiAtMTMzIC0zOCAtMTgwIC01MCAtOTczIC0yMzggLTIwMTYgLTEwNDkgLTI2MDMgLTIwMjIgLTIwNSAtMzM5IC00MzQgLTg3OSAtNDg2IC0xMTQzIC03IC0zMyAtMzAgLTEyNSAtNTEgLTIwNSAtMjcgLTk4IC00NCAtMTkyIC01NCAtMjkwIC04IC04MCAtMjcgLTIxNSAtNDEgLTMwMCAtNjMgLTM4NCAtNjEgLTgzMiA1IC0xMjUwIDE2IC0xMDIgMzQgLTIzNSA0MCAtMjk2IDYgLTYyIDE5IC0xNDUgMzAgLTE4NSAxMSAtNDEgMzEgLTEyMyA0NiAtMTg0IDI2OCAtMTE0NiAxMDc5IC0yMjIyIDIxNTAgLTI4NTMgMjU3IC0xNTIgNDMyIC0yMjUgNDk4IC0yMDggNjYgMTYgNjAgLTE1OCA2NiAyMjI2IDUgMjE1NSA1IDIxNTUgMzMgMjIxNSAzNyA4MCAxNjk4IDE3NDUgMTc4MCAxNzg0IDE0MSA2OCAxNjEgNTMgNzIyIC01MTEgMTIzMSAtMTIzOSAxMjEyIC0xMjIwIDEyNDIgLTEyODMgMjggLTYwIDI4IC02MCAzMyAtMjIxMCA1IC0yMDMyIDYgLTIxNTIgMjMgLTIxODIgMzUgLTY2IDEwMiAtNTggMjg1IDM0IDExNzEgNTg2IDIxMjUgMTc2NCAyMzk3IDI5NTggMTQgNjEgMzYgMTUxIDQ5IDIwMCAxMyA1MCAzMiAxNTEgNDEgMjI1IDkgNzQgMjggMjE2IDQyIDMxNSA1MCAzNDUgNDUgODQ4IC0xMSAxMjcwIC0xNCA5OSAtMzAgMjIzIC0zNiAyNzUgLTcgNTIgLTIzIDEzNiAtMzYgMTg1IC0xMyA1MCAtMzUgMTQwIC00OSAyMDAgLTMzMSAxNDUzIC0xNzE0IDI4ODYgLTMxMjAgMzIzNSAtNDUgMTAgLTEyNCAzMyAtMTc2IDQ5IC01MyAxNiAtMTQyIDM3IC0yMDAgNDYgLTU3IDkgLTE4NyAzMiAtMjg5IDUxIC0yODUgNTIgLTk0MCA3MyAtMTM2MSA0M3ogTTEyMDAgMTgyNzAgYy0yMzIgLTYgLTI0MyAtOSAtMjc2IC04MiAtMzEgLTY5IC0zMCAtODg2NSAxIC04OTE4IDQ4IC04MSAtNjEgLTc1IDEyODUgLTc1IDEzMzUgMCAxMjQxIC01IDEyOTQgNjggMjEgMjggMjEgMzEgMjYgMTY0MCA2IDE3OTYgMCAxNjU4IDcwIDE3MDkgNTAgMzYgMTIzIDM4IDE1MjUgMzggMTU3MyAwIDE0NDMgLTggMTQ5MyA5MCAzMyA2NiAzNSAxOTA2IDIgMTk3NSAtNDIgODggMTA0IDc5IC0xNTI1IDg1IC0xNjMwIDYgLTE0OTcgLTIgLTE1NDEgODcgLTI5IDU4IC0yOSAxMDc3IDAgMTEzNSA0NSA5MSAtMTQwIDgyIDE4ODYgODggMTc3MiA1IDE3OTUgNSAxODI5IDI1IDkzIDU1IDkzIDQ5IDg5IDExMjMgLTMgMTAxMCAyIDk1MSAtOTQgOTkzIC00NiAyMSAtNTMzMiAzNyAtNjA2NCAxOXogTTg1NTAgMTgyNzAgYy0xNzcgLTYgLTE5NCAtMTIgLTIyNiAtODIgLTMxIC02OSAtMzAgLTg4NjUgMSAtODkxOCAxMiAtMTkgMzYgLTQzIDU1IC01NSA1OSAtMzQgNjIyNCAtMzEgNjI4OCAzIDg3IDQ2IDgyIC0yMiA4MiAxMDQyIDAgOTg1IDAgOTg3IC00NyAxMDMyIC01OSA1NiA1MSA1MyAtMTg4MCA1OCAtMjAzNiA2IC0xODIyIC01IC0xODcxIDkxIC0zMiA2MyAtMzEgMTA3MSAyIDExMjYgNTIgODUgLTExNyA3NyAxODkxIDgzIDE4NjEgNSAxODE5IDQgMTg1NyA0NyA0OSA1NCA0OCAyNyA0OCAxMDM1IDAgMTA1NiA0IDk5NyAtNzIgMTA0MyAtMzIgMjAgLTYyIDIwIC0xODI4IDI1IC0xOTQ2IDUgLTE4MzUgMiAtMTg4MSA1NiAtMzcgNDMgLTM5IDc2IC0zOSA1OTkgMCA1MjMgMiA1NTYgMzkgNTk5IDQ3IDU0IC04MCA1MSAxODcxIDU2IDIwMzkgNiAxODQwIC00IDE4ODggOTAgMjQgNDkgMzYgMTg3NCAxMiAxOTYxIC0xMSA0MCAtNTEgODIgLTk1IDEwMCAtMzEgMTIgLTU3NDIgMjAgLTYwOTUgOXogTTM0NDc4IDE4MjcwIGMtODEgLTggLTExNCAtMjggLTEzOSAtODUgLTI5IC02NiAtMzEgLTg4NDUgLTIgLTg5MDMgNDggLTk2IDEwIC05MyAxMzQ5IC05MCAxMTM5IDMgMTEzOSAzIDExODEgMjYgODYgNDUgNzcgLTE3NCA4MyAyMTYyIDUgMjE5NyAzIDIxMDUgNTAgMjEzMCA1MyAyOSA5MiAtMTcgMzI3IC0zOTAgNDI4IC02NzcgMTE1NiAtMTgyOSAxMjk4IC0yMDU1IDQ1IC03MSAxMzEgLTIwOSAxOTIgLTMwNSA2MSAtOTYgMjM3IC0zNzcgMzkzIC02MjUgMTU2IC0yNDcgMzIyIC01MTMgMzcxIC01OTAgMTk1IC0zMTEgMjE2IC0zMzAgMzYyIC0zNDYgMTg4IC0yMSAyMzU3IC02IDI0MDIgMTYgNTUgMjggODIgNzIgOTAgMTQ4IDIwIDE5OCAwIDg3ODIgLTIxIDg4MjIgLTQ5IDk2IDM1IDkwIC0xMjk5IDkwIC0xMzI4IC0xIC0xMjMzIDUgLTEyODAgLTc1IC0yMCAtMzUgLTIwIC00OCAtMjUgLTIxMTAgLTYgLTIzMDQgLTEgLTIxNDkgLTY3IC0yMTU4IC01NiAtOCAtNTggLTYgLTU1MyA3ODMgLTIxMSAzMzYgLTQyMCA2NjkgLTQ2NSA3NDAgLTQ1IDcyIC0xMjYgMjAwIC0xODAgMjg1IC01NCA4NSAtMTM1IDIxNCAtMTgwIDI4NSAtNDUgNzIgLTEzMSAyMDcgLTE5MCAzMDAgLTU5IDk0IC0xNDAgMjIyIC0xODAgMjg1IC0zOSA2MyAtMTE1IDE4MyAtMTY3IDI2NSAtNTIgODMgLTE3NiAyNzggLTI3NSA0MzUgLTU2OCA5MDIgLTU3NCA5MTEgLTY1OCA5NDYgLTQxIDE3IC0yMjQzIDMwIC0yNDE3IDE0eiBNMjcyNzUgMTI3NjUgYy0xMjIgLTQzIC0xMTQgLTIwMCAxMyAtMjM0IDg2IC0yNCAyNjIxIC0xMCAyNjYyIDE0IDkzIDU1IDY5IDE5NSAtMzkgMjI1IC02MiAxNyAtMjU4NiAxMyAtMjYzNiAtNXogTTI3MjYzIDEyMDM1IGMtODggLTM4IC05NCAtMTU3IC0xMCAtMjAyIDM4IC0yMSAyNTgxIC0zNCAyNjU3IC0xMyAxMTAgMzAgMTI3IDE3MyAyNCAyMTYgLTUwIDIxIC0yNjIzIDIwIC0yNjcxIC0xeiBNMjczMDMgMTE1MTAgYy0xNTQgLTMxIC0xODQgLTI2MiAtNDEgLTMyNiA2OSAtMzEgMjYyNSAtMzAgMjY3OCAyIDEyOSA3NiAxMDMgMjkwIC00MCAzMjMgLTU1IDEzIC0yNTMzIDEzIC0yNTk3IDF6IE0yNzI3NSAxMDg1NSBjLTEzOSAtNTAgLTE1NCAtMzgyIC0xOSAtNDUwIDY2IC0zNCAyNjI5IC0zMSAyNjkyIDMgMTExIDU5IDExMCAzNzAgMCA0MzcgLTQ0IDI3IC0yNjAwIDM2IC0yNjczIDEweiBNMjczMjUgMTAxNDEgYy0xMzQgLTE3IC0xNDkgLTQ5IC0xNTMgLTMyNiAtNSAtMzAxIDkgLTM1MSAxMDcgLTM4NCA3NiAtMjUgMjYxMCAtMTUgMjY2MSAxMiA3OSAzOSA4NSA2MiA4NSAzMzcgMCAzMDUgLTE0IDMzOCAtMTUwIDM2MCAtNjYgMTEgLTI0NjUgMTIgLTI1NTAgMXoiLz4gPC9nPjxnIHRyYW5zZm9ybT0idHJhbnNsYXRlKDAuMDAwMDAwLDIwNzAuMDAwMDAwKSBzY2FsZSgwLjEwMDAwMCwtMC4xMDAwMDApIiBmaWxsPSIjMDA1NkE0IiBzdHJva2U9Im5vbmUiPiA8cGF0aCBkPSJNMzkyODEgNjUyMCBjLTQ2IC0xMSAtODMgLTQwIC0xMDMgLTgxIC0zMiAtNjEgLTI3IC01Mjg3IDUgLTUzNDkgNDIgLTg1IDQ0IC04NSA0MjcgLTg1IDM4MiAwIDM5MyAyIDQzNCA4MSAyMSAzOSAyMSA1MCAyNiAxMzI5IDYgMTU0MCAtMTggMTM4MiAyMjggMTQ5NyA2MTcgMjg5IDEwOTcgMTYzIDEyMzAgLTMyMSAyNyAtOTYgMjcgLTk2IDMyIC0xMjgxIDYgLTE0ODUgLTU2IC0xMzA1IDQ1MCAtMTMwNSAzODIgMCAzOTMgMiA0MzQgODEgMjUgNDYgMzkgMjMxNiAxNiAyNTg5IC04MSAxMDAwIC04ODQgMTQxMiAtMjA1NSAxMDU0IC0xODcgLTU3IC0yMzcgLTYzIC0yNzggLTM2IC01MyAzNCAtNTIgMTQgLTU3IDg5NyAtNiA5MzIgMCA4NjkgLTg1IDkxNCAtNDMgMjMgLTYyMyAzNiAtNzA0IDE2eiBNMjUwNDUgNjIzMCBjLTI2OSAtMTkgLTM3MiAtMzcgLTU5MyAtMTA3IC03OTMgLTI0OSAtMTE3MyAtOTExIC05NzMgLTE2OTMgMTI2IC00ODkgMzM2IC03MDUgMTAxMSAtMTAzNyAyMDYgLTEwMiA0NzQgLTIzNCA1OTUgLTI5MyA0OTggLTI0NiA2OTAgLTQ1MSA2OTAgLTczOSAwIC0zMzkgLTI1NyAtNTQ4IC03NjQgLTYyMSAtMjE5IC0zMiAtNjE1IDIzIC0xMTA2IDE1NSAtMjczIDc0IC0zMDkgNDcgLTM5NSAtMjk1IC0xMiAtNDcgLTM0IC0xMjcgLTUxIC0xNzggLTUxIC0xNjAgLTI1IC0yNDUgODYgLTI4NiA5NiAtMzYgMzk2IC0xMTMgNTUyIC0xNDIgODc4IC0xNjEgMTUzMyAtNjggMjA5MCAyOTggNzU4IDQ5OSA4NDQgMTU3MiAxNzkgMjIzMyAtMTg2IDE4NSAtMzczIDI4OSAtMTEzMSA2MzUgLTY3MCAzMDUgLTg1MiA1MDYgLTc2NSA4NDYgOTIgMzU3IDY1NSA1MTQgMTI2OCAzNTMgNjQgLTE3IDE2MyAtNDIgMjE5IC01NSA1NyAtMTMgMTM1IC0zMyAxNzQgLTQ1IDE1MiAtNDYgMjAyIC05IDI4MyAyMTMgMTU0IDQyMSAxNTIgNDE0IDEzMiA0NjIgLTMxIDc0IC0yMjggMTQzIC02ODggMjQxIC0xODEgMzkgLTYxNiA2OCAtODEzIDU1eiBNMzY1MDcgNTc4NiBjLTk0IC0zNCAtOTEgLTIxIC05NyAtNDk2IC02IC01MTEgLTExIC01MjggLTE2OCAtNTQ1IC0yMzcgLTI2IC0yNDcgLTQxIC0yNDcgLTM5MCAwIC0zMDUgMTYgLTMzMiAyMDggLTM1NCAyMjEgLTI1IDIwMSA5MiAyMDcgLTEyMjEgNiAtMTE5MCAwIC0xMTA3IDEwMiAtMTM3MCAxODAgLTQ2NCA4NjUgLTY2MiAxNjIzIC00NjkgNDczIDEyMSA0NzIgMTE5IDI5MyA2MTQgLTg1IDIzMyAtMTA5IDI0OCAtMzEzIDE4NSAtNDA5IC0xMjYgLTY4MyAtODAgLTc2NyAxMjkgLTM0IDgzIC0zNyAxOTgzIC0zIDIwNDAgNDQgNzUgNDkgNzUgNTIyIDgxIDU2MCA3IDUxOCAtMjUgNTE4IDM4NSAwIDQxOSA0MSAzODggLTUzMCAzOTUgLTU4MyA3IC01MjggLTQ3IC01MzUgNTIwIC03IDU1NCAzNiA1MDQgLTQ0MCA1MDcgLTI2MyAyIC0zNDMgMCAtMzczIC0xMXogTTI5MTcwIDQ4NDMgYy02MTEgLTQ1IC0xMDYzIC0yOTggLTEzODkgLTc3OCAtMTk0IC0yODUgLTI2MCAtNDgwIC0zMzMgLTk5MCAtNSAtMzggLTggLTE0NCAtNSAtMjM1IDQgLTE1NCAxMSAtMjExIDYyIC01MTAgMjggLTE2MiAxMzQgLTQwOSAyNjAgLTYwNSA2ODkgLTEwNzMgMjQxMSAtMTA4OCAzMTI2IC0yNiAyMzMgMzQ1IDMyOSA2OTUgMzI5IDExOTAgLTEgMTIzNCAtODUwIDIwNDMgLTIwNTAgMTk1NHogbTM4NCAtODA4IGM0OTAgLTE0MiA3NTkgLTc3OCA2MzYgLTE1MDUgLTE3NSAtMTAzNiAtMTQyNCAtMTEzNSAtMTY3OSAtMTMzIC0yNTYgMTAwMiAyODggMTg1NyAxMDQzIDE2Mzh6IE0zMjA2NyA0NzU2IGMtNTAgLTE4IC04MyAtNTAgLTk5IC05NSAtMjMgLTY0IC0xOCAtMjUxMiA1IC0yNjU5IDk3IC02MTUgNDY5IC05NDUgMTE5MiAtMTA1OSAxNDAgLTIzIDY0MCAtMjUgNzgwIC01IDMwOSA0NSA2MzMgMTIyIDk5NSAyMzQgMzIyIDEwMCAzNTAgMTI2IDMzNSAzMTQgLTMgNDMgLTkgNzcyIC0xMyAxNjE5IC04IDE3MjggLTEgMTU4OCAtODEgMTYzNyAtNTMgMzQgLTY5NCAzNiAtNzUwIDMgLTk1IC01NiAtOTEgMTEgLTkwIC0xNDg2IDEgLTE0MjcgNSAtMTMzNyAtNjIgLTEzOTMgLTQzIC0zNyAtNTIgLTQwIC0yNzQgLTk4IC00MzggLTExNiAtNzg0IC02MCAtOTgzIDE1NyAtMTU4IDE3MiAtMTYyIDIxMyAtMTYyIDE2NjAgMCAxMTg0IDUgMTExMSAtODAgMTE2MCAtNDYgMjYgLTY0NSAzNSAtNzEzIDExeiIvPiA8L2c+PC9zdmc+" alt="FECON South"></div>
   <div class="sp-line"></div>
   <div class="sp-sub">Hệ thống quản lý kho vật tư</div>
   <div class="sp-load"><span></span>Đang mở ứng dụng…</div>
 </div>
+<script>/* v5.19.1: màn chào hiện ngay từ khung hình đầu (không lóe màn đăng nhập); đã đăng nhập thì bỏ luôn.
+   App cài trên Android: bắt đầu đúng hình màn chờ của Android (nền xanh đen + khung logo) rồi ảnh hiện dần → liền mạch */
+(function () { var s = document.getElementById('pg-splash');
+  try { if (localStorage.getItem('fecon_token_v5')) { s.parentNode.removeChild(s); return; } } catch (e) {}
+  try { if (/Android/i.test(navigator.userAgent) && window.matchMedia && matchMedia('(display-mode: standalone)').matches) s.classList.add('and'); } catch (e) {}
+})();</script>
 <div class="page active" id="pg-login">
   <div class="login-logo">
     <img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjYwIDE5MCA0MjIwIDE4MjAiPjxnIHRyYW5zZm9ybT0idHJhbnNsYXRlKDAuMDAwMDAwLDIwNzAuMDAwMDAwKSBzY2FsZSgwLjEwMDAwMCwtMC4xMDAwMDApIiBmaWxsPSIjRjI2NTIyIiBzdHJva2U9Im5vbmUiPiA8cGF0aCBkPSJNMTk3NzAgMTg0OTMgYy0xMDYgLTYgLTI1NiAtMjUgLTM1MCAtNDQgLTUyIC0xMSAtMTY1IC0zMSAtMjUwIC00NCAtODYgLTEzIC0xOTIgLTM1IC0yMzUgLTQ5IC00NCAtMTQgLTEyNiAtMzYgLTE4MiAtNTAgLTU2IC0xNSAtMTUwIC00NCAtMjEwIC02NiAtNTkgLTIyIC0xMTIgLTQwIC0xMTcgLTQwIC0zOCAwIC00NTAgLTE5MyAtNjIwIC0yODkgLTExNzQgLTY2OCAtMTk3MyAtMTc4NyAtMjI0MSAtMzEzNCAtMTUxIC03NjQgLTExNSAtMTgyMiA4NSAtMjQ2MiAxNSAtNDkgMzggLTEyNCA1MCAtMTY1IDMzMSAtMTE0MyAxMzI2IC0yMjY2IDI0NjEgLTI3NzggMjQ2IC0xMTEgNjMyIC0yNDYgNzc5IC0yNzIgMzYgLTYgMTI1IC0yNyAxOTkgLTQ2IDEwNiAtMjcgMTkyIC00MCA0MzAgLTY0IDY0MyAtNjUgNzM5IC02NCAxNTQxIDE5IDUyIDYgMTU2IDI2IDIzMCA0NSA3NCAxOSAxNjQgNDAgMTk5IDQ2IDYzMSAxMTIgMTQ4NyA1OTQgMjA2OSAxMTY0IDIzNSAyMzEgMjYwIDI4MCAxOTIgMzc1IC0zNSA0OCAtMTUwOCAxNTE3IC0xNTQ4IDE1NDMgLTc1IDQ5IC0xMDggMzMgLTI4MSAtMTM1IC02MjUgLTYxMCAtMTMyMCAtODA4IC0yMjgxIC02NTEgLTE2MzAgMjY2IC0yNDAxIDI0MjQgLTEzNjEgMzgwOCA3ODMgMTA0MSAyNDUyIDEyMjUgMzQ1MCAzODAgMTcxIC0xNDUgMTgzIC0xNTQgMjIyIC0xNjUgODEgLTI1IDczIC0zMSA1NTkgNDExIDE3OSAxNjIgNDc0IDQzMCA2NTUgNTk1IDE4MiAxNjQgMzcxIDMzNyA0MjIgMzgyIDE3MSAxNTYgMTY3IDIwMCAtMzggMzk5IC01MzcgNTIwIC0xMjQ2IDkzMiAtMTg5OSAxMTAzIC02MyAxNiAtMTMzIDM2IC0xNTYgNDUgLTQ0IDE1IC0xNjYgNDAgLTI0OSA1MSAtMjcgNCAtMTI5IDIyIC0yMjUgNDAgLTI1NSA0OSAtODc0IDcyIC0xMzAwIDQ4eiBNMjgwNTkgMTg0ODkgYy02MyAtNSAtMTk2IC0yNCAtMjk1IC00MyAtOTggLTE5IC0yMDQgLTM3IC0yMzQgLTQxIC05MyAtMTEgLTE2MSAtMjUgLTI2MCAtNTUgLTUyIC0xNiAtMTMzIC0zOCAtMTgwIC01MCAtOTczIC0yMzggLTIwMTYgLTEwNDkgLTI2MDMgLTIwMjIgLTIwNSAtMzM5IC00MzQgLTg3OSAtNDg2IC0xMTQzIC03IC0zMyAtMzAgLTEyNSAtNTEgLTIwNSAtMjcgLTk4IC00NCAtMTkyIC01NCAtMjkwIC04IC04MCAtMjcgLTIxNSAtNDEgLTMwMCAtNjMgLTM4NCAtNjEgLTgzMiA1IC0xMjUwIDE2IC0xMDIgMzQgLTIzNSA0MCAtMjk2IDYgLTYyIDE5IC0xNDUgMzAgLTE4NSAxMSAtNDEgMzEgLTEyMyA0NiAtMTg0IDI2OCAtMTE0NiAxMDc5IC0yMjIyIDIxNTAgLTI4NTMgMjU3IC0xNTIgNDMyIC0yMjUgNDk4IC0yMDggNjYgMTYgNjAgLTE1OCA2NiAyMjI2IDUgMjE1NSA1IDIxNTUgMzMgMjIxNSAzNyA4MCAxNjk4IDE3NDUgMTc4MCAxNzg0IDE0MSA2OCAxNjEgNTMgNzIyIC01MTEgMTIzMSAtMTIzOSAxMjEyIC0xMjIwIDEyNDIgLTEyODMgMjggLTYwIDI4IC02MCAzMyAtMjIxMCA1IC0yMDMyIDYgLTIxNTIgMjMgLTIxODIgMzUgLTY2IDEwMiAtNTggMjg1IDM0IDExNzEgNTg2IDIxMjUgMTc2NCAyMzk3IDI5NTggMTQgNjEgMzYgMTUxIDQ5IDIwMCAxMyA1MCAzMiAxNTEgNDEgMjI1IDkgNzQgMjggMjE2IDQyIDMxNSA1MCAzNDUgNDUgODQ4IC0xMSAxMjcwIC0xNCA5OSAtMzAgMjIzIC0zNiAyNzUgLTcgNTIgLTIzIDEzNiAtMzYgMTg1IC0xMyA1MCAtMzUgMTQwIC00OSAyMDAgLTMzMSAxNDUzIC0xNzE0IDI4ODYgLTMxMjAgMzIzNSAtNDUgMTAgLTEyNCAzMyAtMTc2IDQ5IC01MyAxNiAtMTQyIDM3IC0yMDAgNDYgLTU3IDkgLTE4NyAzMiAtMjg5IDUxIC0yODUgNTIgLTk0MCA3MyAtMTM2MSA0M3ogTTEyMDAgMTgyNzAgYy0yMzIgLTYgLTI0MyAtOSAtMjc2IC04MiAtMzEgLTY5IC0zMCAtODg2NSAxIC04OTE4IDQ4IC04MSAtNjEgLTc1IDEyODUgLTc1IDEzMzUgMCAxMjQxIC01IDEyOTQgNjggMjEgMjggMjEgMzEgMjYgMTY0MCA2IDE3OTYgMCAxNjU4IDcwIDE3MDkgNTAgMzYgMTIzIDM4IDE1MjUgMzggMTU3MyAwIDE0NDMgLTggMTQ5MyA5MCAzMyA2NiAzNSAxOTA2IDIgMTk3NSAtNDIgODggMTA0IDc5IC0xNTI1IDg1IC0xNjMwIDYgLTE0OTcgLTIgLTE1NDEgODcgLTI5IDU4IC0yOSAxMDc3IDAgMTEzNSA0NSA5MSAtMTQwIDgyIDE4ODYgODggMTc3MiA1IDE3OTUgNSAxODI5IDI1IDkzIDU1IDkzIDQ5IDg5IDExMjMgLTMgMTAxMCAyIDk1MSAtOTQgOTkzIC00NiAyMSAtNTMzMiAzNyAtNjA2NCAxOXogTTg1NTAgMTgyNzAgYy0xNzcgLTYgLTE5NCAtMTIgLTIyNiAtODIgLTMxIC02OSAtMzAgLTg4NjUgMSAtODkxOCAxMiAtMTkgMzYgLTQzIDU1IC01NSA1OSAtMzQgNjIyNCAtMzEgNjI4OCAzIDg3IDQ2IDgyIC0yMiA4MiAxMDQyIDAgOTg1IDAgOTg3IC00NyAxMDMyIC01OSA1NiA1MSA1MyAtMTg4MCA1OCAtMjAzNiA2IC0xODIyIC01IC0xODcxIDkxIC0zMiA2MyAtMzEgMTA3MSAyIDExMjYgNTIgODUgLTExNyA3NyAxODkxIDgzIDE4NjEgNSAxODE5IDQgMTg1NyA0NyA0OSA1NCA0OCAyNyA0OCAxMDM1IDAgMTA1NiA0IDk5NyAtNzIgMTA0MyAtMzIgMjAgLTYyIDIwIC0xODI4IDI1IC0xOTQ2IDUgLTE4MzUgMiAtMTg4MSA1NiAtMzcgNDMgLTM5IDc2IC0zOSA1OTkgMCA1MjMgMiA1NTYgMzkgNTk5IDQ3IDU0IC04MCA1MSAxODcxIDU2IDIwMzkgNiAxODQwIC00IDE4ODggOTAgMjQgNDkgMzYgMTg3NCAxMiAxOTYxIC0xMSA0MCAtNTEgODIgLTk1IDEwMCAtMzEgMTIgLTU3NDIgMjAgLTYwOTUgOXogTTM0NDc4IDE4MjcwIGMtODEgLTggLTExNCAtMjggLTEzOSAtODUgLTI5IC02NiAtMzEgLTg4NDUgLTIgLTg5MDMgNDggLTk2IDEwIC05MyAxMzQ5IC05MCAxMTM5IDMgMTEzOSAzIDExODEgMjYgODYgNDUgNzcgLTE3NCA4MyAyMTYyIDUgMjE5NyAzIDIxMDUgNTAgMjEzMCA1MyAyOSA5MiAtMTcgMzI3IC0zOTAgNDI4IC02NzcgMTE1NiAtMTgyOSAxMjk4IC0yMDU1IDQ1IC03MSAxMzEgLTIwOSAxOTIgLTMwNSA2MSAtOTYgMjM3IC0zNzcgMzkzIC02MjUgMTU2IC0yNDcgMzIyIC01MTMgMzcxIC01OTAgMTk1IC0zMTEgMjE2IC0zMzAgMzYyIC0zNDYgMTg4IC0yMSAyMzU3IC02IDI0MDIgMTYgNTUgMjggODIgNzIgOTAgMTQ4IDIwIDE5OCAwIDg3ODIgLTIxIDg4MjIgLTQ5IDk2IDM1IDkwIC0xMjk5IDkwIC0xMzI4IC0xIC0xMjMzIDUgLTEyODAgLTc1IC0yMCAtMzUgLTIwIC00OCAtMjUgLTIxMTAgLTYgLTIzMDQgLTEgLTIxNDkgLTY3IC0yMTU4IC01NiAtOCAtNTggLTYgLTU1MyA3ODMgLTIxMSAzMzYgLTQyMCA2NjkgLTQ2NSA3NDAgLTQ1IDcyIC0xMjYgMjAwIC0xODAgMjg1IC01NCA4NSAtMTM1IDIxNCAtMTgwIDI4NSAtNDUgNzIgLTEzMSAyMDcgLTE5MCAzMDAgLTU5IDk0IC0xNDAgMjIyIC0xODAgMjg1IC0zOSA2MyAtMTE1IDE4MyAtMTY3IDI2NSAtNTIgODMgLTE3NiAyNzggLTI3NSA0MzUgLTU2OCA5MDIgLTU3NCA5MTEgLTY1OCA5NDYgLTQxIDE3IC0yMjQzIDMwIC0yNDE3IDE0eiBNMjcyNzUgMTI3NjUgYy0xMjIgLTQzIC0xMTQgLTIwMCAxMyAtMjM0IDg2IC0yNCAyNjIxIC0xMCAyNjYyIDE0IDkzIDU1IDY5IDE5NSAtMzkgMjI1IC02MiAxNyAtMjU4NiAxMyAtMjYzNiAtNXogTTI3MjYzIDEyMDM1IGMtODggLTM4IC05NCAtMTU3IC0xMCAtMjAyIDM4IC0yMSAyNTgxIC0zNCAyNjU3IC0xMyAxMTAgMzAgMTI3IDE3MyAyNCAyMTYgLTUwIDIxIC0yNjIzIDIwIC0yNjcxIC0xeiBNMjczMDMgMTE1MTAgYy0xNTQgLTMxIC0xODQgLTI2MiAtNDEgLTMyNiA2OSAtMzEgMjYyNSAtMzAgMjY3OCAyIDEyOSA3NiAxMDMgMjkwIC00MCAzMjMgLTU1IDEzIC0yNTMzIDEzIC0yNTk3IDF6IE0yNzI3NSAxMDg1NSBjLTEzOSAtNTAgLTE1NCAtMzgyIC0xOSAtNDUwIDY2IC0zNCAyNjI5IC0zMSAyNjkyIDMgMTExIDU5IDExMCAzNzAgMCA0MzcgLTQ0IDI3IC0yNjAwIDM2IC0yNjczIDEweiBNMjczMjUgMTAxNDEgYy0xMzQgLTE3IC0xNDkgLTQ5IC0xNTMgLTMyNiAtNSAtMzAxIDkgLTM1MSAxMDcgLTM4NCA3NiAtMjUgMjYxMCAtMTUgMjY2MSAxMiA3OSAzOSA4NSA2MiA4NSAzMzcgMCAzMDUgLTE0IDMzOCAtMTUwIDM2MCAtNjYgMTEgLTI0NjUgMTIgLTI1NTAgMXoiLz4gPC9nPjxnIHRyYW5zZm9ybT0idHJhbnNsYXRlKDAuMDAwMDAwLDIwNzAuMDAwMDAwKSBzY2FsZSgwLjEwMDAwMCwtMC4xMDAwMDApIiBmaWxsPSIjMDA1NkE0IiBzdHJva2U9Im5vbmUiPiA8cGF0aCBkPSJNMzkyODEgNjUyMCBjLTQ2IC0xMSAtODMgLTQwIC0xMDMgLTgxIC0zMiAtNjEgLTI3IC01Mjg3IDUgLTUzNDkgNDIgLTg1IDQ0IC04NSA0MjcgLTg1IDM4MiAwIDM5MyAyIDQzNCA4MSAyMSAzOSAyMSA1MCAyNiAxMzI5IDYgMTU0MCAtMTggMTM4MiAyMjggMTQ5NyA2MTcgMjg5IDEwOTcgMTYzIDEyMzAgLTMyMSAyNyAtOTYgMjcgLTk2IDMyIC0xMjgxIDYgLTE0ODUgLTU2IC0xMzA1IDQ1MCAtMTMwNSAzODIgMCAzOTMgMiA0MzQgODEgMjUgNDYgMzkgMjMxNiAxNiAyNTg5IC04MSAxMDAwIC04ODQgMTQxMiAtMjA1NSAxMDU0IC0xODcgLTU3IC0yMzcgLTYzIC0yNzggLTM2IC01MyAzNCAtNTIgMTQgLTU3IDg5NyAtNiA5MzIgMCA4NjkgLTg1IDkxNCAtNDMgMjMgLTYyMyAzNiAtNzA0IDE2eiBNMjUwNDUgNjIzMCBjLTI2OSAtMTkgLTM3MiAtMzcgLTU5MyAtMTA3IC03OTMgLTI0OSAtMTE3MyAtOTExIC05NzMgLTE2OTMgMTI2IC00ODkgMzM2IC03MDUgMTAxMSAtMTAzNyAyMDYgLTEwMiA0NzQgLTIzNCA1OTUgLTI5MyA0OTggLTI0NiA2OTAgLTQ1MSA2OTAgLTczOSAwIC0zMzkgLTI1NyAtNTQ4IC03NjQgLTYyMSAtMjE5IC0zMiAtNjE1IDIzIC0xMTA2IDE1NSAtMjczIDc0IC0zMDkgNDcgLTM5NSAtMjk1IC0xMiAtNDcgLTM0IC0xMjcgLTUxIC0xNzggLTUxIC0xNjAgLTI1IC0yNDUgODYgLTI4NiA5NiAtMzYgMzk2IC0xMTMgNTUyIC0xNDIgODc4IC0xNjEgMTUzMyAtNjggMjA5MCAyOTggNzU4IDQ5OSA4NDQgMTU3MiAxNzkgMjIzMyAtMTg2IDE4NSAtMzczIDI4OSAtMTEzMSA2MzUgLTY3MCAzMDUgLTg1MiA1MDYgLTc2NSA4NDYgOTIgMzU3IDY1NSA1MTQgMTI2OCAzNTMgNjQgLTE3IDE2MyAtNDIgMjE5IC01NSA1NyAtMTMgMTM1IC0zMyAxNzQgLTQ1IDE1MiAtNDYgMjAyIC05IDI4MyAyMTMgMTU0IDQyMSAxNTIgNDE0IDEzMiA0NjIgLTMxIDc0IC0yMjggMTQzIC02ODggMjQxIC0xODEgMzkgLTYxNiA2OCAtODEzIDU1eiBNMzY1MDcgNTc4NiBjLTk0IC0zNCAtOTEgLTIxIC05NyAtNDk2IC02IC01MTEgLTExIC01MjggLTE2OCAtNTQ1IC0yMzcgLTI2IC0yNDcgLTQxIC0yNDcgLTM5MCAwIC0zMDUgMTYgLTMzMiAyMDggLTM1NCAyMjEgLTI1IDIwMSA5MiAyMDcgLTEyMjEgNiAtMTE5MCAwIC0xMTA3IDEwMiAtMTM3MCAxODAgLTQ2NCA4NjUgLTY2MiAxNjIzIC00NjkgNDczIDEyMSA0NzIgMTE5IDI5MyA2MTQgLTg1IDIzMyAtMTA5IDI0OCAtMzEzIDE4NSAtNDA5IC0xMjYgLTY4MyAtODAgLTc2NyAxMjkgLTM0IDgzIC0zNyAxOTgzIC0zIDIwNDAgNDQgNzUgNDkgNzUgNTIyIDgxIDU2MCA3IDUxOCAtMjUgNTE4IDM4NSAwIDQxOSA0MSAzODggLTUzMCAzOTUgLTU4MyA3IC01MjggLTQ3IC01MzUgNTIwIC03IDU1NCAzNiA1MDQgLTQ0MCA1MDcgLTI2MyAyIC0zNDMgMCAtMzczIC0xMXogTTI5MTcwIDQ4NDMgYy02MTEgLTQ1IC0xMDYzIC0yOTggLTEzODkgLTc3OCAtMTk0IC0yODUgLTI2MCAtNDgwIC0zMzMgLTk5MCAtNSAtMzggLTggLTE0NCAtNSAtMjM1IDQgLTE1NCAxMSAtMjExIDYyIC01MTAgMjggLTE2MiAxMzQgLTQwOSAyNjAgLTYwNSA2ODkgLTEwNzMgMjQxMSAtMTA4OCAzMTI2IC0yNiAyMzMgMzQ1IDMyOSA2OTUgMzI5IDExOTAgLTEgMTIzNCAtODUwIDIwNDMgLTIwNTAgMTk1NHogbTM4NCAtODA4IGM0OTAgLTE0MiA3NTkgLTc3OCA2MzYgLTE1MDUgLTE3NSAtMTAzNiAtMTQyNCAtMTEzNSAtMTY3OSAtMTMzIC0yNTYgMTAwMiAyODggMTg1NyAxMDQzIDE2Mzh6IE0zMjA2NyA0NzU2IGMtNTAgLTE4IC04MyAtNTAgLTk5IC05NSAtMjMgLTY0IC0xOCAtMjUxMiA1IC0yNjU5IDk3IC02MTUgNDY5IC05NDUgMTE5MiAtMTA1OSAxNDAgLTIzIDY0MCAtMjUgNzgwIC01IDMwOSA0NSA2MzMgMTIyIDk5NSAyMzQgMzIyIDEwMCAzNTAgMTI2IDMzNSAzMTQgLTMgNDMgLTkgNzcyIC0xMyAxNjE5IC04IDE3MjggLTEgMTU4OCAtODEgMTYzNyAtNTMgMzQgLTY5NCAzNiAtNzUwIDMgLTk1IC01NiAtOTEgMTEgLTkwIC0xNDg2IDEgLTE0MjcgNSAtMTMzNyAtNjIgLTEzOTMgLTQzIC0zNyAtNTIgLTQwIC0yNzQgLTk4IC00MzggLTExNiAtNzg0IC02MCAtOTgzIDE1NyAtMTU4IDE3MiAtMTYyIDIxMyAtMTYyIDE2NjAgMCAxMTg0IDUgMTExMSAtODAgMTE2MCAtNDYgMjYgLTY0NSAzNSAtNzEzIDExeiIvPiA8L2c+PC9zdmc+" alt="Fecon South">
@@ -886,7 +915,7 @@ body:not(.can-cost) .need-cost{display:none!important}
   <div class="detail-header">
     <button class="back-btn" onclick="closeDp('dp-devices-list')">‹</button>
     <div class="detail-title">Máy móc & Thiết bị</div>
-    <button class="need-tk" onclick="openModal('modal-add-device')" style="background:var(--orange);color:#fff;border:none;border-radius:8px;padding:6px 12px;font-size:12px;font-weight:700;cursor:pointer">+ Thêm</button>
+    <button class="need-tk" onclick="openAddDevice()" style="background:var(--orange);color:#fff;border:none;border-radius:8px;padding:6px 12px;font-size:12px;font-weight:700;cursor:pointer">+ Thêm</button>
   </div>
   <div class="detail-body" id="dp-devices-list-body"></div>
 </div>
@@ -1248,6 +1277,12 @@ body:not(.can-cost) .need-cost{display:none!important}
       <div class="fg"><label>Định mức dầu (L/giờ)</label><input type="number" id="ad-fuel" value="20" min="0" step="0.5"></div>
       <div class="fg"><label>Số hiệu / Biển số</label><input type="text" id="ad-plate" placeholder="VD: 51G-123.45"></div>
     </div>
+    <div class="fg"><label>Đồng hồ đếm</label>
+      <select id="ad-meter-unit" onchange="adMeterUnit()"><option value="h">⏱ Giờ máy</option><option value="km">🛣 Km (xe tải, xe ben)</option><option value="none">Không có đồng hồ</option></select></div>
+    <div class="fg-row" id="ad-meter-box">
+      <div class="fg"><label>Ngày vào công trình</label><input type="date" id="ad-in-date"></div>
+      <div class="fg"><label id="ad-in-lbl">Giờ máy lúc vào</label><input type="number" id="ad-in-meter" inputmode="decimal" min="0" step="0.1" placeholder="Số trên đồng hồ"></div>
+    </div>
     <div class="fg"><label>Ghi chú</label><textarea id="ad-note" rows="2" placeholder="Ghi chú thêm..."></textarea></div>
     <div class="modal-actions">
       <button class="btn-cancel" onclick="closeModal('modal-add-device')">Hủy</button>
@@ -1486,7 +1521,7 @@ body:not(.can-cost) .need-cost{display:none!important}
 // ============================================================
 // CONFIG
 // ============================================================
-const APP_VERSION = '5.19.0';
+const APP_VERSION = '5.20.0';
 const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbw6Rmi80I7RI3ij2U7RdRF5pYuQTnPrwEmGmUZS5xpxzLwwVynfoFUujZe1lm6HS1ymxw/exec';
 // ============================================================
 
@@ -1859,7 +1894,8 @@ function applyServer(r) {
   Object.keys(localStorage).filter(k => k.startsWith(LS_DB + '|') && !db.projects.includes(k.slice(LS_DB.length + 1))).forEach(k => localStorage.removeItem(k));
   if (r.items) db.items = r.items.map(i => ({...i, id:+i.id, stock:+i.stock||0, minStock:+i.minStock||0, capThang:+i.capThang||0, canMay:+i.canMay||0}));
   ['reqs','cauKien','ckv','projCfg','rolePerm','kkMoc','tg'].forEach(k => { if (r[k] !== undefined) db[k] = r[k]; });   // máy chủ 5.13+
-  if (r.devices) db.devices = r.devices.map(d => ({...d, id:+d.id, fuelRate:+d.fuelRate||20}));
+  if (r.devices) db.devices = r.devices.map(d => ({...d, id:+d.id, fuelRate:+d.fuelRate||20, meterUnit:d.meterUnit || 'h',
+    inDate:fmtDateInput(d.inDate), outDate:fmtDateInput(d.outDate), inMeter:d.inMeter === '' || d.inMeter === undefined ? '' : +d.inMeter, outMeter:d.outMeter === '' || d.outMeter === undefined ? '' : +d.outMeter}));
   db.repairs = (r.repairs||[]).map(rp => ({...rp, id:+rp.id, deviceId:+rp.deviceId, cost:+rp.cost||0}));
   db.notes = (r.notes||[]).map(n => ({...n, id:+n.id}));
   db.loans = (r.loans||[]).map(normLoan);                 // phiếu mượn: luôn lấy bản đầy đủ từ máy chủ (thay đổi chờ gửi được áp lại sau)
@@ -2813,15 +2849,16 @@ function renderXuat(c) {
         <div class="combo-hint" id="fx-hint"></div>
       </div>
       <div class="fg-row">
-        <div class="fg"><label>Số lượng</label><input type="number" id="fx-qty" placeholder="0" min="0.1" step="0.1" inputmode="decimal"></div>
+        <div class="fg"><label>Số lượng</label><input type="number" id="fx-qty" placeholder="0" min="0.1" step="0.1" inputmode="decimal" onfocus="fxMeterUpdate()"></div>
         <div class="fg"><label>Đơn vị</label><input type="text" id="fx-unit" readonly style="background:var(--bg)" placeholder="—"></div>
       </div>
       <div class="fg"><label>Thiết bị nhận (tùy chọn)</label>
-        <select id="fx-device">
+        <select id="fx-device" onchange="fxMeterUpdate()">
           <option value="">— Không chọn thiết bị —</option>
-          ${db.devices.map(d=>`<option value="${d.name}">${d.name}</option>`).join('')}
+          ${db.devices.filter(devActive).map(d=>`<option value="${d.name}">${d.name}</option>`).join('')}
         </select>
       </div>
+      <div id="fx-mwrap"></div>
       <div class="fg"><label>Người nhận / Ghi chú</label><textarea id="fx-note" rows="2" placeholder="Ghi chú..."></textarea></div>
       <div class="fg need-admin"><label>Ngày giờ phiếu (để trống = bây giờ)</label><input type="datetime-local" id="fx-time"></div>
       ${photoFieldHtml('fx')}
@@ -2840,10 +2877,13 @@ async function doXuat() {
   if (!qty || qty <= 0) { toast('⚠️ Nhập số lượng hợp lệ'); return; }
   const item = db.items.find(i => i.id === itemId); if (!item) return;
   if (qty > item.stock) { toast(`❌ Tồn không đủ! Còn ${fmtNum(item.stock)} ${item.unit}`); return; }
+  const devObj = db.devices.find(x => x.name === dev);                     // v5.20: xuất dầu cho máy có đồng hồ → bắt buộc giờ máy
+  let mr = {meter:'', meterNote:''};
+  if (devObj && isDieselItem(item) && mUnit(devObj) !== 'none') { if (!document.getElementById('fx-mbox')) { fxMeterUpdate(); toast('⚠️ Nhập ' + mLbl(devObj).toLowerCase() + ' hiện tại'); return; } mr = meterRead('fx', devObj); if (!mr) return; }
   item.stock = Math.round((item.stock - qty) * 100) / 100;
   const txn = {id:newId(), type:'xuat', itemId, itemName:item.name, qty, unit:item.unit, project:proj,
     supplierOrReceiver:document.getElementById('fx-note').value,
-    thietBi:dev, note:document.getElementById('fx-note').value, datetime:nowStr(), createdByName:me?.name||''};
+    thietBi:dev, note:document.getElementById('fx-note').value, datetime:nowStr(), createdByName:me?.name||'', meter:mr.meter, meterNote:mr.meterNote};
   withAdminTime(txn, 'fx-time');
   db.transactions.push(txn);
   addLog('Xuất kho', `${qty} ${item.unit} ${item.name}${dev?' → '+dev:''} — ${proj}`);
@@ -3632,12 +3672,12 @@ function renderDevicesList() {
   const body = document.getElementById('dp-devices-list-body');
   const catGroups = {};
   db.devices.filter(d => matchQ(devQ, d.name, d.plate, devCatOf(d.cat).name, d.type === 'own' ? 'công ty' : 'thuê'))
-    .forEach(d => { if(!catGroups[d.cat]) catGroups[d.cat]=[]; catGroups[d.cat].push(d); });
+    .forEach(d => { const k = devActive(d) ? d.cat : '__out'; if(!catGroups[k]) catGroups[k]=[]; catGroups[k].push(d); });
   const hasAny = Object.keys(catGroups).length;
   body.innerHTML = (db.devices.length ? `<div style="padding:0 0 10px">${searchBox('dev-q', devQ, 'Tìm máy, số hiệu...', 'setDevQ')}</div>` : '')
     + (!hasAny && devQ ? '<div class="empty-state"><div class="e-ico">🔎</div><p>Không tìm thấy máy phù hợp</p></div>' : '')
-    + Object.entries(catGroups).sort((a,b) => DEVICE_CATS.findIndex(c=>c.id===a[0]) - DEVICE_CATS.findIndex(c=>c.id===b[0])).map(([cat, devs]) => {
-    const dc = devCatOf(cat); const catInfo = {n:dc.name, i:dc.icon};
+    + Object.entries(catGroups).sort((a,b) => (a[0] === '__out') - (b[0] === '__out') || DEVICE_CATS.findIndex(c=>c.id===a[0]) - DEVICE_CATS.findIndex(c=>c.id===b[0])).map(([cat, devs]) => {
+    const dc = cat === '__out' ? {name:'Đã rời công trường', icon:'🏁'} : devCatOf(cat); const catInfo = {n:dc.name, i:dc.icon};
     return `<div style="margin-bottom:10px">
       <div style="font-size:12px;font-weight:700;color:var(--text3);padding:0 0 6px;text-transform:uppercase;letter-spacing:.5px">${catInfo.i} ${catInfo.n}</div>
       <div class="card">
@@ -3651,6 +3691,8 @@ function renderDevicesList() {
               <div class="ri-texts">
                 <div class="ri-name">${d.name}</div>
                 <div class="ri-sub">${d.type==='own'?'Công ty':'Thuê ngoài'} · ${fmtNum(totalFuel)} Lít dầu · ${repairs.length} lần sửa</div>
+                ${mUnit(d) !== 'none' ? (() => { const lm = lastMeter(d); return lm !== null && lm !== undefined ? `<div class="ri-sub">⏱ ${mLbl(d)} ${fmtNum(lm)}${d.inDate ? ' · vào ' + d.inDate.split('-').reverse().join('/') : ''}${d.outDate ? ' · ra ' + d.outDate.split('-').reverse().join('/') : ''}</div>` : ''; })() : ''}
+                <div class="dev-by">${d.addedBy ? 'Thêm bởi ' + escHtml(d.addedBy) + (d.addedAt ? ' · ' + escHtml(String(d.addedAt).replace(/^\d{1,2}:\d{2}(:\d{2})?\s*/, '')) : '') : 'Chưa rõ người thêm'}</div>
               </div>
             </div>
             <div class="ri-right">
@@ -3750,6 +3792,7 @@ function renderDeviceDetail(id) {
       ` : '<div class="empty-state" style="padding:20px"><div class="e-ico">✅</div><p>Chưa có hư hỏng sửa chữa</p></div>'}
     </div>
 
+    ${deviceMeterHtml(d)}
     <div class="form-section">
       <div class="form-section-title">📜 Lịch sử xuất dầu</div>
       ${txnsD.length === 0 ? '<div class="empty-state" style="padding:20px"><p>Chưa xuất dầu cho thiết bị này</p></div>'
@@ -3775,6 +3818,10 @@ function openEditDevice() {
   document.getElementById('ad-fuel').value = d.fuelRate||20;
   document.getElementById('ad-plate').value = d.plate||'';
   document.getElementById('ad-note').value = d.note||'';
+  document.getElementById('ad-meter-unit').value = mUnit(d);
+  document.getElementById('ad-in-date').value = d.inDate || '';
+  document.getElementById('ad-in-meter').value = d.inMeter === '' || d.inMeter === undefined ? '' : d.inMeter;
+  adMeterUnit();
   document.getElementById('modal-device-title').textContent = '✏️ Sửa thiết bị';
   document.getElementById('ad-del-btn').style.display = role === 'ADM' ? '' : 'none';   // v5.18: chỉ Admin xóa
   openModal('modal-add-device');
@@ -3793,9 +3840,13 @@ async function saveDevice() {
     d.fuelRate=+document.getElementById('ad-fuel').value||20;
     d.plate=document.getElementById('ad-plate').value;
     d.note=document.getElementById('ad-note').value;
+    d.meterUnit=document.getElementById('ad-meter-unit').value; d.inDate=document.getElementById('ad-in-date').value; d.inMeter=document.getElementById('ad-in-meter').value === '' ? '' : +document.getElementById('ad-in-meter').value;
     addLog('Sửa thiết bị', name);
   } else {
-    const device = {id:newId(), name, cat:document.getElementById('ad-cat').value, type:document.getElementById('ad-type').value, fuelRate:+document.getElementById('ad-fuel').value||20, plate:document.getElementById('ad-plate').value, note:document.getElementById('ad-note').value, project:curProj};
+    const mu = document.getElementById('ad-meter-unit').value, im = document.getElementById('ad-in-meter').value;
+    if (mu !== 'none' && im === '') { toast('⚠️ Nhập ' + (mu === 'km' ? 'số km' : 'giờ máy') + ' lúc vào công trình'); return; }
+    const device = {id:newId(), name, cat:document.getElementById('ad-cat').value, type:document.getElementById('ad-type').value, fuelRate:+document.getElementById('ad-fuel').value||20, plate:document.getElementById('ad-plate').value, note:document.getElementById('ad-note').value, project:curProj,
+      meterUnit:mu, inDate:document.getElementById('ad-in-date').value, inMeter:im === '' ? '' : +im, outDate:'', outMeter:'', addedBy:me?.name || '', addedAt:nowStr()};
     db.devices.push(device);
     saved = device;
     addLog('Thêm thiết bị', name);
@@ -4387,13 +4438,14 @@ async function buildNxtWorkbook() {
   // v5.17.1: thêm 4 trang phiếu yêu cầu / đối chiếu cóc / kiểm kê (nếu dự án có dùng)
   let pycAdded = false;
   if (projReqs().length || db.transactions.some(t => t.type === 'kiemke')) { addPycSheets(wb, R, P); pycAdded = true; }
+  const meterAdded = addMeterSheet(wb, R);
   const buf = await wb.xlsx.writeBuffer();
   const d = new Date();
   const fname = `NXT_${slugVN(P)}_${R.tag}_${d.getDate()}-${d.getMonth() + 1}-${d.getFullYear()}.xlsx`;
   lastExport = new File([buf], fname, {type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'});
   closeModal('modal-export');
   document.getElementById('xf-name').textContent = fname;
-  document.getElementById('xf-gom').textContent = 'Gồm: Số liệu ngày (dầu nhớt) · Vật tư · NXT dầu nhớt · NXT vật tư · Theo dõi dầu thiết bị · Chi tiết phiếu' + (pycAdded ? ' · Tóm tắt phiếu YC · Phiếu yêu cầu · Đối chiếu cóc nối · Kiểm kê' : '');
+  document.getElementById('xf-gom').textContent = 'Gồm: Số liệu ngày (dầu nhớt) · Vật tư · NXT dầu nhớt · NXT vật tư · Theo dõi dầu thiết bị · Chi tiết phiếu' + (pycAdded ? ' · Tóm tắt phiếu YC · Phiếu yêu cầu · Đối chiếu cóc nối · Kiểm kê' : '') + (meterAdded ? ' · Giờ máy' : '');
   document.getElementById('xf-share').style.display = navigator.canShare && navigator.canShare({files:[lastExport]}) ? '' : 'none';
   openModal('modal-xfile');
 }
@@ -5868,6 +5920,7 @@ function renderReqDetail() {
       ${r.reject ? `<div class="pyc-note-g">Lý do từ chối: ${escHtml(r.reject)}</div>` : ''}
     </div>
     ${lines}
+    ${(kho || (khoMore && reqUI.more)) && reqMeterDev(r) ? meterBoxHtml('rq', reqMeterDev(r)) : ''}
     ${kho || (khoMore && reqUI.more) ? `
       <button class="btn-full" style="background:var(--primary)" onclick="reqIssue()">🚚 Giao hàng – trừ tồn kho</button>
       <div class="pyc-hint">Giao ít hơn số chưa giao = giao một phần, phần thiếu giao sau</div>` : ''}
@@ -5883,6 +5936,13 @@ function renderReqDetail() {
     <div class="card" style="padding:8px 14px">${(r.log || []).slice().reverse().map(g => `<div class="pyc-log"><span>${escHtml(g.t || '')}</span><span>${escHtml(g.x || '')}</span></div>`).join('')}</div></div>`;
 }
 // Gửi phiếu qua Zalo (thủ công): soạn sẵn nội dung → bảng chia sẻ của điện thoại (máy tính: chép để dán)
+// Phiếu dầu có chọn máy (có đồng hồ) → khi giao bắt buộc giờ máy
+function reqMeterDev(r) {
+  if (!r || r.kind !== 'vt' || !r.may) return null;
+  const it = itemById(+(r.lines[0] || {}).itemId) || {name:(r.lines[0] || {}).itemName};
+  const d = db.devices.find(x => x.name === r.may);
+  return d && isDieselItem(it) && mUnit(d) !== 'none' ? d : null;
+}
 function reqShareText(r) {
   const L = reqLook(r), A = reqAp(r);
   const out = [`📝 PHIẾU YÊU CẦU ${r.id} — ${r.project}`, r.title, `Trạng thái: ${L.chip} · ${A[0]}`];
@@ -5917,7 +5977,9 @@ function reqIssue() {
   const r = db.reqs.find(x => x.id === curReqId); if (!r) return;
   const send = r.lines.map((l, k) => { const el = document.getElementById('ri-' + k); return el ? +el.value || 0 : 0; });
   if (!send.some(v => v > 0)) { toast('⚠️ Nhập số thực gửi'); return; }
-  reqAction('issueReq', {id:curReqId, send}, '🚚 Đã giao hàng, đã trừ tồn kho và tạo phiếu xuất', true);
+  const md = reqMeterDev(r); let mr = {meter:'', meterNote:''};
+  if (md) { mr = meterRead('rq', md); if (!mr) return; }
+  reqAction('issueReq', {id:curReqId, send, meter:mr.meter, meterNote:mr.meterNote}, '🚚 Đã giao hàng, đã trừ tồn kho và tạo phiếu xuất', true);
 }
 function reqReject() {
   const v = (document.getElementById('req-rej')?.value || '').trim();
@@ -6497,7 +6559,7 @@ let listLimit = {nhap:100, xuat:100, dieuchinh:100};
 // ===== v5.18.0: CHỨC DANH & PHÂN QUYỀN (Admin cài trong app) =====
 const PERM_UI = [
   ['Màn hình được thấy', [['v_pyc','Phiếu yêu cầu',''],['v_home','Tổng quan',''],['v_nhap','Phiếu nhập (xem)',''],['v_xuat','Phiếu xuất (xem)',''],['v_ton','Tồn kho (số lượng)',''],['v_baocao','Báo cáo',''],['v_stat','Thống kê dự án đang làm','Chi phí, tiến độ của dự án được giao'],['v_all','Tổng hợp các dự án','Xem mọi dự án, so sánh, chi phí nhiều dự án']]],
-  ['Kho', [['k_nhap','Lập phiếu nhập',''],['k_xuat','Lập phiếu xuất (xuất thẳng)',''],['k_edit','Sửa / điều chỉnh phiếu',''],['k_kk','Kiểm kê',''],['k_dm','Thêm, sửa tên + nhóm vật tư / thiết bị','Đổi đơn vị và xóa: chỉ Admin'],['k_copy','Chép vật tư từ dự án khác',''],['k_loan','Cho mượn / trả dụng cụ','']]],
+  ['Kho', [['k_nhap','Lập phiếu nhập',''],['k_xuat','Lập phiếu xuất (xuất thẳng)',''],['k_edit','Sửa / điều chỉnh phiếu',''],['k_kk','Kiểm kê',''],['k_dm','Thêm, sửa tên + nhóm vật tư / thiết bị','Đổi đơn vị và xóa: chỉ Admin'],['k_copy','Chép vật tư từ dự án khác',''],['k_loan','Cho mượn / trả dụng cụ',''],['k_meter','Ghi giờ máy thiết bị','Khi xuất dầu, vào / kết thúc công trình']]],
   ['Giá & chi phí', [['g_view','Xem giá, chi phí',''],['g_price','Sửa bảng giá',''],['g_prog','Cập nhật tiến độ thi công','']]],
   ['Phiếu yêu cầu', [['y_tao','Tạo phiếu',''],['y_bs','Xin bổ sung ngoài định mức',''],['y_duyet','Duyệt phiếu',''],['y_giao','Giao hàng theo phiếu (kho)',''],['y_nhan','Xác nhận nhận hàng',''],['y_xem','Xem mọi phiếu của dự án','Tắt = chỉ thấy phiếu của mình']]],
   ['Xuất file', [['x_nxt','Xuất Excel NXT',''],['x_pyc','Xuất báo cáo phiếu YC','']]]
@@ -6507,12 +6569,12 @@ const V6 = ['v_pyc','v_home','v_nhap','v_xuat','v_ton','v_baocao'];
 const GROUP_UI = {
   g1:['① Phiếu YC', ['v_pyc','y_tao','y_bs','y_nhan','y_xem']], g2:['② Giám sát', ['v_pyc','y_xem']],
   g3:['③ Xem toàn bộ', V6.concat(['v_stat','g_view','y_xem','x_nxt','x_pyc'])],
-  g4:['④ Kho', V6.concat(['k_nhap','k_xuat','k_edit','k_kk','k_dm','k_copy','k_loan','y_giao','y_xem','x_nxt','x_pyc'])],
-  g5:['⑤ Đầy đủ', V6.concat(['v_stat','g_view','g_prog','y_xem','x_nxt','x_pyc'])],
+  g4:['④ Kho', V6.concat(['k_nhap','k_xuat','k_edit','k_kk','k_dm','k_copy','k_loan','y_giao','y_xem','x_nxt','x_pyc','k_meter'])],
+  g5:['⑤ Đầy đủ', V6.concat(['v_stat','g_view','g_prog','y_xem','x_nxt','x_pyc','k_meter'])],
   g6:['⑥ Lãnh đạo', V6.concat(['v_stat','v_all','g_view','y_xem','x_nxt','x_pyc'])],
   gq:['Quản lý (cũ)', PERM_KEYS.filter(k => k !== 'v_all')], ga:['Quản trị', PERM_KEYS]
 };
-function presetPerm(code, g) { const o = {}, on = (GROUP_UI[g] || GROUP_UI.g2)[1]; PERM_KEYS.forEach(k => o[k] = on.includes(k) ? 1 : 0); if (code === 'CM' || code === 'DCM') o.y_tao = o.y_bs = o.y_duyet = o.y_nhan = 1; return o; }
+function presetPerm(code, g) { const o = {}, on = (GROUP_UI[g] || GROUP_UI.g2)[1]; PERM_KEYS.forEach(k => o[k] = on.includes(k) ? 1 : 0); if (code === 'CM' || code === 'DCM') o.y_tao = o.y_bs = o.y_duyet = o.y_nhan = 1; if (code === 'ACC' || code === 'PD') o.k_meter = 0; return o; }
 function setRoles(r) { ROLES = r || {}; try { localStorage.setItem('fecon_roles_v515', JSON.stringify(ROLES)); } catch (e) {} }
 let rlSel = '', rlDraft = null, rlUsers = null, rlAdd = false;
 async function openRoles() {
@@ -6598,6 +6660,177 @@ async function nlOut(c) {
   if (r && r.success) { nlDone(c); toast('🚪 Đã đăng xuất mọi máy khác — chỉ còn máy này'); } else toast('⚠️ ' + ((r && r.error) || 'Không thực hiện được'));
 }
 
+// ===== v5.20.0: GIỜ MÁY THIẾT BỊ =====
+const isDieselItem = it => !!it && /dầu\s*d\.?\s*o\b|diesel/i.test(it.name || '');   // dầu cấp cho máy (giờ máy)
+const devActive = d => !d.outDate;
+const mUnit = d => (d && d.meterUnit) || 'h';
+const mLbl = d => mUnit(d) === 'km' ? 'Km' : 'Giờ máy';
+const mSfx = d => mUnit(d) === 'km' ? 'km' : 'giờ';
+const isResetNote = n => /^Đồng hồ đã thay/i.test(String(n || ''));
+const isBrokenNote = n => /^Đồng hồ hỏng/i.test(String(n || ''));
+// Các lần ghi đồng hồ của máy (cũ → mới), gồm mốc lúc vào công trình
+function meterLog(d) {
+  const L = [];
+  if (d.inMeter !== '' && d.inMeter !== undefined && d.inMeter !== null && !isNaN(+d.inMeter) && String(d.inMeter) !== '')
+    L.push({t:d.inDate ? Date.parse(d.inDate) : 0, m:+d.inMeter, kind:'in', by:d.addedBy || '', date:d.inDate ? d.inDate.split('-').reverse().join('/') : ''});
+  db.transactions.filter(t => t.type === 'xuat' && t.thietBi === d.name).forEach(t => {
+    const dt = parseVN(t.datetime);
+    L.push({t:dt ? dt.getTime() : 0, m:t.meter === '' || t.meter === undefined || isNaN(+t.meter) ? null : +t.meter, kind:isBrokenNote(t.meterNote) ? 'broken' : isResetNote(t.meterNote) ? 'reset' : 'fuel',
+      qty:effQty(t), by:t.createdByName || '', date:String(t.datetime || '').replace(/^\d{1,2}:\d{2}(:\d{2})?\s*/, ''), note:t.meterNote || '', fuel:isDieselItem(itemById(t.itemId) || {name:t.itemName})});
+  });
+  if (d.outDate) L.push({t:Date.parse(d.outDate) + 86399e3, m:d.outMeter === '' || isNaN(+d.outMeter) ? null : +d.outMeter, kind:'out', date:d.outDate.split('-').reverse().join('/')});
+  L.sort((a, b) => a.t - b.t);
+  let prev = null, run = 0, fuelIn = 0, pend = 0;          // pend: dầu đổ lúc đồng hồ hỏng → cộng vào lần đọc được tiếp theo
+  L.forEach(x => {
+    if (x.kind === 'reset') { prev = x.m; pend = 0; return; }
+    if (x.kind === 'broken') { if (x.fuel) pend += x.qty || 0; return; }
+    if (x.m !== null && prev !== null && x.m >= prev) { x.run = Math.round((x.m - prev) * 10) / 10; run += x.run;
+      if (x.kind === 'fuel' && x.fuel && x.run > 0) { const q = (x.qty || 0) + pend; x.lph = q / x.run; fuelIn += q; pend = 0; } }
+    if (x.m !== null) prev = x.m;
+  });
+  return {list:L, run:Math.round(run * 10) / 10, lph:run > 0 && fuelIn > 0 ? fuelIn / run : null, last:prev};
+}
+function lastMeter(d) { return meterLog(d).last; }
+// Ô nhập đồng hồ khi xuất dầu (dùng ở phiếu xuất và ở giao hàng theo phiếu yêu cầu)
+function meterBoxHtml(pfx, d) {
+  const last = lastMeter(d);
+  return `<div class="mt-box" id="${pfx}-mbox">
+    <div class="mt-h"><b>${mLbl(d)} hiện tại <span style="color:var(--red)">*</span></b><span>${last !== null && last !== undefined ? 'Lần trước: ' + fmtNum(last) + ' ' + mSfx(d) : 'Chưa có số trước'}</span></div>
+    <input type="number" inputmode="decimal" id="${pfx}-meter" placeholder="Đọc số trên đồng hồ" oninput="meterCheck('${pfx}',${d.id})">
+    <div class="mt-msg" id="${pfx}-mmsg">Bắt buộc nhập số đồng hồ</div>
+    <label class="mt-ck"><input type="checkbox" id="${pfx}-broken" onchange="meterCheck('${pfx}',${d.id})"> Đồng hồ hỏng / không đọc được</label>
+    <input id="${pfx}-breason" placeholder="Lý do (bắt buộc), VD: mặt đồng hồ vỡ" style="display:none">
+    <label class="mt-ck"><input type="checkbox" id="${pfx}-reset" onchange="meterCheck('${pfx}',${d.id})"> Đồng hồ đã thay, tính lại từ số này</label>
+  </div>`;
+}
+function meterCheck(pfx, devId) {
+  const d = db.devices.find(x => x.id === devId); if (!d) return null;
+  const g = id => document.getElementById(pfx + '-' + id);
+  const broken = g('broken')?.checked, reset = g('reset')?.checked, raw = g('meter')?.value ?? '', v = raw === '' ? NaN : +raw, last = lastMeter(d);
+  g('breason').style.display = broken ? '' : 'none'; g('meter').style.display = broken ? 'none' : '';
+  let ok = false, msg = '', bad = false;
+  if (broken) { ok = !!(g('breason').value || '').trim() || true; msg = ''; }
+  else if (raw === '') msg = 'Bắt buộc nhập số đồng hồ';
+  else if (isNaN(v) || v < 0) { msg = 'Số không hợp lệ'; bad = true; }
+  else if (last !== null && last !== undefined && v < last && !reset) { msg = `Nhỏ hơn lần trước (${fmtNum(last)}). Kiểm tra lại, hoặc tích "Đồng hồ đã thay"`; bad = true; }
+  else { ok = true; msg = last !== null && last !== undefined && !reset ? `Chạy ${fmtNum(Math.round((v - last) * 10) / 10)} ${mSfx(d)} từ lần đổ trước` : 'OK'; }
+  const m = g('mmsg'); m.textContent = msg; m.style.color = ok ? 'var(--green)' : 'var(--red)';
+  g('meter').style.borderColor = bad ? 'var(--red)' : '';
+  return ok;
+}
+// Đọc ô đồng hồ → {meter, meterNote} hoặc null (thiếu / sai)
+function meterRead(pfx, d) {
+  if (!document.getElementById(pfx + '-mbox')) return {meter:'', meterNote:''};
+  const g = id => document.getElementById(pfx + '-' + id);
+  if (g('broken').checked) {
+    const why = (g('breason').value || '').trim();
+    if (!why) { toast('⚠️ Ghi lý do đồng hồ hỏng'); return null; }
+    return {meter:'', meterNote:'Đồng hồ hỏng: ' + why};
+  }
+  if (!meterCheck(pfx, d.id)) { toast('⚠️ ' + (document.getElementById(pfx + '-mmsg').textContent || 'Nhập giờ máy')); return null; }
+  return {meter:+g('meter').value, meterNote:g('reset').checked ? 'Đồng hồ đã thay' : ''};
+}
+function fxMeterUpdate() {
+  const wrap = document.getElementById('fx-mwrap'); if (!wrap) return;
+  const it = db.items.find(i => i.id === +document.getElementById('fx-item').value);
+  const d = db.devices.find(x => x.name === document.getElementById('fx-device').value);
+  wrap.innerHTML = it && d && isDieselItem(it) && mUnit(d) !== 'none' ? meterBoxHtml('fx', d) : '';
+}
+function deviceMeterHtml(d) {
+  const L = meterLog(d), u = mUnit(d);
+  if (u === 'none') return `<div class="form-section"><div class="form-section-title">⏱ Giờ máy</div><div class="info-box">Máy không có đồng hồ — không theo dõi giờ máy.</div>${d.outDate ? '' : ''}${meterCloseBtn(d)}</div>`;
+  const days = d.inDate ? Math.max(1, Math.round(((d.outDate ? Date.parse(d.outDate) : Date.now()) - Date.parse(d.inDate)) / 864e5) + 1) : null;
+  const st = (k, v, c) => `<div class="mt-st"><small>${k}</small><b style="color:${c || 'var(--text)'}">${v}</b></div>`;
+  const over = L.lph !== null && d.fuelRate && L.lph > d.fuelRate;
+  return `<div class="form-section"><div class="form-section-title">⏱ ${mLbl(d)} ở công trình</div>
+    <div class="mt-grid">
+      ${st('NGÀY VÀO', d.inDate ? d.inDate.split('-').reverse().join('/') : '—')}
+      ${st(d.outDate ? 'NGÀY KẾT THÚC' : 'SỐ NGÀY Ở CÔNG TRƯỜNG', d.outDate ? d.outDate.split('-').reverse().join('/') : days ? days + ' ngày' : '—')}
+      ${st(mLbl(d).toUpperCase() + ' LÚC VÀO', d.inMeter !== '' && d.inMeter !== undefined ? fmtNum(d.inMeter) : '—')}
+      ${st(d.outDate ? mLbl(d).toUpperCase() + ' LÚC KẾT THÚC' : mLbl(d).toUpperCase() + ' HIỆN TẠI', L.last !== null && L.last !== undefined ? fmtNum(L.last) : '—', 'var(--primary)')}
+      ${st('TỔNG ' + (u === 'km' ? 'KM CHẠY' : 'GIỜ CHẠY'), fmtNum(L.run) + ' ' + mSfx(d), 'var(--primary)')}
+      ${u === 'h' ? st(`DẦU / GIỜ (ĐỊNH MỨC ${d.fuelRate || 0})`, L.lph !== null ? fmtNum(Math.round(L.lph * 10) / 10) + ' L/h' : '—', over ? 'var(--red)' : 'var(--green)') : st('SỐ NGÀY', days ? days + ' ngày' : '—')}
+    </div>
+    <div class="mt-hist"><div class="mt-hr mt-hh"><span>Ngày</span><span>${mLbl(d)}</span><span>Chạy</span><span>${u === 'h' ? 'Lít/giờ' : 'Lít'}</span></div>
+      ${L.list.slice().reverse().slice(0, 40).map(x => `<div class="mt-hr"><span>${escHtml(x.date || '')}<small>${x.kind === 'in' ? 'Vào công trình' + (x.by ? ' · ' + escHtml(x.by) : '') : x.kind === 'out' ? 'Kết thúc' : escHtml((x.by || '') + (x.qty ? ' · ' + fmtNum(x.qty) + ' L' : '') + (x.kind === 'broken' ? ' · đồng hồ hỏng' : x.kind === 'reset' ? ' · đồng hồ đã thay' : ''))}</small></span>
+        <b>${x.m !== null ? fmtNum(x.m) : '—'}</b><span>${x.run ? '+' + fmtNum(x.run) : ''}</span>
+        <b style="color:${x.lph && d.fuelRate && x.lph > d.fuelRate ? 'var(--red)' : 'var(--green)'}">${u === 'h' ? (x.lph ? fmtNum(Math.round(x.lph * 10) / 10) : '') : (x.qty ? fmtNum(x.qty) : '')}</b></div>`).join('') || '<div class="pyc-empty">Chưa có lần ghi nào</div>'}
+    </div>${meterCloseBtn(d)}</div>`;
+}
+function meterCloseBtn(d) {
+  if (!hp('k_meter')) return '';
+  return d.outDate ? `<button class="btn-full" style="background:#fff;color:var(--primary);border:1.5px solid var(--primary)" onclick="devReopen(${d.id})">↺ Mở lại · máy quay lại công trình</button>`
+    : `<button class="btn-full" style="background:#fff;color:var(--red);border:1.5px solid var(--red)" onclick="devCloseOpen(${d.id})">Kết thúc · máy rời công trình</button>
+       <div id="dc-close-${d.id}" style="display:none" class="mt-box">
+         <div class="fg-row"><div class="fg"><label>Ngày kết thúc</label><input type="date" id="dc-date-${d.id}"></div>
+         ${mUnit(d) !== 'none' ? `<div class="fg"><label>${mLbl(d)} lúc kết thúc</label><input type="number" inputmode="decimal" id="dc-m-${d.id}"></div>` : ''}</div>
+         <button class="btn-full" style="background:var(--red)" onclick="devClose(${d.id})">Xác nhận kết thúc</button></div>`;
+}
+function devCloseOpen(id) { const el = document.getElementById('dc-close-' + id); el.style.display = ''; const i = document.getElementById('dc-date-' + id); if (i && !i.value) i.value = new Date().toISOString().slice(0, 10); }
+async function devClose(id) {
+  const d = db.devices.find(x => x.id === id); if (!d) return;
+  const date = document.getElementById('dc-date-' + id).value, mEl = document.getElementById('dc-m-' + id), m = mEl ? mEl.value : '';
+  if (!date) { toast('⚠️ Chọn ngày kết thúc'); return; }
+  if (mEl && m === '') { toast('⚠️ Nhập ' + mLbl(d).toLowerCase() + ' lúc kết thúc'); return; }
+  const last = lastMeter(d); if (mEl && last !== null && last !== undefined && +m < last && !confirm(`Số ${fmtNum(+m)} nhỏ hơn lần ghi trước (${fmtNum(last)}). Vẫn lưu?`)) return;
+  showLoader('Đang lưu...'); const r = await api('closeDevice', {id, outDate:date, outMeter:m}); hideLoader();
+  if (!r || !r.success) { toast('⚠️ ' + ((r && r.error) || 'Không lưu được')); return; }
+  d.outDate = date; d.outMeter = m === '' ? '' : +m; saveLocal(); toast('✅ Đã kết thúc máy ở công trình'); renderDeviceDetail(id); renderDevicesList();
+}
+async function devReopen(id) {
+  const d = db.devices.find(x => x.id === id); if (!d || !confirm('Mở lại máy ở công trình?')) return;
+  showLoader('Đang lưu...'); const r = await api('closeDevice', {id, reopen:1}); hideLoader();
+  if (!r || !r.success) { toast('⚠️ ' + ((r && r.error) || 'Không lưu được')); return; }
+  d.outDate = ''; d.outMeter = ''; saveLocal(); toast('✅ Đã mở lại'); renderDeviceDetail(id); renderDevicesList();
+}
+function adMeterUnit() {
+  const u = document.getElementById('ad-meter-unit').value;
+  document.getElementById('ad-meter-box').style.display = u === 'none' ? 'none' : '';
+  document.getElementById('ad-in-lbl').textContent = (u === 'km' ? 'Số km' : 'Giờ máy') + ' lúc vào';
+}
+function openAddDevice() {
+  document.getElementById('ad-id').value = '';
+  ['ad-name','ad-plate','ad-note','ad-in-meter'].forEach(i => document.getElementById(i).value = '');
+  document.getElementById('ad-fuel').value = 20;
+  document.getElementById('ad-meter-unit').value = 'h';
+  document.getElementById('ad-in-date').value = new Date().toISOString().slice(0, 10);
+  adMeterUnit();
+  document.getElementById('modal-device-title').textContent = '🏗️ Thêm máy / Thiết bị';
+  document.getElementById('ad-del-btn').style.display = 'none';
+  openModal('modal-add-device');
+}
+function fmtDateInput(v) { const m = String(v || '').match(/(\d{4})-(\d{2})-(\d{2})/); return m ? `${m[1]}-${m[2]}-${m[3]}` : ''; }
+
+// v5.20: trang "Giờ máy" trong file Excel NXT
+function addMeterSheet(wb, R) {
+  const devs = db.devices.filter(d => mUnit(d) !== 'none'); if (!devs.length) return false;
+  const NAVY = 'FF1F3864', TINT = 'FFDCE6F1', FN = 'Arial', thin = {style:'thin', color:{argb:'FFA6B0BE'}}, BD = {top:thin, left:thin, bottom:thin, right:thin};
+  const ws = wb.addWorksheet('Giờ máy', {pageSetup:{paperSize:9, orientation:'landscape', fitToPage:true, fitToWidth:1, fitToHeight:0}});
+  [26, 9, 13, 12, 13, 14, 12, 12, 11, 22, 24].forEach((w, i) => ws.getColumn(i + 1).width = w);
+  ws.mergeCells(1, 1, 1, 11); Object.assign(ws.getCell(1, 1), {value:'CÔNG TY CỔ PHẦN FECON SOUTH', font:{name:FN, size:10, bold:true, color:{argb:NAVY}}});
+  ws.mergeCells(2, 1, 2, 11); Object.assign(ws.getCell(2, 1), {value:'THEO DÕI GIỜ MÁY THIẾT BỊ', font:{name:FN, size:15, bold:true, color:{argb:NAVY}}, alignment:{horizontal:'center'}});
+  Object.assign(ws.getCell(3, 1), {value:'Dự án: ' + curProj + ' · Xuất lúc ' + nowStr(), font:{name:FN, size:10, italic:true}});
+  const H = ['Thiết bị', 'Đồng hồ', 'Ngày vào', 'Số lúc vào', 'Ngày kết thúc', 'Số hiện tại / lúc ra', 'Tổng chạy', 'Dầu (lít)', 'Lít / giờ', 'Định mức (L/giờ)', 'Thêm bởi'];
+  H.forEach((h, i) => Object.assign(ws.getCell(5, i + 1), {value:h, font:{name:FN, size:10, bold:true, color:{argb:'FFFFFFFF'}}, fill:{type:'pattern', pattern:'solid', fgColor:{argb:NAVY}}, border:BD, alignment:{horizontal:'center', vertical:'middle', wrapText:true}}));
+  ws.getRow(5).height = 30;
+  let r = 6;
+  devs.forEach(d => {
+    const L = meterLog(d), fuel = db.transactions.filter(t => t.type === 'xuat' && t.thietBi === d.name).reduce((a, t) => a + effQty(t), 0);
+    const over = L.lph !== null && d.fuelRate && L.lph > d.fuelRate;
+    const v = [d.name, mUnit(d) === 'km' ? 'Km' : 'Giờ', d.inDate ? d.inDate.split('-').reverse().join('/') : '', d.inMeter === '' ? '' : +d.inMeter,
+      d.outDate ? d.outDate.split('-').reverse().join('/') : 'Đang làm', L.last === null || L.last === undefined ? '' : L.last, L.run, Math.round(fuel * 10) / 10,
+      mUnit(d) === 'h' && L.lph !== null ? Math.round(L.lph * 10) / 10 : '', mUnit(d) === 'h' ? (d.fuelRate || '') : '', d.addedBy || ''];
+    v.forEach((x, i) => { const c = ws.getCell(r, i + 1); c.value = x === '' ? null : x; c.border = BD; c.font = {name:FN, size:10, bold:i === 0 || (i === 8 && over)};
+      if (typeof x === 'number') { c.numFmt = '#,##0.0'; c.alignment = {horizontal:'right'}; }
+      if (i === 8 && over) c.fill = {type:'pattern', pattern:'solid', fgColor:{argb:TINT}}; });
+    r++;
+  });
+  ws.getCell(r + 1, 1).value = 'Lít / giờ = dầu đổ vào chia số giờ chạy giữa các lần đổ (bỏ qua lần đồng hồ hỏng). Ô tô nền: vượt định mức.';
+  ws.getCell(r + 1, 1).font = {name:FN, size:9, italic:true, color:{argb:'FF404040'}};
+  ws.views = [{state:'frozen', ySplit:5}];
+  return true;
+}
+
 // ===== GHI LỖI PHÁT SINH (gửi về tab LoiApp trên Sheet) =====
 const _errSent = new Set(); let _errN = 0;
 function reportError(msg, src, line, col, stack) {
@@ -6631,9 +6864,8 @@ window.addEventListener('unhandledrejection', e => { const r = e.reason; reportE
   } else {
     showPage('pg-login'); authTab('login'); netStart();
     if (me) document.getElementById('li-user').value = me.username;
-    const sp = document.getElementById('pg-splash');               // v5.18: màn chào khi chưa đăng nhập
-    sp.style.display = 'flex';
-    setTimeout(() => { sp.classList.add('hide'); setTimeout(() => sp.style.display = 'none', 500); }, 1900);
+    const sp = document.getElementById('pg-splash');               // v5.18: màn chào khi chưa đăng nhập (đã hiện sẵn từ đầu)
+    if (sp) setTimeout(() => { sp.classList.add('hide'); setTimeout(() => sp.remove(), 500); }, sp.classList.contains('and') ? 1700 : 1900);
   }
 })();
 </script>
