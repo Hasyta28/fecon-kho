@@ -619,6 +619,9 @@ body.can-ql .hide-ql{display:none!important}
 .gd-n{flex-shrink:0;width:26px;height:26px;border-radius:50%;background:#E74C3C;color:#fff;font-weight:900;display:flex;align-items:center;justify-content:center}
 .gd-step img{display:block;width:100%;max-width:420px;margin:0 auto;border-top:1px solid var(--border)}
 .gd-foot{font-size:11.5px;color:var(--text3);text-align:center;margin:4px 0 10px}
+#mv-nlist{max-height:300px;overflow-y:auto}
+#mv-nlist .combo-item{display:flex;flex-direction:column;gap:2px;padding:9px 12px;border-top:1px solid var(--border);cursor:pointer}
+#mv-nlist .combo-item small{font-size:11px;color:var(--text3)}#mv-nlist .combo-item.free{background:#FFF7F0}#mv-nlist .combo-empty{padding:10px;text-align:center;color:var(--text3);font-size:12px}
 .more-btn{display:block;width:calc(100% - 28px);margin:10px 14px;border:1.5px dashed var(--border);background:#fff;border-radius:12px;padding:12px;font-weight:800;color:var(--primary);cursor:pointer}
 
 .diag-out{background:var(--bg);border-radius:10px;padding:10px 12px;font-size:12px;line-height:1.7;color:var(--text2);margin-top:6px;word-break:break-word}
@@ -896,9 +899,9 @@ body:not(.can-cost) .need-cost{display:none!important}
 <div class="detail-page" id="dp-vattu">
   <div class="detail-header">
     <button class="back-btn" onclick="closeDp('dp-vattu')">‹</button>
-    <div class="detail-title">Danh sách vật tư</div>
-    <button class="need-tk" onclick="openCopyItems()" style="background:#fff;color:var(--primary);border:1.5px solid var(--primary);border-radius:8px;padding:5px 9px;font-size:12px;font-weight:700;cursor:pointer;margin-right:6px">📋 Chép từ dự án khác</button>
-    <button class="need-tk" onclick="openModal('modal-add-vattu')" style="background:var(--orange);color:#fff;border:none;border-radius:8px;padding:6px 12px;font-size:12px;font-weight:700;cursor:pointer">+ Thêm</button>
+    <div class="detail-title" style="white-space:nowrap;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis">📦 Vật tư</div>
+    <button class="need-tk" onclick="openCopyItems()" title="Chép vật tư từ dự án khác" style="background:#fff;color:var(--primary);border:1.5px solid var(--primary);border-radius:8px;padding:6px 9px;font-size:12px;font-weight:700;cursor:pointer;margin-right:6px;white-space:nowrap;flex-shrink:0">📋 Chép</button>
+    <button class="need-tk" onclick="openAddVatTu()" style="background:var(--orange);color:#fff;border:none;border-radius:8px;padding:6px 12px;font-size:12px;font-weight:700;cursor:pointer;white-space:nowrap;flex-shrink:0">+ Thêm</button>
   </div>
   <div class="detail-body" id="dp-vattu-body"></div>
 </div>
@@ -1154,6 +1157,7 @@ body:not(.can-cost) .need-cost{display:none!important}
     <div class="sidebar-item need-admin" onclick="openDpSb('dp-members')"><span class="sidebar-item-ico">👥</span>Thành viên<span class="sb-badge" id="sb-pend" style="display:none">0</span></div>
     <div class="sidebar-item need-admin" onclick="openModal('modal-add-proj')"><span class="sidebar-item-ico">🏢</span>Thêm dự án</div>
     <div class="sidebar-item need-admin" onclick="openDpSb('dp-history-log')"><span class="sidebar-item-ico">📋</span>Nhật ký hoạt động</div>
+    <div class="sidebar-item need-admin" onclick="purgeItemsUI()"><span class="sidebar-item-ico">🗑</span>Xóa danh mục vật tư dự án</div>
     <div class="sidebar-item need-admin" onclick="closeSidebar();setTimeout(openBackup,300)"><span class="sidebar-item-ico">💾</span>Sao lưu dữ liệu</div>
     <div class="sidebar-item need-admin" onclick="closeSidebar();setTimeout(openRoles,300)"><span class="sidebar-item-ico">🛡</span>Phân quyền chức danh</div>
     <div class="sidebar-item need-admin" onclick="openDpSb('dp-pycfg')"><span class="sidebar-item-ico">⚙️</span>Cài đặt phiếu yêu cầu</div>
@@ -1253,7 +1257,14 @@ body:not(.can-cost) .need-cost{display:none!important}
   <div class="modal-sheet">
     <div class="modal-handle"></div>
     <div class="modal-title" id="modal-vattu-title">➕ Thêm vật tư mới</div>
-    <div class="fg"><label>Tên vật tư</label><input type="text" id="mv-name" placeholder="VD: Dầu DO, Nhớt thủy lực..."></div>
+    <div class="fg"><label>Tên vật tư</label>
+      <div class="combo">
+        <input type="text" id="mv-name" autocomplete="off" placeholder="Bấm để chọn tên có sẵn, hoặc gõ tên mới"
+          oninput="mvPick=null;mvNameList()" onfocus="mvNameList();loadItemCat()" onblur="setTimeout(mvNameHide,200)">
+        <div class="combo-list" id="mv-nlist"></div>
+      </div>
+      <div class="combo-hint">Gợi ý từ danh mục vật tư các dự án. Không có thì cứ gõ tên tự do.</div>
+    </div>
     <div class="fg"><label>Nhóm</label>
       <select id="mv-cat"></select>
     </div>
@@ -1582,7 +1593,7 @@ body:not(.can-cost) .need-cost{display:none!important}
 // ============================================================
 // CONFIG
 // ============================================================
-const APP_VERSION = '5.25.0';
+const APP_VERSION = '5.26.1';
 const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbw6Rmi80I7RI3ij2U7RdRF5pYuQTnPrwEmGmUZS5xpxzLwwVynfoFUujZe1lm6HS1ymxw/exec';
 // ============================================================
 
@@ -2574,6 +2585,7 @@ async function saveVatTu() {
   if (!name) { toast('⚠️ Nhập tên vật tư'); return; }
   if (db.items.some(i => normVN(i.name) === normVN(name))) { toast('⚠️ Vật tư này đã có trong danh sách'); return; }
   const item = {id:newId(), name, cat:document.getElementById('mv-cat').value, unit:document.getElementById('mv-unit').value, stock:0, minStock:+document.getElementById('mv-min').value||0, project:curProj};
+  if (mvPick && normVN(mvPick.name) === normVN(name)) { item.capThang = +mvPick.capThang || 0; item.canMay = +mvPick.canMay || 0; }   // giữ cách cấp như dự án nguồn
   db.items.push(item);
   closeModal('modal-add-vattu');
   document.getElementById('mv-name').value = '';
@@ -7138,6 +7150,62 @@ function addHelpBtns() {
     const b = document.createElement('button'); b.className = 'help-btn'; b.textContent = '?'; b.setAttribute('aria-label', 'Hướng dẫn màn này');
     b.onclick = e => { e.stopPropagation(); openHelp(p.id); }; h.appendChild(b);
   });
+}
+
+// ===== v5.26: GỢI Ý TÊN VẬT TƯ KHI THÊM (từ danh mục mọi dự án) + ADMIN XÓA DANH MỤC VẬT TƯ =====
+let itemCatSrv = null, mvPick = null;
+async function loadItemCat() {
+  if (itemCatSrv || !navigator.onLine) return;
+  const r = await api('itemCatalog', {}, 20000);
+  if (r && r.success) { itemCatSrv = r.items || []; mvNameList(); }
+}
+function mvNameList() {
+  const el = document.getElementById('mv-nlist'), inp = document.getElementById('mv-name');
+  if (!el || !inp || document.activeElement !== inp) return;
+  const key = n => vnNorm(n).replace(/\s+/g, ' ').trim(), have = new Set(db.items.map(i => key(i.name)));
+  const toks = vnNorm(inp.value).split(/\s+/).filter(Boolean);
+  const catName = id => (db.categories.find(c => c.id === id) || {}).name || 'Khác';
+  const ord = id => { const i = db.categories.findIndex(c => c.id === id); return i < 0 ? 99 : i; };
+  const all = (itemCatSrv || []).map((x, i) => Object.assign({}, x, {i})).filter(x => !have.has(key(x.name)))
+    .filter(x => !toks.length || toks.every(t => vnNorm(x.name + ' ' + catName(x.cat)).includes(t))).sort((a, b) => ord(a.cat) - ord(b.cat) || a.i - b.i);
+  let html = '', last = '';
+  all.slice(0, 150).forEach(x => {
+    const c = db.categories.find(y => y.id === x.cat);
+    if (x.cat !== last) { html += `<div class="combo-head">${escHtml((c ? c.icon + ' ' : '') + catName(x.cat))}</div>`; last = x.cat; }
+    html += `<div class="combo-item" onmousedown="event.preventDefault()" onclick="mvPickItem(${x.i})"><b>${escHtml(x.name)}</b><small>${escHtml(x.unit || '')}</small></div>`;
+  });
+  const dup = inp.value.trim() && have.has(key(inp.value));
+  el.innerHTML = (!itemCatSrv ? '<div class="combo-empty">Đang tải danh sách gợi ý…</div>' : '') + html
+    + (dup ? `<div class="combo-empty" style="color:var(--red)">Vật tư "${escHtml(inp.value.trim())}" đã có trong dự án này</div>`
+      : inp.value.trim() ? `<div class="combo-item free" onmousedown="event.preventDefault()" onclick="mvFree()"><b>✏️ Dùng tên tự nhập: "${escHtml(inp.value.trim())}"</b><small>Vật tư mới, chọn nhóm và đơn vị bên dưới</small></div>` : '');
+  el.style.display = 'block';
+}
+function mvNameHide() { const el = document.getElementById('mv-nlist'); if (el) el.style.display = 'none'; }
+function mvFree() { mvPick = null; mvNameHide(); document.getElementById('mv-name').blur(); }
+function mvPickItem(i) {
+  const x = (itemCatSrv || [])[i]; if (!x) return;
+  mvPick = x;
+  document.getElementById('mv-name').value = x.name;
+  const cs = document.getElementById('mv-cat'); if ([...cs.options].some(o => o.value === x.cat)) cs.value = x.cat;
+  const us = document.getElementById('mv-unit'); if (x.unit && ![...us.options].some(o => o.value === x.unit)) us.insertAdjacentHTML('beforeend', `<option>${escHtml(x.unit)}</option>`); if (x.unit) us.value = x.unit;
+  mvNameHide();
+}
+function openAddVatTu() {
+  mvPick = null; document.getElementById('mv-name').value = '';
+  openModal('modal-add-vattu'); loadItemCat();
+}
+async function purgeItemsUI() {
+  closeSidebar();
+  if (role !== 'ADM' || !curProj) return;
+  const n = db.items.length;
+  if (!confirm(`XÓA TOÀN BỘ ${n} vật tư trong danh mục của dự án "${curProj}"?\n\nChỉ làm được khi dự án chưa có phiếu nào. Máy chủ tự sao lưu trước khi xóa.`)) return;
+  const t = prompt(`Gõ đúng tên dự án để xác nhận:\n${curProj}`);
+  if (t === null) return;
+  if (t.trim() !== curProj) { toast('⚠️ Tên dự án không khớp — chưa xóa'); return; }
+  showLoader('Đang sao lưu rồi xóa... (khoảng 10–30 giây)'); const r = await api('purgeItems', {project:curProj, confirm:t.trim()}, 120000); hideLoader();
+  if (!r || !r.success) { toast('⚠️ ' + ((r && (r.error || r.reason)) || 'Không xóa được')); return; }
+  await syncAll(true); refreshCurrentView(false);
+  toast(`🗑 Đã xóa ${r.removed || 0} vật tư của ${curProj} (đã sao lưu trước)`);
 }
 
 // ===== GHI LỖI PHÁT SINH (gửi về tab LoiApp trên Sheet) =====
