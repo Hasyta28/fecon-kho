@@ -622,6 +622,23 @@ body.can-ql .hide-ql{display:none!important}
 #mv-nlist{max-height:300px;overflow-y:auto}
 #mv-nlist .combo-item{display:flex;flex-direction:column;gap:2px;padding:9px 12px;border-top:1px solid var(--border);cursor:pointer}
 #mv-nlist .combo-item small{font-size:11px;color:var(--text3)}#mv-nlist .combo-item.free{background:#FFF7F0}#mv-nlist .combo-empty{padding:10px;text-align:center;color:var(--text3);font-size:12px}
+.pg-bio{position:fixed;inset:0;z-index:9500;display:flex;flex-direction:column;align-items:center;gap:14px;padding:calc(60px + env(safe-area-inset-top)) 22px calc(26px + env(safe-area-inset-bottom));box-sizing:border-box;
+  background:linear-gradient(180deg,rgba(6,18,40,.35) 0%,rgba(6,18,40,.6) 45%,rgba(6,18,40,.88) 100%),url('bg-login.jpg') 46% center/cover no-repeat,#0B1B33}
+.pg-bio .sp-box{padding:12px 20px;border-radius:18px;animation:none}.pg-bio .sp-box img{width:150px}
+.bio-name{color:#fff;font-size:20px;font-weight:900;text-shadow:0 2px 8px rgba(0,0,0,.5)}
+.pg-bio .btn-full{width:100%;max-width:420px;min-height:56px;font-size:16px;font-weight:900;border-radius:16px;display:flex;align-items:center;justify-content:center;gap:10px}
+.bio-btn-ico{width:26px;height:26px;display:inline-flex}.bio-btn-ico svg{width:100%;height:100%}
+.bio-row{display:flex;gap:10px;width:100%;max-width:420px}
+.bio-row button{flex:1;min-height:44px;border-radius:12px;border:1.5px solid rgba(255,255,255,.55);background:transparent;color:#fff;font-weight:800;cursor:pointer;font-family:inherit}
+.bio-pwbox{width:100%;max-width:420px;background:rgba(255,255,255,.92);border-radius:18px;padding:14px;box-sizing:border-box;display:flex;flex-direction:column;gap:10px}
+.bio-pwbox input{min-height:48px;border:1.5px solid var(--border);border-radius:12px;padding:0 12px;font-size:16px}
+.bio-ask{position:fixed;inset:0;z-index:9400;background:rgba(10,20,40,.45);display:flex;align-items:flex-end}
+.bio-sheet{width:100%;background:#fff;border-radius:22px 22px 0 0;padding:20px 18px calc(24px + env(safe-area-inset-bottom));display:flex;flex-direction:column;gap:12px;align-items:center;text-align:center;animation:cardUp .35s ease-out both}
+.bio-sheet b{font-size:18px}.bio-sheet .btn-full{width:100%;max-width:420px}
+.bio-ico{width:76px;height:76px;border-radius:22px;background:#FFF1E8;color:#F26522;display:flex;align-items:center;justify-content:center}.bio-ico svg{width:46px;height:46px}
+.bio-later{border:none;background:none;color:var(--text2);font-weight:700;cursor:pointer;padding:6px;font-family:inherit}
+.bio-sw{width:42px;height:24px;border-radius:12px;background:#C9D3E3;position:relative;flex-shrink:0}.bio-sw::after{content:'';position:absolute;top:2px;left:2px;width:20px;height:20px;border-radius:50%;background:#fff;box-shadow:0 1px 3px rgba(0,0,0,.3);transition:left .2s}
+.bio-sw.on{background:#27AE60}.bio-sw.on::after{left:20px}
 .more-btn{display:block;width:calc(100% - 28px);margin:10px 14px;border:1.5px dashed var(--border);background:#fff;border-radius:12px;padding:12px;font-weight:800;color:var(--primary);cursor:pointer}
 
 .diag-out{background:var(--bg);border-radius:10px;padding:10px 12px;font-size:12px;line-height:1.7;color:var(--text2);margin-top:6px;word-break:break-word}
@@ -1151,6 +1168,7 @@ body:not(.can-cost) .need-cost{display:none!important}
     <div class="sidebar-item" data-p="k_kk" onclick="closeSidebar();setTimeout(openKK,300)"><span class="sidebar-item-ico">🔢</span>Đợt kiểm kê</div>
     <div class="sidebar-item need-cost" onclick="openDpSb('dp-coc')"><span class="sidebar-item-ico">🔗</span>Đối chiếu cóc nối</div>
     <div class="sidebar-item" onclick="closeSidebar();setTimeout(openGuides,300)"><span class="sidebar-item-ico">📖</span>Hướng dẫn sử dụng</div>
+    <div class="sidebar-item" id="sb-bio" style="display:none" onclick="bioToggle()"><span class="sidebar-item-ico">🔒</span><span id="sb-bio-lbl" style="flex:1">Khóa app bằng Face ID</span><span class="bio-sw" id="sb-bio-sw"></span></div>
     <div class="sidebar-item" onclick="openDpSb('dp-tg')"><span class="sidebar-item-ico">🔔</span>Nhận cảnh báo Telegram</div>
     <div class="sidebar-divider need-ql"></div>
     <div class="sidebar-label need-ql">Quản lý</div>
@@ -1593,7 +1611,7 @@ body:not(.can-cost) .need-cost{display:none!important}
 // ============================================================
 // CONFIG
 // ============================================================
-const APP_VERSION = '5.26.1';
+const APP_VERSION = '5.27.0';
 const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbw6Rmi80I7RI3ij2U7RdRF5pYuQTnPrwEmGmUZS5xpxzLwwVynfoFUujZe1lm6HS1ymxw/exec';
 // ============================================================
 
@@ -1763,6 +1781,7 @@ function startSession(r) {
   }
   showPage('pg-app');
   setupApp(pre);
+  bioAfterLogin();                                                // v5.27: hỏi bật Face ID / vân tay 1 lần
 }
 // Nạp dữ liệu đã lưu trên máy của một dự án (nếu có)
 function loadProjCache(P) {
@@ -1803,7 +1822,7 @@ function setPendingBadge(n) {
   renderAvatar();
 }
 async function setupApp(pre) {
-  applyRoleUI();
+  applyRoleUI(); bioCheck(); renderBioMenu();
   document.getElementById('exp-range').onchange = function() {
     document.getElementById('exp-custom').style.display = this.value === 'custom' ? '' : 'none';
   };
@@ -5716,6 +5735,7 @@ async function exportCost() {
 function doLogout() {
   closeSidebar();
   if (outbox.length && !confirm(`Còn ${outbox.length} thay đổi CHƯA gửi lên máy chủ (do mất mạng).\nĐăng xuất bây giờ sẽ MẤT các thay đổi này.\n\nVẫn đăng xuất?`)) return;
+  try { bioSet(null); } catch (e) {}                              // v5.27: đăng xuất → tắt mở khóa sinh trắc của tài khoản này
   if (token) api('logout');                       // báo máy chủ hủy phiên (không cần chờ)
   token = ''; localStorage.removeItem(LS_TOKEN); newSessionGen();
   PDB.clear().catch(() => {}); formPhotos.fn = []; formPhotos.fx = [];
@@ -7102,7 +7122,7 @@ async function loadDevAdminLog(d) {
   box.innerHTML = `<b>🔒 Nhật ký sửa của Admin</b> <small>(chỉ Admin thấy)</small>` + (rows ? (rows.length ? rows.map(x => `<div class="al-row"><span>${escHtml(x.t)} · ${escHtml(x.by)}</span>${escHtml(x.x)}</div>`).join('') : '<div class="pyc-empty">Chưa sửa lần nào</div>') : '<div class="pyc-empty">Không tải được (cần mạng)</div>');
 }
 
-const GUIDES = [{"id": "dangnhap", "g": "Bắt đầu", "t": "Đăng nhập & liên kết Telegram", "p": "", "s": ["Mở app, nhập tên đăng nhập do Admin cấp.", "Nhập mật khẩu rồi bấm \"Đăng nhập\". Chấm màu dưới khung cho biết mạng tốt hay yếu.", "Bấm ☰ (Menu) → \"Nhận cảnh báo Telegram\".", "Bấm \"Mở Telegram để liên kết\" → bấm Start trong Telegram. Khoảng 1 phút sau bấm \"Kiểm tra\"."]}, {"id": "pyc_coc", "g": "Phiếu yêu cầu", "t": "Tạo phiếu yêu cầu cóc nối", "p": "y_tao", "s": ["Vào tab Phiếu YC, bấm \"+ Tạo phiếu yêu cầu\".", "Chọn hạng mục (Cọc / Tường vây), gõ tên cấu kiện (VD: P3.11) rồi chọn trong danh sách.", "Chọn mức nối cóc theo thực tế thi công (bắt buộc). App tự tính số cóc theo bản vẽ.", "Kiểm tra bảng số lượng, ghi chú nếu cần rồi bấm \"Gửi phiếu\". Phiếu tới kho ngay, thủ kho nhận tin Telegram."]}, {"id": "pyc_vt", "g": "Phiếu yêu cầu", "t": "Tạo phiếu vật tư khác (dầu, mỡ, răng gàu…)", "p": "y_tao", "s": ["Bấm \"+ Tạo phiếu yêu cầu\" → chọn thẻ \"Vật tư khác\".", "Gõ tên vật tư (không cần dấu, VD: \"dau do\") rồi chọn trong danh sách gợi ý.", "Dầu, mỡ, răng gàu… bắt buộc chọn máy sử dụng. Chọn \"Dùng chung\" thì ghi lý do.", "Nhập số lượng rồi bấm \"Gửi phiếu\"."]}, {"id": "pyc_duyet", "g": "Phiếu yêu cầu", "t": "Duyệt phiếu (CHT / CHP)", "p": "y_duyet", "s": ["Tab Phiếu YC → phiếu có dải vàng \"Chờ CHT/CHP duyệt\". Bấm để mở.", "Xem trạng thái phiếu và số lượng từng vật tư. Kho vẫn giao trước được khi bạn chưa duyệt.", "Bấm \"✅ Duyệt phiếu\". Không đồng ý thì nhập lý do và bấm \"Từ chối\" / \"Hủy\"."]}, {"id": "pyc_giao", "g": "Phiếu yêu cầu", "t": "Giao hàng theo phiếu yêu cầu", "p": "y_giao", "s": ["Tab Phiếu YC → mục \"Cần giao gấp\", bấm vào phiếu có dải đỏ.", "Đọc khung Trạng thái phiếu: việc của bạn, phiếu đã được CHT/CHP duyệt chưa.", "Mỗi vật tư nhập số \"Giao lần này\", hoặc bấm \"Giao đủ\". Kho thiếu thì giao một phần hoặc bấm Kiểm kê.", "Bấm \"🚚 Giao hàng – trừ tồn kho\". App trừ tồn, tạo phiếu xuất và báo người lập phiếu."]}, {"id": "pyc_nhan", "g": "Phiếu yêu cầu", "t": "Xác nhận nhận hàng / báo nhận thiếu", "p": "y_nhan", "s": ["Kho giao xong, phiếu chuyển dải xanh \"Kho đã giao\". Bấm để mở.", "Kiểm hàng thực tế với số \"Kho đã giao\" của từng vật tư.", "Đủ thì bấm \"✅ Tôi đã nhận đủ hàng\". Thiếu thì bấm \"⚠️ Nhận thiếu\", nhập số thực nhận rồi xác nhận."]}, {"id": "nhap", "g": "Kho", "t": "Nhập kho", "p": "k_nhap", "s": ["Tab Tổng quan → bấm ô \"Nhập kho\".", "Chọn vật tư (gõ để tìm), nhập số lượng, nhà cung cấp, chụp ảnh biên bản nếu có.", "Bấm \"✅ Xác nhận nhập kho\". Mất mạng vẫn lưu được, có mạng app tự gửi."]}, {"id": "xuat", "g": "Kho", "t": "Xuất kho & xuất dầu ghi giờ máy", "p": "k_xuat", "s": ["Tab Tổng quan → \"Xuất kho\". Chọn vật tư và nhập số lượng.", "Xuất dầu cho máy: chọn máy nhận dầu.", "Bắt buộc nhập SỐ ĐỒNG HỒ GIỜ MÁY đọc trên máy (không phải giờ trong ngày). Đồng hồ hỏng thì tích ô và ghi lý do.", "Bấm \"📤 Xác nhận xuất kho\"."]}, {"id": "kiemke", "g": "Kho", "t": "Kiểm kê thực tế", "p": "k_kk", "s": ["Bấm ☰ (Menu) → \"Đợt kiểm kê\" (hoặc tab Phiếu YC → \"Đợt kiểm kê\").", "Đếm thực tế và nhập số đếm vào từng dòng vật tư. Số khác với app sẽ tự tô viền cam.", "Bấm \"Lưu đợt kiểm kê\". Số đếm thành mốc để app tính tồn kho về sau."]}, {"id": "muontra", "g": "Kho", "t": "Cho mượn / trả dụng cụ", "p": "k_loan", "s": ["Bấm ☰ (Menu) → \"Cho mượn / Trả\".", "Bấm \"+\" để lập phiếu mượn.", "Chọn loại phiếu (Cho mượn / Đi mượn), vật tư, người mượn, số lượng rồi lưu. Khi trả, mở phiếu và bấm \"Xác nhận\" trả."]}, {"id": "themmay", "g": "Máy móc", "t": "Thêm máy & giờ máy lúc vào", "p": "k_dm", "s": ["Menu → \"Máy móc & Thiết bị\" → bấm \"+ Thêm\".", "Bấm ô Tên thiết bị → chọn máy có sẵn trong danh sách (gõ tên hoặc mã để tìm). Không có thì gõ tên mới.", "Kiểm tra thông tin tự điền, nhập NGÀY VÀO và SỐ ĐỒNG HỒ GIỜ MÁY lúc máy vào công trình.", "Bấm \"Lưu\"."]}, {"id": "ketthuc", "g": "Máy móc", "t": "Kết thúc máy rời công trình", "p": "k_meter", "s": ["Mở máy trong danh sách Máy móc. Khung giờ máy cho biết ngày vào, tổng giờ chạy, lít dầu/giờ.", "Máy rời công trình: bấm \"Kết thúc · máy rời công trình\".", "Chọn ngày kết thúc, nhập số đồng hồ lúc rời rồi \"Xác nhận kết thúc\"."]}, {"id": "baocao", "g": "Báo cáo", "t": "Xem báo cáo & xuất Excel", "p": "x_nxt", "s": ["Bấm tab \"Báo cáo\" ở thanh dưới.", "Bấm \"Xuất báo cáo Excel\" (tab Phiếu YC có thêm \"Xuất báo cáo phiếu YC\").", "Chọn kỳ báo cáo rồi bấm \"⬇️ Xuất Excel\" → tải về hoặc gửi Zalo."]}, {"id": "thanhvien", "g": "Quản trị", "t": "Thành viên & phân quyền chức danh", "p": "ADM", "s": ["Bấm ☰ (Menu) → \"Thành viên\".", "Bấm vào một người → chọn chức danh và TÍCH DỰ ÁN (bắt buộc với chức danh cần dự án) → Lưu.", "Menu → \"Phân quyền chức danh\" → bấm một chức danh.", "Tích / bỏ tích từng quyền rồi bấm \"Lưu\". Áp dụng ngay cho mọi người cùng chức danh."]}, {"id": "saoluu", "g": "Quản trị", "t": "Sao lưu dữ liệu", "p": "ADM", "s": ["Bấm ☰ (Menu) → \"Sao lưu dữ liệu\".", "Xem lần sao lưu gần nhất. Bấm \"Sao lưu ngay\" trước việc lớn; mở thư mục Drive để xem các bản sao."]}];
+const GUIDES = [{"id":"khoaapp","g":"Bắt đầu","t":"Mở khóa bằng Face ID / vân tay","p":"","s":["Sau khi đăng nhập bằng mật khẩu, app hỏi \"Bật mở khóa bằng Face ID / vân tay?\" → bấm Bật (hoặc Menu → \"Khóa app bằng Face ID / vân tay\").","Mỗi ngày, lần đầu mở app (sau 0:00) quét Face ID / vân tay một lần, sau đó dùng bình thường cả ngày.","Không quét được thì bấm \"Dùng mật khẩu\". Đăng xuất thì tính năng tự tắt."]},{"id": "dangnhap", "g": "Bắt đầu", "t": "Đăng nhập & liên kết Telegram", "p": "", "s": ["Mở app, nhập tên đăng nhập do Admin cấp.", "Nhập mật khẩu rồi bấm \"Đăng nhập\". Chấm màu dưới khung cho biết mạng tốt hay yếu.", "Bấm ☰ (Menu) → \"Nhận cảnh báo Telegram\".", "Bấm \"Mở Telegram để liên kết\" → bấm Start trong Telegram. Khoảng 1 phút sau bấm \"Kiểm tra\"."]}, {"id": "pyc_coc", "g": "Phiếu yêu cầu", "t": "Tạo phiếu yêu cầu cóc nối", "p": "y_tao", "s": ["Vào tab Phiếu YC, bấm \"+ Tạo phiếu yêu cầu\".", "Chọn hạng mục (Cọc / Tường vây), gõ tên cấu kiện (VD: P3.11) rồi chọn trong danh sách.", "Chọn mức nối cóc theo thực tế thi công (bắt buộc). App tự tính số cóc theo bản vẽ.", "Kiểm tra bảng số lượng, ghi chú nếu cần rồi bấm \"Gửi phiếu\". Phiếu tới kho ngay, thủ kho nhận tin Telegram."]}, {"id": "pyc_vt", "g": "Phiếu yêu cầu", "t": "Tạo phiếu vật tư khác (dầu, mỡ, răng gàu…)", "p": "y_tao", "s": ["Bấm \"+ Tạo phiếu yêu cầu\" → chọn thẻ \"Vật tư khác\".", "Gõ tên vật tư (không cần dấu, VD: \"dau do\") rồi chọn trong danh sách gợi ý.", "Dầu, mỡ, răng gàu… bắt buộc chọn máy sử dụng. Chọn \"Dùng chung\" thì ghi lý do.", "Nhập số lượng rồi bấm \"Gửi phiếu\"."]}, {"id": "pyc_duyet", "g": "Phiếu yêu cầu", "t": "Duyệt phiếu (CHT / CHP)", "p": "y_duyet", "s": ["Tab Phiếu YC → phiếu có dải vàng \"Chờ CHT/CHP duyệt\". Bấm để mở.", "Xem trạng thái phiếu và số lượng từng vật tư. Kho vẫn giao trước được khi bạn chưa duyệt.", "Bấm \"✅ Duyệt phiếu\". Không đồng ý thì nhập lý do và bấm \"Từ chối\" / \"Hủy\"."]}, {"id": "pyc_giao", "g": "Phiếu yêu cầu", "t": "Giao hàng theo phiếu yêu cầu", "p": "y_giao", "s": ["Tab Phiếu YC → mục \"Cần giao gấp\", bấm vào phiếu có dải đỏ.", "Đọc khung Trạng thái phiếu: việc của bạn, phiếu đã được CHT/CHP duyệt chưa.", "Mỗi vật tư nhập số \"Giao lần này\", hoặc bấm \"Giao đủ\". Kho thiếu thì giao một phần hoặc bấm Kiểm kê.", "Bấm \"🚚 Giao hàng – trừ tồn kho\". App trừ tồn, tạo phiếu xuất và báo người lập phiếu."]}, {"id": "pyc_nhan", "g": "Phiếu yêu cầu", "t": "Xác nhận nhận hàng / báo nhận thiếu", "p": "y_nhan", "s": ["Kho giao xong, phiếu chuyển dải xanh \"Kho đã giao\". Bấm để mở.", "Kiểm hàng thực tế với số \"Kho đã giao\" của từng vật tư.", "Đủ thì bấm \"✅ Tôi đã nhận đủ hàng\". Thiếu thì bấm \"⚠️ Nhận thiếu\", nhập số thực nhận rồi xác nhận."]}, {"id": "nhap", "g": "Kho", "t": "Nhập kho", "p": "k_nhap", "s": ["Tab Tổng quan → bấm ô \"Nhập kho\".", "Chọn vật tư (gõ để tìm), nhập số lượng, nhà cung cấp, chụp ảnh biên bản nếu có.", "Bấm \"✅ Xác nhận nhập kho\". Mất mạng vẫn lưu được, có mạng app tự gửi."]}, {"id": "xuat", "g": "Kho", "t": "Xuất kho & xuất dầu ghi giờ máy", "p": "k_xuat", "s": ["Tab Tổng quan → \"Xuất kho\". Chọn vật tư và nhập số lượng.", "Xuất dầu cho máy: chọn máy nhận dầu.", "Bắt buộc nhập SỐ ĐỒNG HỒ GIỜ MÁY đọc trên máy (không phải giờ trong ngày). Đồng hồ hỏng thì tích ô và ghi lý do.", "Bấm \"📤 Xác nhận xuất kho\"."]}, {"id": "kiemke", "g": "Kho", "t": "Kiểm kê thực tế", "p": "k_kk", "s": ["Bấm ☰ (Menu) → \"Đợt kiểm kê\" (hoặc tab Phiếu YC → \"Đợt kiểm kê\").", "Đếm thực tế và nhập số đếm vào từng dòng vật tư. Số khác với app sẽ tự tô viền cam.", "Bấm \"Lưu đợt kiểm kê\". Số đếm thành mốc để app tính tồn kho về sau."]}, {"id": "muontra", "g": "Kho", "t": "Cho mượn / trả dụng cụ", "p": "k_loan", "s": ["Bấm ☰ (Menu) → \"Cho mượn / Trả\".", "Bấm \"+\" để lập phiếu mượn.", "Chọn loại phiếu (Cho mượn / Đi mượn), vật tư, người mượn, số lượng rồi lưu. Khi trả, mở phiếu và bấm \"Xác nhận\" trả."]}, {"id": "themmay", "g": "Máy móc", "t": "Thêm máy & giờ máy lúc vào", "p": "k_dm", "s": ["Menu → \"Máy móc & Thiết bị\" → bấm \"+ Thêm\".", "Bấm ô Tên thiết bị → chọn máy có sẵn trong danh sách (gõ tên hoặc mã để tìm). Không có thì gõ tên mới.", "Kiểm tra thông tin tự điền, nhập NGÀY VÀO và SỐ ĐỒNG HỒ GIỜ MÁY lúc máy vào công trình.", "Bấm \"Lưu\"."]}, {"id": "ketthuc", "g": "Máy móc", "t": "Kết thúc máy rời công trình", "p": "k_meter", "s": ["Mở máy trong danh sách Máy móc. Khung giờ máy cho biết ngày vào, tổng giờ chạy, lít dầu/giờ.", "Máy rời công trình: bấm \"Kết thúc · máy rời công trình\".", "Chọn ngày kết thúc, nhập số đồng hồ lúc rời rồi \"Xác nhận kết thúc\"."]}, {"id": "baocao", "g": "Báo cáo", "t": "Xem báo cáo & xuất Excel", "p": "x_nxt", "s": ["Bấm tab \"Báo cáo\" ở thanh dưới.", "Bấm \"Xuất báo cáo Excel\" (tab Phiếu YC có thêm \"Xuất báo cáo phiếu YC\").", "Chọn kỳ báo cáo rồi bấm \"⬇️ Xuất Excel\" → tải về hoặc gửi Zalo."]}, {"id": "thanhvien", "g": "Quản trị", "t": "Thành viên & phân quyền chức danh", "p": "ADM", "s": ["Bấm ☰ (Menu) → \"Thành viên\".", "Bấm vào một người → chọn chức danh và TÍCH DỰ ÁN (bắt buộc với chức danh cần dự án) → Lưu.", "Menu → \"Phân quyền chức danh\" → bấm một chức danh.", "Tích / bỏ tích từng quyền rồi bấm \"Lưu\". Áp dụng ngay cho mọi người cùng chức danh."]}, {"id": "saoluu", "g": "Quản trị", "t": "Sao lưu dữ liệu", "p": "ADM", "s": ["Bấm ☰ (Menu) → \"Sao lưu dữ liệu\".", "Xem lần sao lưu gần nhất. Bấm \"Sao lưu ngay\" trước việc lớn; mở thư mục Drive để xem các bản sao."]}];
 
 // v5.25: HƯỚNG DẪN SỬ DỤNG — ảnh trong thư mục huongdan/ (chỉ tải khi mở bài, xem rồi thì lưu lại trên máy)
 const GUIDE_ICO = {'Bắt đầu':'👋', 'Phiếu yêu cầu':'📝', 'Kho':'📦', 'Máy móc':'🏗', 'Báo cáo':'📊', 'Quản trị':'🛡'};
@@ -7207,6 +7227,98 @@ async function purgeItemsUI() {
   await syncAll(true); refreshCurrentView(false);
   toast(`🗑 Đã xóa ${r.removed || 0} vật tư của ${curProj} (đã sao lưu trước)`);
 }
+
+// ===== v5.27: MỞ KHÓA BẰNG FACE ID / VÂN TAY — quét lần đầu mở app mỗi ngày (qua 0:00) =====
+const BIO_IOS = /iPhone|iPad|iPod/i.test(navigator.userAgent);
+const BIO_NAME = BIO_IOS ? 'Face ID' : 'vân tay';
+const BIO_SVG = BIO_IOS
+  ? '<svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M4 15V9a5 5 0 0 1 5-5h6M33 4h6a5 5 0 0 1 5 5v6M44 33v6a5 5 0 0 1-5 5h-6M15 44H9a5 5 0 0 1-5-5v-6"/><path d="M16 17v4M32 17v4M24 17v10h-3"/><path d="M17 33c4 3.5 10 3.5 14 0"/></svg>'
+  : '<svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M12.5 10.5A17 17 0 0 1 41 23"/><path d="M7 19a17 17 0 0 1 3-5.5"/><path d="M8 33a18 18 0 0 1-1-6"/><path d="M15 39c-2-3.5-3.5-8-3.5-12.5A12.5 12.5 0 0 1 36.5 26c0 1 0 2-.2 3"/><path d="M21 42.5c-2.5-4-4-9.5-4-15.5a7 7 0 0 1 14 0c0 4-.5 7.5-1.5 11"/><path d="M24 27c0 6 1.5 11 4 15"/><path d="M41 31c-.5 3-1.5 6-3 8.5"/></svg>';
+let bioOK = null;
+async function bioAvail() {
+  if (bioOK !== null) return bioOK;
+  try { bioOK = !!(window.PublicKeyCredential && PublicKeyCredential.isUserVerifyingPlatformAuthenticatorAvailable && await PublicKeyCredential.isUserVerifyingPlatformAuthenticatorAvailable()); }
+  catch (e) { bioOK = false; }
+  return bioOK;
+}
+const bioKey = () => 'fecon_bio_' + (me?.id || '');
+const bioGet = () => { try { return JSON.parse(localStorage.getItem(bioKey()) || 'null'); } catch (e) { return null; } };
+const bioSet = v => { if (me) { if (v) localStorage.setItem(bioKey(), JSON.stringify(v)); else localStorage.removeItem(bioKey()); } };
+const bioToday = () => { const d = new Date(); return d.getFullYear() + '-' + (d.getMonth() + 1) + '-' + d.getDate(); };
+const b64u = buf => btoa(String.fromCharCode(...new Uint8Array(buf))).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+const unb64u = s => Uint8Array.from(atob(s.replace(/-/g, '+').replace(/_/g, '/') + '==='.slice((s.length + 3) % 4)), c => c.charCodeAt(0));
+const rnd = n => crypto.getRandomValues(new Uint8Array(n));
+async function bioEnable() {
+  try {
+    const cred = await navigator.credentials.create({publicKey:{challenge:rnd(32), rp:{name:'FECON Kho'},
+      user:{id:new TextEncoder().encode(String(me.id)).slice(0, 64), name:me.username || String(me.id), displayName:me.name || me.username || 'FECON'},
+      pubKeyCredParams:[{type:'public-key', alg:-7}, {type:'public-key', alg:-257}],
+      authenticatorSelection:{authenticatorAttachment:'platform', userVerification:'required', residentKey:'discouraged'}, timeout:60000, attestation:'none'}});
+    if (!cred) return false;
+    bioSet({id:b64u(cred.rawId), on:1, last:bioToday()});
+    toast('✅ Đã bật mở khóa bằng ' + BIO_NAME); renderBioMenu(); return true;
+  } catch (e) { toast('⚠️ Chưa bật được ' + BIO_NAME); return false; }
+}
+async function bioVerify() {
+  const b = bioGet(); if (!b) return true;
+  try {
+    const a = await navigator.credentials.get({publicKey:{challenge:rnd(32), allowCredentials:[{type:'public-key', id:unb64u(b.id)}], userVerification:'required', timeout:60000}});
+    if (!a) return false;
+    b.last = bioToday(); bioSet(b); return true;
+  } catch (e) { return false; }
+}
+// Hỏi bật 1 lần sau khi đăng nhập bằng mật khẩu
+async function bioAfterLogin() {
+  const b = bioGet();
+  if (b) { b.last = bioToday(); bioSet(b); return; }                         // vừa nhập mật khẩu = đã xác thực hôm nay
+  if (!(await bioAvail()) || localStorage.getItem('fecon_bio_asked_' + me.id)) return;
+  localStorage.setItem('fecon_bio_asked_' + me.id, '1');
+  const el = document.createElement('div'); el.id = 'bio-ask'; el.className = 'bio-ask';
+  el.innerHTML = `<div class="bio-sheet"><div class="bio-ico">${BIO_SVG}</div><b>Bật mở khóa bằng ${BIO_NAME}?</b>
+    <button class="btn-full btn-orange" onclick="document.getElementById('bio-ask').remove();bioEnable()">Bật</button>
+    <button class="bio-later" onclick="document.getElementById('bio-ask').remove()">Để sau</button></div>`;
+  document.body.appendChild(el);
+}
+// Lần đầu mở app mỗi ngày → màn quét
+async function bioCheck() {
+  if (!token || !me) return;
+  const b = bioGet(); if (!b || !b.on || b.last === bioToday()) return;
+  if (document.getElementById('pg-bio')) return;
+  const el = document.createElement('div'); el.id = 'pg-bio'; el.className = 'pg-bio';
+  el.innerHTML = `<div class="sp-box"><img src="" data-logo alt="FECON South"></div>
+    <div class="bio-name">${escHtml(me.name || '')}</div><div style="flex:1"></div>
+    <div id="bio-pw" style="display:none" class="bio-pwbox"><input type="password" id="bio-pass" placeholder="Mật khẩu" autocomplete="current-password">
+      <button class="btn-full btn-orange" onclick="bioPw()">Mở khóa</button></div>
+    <button class="btn-full btn-orange bio-go" id="bio-go" onclick="bioGo()"><span class="bio-btn-ico">${BIO_SVG}</span>Mở khóa bằng ${BIO_NAME}</button>
+    <div class="bio-row"><button onclick="document.getElementById('bio-pw').style.display='';document.getElementById('bio-go').style.display='none';document.getElementById('bio-pass').focus()">🔑 Dùng mật khẩu</button>
+      <button onclick="bioLogout()">Đăng xuất</button></div>`;
+  const lg = document.querySelector('.login-logo img'); el.querySelector('[data-logo]').src = lg ? lg.src : '';
+  document.body.appendChild(el);
+  setTimeout(bioGo, 350);                                                        // tự bật khung quét
+}
+async function bioGo() { if (await bioVerify()) document.getElementById('pg-bio')?.remove(); }
+async function bioPw() {
+  const pw = document.getElementById('bio-pass').value; if (!pw) return;
+  showLoader('Đang kiểm tra...');
+  const r = await api('login', {username:me.username, password:pw, device:deviceName(), unlock:1, oldToken:token}, 30000); hideLoader();
+  if (!r || !r.success) { toast('⚠️ ' + ((r && (r.error || r.reason)) || 'Sai mật khẩu')); return; }
+  token = r.token; localStorage.setItem(LS_TOKEN, token);
+  const b = bioGet(); if (b) { b.last = bioToday(); bioSet(b); }
+  document.getElementById('pg-bio')?.remove();
+}
+function bioLogout() { document.getElementById('pg-bio')?.remove(); bioSet(null); doLogout(); }
+async function renderBioMenu() {
+  const row = document.getElementById('sb-bio'); if (!row) return;
+  if (!(await bioAvail()) || !token) { row.style.display = 'none'; return; }
+  row.style.display = '';
+  document.getElementById('sb-bio-lbl').textContent = 'Khóa app bằng ' + BIO_NAME;
+  document.getElementById('sb-bio-sw').classList.toggle('on', !!bioGet());
+}
+async function bioToggle() {
+  if (bioGet()) { bioSet(null); toast('Đã tắt mở khóa bằng ' + BIO_NAME); renderBioMenu(); }
+  else await bioEnable();
+}
+document.addEventListener('visibilitychange', () => { if (!document.hidden) bioCheck(); });
 
 // ===== GHI LỖI PHÁT SINH (gửi về tab LoiApp trên Sheet) =====
 const _errSent = new Set(); let _errN = 0;
