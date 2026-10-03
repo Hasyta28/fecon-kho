@@ -583,9 +583,12 @@ body.can-ql .hide-ql{display:none!important}
 .mt-grid{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:10px}
 .mt-st{background:var(--bg);border-radius:10px;padding:8px}.mt-st small{display:block;font-size:10px;font-weight:800;color:var(--text2)}.mt-st b{font-size:17px;font-weight:900}
 .mt-hist{border:1px solid var(--border);border-radius:12px;padding:0 10px;margin-bottom:10px}
-.mt-hr{display:grid;grid-template-columns:1.3fr .9fr .7fr .8fr;gap:4px;padding:7px 0;border-top:1px solid var(--border);font-size:12.5px;align-items:center}
+.mt-hr{display:grid;grid-template-columns:1.3fr .9fr .7fr .8fr var(--mtx,0px);gap:4px;padding:7px 0;border-top:1px solid var(--border);font-size:12.5px;align-items:center}
 .mt-hr:first-child{border-top:none}.mt-hr>*:not(:first-child){text-align:right}.mt-hr small{display:block;font-size:10.5px;color:var(--text3)}
 .mt-hh{font-size:10.5px;font-weight:800;color:var(--text3)}
+.mt-ed{border:none;background:none;cursor:pointer;font-size:14px;padding:0}
+.mt-alog{border:1.5px dashed var(--border);border-radius:12px;padding:10px;margin-top:10px;font-size:13px}.mt-alog small{color:var(--text3)}
+.mt-alog .al-row{font-size:12px;padding:6px 0;border-top:1px solid var(--border)}.mt-alog .al-row span{color:var(--text3);display:block;font-size:11px}
 .bk-st{font-size:14px;margin-bottom:6px}.bk-st.bad{color:var(--red);font-weight:700}.bk-auto{font-size:13px;margin-bottom:10px}
 .card .btn-full{margin-bottom:8px}
 .bk-gh{display:flex;justify-content:space-between;padding:9px 0;font-weight:800}.bk-gh span{font-weight:600;color:var(--text3);font-size:12px}
@@ -1302,7 +1305,13 @@ body:not(.can-cost) .need-cost{display:none!important}
       <select id="ad-meter-unit" onchange="adMeterUnit()"><option value="h">⏱ Giờ máy</option><option value="km">🛣 Km (xe tải, xe ben)</option><option value="none">Không có đồng hồ</option></select></div>
     <div class="fg-row" id="ad-meter-box">
       <div class="fg"><label>Ngày vào công trình</label><input type="date" id="ad-in-date"></div>
-      <div class="fg"><label id="ad-in-lbl">Giờ máy lúc vào</label><input type="number" id="ad-in-meter" inputmode="decimal" min="0" step="0.1" placeholder="Số trên đồng hồ"></div>
+      <div class="fg"><label id="ad-in-lbl">Số đồng hồ giờ máy lúc vào</label><input type="number" id="ad-in-meter" inputmode="decimal" min="0" step="0.1" placeholder="Đọc trên đồng hồ của máy"></div>
+    </div>
+    <div class="combo-hint" id="ad-in-hint" style="margin:-6px 0 8px">Số trên đồng hồ đếm giờ của máy (VD: 3.912) — không phải giờ trong ngày</div>
+    <div id="ad-adm-box" style="display:none;background:#FFF7E6;border-radius:12px;padding:10px;margin-bottom:10px">
+      <div style="font-size:12px;font-weight:800;color:#8A5A00;margin-bottom:8px">🔒 Chỉ Admin sửa được — người dùng khác không thấy dấu hiệu đã sửa</div>
+      <div class="fg-row"><div class="fg"><label>Người thêm</label><input type="text" id="ad-by"></div><div class="fg"><label>Ngày thêm</label><input type="text" id="ad-at" placeholder="VD: 08:00:00 2/10/2026"></div></div>
+      <div class="fg-row"><div class="fg"><label>Ngày kết thúc</label><input type="date" id="ad-out-date"></div><div class="fg"><label>Số đồng hồ lúc kết thúc</label><input type="number" id="ad-out-meter" inputmode="decimal" step="0.1"></div></div>
     </div>
     <div class="fg"><label>Ghi chú</label><textarea id="ad-note" rows="2" placeholder="Ghi chú thêm..."></textarea></div>
     <div class="modal-actions">
@@ -1542,7 +1551,7 @@ body:not(.can-cost) .need-cost{display:none!important}
 // ============================================================
 // CONFIG
 // ============================================================
-const APP_VERSION = '5.22.2';
+const APP_VERSION = '5.23.0';
 const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbw6Rmi80I7RI3ij2U7RdRF5pYuQTnPrwEmGmUZS5xpxzLwwVynfoFUujZe1lm6HS1ymxw/exec';
 // ============================================================
 
@@ -1668,7 +1677,7 @@ async function doLogin() {
   const password = document.getElementById('li-pass').value;
   if (!username || !password) return authErr('Nhập tên đăng nhập và mật khẩu');
   authErr(''); showLoader('Đang đăng nhập...');
-  const r = await api('login', {username, password, device: deviceName()}, 30000);
+  const r = await api('login', {username, password, device: deviceName(), inc: syncInc()}, 40000);
   hideLoader();
   if (r.pending) { authTab('pending'); return; }
   if (!r.success) return authErr(r.offline ? (r.reason || 'Không có mạng — cần kết nối để đăng nhập') : (r.error || 'Đăng nhập thất bại'));
@@ -1692,15 +1701,33 @@ async function doRegister() {
   authTab('pending');
 }
 function startSession(r) {
-  // Máy dùng chung: người khác đăng nhập thì không giữ dữ liệu/thay đổi chờ gửi của người trước
-  if (me && me.id !== r.user.id) clearLocalData();
+  // v5.23: đổi tài khoản → GIỮ dữ liệu dự án trên máy (chỉ tải phần mới), chỉ bỏ thay đổi chờ gửi của người trước
+  if (me && me.id !== r.user.id) { outbox = []; localStorage.setItem(LS_OUT, '[]'); }
   newSessionGen(); stopAutoSync();
   token = r.token; me = r.user; role = me.role;
   localStorage.setItem(LS_TOKEN, token);
   localStorage.setItem(LS_USER, JSON.stringify(me));
   document.getElementById('li-pass').value = '';
+  let pre = false;
+  if (r.data && r.data.success) {                                // máy chủ 5.19+: dữ liệu trả kèm lúc đăng nhập
+    const d = r.data;
+    if (d.rv) { rolesRv = d.rv; localStorage.setItem('fecon_rv', d.rv); }
+    if (d.roles) setRoles(d.roles);
+    if (d.me) { me = d.me; role = me.role; localStorage.setItem(LS_USER, JSON.stringify(me)); }
+    if ((d.project || '') !== curProj) loadProjCache(d.project || '');
+    applyServer(d); reapplyOutbox(); saveLocal(); pre = true;
+  } else if (!allProjRole(role) && (me.projects || []).length && !(me.projects || []).includes(curProj)) {
+    loadProjCache(me.projects[0]);                               // máy chủ cũ: không hiện dữ liệu dự án người mới không được giao
+  }
   showPage('pg-app');
-  setupApp();
+  setupApp(pre);
+}
+// Nạp dữ liệu đã lưu trên máy của một dự án (nếu có)
+function loadProjCache(P) {
+  curProj = P; db = emptyDb();
+  try { const raw = P ? localStorage.getItem(LS_DB + '|' + P) : null; if (raw) { const d = JSON.parse(raw); if (d && d.items) db = Object.assign(emptyDb(), d); } } catch (e) {}
+  db.categories = CATEGORIES;
+  if (P) localStorage.setItem(LS_CUR, P);
 }
 
 // ===== PAGES =====
@@ -1733,7 +1760,7 @@ function setPendingBadge(n) {
   if (el) { el.textContent = pendingCount; el.style.display = pendingCount ? '' : 'none'; }
   renderAvatar();
 }
-async function setupApp() {
+async function setupApp(pre) {
   applyRoleUI();
   document.getElementById('exp-range').onchange = function() {
     document.getElementById('exp-custom').style.display = this.value === 'custom' ? '' : 'none';
@@ -1741,6 +1768,7 @@ async function setupApp() {
   updateProjSel();
   goHome();
   updateLowBadge();
+  if (pre) { loadedOnce = true; updateProjSel(); refreshCurrentView(false); startAutoSync(); return; }   // đã có dữ liệu từ lúc đăng nhập
   const hasCache = db.items.length > 0;
   let tick = null;
   if (!hasCache) {
@@ -1752,9 +1780,7 @@ async function setupApp() {
   clearInterval(tick); hideLoader();
   if (!token || gen !== sessionGen) return;                     // đã đăng xuất / người khác đăng nhập trong lúc tải
   if (ok || !hasCache) refreshCurrentView(false);
-  if (!ok && !hasCache) document.getElementById('main-body').innerHTML = `<div class="empty-state" style="padding-top:70px"><div class="e-ico">📶</div>
-    <p><b>Chưa tải được dữ liệu</b><br>Mạng yếu hoặc máy chủ Google đang chậm.</p>
-    <button class="btn-full btn-orange" style="max-width:260px;margin:14px auto 0" onclick="retryFirstLoad()">↻ Thử lại</button></div>`;
+  if (!ok && !hasCache) document.getElementById('main-body').innerHTML = loadErrHtml();
   startAutoSync();
 }
 
@@ -1770,7 +1796,12 @@ function newSessionGen() { sessionGen++; syncing = false; flushing = null; reset
 function saveLocal() {
   try {
     const { categories, ...rest } = db;
-    if (curProj) { localStorage.setItem(LS_DB + '|' + curProj, JSON.stringify(rest)); localStorage.setItem(LS_CUR, curProj); }
+    if (curProj) {
+      const v = JSON.stringify(rest);
+      try { localStorage.setItem(LS_DB + '|' + curProj, v); }
+      catch (e) { Object.keys(localStorage).filter(k => k.startsWith(LS_DB + '|') && k !== LS_DB + '|' + curProj).forEach(k => localStorage.removeItem(k)); localStorage.setItem(LS_DB + '|' + curProj, v); }   // đầy bộ nhớ: bỏ dự án khác
+      localStorage.setItem(LS_CUR, curProj);
+    }
     localStorage.setItem(LS_OUT, JSON.stringify(outbox));
     localStorage.setItem(LS_VER, String(serverVer));
   } catch (e) { console.warn('saveLocal', e); }
@@ -1808,7 +1839,23 @@ function setSyncBar(msg, color) {
 }
 const serverOn = () => SCRIPT_URL && SCRIPT_URL !== 'GOOGLE_SCRIPT_URL';
 // Mọi yêu cầu (đọc + ghi) đi qua POST và luôn kèm token
+const RETRY_READ = {getAll:1, getVersion:1, me:1, ping:1, backupInfo:1, listItemsOf:1, deviceCatalog:1, listUsers:1, getLog:1, getSummary:1, getCost:1, getPrices:1, login:1};
+let rolesRv = localStorage.getItem('fecon_rv') || '';
+// v5.23: gặp lỗi tạm thời của Google (404 / 5xx / rớt kết nối) thì tự thử lại sau 1, 2, 4 giây rồi mới báo lỗi
 async function api(action, data, timeoutMs) {
+  if ((action === 'getAll' || action === 'getVersion' || action === 'me') && rolesRv && Object.keys(ROLES).length) data = Object.assign({}, data, {rv:rolesRv});
+  const tok0 = token;
+  let r = await api1(action, data, timeoutMs);
+  for (const wait of [1000, 2000, 4000]) {
+    const temp = r && !r.success && r.offline && navigator.onLine !== false && (r.http ? [404,408,429,500,502,503,504].includes(r.http) : (r.netErr && RETRY_READ[action]));
+    if (!temp || tok0 !== token) break;
+    if (token && action !== 'getVersion') setSyncBar('🔄 Máy chủ Google tạm lỗi — đang kết nối lại…', '#B7791F');
+    await new Promise(res => setTimeout(res, wait));
+    r = await api1(action, data, timeoutMs);
+  }
+  return r;
+}
+async function api1(action, data, timeoutMs) {
   if (!serverOn()) return {success:false, offline:true, reason:'Chưa cấu hình địa chỉ máy chủ'};
   if (navigator.onLine === false) return {success:false, offline:true, reason:'Điện thoại đang không có mạng (Wi-Fi / 4G đang tắt)'};
   const ms = timeoutMs || 25000;
@@ -1821,19 +1868,20 @@ async function api(action, data, timeoutMs) {
     text = await res.text();
   } catch (e) {
     clearTimeout(tm);
-    return {success:false, offline:true, reason: e.name === 'AbortError'
-      ? `Máy chủ phản hồi quá lâu (hơn ${Math.round(ms / 1000)} giây) — mạng yếu hoặc Google đang chậm, thử lại`
-      : 'Không kết nối được máy chủ Google Script (mạng chặn, trình duyệt chặn, hoặc link Apps Script đã đổi / chưa để quyền "Bất kỳ ai")'};
+    return {success:false, offline:true, timeout: e.name === 'AbortError', netErr: e.name !== 'AbortError', reason: e.name === 'AbortError'
+      ? `Máy chủ Google phản hồi quá lâu (hơn ${Math.round(ms / 1000)} giây)`
+      : 'Không kết nối được máy chủ Google (sóng yếu hoặc mạng chặn)'};
   }
   clearTimeout(tm);
   try { r = JSON.parse(text); }
   catch (e) {
     const title = ((text || '').match(/<title>([^<]*)/i) || [])[1] || (text || '').replace(/<[^>]+>/g, ' ').trim().slice(0, 80);
-    return {success:false, offline:true, reason:`Máy chủ trả về trang lỗi (HTTP ${res.status}${title ? ': ' + title.trim() : ''}) — kiểm tra lại triển khai Apps Script`};
+    return {success:false, offline:true, http:res.status || 1, reason:`Máy chủ Google tạm lỗi (HTTP ${res.status}${title ? ': ' + title.trim() : ''})`};
   }
   if (!r) return {success:false};
   if (tok !== token) return {success:false, stale:true};  // trả lời của phiên đăng nhập trước → bỏ qua
   if (r.auth) onAuthLost(r.error);
+  if (r.rv) { rolesRv = r.rv; localStorage.setItem('fecon_rv', r.rv); }
   if (r.roles) setRoles(r.roles);
   if (r.me) onMe(r.me, r.pending);
   if (r.newLogin) showNewLogin(r.newLogin);
@@ -1912,7 +1960,7 @@ function applyServer(r) {
   if ((r.project || '') !== curProj) { curProj = r.project || ''; localStorage.setItem(LS_CUR, curProj); }
   const P = curProj;
   // Xóa dữ liệu lưu trên máy của dự án không còn được giao
-  Object.keys(localStorage).filter(k => k.startsWith(LS_DB + '|') && !db.projects.includes(k.slice(LS_DB.length + 1))).forEach(k => localStorage.removeItem(k));
+  // v5.23: giữ dữ liệu các dự án khác trên máy (đổi tài khoản tải nhanh); app chỉ hiện dự án tài khoản được giao
   if (r.items) db.items = r.items.map(i => ({...i, id:+i.id, stock:+i.stock||0, minStock:+i.minStock||0, capThang:+i.capThang||0, canMay:+i.canMay||0}));
   ['reqs','cauKien','ckv','projCfg','rolePerm','kkMoc','tg'].forEach(k => { if (r[k] !== undefined) db[k] = r[k]; });   // máy chủ 5.13+
   if (r.devices) db.devices = r.devices.map(d => ({...d, id:+d.id, fuelRate:+d.fuelRate||20, meterUnit:d.meterUnit || 'h',
@@ -1979,6 +2027,14 @@ function showVersion() {
   const el = document.getElementById('app-ver');
   if (el) el.textContent = `Phiên bản app ${APP_VERSION}${serverVerInfo ? ' · ' + serverVerInfo : ''}`;
 }
+// Tham số đồng bộ: chỉ xin phần mới nếu dữ liệu trên máy đúng dự án
+function syncInc() {
+  const inc = {project: curProj};
+  if (curProj && db.scope === curProj && db.txnTotal && db.txnLastId && db.transactions.length) Object.assign(inc, {since: db.txnTotal, lastId: db.txnLastId, scope: curProj, txnRev: db.txnRev || 0});
+  if (db.ckv && (db.cauKien || []).length) inc.ckv = db.ckv;                     // v5.14: cấu kiện chỉ gửi khi đổi
+  return inc;
+}
+let lastSyncErr = null;
 async function syncAll(silent) {
   if (syncing || !token) return false;
   syncing = true;
@@ -1988,24 +2044,24 @@ async function syncAll(silent) {
     if (!silent) setSyncBar('⏳ Đang đồng bộ...');
     const flushed = await flushOutbox();          // gửi thay đổi chờ trước; lỗi vẫn tiếp tục tải dữ liệu
     if (!token || gen !== sessionGen) return false;
-    const inc = {project: curProj};
-    if (curProj && db.scope === curProj && db.txnTotal && db.txnLastId && db.transactions.length) Object.assign(inc, {since: db.txnTotal, lastId: db.txnLastId, scope: curProj, txnRev: db.txnRev || 0});
-    if (db.ckv && (db.cauKien || []).length) inc.ckv = db.ckv;                     // v5.14: cấu kiện chỉ gửi khi đổi
+    const inc = syncInc();
     let r = await api('getAll', inc, 25000);
     if (!r.success && !r.auth && !r.stale && token) r = await api('getAll', inc, 35000);   // tối đa ~1 phút   // lỗi mạng: thử lại ngay, không chờ 15 giây
     if (gen !== sessionGen || r.stale) return false;
     if (!r.success) {
+      lastSyncErr = r;
       if (token) setSyncBar((outbox.length ? `📴 ${outbox.length} thay đổi đang chờ gửi · ` : '⚠️ ') + (r.reason || r.error || 'Không kết nối được máy chủ') + ' — đang dùng dữ liệu lưu trên máy', '#E74C3C');
       return false;
     }
+    lastSyncErr = null;
     applyServer(r);
     reapplyOutbox();
     saveLocal();
     updateProjSel();
-    const sec = ((Date.now() - t0) / 1000).toFixed(1).replace('.', ',');
+    const sec = ((Date.now() - t0) / 1000).toFixed(1).replace('.', ','), adm = role === 'ADM' ? ` · máy chủ ${r.ms ?? '?'}ms${r.cached ? ' · từ bộ nhớ đệm' : ''}` : '';
     console.log(`Đồng bộ ${sec}s · máy chủ xử lý ${r.ms ?? '?'}ms · ${(r.transactions||[]).length} phiếu mới`);
     if (!flushed && outbox.length) setSyncBar(`📴 ${outbox.length} thay đổi đang chờ gửi (đã lưu trên máy)`, '#E74C3C');
-    else if (!silent) { setSyncBar(`✅ Đã đồng bộ (${sec} giây)`, 'var(--green)'); setTimeout(() => setSyncBar(''), 2000); }
+    else if (!silent) { setSyncBar(`✅ Đã đồng bộ (${sec} giây${adm})`, 'var(--green)'); setTimeout(() => setSyncBar(''), adm ? 4000 : 2000); }
     else setSyncBar('');
     return true;
   } finally { if (gen === sessionGen) syncing = false; }
@@ -2040,18 +2096,33 @@ async function autoSyncTick() {
     if (await syncAll(true) && dataSig() !== before) refreshCurrentView(true);   // v5.18: không đổi gì thì không vẽ lại
   }
 }
+// v5.23: báo đúng nguyên nhân không tải được
+function loadErrHtml() {
+  const e = lastSyncErr || {};
+  const [ico, t, d] = navigator.onLine === false || (e.offline && !e.http && !e.timeout && !e.netErr) ? ['📴', 'Điện thoại đang mất mạng', 'Bật Wi-Fi hoặc 4G rồi bấm Thử lại.']
+    : e.timeout ? ['⏳', 'Máy chủ Google phản hồi chậm', 'Máy chủ đang khởi động hoặc sóng yếu. Chờ vài giây rồi bấm Thử lại.']
+    : e.http ? ['🛠', 'Máy chủ Google tạm lỗi', `App đã tự thử lại 3 lần (HTTP ${e.http}). Thường hết sau 1–2 phút, nhất là ngay sau khi cập nhật máy chủ.`]
+    : e.netErr ? ['📶', 'Sóng yếu, không tới được máy chủ', 'Di chuyển tới chỗ sóng tốt hơn rồi bấm Thử lại.']
+    : ['⚠️', 'Chưa tải được dữ liệu', escHtml(e.error || e.reason || 'Bấm Thử lại.')];
+  return `<div class="empty-state" style="padding-top:70px"><div class="e-ico">${ico}</div><p><b>${t}</b><br>${d}</p>
+    <button class="btn-full btn-orange" style="max-width:260px;margin:14px auto 0" onclick="retryFirstLoad()">↻ Thử lại</button></div>`;
+}
+const noProjHtml = () => `<div class="empty-state" style="padding-top:70px"><div class="e-ico">🏗</div><p><b>Tài khoản chưa được giao dự án</b><br>Liên hệ Admin để được giao dự án, sau đó mở lại app.</p>
+  <button class="btn-full btn-orange" style="max-width:260px;margin:14px auto 0" onclick="retryFirstLoad()">↻ Kiểm tra lại</button></div>`;
 async function retryFirstLoad() {
   showLoader('Đang tải dữ liệu...');
   const ok = await syncAll(); hideLoader();
-  if (ok) refreshCurrentView(false); else toast('⚠️ Vẫn chưa tải được — kiểm tra mạng rồi thử lại');
+  if (ok) refreshCurrentView(false); else { document.getElementById('main-body').innerHTML = loadErrHtml(); toast('⚠️ Vẫn chưa tải được'); }
 }
 function startAutoSync() { clearInterval(syncTimer); syncTimer = setInterval(autoSyncTick, 15000); }
 function stopAutoSync() { clearInterval(syncTimer); syncTimer = null; }
 document.addEventListener('visibilitychange', () => { if (!document.hidden) autoSyncTick(); });
 window.addEventListener('online', () => autoSyncTick());
+function refreshCurrentViewNP(keep) { if (loadedOnce && !curProj && role !== 'ADM') { document.getElementById('main-body').innerHTML = noProjHtml(); return true; } return false; }
 function refreshCurrentView(notify) {
   if (!document.getElementById('pg-app').classList.contains('active')) return;
   updateProjSel(); updateLowBadge();
+  if (refreshCurrentViewNP()) return;                           // v5.23: chưa được giao dự án → báo đúng
   const modalOpen = [...document.querySelectorAll('.modal-bg')].some(m => m.style.display === 'flex');
   if (modalOpen) return;
   // Đang gõ ô tìm kiếm / kéo thanh định mức thì không vẽ lại chỗ đó (tránh mất bàn phím)
@@ -3738,6 +3809,7 @@ function openDeviceDetail(id) {
 
 function renderDeviceDetail(id) {
   const d = db.devices.find(x=>x.id===id); if(!d) return;
+  document.documentElement.style.setProperty('--mtx', role === 'ADM' ? '22px' : '0px');
   const txnsD = db.transactions.filter(t=>t.type==='xuat'&&t.thietBi===d.name);
   const totalFuel = txnsD.reduce((s,t)=>s+effQty(t),0);
   const repairs = db.repairs.filter(r=>r.deviceId===id);
@@ -3827,6 +3899,7 @@ function renderDeviceDetail(id) {
         </div>`).join('')}
     </div>
   `;
+  if (role === 'ADM') { const dd = db.devices.find(x => x.id === id); if (dd) { setTimeout(() => loadDevAdminLog(dd), 0); } }
 }
 
 function openEditDevice() {
@@ -3843,6 +3916,9 @@ function openEditDevice() {
   document.getElementById('ad-in-date').value = d.inDate || '';
   document.getElementById('ad-in-meter').value = d.inMeter === '' || d.inMeter === undefined ? '' : d.inMeter;
   adMeterUnit();
+  const admBox = document.getElementById('ad-adm-box'); admBox.style.display = role === 'ADM' ? '' : 'none';   // v5.23: Admin sửa mọi thông tin
+  if (role === 'ADM') { document.getElementById('ad-by').value = d.addedBy || ''; document.getElementById('ad-at').value = d.addedAt || '';
+    document.getElementById('ad-out-date').value = d.outDate || ''; document.getElementById('ad-out-meter').value = d.outMeter === '' || d.outMeter === undefined ? '' : d.outMeter; }
   document.getElementById('modal-device-title').textContent = '✏️ Sửa thiết bị';
   document.getElementById('ad-del-btn').style.display = role === 'ADM' ? '' : 'none';   // v5.18: chỉ Admin xóa
   openModal('modal-add-device');
@@ -3864,6 +3940,8 @@ async function saveDevice() {
     d.plate=document.getElementById('ad-plate').value;
     d.note=document.getElementById('ad-note').value;
     d.meterUnit=document.getElementById('ad-meter-unit').value; d.inDate=document.getElementById('ad-in-date').value; d.inMeter=document.getElementById('ad-in-meter').value === '' ? '' : +document.getElementById('ad-in-meter').value;
+    if (role === 'ADM') { d.addedBy = document.getElementById('ad-by').value.trim(); d.addedAt = document.getElementById('ad-at').value.trim();
+      d.outDate = document.getElementById('ad-out-date').value; const om = document.getElementById('ad-out-meter').value; d.outMeter = om === '' ? '' : +om; }
     addLog('Sửa thiết bị', name);
   } else {
     const mu = document.getElementById('ad-meter-unit').value, im = document.getElementById('ad-in-meter').value;
@@ -4092,6 +4170,8 @@ function renderMemberProjects() {
 }
 const checkedProjects = () => [...document.querySelectorAll('#mm-projs input:checked:not(:disabled)')].map(i => i.value);
 function saveMemberProjects() {
+  const u = members.find(x => x.id === mmId());
+  if (u && !allProjRole(u.role) && !checkedProjects().length) { toast(`⚠️ ${ROLE_NAME[u.role]} phải được giao ít nhất 1 dự án`); return; }
   memberAction('setUserProjects', {id: mmId(), projects: checkedProjects()}, '✅ Đã lưu phân công dự án');
 }
 function revokeMember() {
@@ -4103,7 +4183,7 @@ function revokeMember() {
 function approveMember() {
   const role = document.getElementById('mm-role').value, name = document.getElementById('mm-name').value.trim();
   const projects = checkedProjects();
-  if (!allProjRole(role) && !projects.length && !confirm('Chưa tích dự án nào — người này sẽ chưa xem được kho nào. Vẫn duyệt?')) return;
+  if (!allProjRole(role) && !projects.length) { toast(`⚠️ ${ROLE_NAME[role]} phải được giao ít nhất 1 dự án — tích dự án trước khi duyệt`); return; }
   memberAction('approveUser', {id: mmId(), role, name, projects}, `✅ Đã duyệt — vai trò ${ROLE_NAME[role]}`);
 }
 function rejectMember() {
@@ -4119,6 +4199,7 @@ async function saveMember() {
   if (u.id !== me?.id) data.role = role;
   if (password) data.password = password;
   const projects = checkedProjects(), old = (u.projects || []).slice().sort().join('|');
+  if (!allProjRole(role) && !projects.length) { toast(`⚠️ ${ROLE_NAME[role]} phải được giao ít nhất 1 dự án — tích dự án rồi lưu`); return; }
   if (!allProjRole(role) && projects.slice().sort().join('|') !== old) {
     showLoader('Đang lưu...'); const r1 = await api('setUserProjects', {id: u.id, projects}); hideLoader();
     if (!r1.success) { toast('⚠️ ' + (r1.offline ? (r1.reason || 'Cần có mạng') : r1.error)); return; }
@@ -5592,7 +5673,7 @@ function doLogout() {
   if (token) api('logout');                       // báo máy chủ hủy phiên (không cần chờ)
   token = ''; localStorage.removeItem(LS_TOKEN); newSessionGen();
   PDB.clear().catch(() => {}); formPhotos.fn = []; formPhotos.fx = [];
-  clearLocalData();                               // không để lại dữ liệu kho trên máy sau khi đăng xuất
+  outbox = []; saveLocal();                       // v5.23: giữ dữ liệu dự án trên máy để người sau tải nhanh; chỉ bỏ thay đổi chưa gửi
   destroyCharts(); stopAutoSync(); setSyncBar('');
   document.querySelectorAll('.detail-page.show').forEach(p => p.classList.remove('show'));
   document.getElementById('li-pass').value = '';
@@ -6698,7 +6779,7 @@ function meterLog(d) {
     L.push({t:d.inDate ? Date.parse(d.inDate) : 0, m:+d.inMeter, kind:'in', by:d.addedBy || '', date:d.inDate ? d.inDate.split('-').reverse().join('/') : ''});
   db.transactions.filter(t => t.type === 'xuat' && t.thietBi === d.name).forEach(t => {
     const dt = parseVN(t.datetime);
-    L.push({t:dt ? dt.getTime() : 0, m:t.meter === '' || t.meter === undefined || isNaN(+t.meter) ? null : +t.meter, kind:isBrokenNote(t.meterNote) ? 'broken' : isResetNote(t.meterNote) ? 'reset' : 'fuel',
+    L.push({id:t.id, t:dt ? dt.getTime() : 0, m:t.meter === '' || t.meter === undefined || isNaN(+t.meter) ? null : +t.meter, kind:isBrokenNote(t.meterNote) ? 'broken' : isResetNote(t.meterNote) ? 'reset' : 'fuel',
       qty:effQty(t), by:t.createdByName || '', date:String(t.datetime || '').replace(/^\d{1,2}:\d{2}(:\d{2})?\s*/, ''), note:t.meterNote || '', fuel:isDieselItem(itemById(t.itemId) || {name:t.itemName})});
   });
   if (d.outDate) L.push({t:Date.parse(d.outDate) + 86399e3, m:d.outMeter === '' || isNaN(+d.outMeter) ? null : +d.outMeter, kind:'out', date:d.outDate.split('-').reverse().join('/')});
@@ -6718,7 +6799,7 @@ function lastMeter(d) { return meterLog(d).last; }
 function meterBoxHtml(pfx, d) {
   const last = lastMeter(d);
   return `<div class="mt-box" id="${pfx}-mbox">
-    <div class="mt-h"><b>${mLbl(d)} hiện tại <span style="color:var(--red)">*</span></b><span>${last !== null && last !== undefined ? 'Lần trước: ' + fmtNum(last) + ' ' + mSfx(d) : 'Chưa có số trước'}</span></div>
+    <div class="mt-h"><b>${mUnit(d) === 'km' ? 'Số km hiện tại' : 'Số đồng hồ giờ máy'} <span style="color:var(--red)">*</span></b><span>${last !== null && last !== undefined ? 'Lần trước: ' + fmtNum(last) + ' ' + mSfx(d) : 'Chưa có số trước'}</span></div>
     <input type="number" inputmode="decimal" id="${pfx}-meter" placeholder="Đọc số trên đồng hồ" oninput="meterCheck('${pfx}',${d.id})">
     <div class="mt-msg" id="${pfx}-mmsg">Bắt buộc nhập số đồng hồ</div>
     <label class="mt-ck"><input type="checkbox" id="${pfx}-broken" onchange="meterCheck('${pfx}',${d.id})"> Đồng hồ hỏng / không đọc được</label>
@@ -6774,11 +6855,11 @@ function deviceMeterHtml(d) {
       ${st('TỔNG ' + (u === 'km' ? 'KM CHẠY' : 'GIỜ CHẠY'), fmtNum(L.run) + ' ' + mSfx(d), 'var(--primary)')}
       ${u === 'h' ? st(`DẦU / GIỜ (ĐỊNH MỨC ${d.fuelRate || 0})`, L.lph !== null ? fmtNum(Math.round(L.lph * 10) / 10) + ' L/h' : '—', over ? 'var(--red)' : 'var(--green)') : st('SỐ NGÀY', days ? days + ' ngày' : '—')}
     </div>
-    <div class="mt-hist"><div class="mt-hr mt-hh"><span>Ngày</span><span>${mLbl(d)}</span><span>Chạy</span><span>${u === 'h' ? 'Lít/giờ' : 'Lít'}</span></div>
+    <div class="mt-hist"><div class="mt-hr mt-hh"><span>Ngày</span><span>${mLbl(d)}</span><span>Chạy</span><span>${u === 'h' ? 'Lít/giờ' : 'Lít'}</span>${role === 'ADM' ? '<span></span>' : ''}</div>
       ${L.list.slice().reverse().slice(0, 40).map(x => `<div class="mt-hr"><span>${escHtml(x.date || '')}<small>${x.kind === 'in' ? 'Vào công trình' + (x.by ? ' · ' + escHtml(x.by) : '') : x.kind === 'out' ? 'Kết thúc' : escHtml((x.by || '') + (x.qty ? ' · ' + fmtNum(x.qty) + ' L' : '') + (x.kind === 'broken' ? ' · đồng hồ hỏng' : x.kind === 'reset' ? ' · đồng hồ đã thay' : ''))}</small></span>
         <b>${x.m !== null ? fmtNum(x.m) : '—'}</b><span>${x.run ? '+' + fmtNum(x.run) : ''}</span>
-        <b style="color:${x.lph && d.fuelRate && x.lph > d.fuelRate ? 'var(--red)' : 'var(--green)'}">${u === 'h' ? (x.lph ? fmtNum(Math.round(x.lph * 10) / 10) : '') : (x.qty ? fmtNum(x.qty) : '')}</b></div>`).join('') || '<div class="pyc-empty">Chưa có lần ghi nào</div>'}
-    </div>${meterCloseBtn(d)}</div>`;
+        <b style="color:${x.lph && d.fuelRate && x.lph > d.fuelRate ? 'var(--red)' : 'var(--green)'}">${u === 'h' ? (x.lph ? fmtNum(Math.round(x.lph * 10) / 10) : '') : (x.qty ? fmtNum(x.qty) : '')}</b>${role === 'ADM' ? (x.id ? `<button class="mt-ed" onclick="devMeterEdit(${d.id},${x.id})" aria-label="Sửa giờ máy">✏️</button>` : '<span></span>') : ''}</div>`).join('') || '<div class="pyc-empty">Chưa có lần ghi nào</div>'}
+    </div>${meterCloseBtn(d)}${role === 'ADM' ? `<div class="mt-alog" id="dev-alog-${d.id}"><b>🔒 Nhật ký sửa của Admin</b> <small>(chỉ Admin thấy)</small><div class="pyc-empty">Đang tải…</div></div>` : ''}</div>`;
 }
 function meterCloseBtn(d) {
   if (!hp('k_meter')) return '';
@@ -6809,9 +6890,12 @@ async function devReopen(id) {
 function adMeterUnit() {
   const u = document.getElementById('ad-meter-unit').value;
   document.getElementById('ad-meter-box').style.display = u === 'none' ? 'none' : '';
-  document.getElementById('ad-in-lbl').textContent = (u === 'km' ? 'Số km' : 'Giờ máy') + ' lúc vào';
+  document.getElementById('ad-in-lbl').textContent = (u === 'km' ? 'Số km trên công-tơ-mét' : 'Số đồng hồ giờ máy') + ' lúc vào';
+  document.getElementById('ad-in-hint').style.display = u === 'none' ? 'none' : '';
+  document.getElementById('ad-in-hint').textContent = u === 'km' ? 'Số km trên công-tơ-mét của xe' : 'Số trên đồng hồ đếm giờ của máy (VD: 3.912) — không phải giờ trong ngày';
 }
 function openAddDevice() {
+  document.getElementById('ad-adm-box').style.display = 'none';
   document.getElementById('ad-id').value = '';
   ['ad-name','ad-plate','ad-note','ad-in-meter'].forEach(i => document.getElementById(i).value = '');
   document.getElementById('ad-fuel').value = 20;
@@ -6949,6 +7033,27 @@ function adPick(i) {
   document.getElementById('ad-meter-unit').value = x.u || 'h'; adMeterUnit();
   adNameHide();
   toast('✅ Đã điền sẵn thông tin máy — kiểm tra lại rồi nhập giờ máy lúc vào');
+}
+
+// ===== v5.23: ADMIN SỬA GIỜ MÁY TỪNG LẦN + NHẬT KÝ RIÊNG =====
+async function devMeterEdit(devId, txnId) {
+  const t = db.transactions.find(x => x.id === txnId), d = db.devices.find(x => x.id === devId); if (!t || !d) return;
+  const cur = t.meter === '' || t.meter === undefined ? '' : t.meter;
+  const v = prompt(`Sửa ${mLbl(d).toLowerCase()} lần ${String(t.datetime || '').replace(/^\d{1,2}:\d{2}(:\d{2})?\s*/, '')} (${t.createdByName || ''} ghi).\nĐể trống = đồng hồ hỏng / không có số.`, cur);
+  if (v === null) return;
+  const m = v.trim() === '' ? '' : +v.replace(',', '.');
+  if (m !== '' && (isNaN(m) || m < 0)) { toast('⚠️ Số không hợp lệ'); return; }
+  showLoader('Đang lưu...'); const r = await api('setTxnMeter', {id:txnId, meter:m}); hideLoader();
+  if (!r || !r.success) { toast('⚠️ ' + ((r && r.error) || 'Không lưu được')); return; }
+  t.meter = m; if (m !== '' && isBrokenNote(t.meterNote)) t.meterNote = '';
+  saveLocal(); toast('✅ Đã sửa giờ máy'); renderDeviceDetail(devId);
+}
+async function loadDevAdminLog(d) {
+  const el = document.getElementById('dev-alog-' + d.id); if (!el || role !== 'ADM') return;
+  const r = await api('deviceAdminLog', {name:d.name}, 20000);
+  const box = document.getElementById('dev-alog-' + d.id); if (!box) return;
+  const rows = r && r.success ? r.rows : null;
+  box.innerHTML = `<b>🔒 Nhật ký sửa của Admin</b> <small>(chỉ Admin thấy)</small>` + (rows ? (rows.length ? rows.map(x => `<div class="al-row"><span>${escHtml(x.t)} · ${escHtml(x.by)}</span>${escHtml(x.x)}</div>`).join('') : '<div class="pyc-empty">Chưa sửa lần nào</div>') : '<div class="pyc-empty">Không tải được (cần mạng)</div>');
 }
 
 // ===== GHI LỖI PHÁT SINH (gửi về tab LoiApp trên Sheet) =====
