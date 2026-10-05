@@ -660,6 +660,8 @@ body.can-ql .hide-ql{display:none!important}
 .saved-bar button{border:none;border-radius:8px;padding:8px 10px;font-size:12px;font-weight:700;cursor:pointer;white-space:nowrap;font-family:inherit}
 .rp-text{width:100%;border:1.5px solid var(--border);border-radius:var(--r-sm);padding:10px 12px;font-size:13px;line-height:1.5;font-family:inherit;color:var(--text);min-height:260px;resize:vertical}
 /* v5.28: cập nhật phiên bản mới */
+.btn-busy{opacity:.75;cursor:wait}
+.dup-msg{font-size:14.5px;line-height:1.55;color:var(--text);margin:4px 0 16px;padding:12px;background:#FFF4EC;border-radius:12px;border:1px solid #FFD8C2}
 .vu-card{background:#fff;border-radius:16px;box-shadow:var(--shadow);margin:12px 14px 4px;overflow:hidden;border:1.5px solid #FFD8C2}
 .vu-top{background:linear-gradient(90deg,#FFF1E8,#fff);padding:12px 14px 10px;display:flex;gap:10px;align-items:flex-start}
 .vu-ico{width:38px;height:38px;border-radius:12px;background:var(--orange);color:#fff;display:flex;align-items:center;justify-content:center;font-size:19px;flex-shrink:0}
@@ -1659,7 +1661,7 @@ body:not(.can-cost) .need-cost{display:none!important}
 // ============================================================
 // CONFIG
 // ============================================================
-const APP_VERSION = '5.28.0';
+const APP_VERSION = '5.28.1';
 const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbw6Rmi80I7RI3ij2U7RdRF5pYuQTnPrwEmGmUZS5xpxzLwwVynfoFUujZe1lm6HS1ymxw/exec';
 // ============================================================
 
@@ -3012,6 +3014,7 @@ async function doNhap() {
   if (!name) { toast('⚠️ Nhập hoặc chọn tên vật tư'); return; }
   if (!qty || qty <= 0) { toast('⚠️ Nhập số lượng hợp lệ'); return; }
   let item = db.items.find(i => i.id === +document.getElementById('fn-item').value) || db.items.find(i => normVN(i.name) === normVN(name));
+  if (item && !(await askIfDupTxn('nhap', item, qty))) return;    // v5.28.1: vừa nhập cùng vật tư, cùng số lượng → hỏi lại
   closeKeyboard();
   if (!item) {
     item = {id:newId(), name, cat:document.getElementById('fn-cat').value, unit:document.getElementById('fn-unit-sel').value, stock:0, minStock:0, project:curProj};
@@ -3029,9 +3032,10 @@ async function doNhap() {
   addLog('Nhập kho', `${qty} ${item.unit} ${item.name} — ${proj}`);
   updateLowBadge();
   push('addTransaction', txn);                        // gửi nền: không bắt chờ máy chủ (máy chủ từ chối thì app tự báo và tải lại)
-  const nPh = await queuePhotos(txn.id, formPhotos.fn.splice(0));
-  toast(`✅ Nhập ${fmtNum(qty)} ${item.unit} ${item.name}${nPh ? ` · ${nPh} ảnh` : ''}`);
+  const ph = formPhotos.fn.splice(0);                 // v5.28.1: về Tổng quan ngay, ảnh lưu ngầm sau (trước đây chờ lưu ảnh → dễ bấm 2 lần)
+  toast(`✅ Nhập ${fmtNum(qty)} ${item.unit} ${item.name}${ph.length ? ` · ${ph.length} ảnh` : ''}`);
   afterSave(txn);
+  if (ph.length) queuePhotos(txn.id, ph);
 }
 
 // ===== XUAT KHO TAB =====
@@ -3086,6 +3090,7 @@ async function doXuat() {
   if (!qty || qty <= 0) { toast('⚠️ Nhập số lượng hợp lệ'); return; }
   const item = db.items.find(i => i.id === itemId); if (!item) return;
   if (qty > item.stock) { toast(`❌ Tồn không đủ! Còn ${fmtNum(item.stock)} ${item.unit}`); return; }
+  if (!(await askIfDupTxn('xuat', item, qty))) return;               // v5.28.1: vừa xuất cùng vật tư, cùng số lượng → hỏi lại
   const devObj = db.devices.find(x => x.name === dev);                     // v5.20: xuất dầu cho máy có đồng hồ → bắt buộc giờ máy
   let mr = {meter:'', meterNote:''};
   if (devObj && isDieselItem(item) && mUnit(devObj) !== 'none') { if (!document.getElementById('fx-mbox')) { fxMeterUpdate(); toast('⚠️ Nhập ' + mLbl(devObj).toLowerCase() + ' hiện tại'); return; } mr = meterRead('fx', devObj); if (!mr) return; }
@@ -3099,9 +3104,10 @@ async function doXuat() {
   updateLowBadge();
   closeKeyboard();
   push('addTransaction', txn);                        // gửi nền: không bắt chờ máy chủ (máy chủ từ chối thì app tự báo và tải lại)
-  const nPh = await queuePhotos(txn.id, formPhotos.fx.splice(0));
-  toast(`✅ Xuất ${fmtNum(qty)} ${item.unit} ${item.name}${dev?' → '+dev:''}${nPh ? ` · ${nPh} ảnh` : ''}`);
+  const ph = formPhotos.fx.splice(0);                 // v5.28.1: về Tổng quan ngay, ảnh lưu ngầm sau
+  toast(`✅ Xuất ${fmtNum(qty)} ${item.unit} ${item.name}${dev?' → '+dev:''}${ph.length ? ` · ${ph.length} ảnh` : ''}`);
   afterSave(txn);
+  if (ph.length) queuePhotos(txn.id, ph);
 }
 
 // Sau khi lưu phiếu nhập/xuất: đóng bàn phím, về Tổng quan, hiện thanh "Đã lưu" (Gửi Zalo / Xem)
@@ -6323,15 +6329,24 @@ function shareReq() {
 }
 async function reqAction(action, data, okMsg, needSync) {
   if (!navigator.onLine) { toast('📴 Cần có mạng để thao tác phiếu yêu cầu'); return null; }
+  if (REQ_CK[action]) data = Object.assign({}, data, {ck:newCk()});   // v5.28.1: mã riêng mỗi lần bấm — máy chủ không ghi trùng khi app tự gửi lại
   showLoader('Đang gửi...');
-  const r = await api(action, data, 40000);
-  hideLoader();
-  if (!r || !r.success) { toast('⚠️ ' + ((r && (r.error || r.reason)) || 'Không lưu được, thử lại')); return null; }
+  let r = await api(action, data, 40000);
+  if (r && r.dupConfirm) {                                     // v5.28.1: máy chủ thấy vừa giao cùng số lượng → hỏi lại
+    hideLoader();
+    if (!(await askDup(r.error, 'Đúng, giao thêm'))) return null;
+    showLoader('Đang gửi...');
+    r = await api(action, Object.assign({}, data, {force:1, ck:newCk()}), 40000);
+  }
+  if (!r || !r.success) { hideLoader(); toast('⚠️ ' + ((r && (r.error || r.reason)) || 'Không lưu được, thử lại')); return null; }
   if (r.req) upsertReq(r.req);
-  if (needSync) await syncAll(true);
-  toast(okMsg);
   reqUI.more = 0; reqUI.sl = false; reqUI.kk = -1;
-  if (document.getElementById('dp-req').classList.contains('show')) renderReqDetail();
+  const dpOpen = () => document.getElementById('dp-req').classList.contains('show');
+  if (dpOpen()) renderReqDetail();                             // v5.28.1: ẩn ô giao / nút ngay khi máy chủ xác nhận
+  if (needSync) { showLoader('Đang tải lại dữ liệu...'); await Promise.race([syncAll(true), new Promise(res => setTimeout(res, 10000))]); }
+  hideLoader();
+  toast(okMsg);
+  if (dpOpen()) renderReqDetail();
   refreshCurrentView(false);
   return r;
 }
@@ -6341,7 +6356,7 @@ function reqIssue() {
   if (!send.some(v => v > 0)) { toast('⚠️ Nhập số thực gửi'); return; }
   const md = reqMeterDev(r); let mr = {meter:'', meterNote:''};
   if (md) { mr = meterRead('rq', md); if (!mr) return; }
-  reqAction('issueReq', {id:curReqId, send, meter:mr.meter, meterNote:mr.meterNote}, '🚚 Đã giao hàng, đã trừ tồn kho và tạo phiếu xuất', true);
+  return reqAction('issueReq', {id:curReqId, send, meter:mr.meter, meterNote:mr.meterNote}, '🚚 Đã giao hàng, đã trừ tồn kho và tạo phiếu xuất', true);
 }
 function reqReject() {
   const v = (document.getElementById('req-rej')?.value || '').trim();
@@ -6351,7 +6366,7 @@ function reqReject() {
 function reqReceive() {
   const r = db.reqs.find(x => x.id === curReqId); if (!r) return;
   const recv = reqUI.sl ? r.lines.map((l, k) => { const el = document.getElementById('rr-' + k); return el ? el.value : ''; }) : [];
-  reqAction('receiveReq', {id:curReqId, recv}, '✅ Đã xác nhận nhận hàng', reqUI.sl);
+  return reqAction('receiveReq', {id:curReqId, recv}, '✅ Đã xác nhận nhận hàng', reqUI.sl);
 }
 async function reqCountNow(k) {
   const r = db.reqs.find(x => x.id === curReqId), l = r && r.lines[k];
@@ -6528,12 +6543,13 @@ async function submitReq() {
 async function saveCounts(list, note, reqId) {
   if (!navigator.onLine) { toast('📴 Cần có mạng để kiểm kê'); return false; }
   showLoader('Đang lưu kiểm kê...');
-  const r = await api('addCount', {items:list, note:note || '', reqId:reqId || '', clientTime:nowStr()}, 40000);
-  hideLoader();
-  if (!r || !r.success) { toast('⚠️ ' + ((r && (r.error || r.reason)) || 'Không lưu được')); return false; }
+  const r = await api('addCount', {items:list, note:note || '', reqId:reqId || '', clientTime:nowStr(), ck:newCk()}, 40000);
+  if (!r || !r.success) { hideLoader(); toast('⚠️ ' + ((r && (r.error || r.reason)) || 'Không lưu được')); return false; }
   (r.counted || []).forEach(c => { const it = db.items.find(i => i.id === +c.itemId); if (it) it.stock = +c.dem; });
   updateLowBadge();
-  await syncAll(true);
+  showLoader('Đang tải lại dữ liệu...');                        // v5.28.1: che màn cho tới khi tải lại xong (tối đa 10 giây) → không bấm Lưu lần 2
+  await Promise.race([syncAll(true), new Promise(res => setTimeout(res, 10000))]);
+  hideLoader();
   toast(`✅ Đã lưu ${(r.counted || []).length} mốc kiểm kê — tồn kho tính tiếp từ số đếm`);
   return true;
 }
@@ -7531,6 +7547,53 @@ window.addEventListener('error', e => reportError(e.message, e.filename, e.linen
 window.addEventListener('unhandledrejection', e => { const r = e.reason; reportError('Promise: ' + (r && r.message || r), '', 0, 0, r && r.stack); });
 
 // ===== KHỞI ĐỘNG =====
+// ===== v5.28.1: CHỐNG BẤM 2 LẦN =====
+// Bấm nút lưu → nút khóa, đổi thành "Đang lưu…", mọi cú bấm sau bị bỏ qua cho tới khi xong (hoặc lỗi).
+const _busy = {};
+function guardBtn(key, fn) {
+  return async function (...args) {
+    if (_busy[key]) return;
+    _busy[key] = 1;
+    const ev = window.event, b = ev && ev.target && ev.target.closest ? ev.target.closest('button') : null;
+    const txt = b ? b.innerHTML : '';
+    if (b) { b.disabled = true; b.classList.add('btn-busy'); b.innerHTML = '⏳ Đang lưu…'; }
+    try { return await fn.apply(this, args); }
+    finally { delete _busy[key]; if (b && b.isConnected) { b.disabled = false; b.classList.remove('btn-busy'); b.innerHTML = txt; } }
+  };
+}
+const newCk = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
+const REQ_CK = {createReq:1, issueReq:1, receiveReq:1};
+// Hộp hỏi lại (không dùng hộp thoại của trình duyệt)
+function askDup(msg, yes) {
+  return new Promise(res => {
+    if (!document.getElementById('modal-dup')) document.body.insertAdjacentHTML('beforeend', `<div class="modal-bg" id="modal-dup" style="display:none;z-index:1200">
+      <div class="modal-sheet"><div class="modal-handle"></div><div class="modal-title">⚠️ Kiểm tra lại trước khi lưu</div><div class="dup-msg" id="dup-msg"></div>
+      <div class="modal-actions"><button class="btn-cancel" id="dup-no">Không, quay lại</button><button class="btn-ok" id="dup-yes" style="background:var(--orange)"></button></div></div></div>`);
+    const m = document.getElementById('modal-dup');
+    document.getElementById('dup-msg').textContent = msg;
+    document.getElementById('dup-yes').textContent = yes;
+    const done = v => { m.style.display = 'none'; m.onclick = null; res(v); };
+    document.getElementById('dup-yes').onclick = () => done(true);
+    document.getElementById('dup-no').onclick = () => done(false);
+    m.onclick = e => { if (e.target === m) done(false); };
+    m.style.display = 'flex';
+  });
+}
+// Vừa lập phiếu cùng loại, cùng vật tư, cùng số lượng trong 2 phút → hỏi lại
+async function askIfDupTxn(type, item, qty) {
+  const now = Date.now();
+  const t = db.transactions.find(x => x.type === type && +x.itemId === +item.id && Math.abs(+x.qty - qty) < 1e-9 &&
+    (x.createdByName || '') === (me?.name || '') && (d => d && now - d.getTime() < 120000 && now - d.getTime() > -60000)(parseVN(x.datetime)));
+  if (!t) return true;
+  const at = parseVN(t.datetime), hm = at ? String(at.getHours()).padStart(2, '0') + ':' + String(at.getMinutes()).padStart(2, '0') : '';
+  const w = type === 'nhap' ? 'nhập' : 'xuất';
+  return askDup(`Bạn vừa ${w} ${fmtNum(qty)} ${item.unit || ''} ${item.name} lúc ${hm}. Chắc chắn ${w} thêm 1 lần nữa cùng số lượng?`, `Đúng, ${w} thêm`);
+}
+doNhap = guardBtn('nhap', doNhap); doXuat = guardBtn('xuat', doXuat); saveAdjust = guardBtn('adjust', saveAdjust);
+reqIssue = guardBtn('reqIssue', reqIssue); reqReceive = guardBtn('reqReceive', reqReceive); submitReq = guardBtn('submitReq', submitReq);
+saveKK = guardBtn('kk', saveKK); reqCountNow = guardBtn('kk', reqCountNow);
+doLoan = guardBtn('loan', doLoan); saveLoanReturn = guardBtn('loan', saveLoanReturn); saveLoanClose = guardBtn('loan', saveLoanClose);
+
 (function boot() {
   try { addHelpBtns(); } catch (e) {}
   iosGapCheck();
