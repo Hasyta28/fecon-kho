@@ -659,7 +659,46 @@ body.can-ql .hide-ql{display:none!important}
 .saved-bar div{flex:1;min-width:0;line-height:1.4}
 .saved-bar button{border:none;border-radius:8px;padding:8px 10px;font-size:12px;font-weight:700;cursor:pointer;white-space:nowrap;font-family:inherit}
 .rp-text{width:100%;border:1.5px solid var(--border);border-radius:var(--r-sm);padding:10px 12px;font-size:13px;line-height:1.5;font-family:inherit;color:var(--text);min-height:260px;resize:vertical}
-.upd-bar{position:fixed;left:12px;right:12px;bottom:calc(84px + env(safe-area-inset-bottom));z-index:960;background:#0056A4;color:#fff;border:none;border-radius:14px;padding:14px 16px;font-size:14px;font-weight:700;box-shadow:0 8px 24px rgba(0,0,0,.25);cursor:pointer;font-family:inherit;display:none;text-align:center}
+/* v5.28: cập nhật phiên bản mới */
+.vu-card{background:#fff;border-radius:16px;box-shadow:var(--shadow);margin:12px 14px 4px;overflow:hidden;border:1.5px solid #FFD8C2}
+.vu-top{background:linear-gradient(90deg,#FFF1E8,#fff);padding:12px 14px 10px;display:flex;gap:10px;align-items:flex-start}
+.vu-ico{width:38px;height:38px;border-radius:12px;background:var(--orange);color:#fff;display:flex;align-items:center;justify-content:center;font-size:19px;flex-shrink:0}
+.vu-ttl{font-size:15.5px;font-weight:900;color:var(--text);line-height:1.25}
+.vu-sub{font-size:12px;color:var(--text2);margin-top:3px;display:flex;gap:6px;flex-wrap:wrap;align-items:center}
+.vu-chip{font-size:11px;font-weight:800;border-radius:8px;padding:2px 8px}
+.vu-chip.bug{background:#FDECEC;color:#B42318}.vu-chip.up{background:#EEF4FF;color:#1F5FA8}.vu-chip.new{background:#E9F7EF;color:#1E7A45}
+.vu-sum{padding:2px 14px 4px;font-size:13.5px;line-height:1.55;color:var(--text);margin:0}
+.vu-sum li{margin:3px 0 3px 18px}
+.vu-more{display:block;padding:6px 14px 10px;font-size:13px;font-weight:800;color:var(--primary);cursor:pointer}
+.vu-btns,.vp-btns{display:flex;gap:8px;padding:0 14px 14px}.vp-btns{padding:0}
+.vu-btns button,.vp-btns button{flex:1;border-radius:12px;padding:12px 8px;font-size:14px;font-weight:800;font-family:inherit;cursor:pointer}
+.vu-top+.vu-btns{padding-top:4px}
+.vu-ok{background:var(--primary);color:#fff;border:none}
+.vu-later{background:#fff;color:var(--text2);border:1.5px solid var(--border)}
+.vu-done{border-color:#BFE6CF}.vu-done .vu-top{background:linear-gradient(90deg,#E9F7EF,#fff)}.vu-done .vu-ico{background:var(--green)}
+.sb-dot{margin-left:auto;width:10px;height:10px;border-radius:50%;background:var(--red);box-shadow:0 0 0 3px #FDECEC}
+.vp-cur{background:#fff;border-radius:16px;box-shadow:var(--shadow);padding:14px;margin-bottom:12px}
+.vp-row{display:flex;justify-content:space-between;font-size:13.5px;padding:5px 0}.vp-row b{font-weight:800}
+.vp-new{border:1.5px solid #FFD8C2;background:#FFF8F3;border-radius:12px;padding:12px;margin-top:10px}
+.vp-new-h{display:flex;gap:8px;align-items:center;margin-bottom:4px}.vp-new-h b{font-size:15px}.vp-new-t{font-size:13px;margin-bottom:8px}
+.vp-latest{font-size:13px;color:#1E7A45;font-weight:700;margin-top:6px}
+.vp-chk{width:100%;margin-top:10px;background:#fff;border:1.5px solid var(--primary);color:var(--primary);border-radius:12px;padding:11px;font-weight:800;font-size:14px;font-family:inherit;cursor:pointer}
+.vh-item{background:#fff;border-radius:14px;box-shadow:var(--shadow);margin-bottom:8px;overflow:hidden}
+.vh-head{display:flex;align-items:center;gap:10px;padding:12px 14px;cursor:pointer}
+.vh-v{font-weight:900;font-size:14.5px;min-width:52px}
+.vh-mid{flex:1;min-width:0}.vh-mid div{font-size:13px;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.vh-mid small{font-size:11.5px;color:var(--text3)}
+.vh-arr{color:var(--text3);font-size:18px;transition:.2s}.vh-item.open .vh-arr{transform:rotate(90deg)}
+.vh-body{display:none;padding:0 14px 14px;border-top:1px solid var(--border)}.vh-item.open .vh-body{display:block}
+.vd-sec{margin-top:12px}.vd-h{font-size:11px;font-weight:900;color:var(--text3);letter-spacing:.5px;text-transform:uppercase;margin-bottom:6px}
+.vd-bug{border:1px solid var(--border);border-radius:12px;padding:10px 12px;margin-bottom:8px}
+.vd-bug-t{font-weight:900;font-size:14px;margin-bottom:6px}
+.vd-k{display:grid;grid-template-columns:86px 1fr;gap:4px 8px;font-size:13px;line-height:1.5}
+.vd-k span{font-weight:800;color:var(--text2)}
+.vd-ok{color:#1E7A45;font-weight:700}.vd-no{color:#B7791F;font-weight:700}
+.vd-txt{font-size:13px;line-height:1.55;margin:0}.vd-txt li{margin:2px 0 2px 18px}
+.vd-old{font-size:12px;color:var(--text3);font-style:italic;margin-top:8px}
+.vm-h{display:flex;align-items:center;gap:8px;margin:6px 0 2px}.vm-h b{font-size:18px}.vm-t{font-size:15px;font-weight:800;margin-bottom:2px}.vm-d{font-size:12px;color:var(--text3)}
 /* ===== v5.4 ===== */
 .ri-bar{width:4px;align-self:stretch;min-height:34px;border-radius:3px;flex-shrink:0}
 .donut-ctl{display:flex;gap:8px;flex-wrap:wrap;margin:6px 0 10px}
@@ -1031,6 +1070,10 @@ body:not(.can-cost) .need-cost{display:none!important}
   <div class="detail-header"><button class="back-btn" onclick="closeDp('dp-pycfg')">‹</button><div class="detail-title">⚙️ Cài đặt phiếu yêu cầu</div></div>
   <div class="detail-body" id="dp-pycfg-body"></div>
 </div>
+<div class="detail-page" id="dp-ver">
+  <div class="detail-header"><button class="back-btn" onclick="closeDp('dp-ver')">‹</button><div class="detail-title">🆕 Cập nhật phiên bản mới</div></div>
+  <div class="detail-body" id="dp-ver-body"></div>
+</div>
 <div class="detail-page" id="dp-tg">
   <div class="detail-header"><button class="back-btn" onclick="closeDp('dp-tg')">‹</button><div class="detail-title">🔔 Cảnh báo Telegram</div></div>
   <div class="detail-body" id="dp-tg-body"></div>
@@ -1168,6 +1211,7 @@ body:not(.can-cost) .need-cost{display:none!important}
     <div class="sidebar-item" data-p="k_kk" onclick="closeSidebar();setTimeout(openKK,300)"><span class="sidebar-item-ico">🔢</span>Đợt kiểm kê</div>
     <div class="sidebar-item need-cost" onclick="openDpSb('dp-coc')"><span class="sidebar-item-ico">🔗</span>Đối chiếu cóc nối</div>
     <div class="sidebar-item" onclick="closeSidebar();setTimeout(openGuides,300)"><span class="sidebar-item-ico">📖</span>Hướng dẫn sử dụng</div>
+    <div class="sidebar-item" onclick="closeSidebar();setTimeout(openVer,300)"><span class="sidebar-item-ico">🆕</span>Cập nhật phiên bản mới<span class="sb-dot" id="sb-ver-dot" style="display:none"></span></div>
     <div class="sidebar-item" id="sb-bio" style="display:none" onclick="bioToggle()"><span class="sidebar-item-ico">🔒</span><span id="sb-bio-lbl" style="flex:1">Khóa app bằng Face ID</span><span class="bio-sw" id="sb-bio-sw"></span></div>
     <div class="sidebar-item" onclick="openDpSb('dp-tg')"><span class="sidebar-item-ico">🔔</span>Nhận cảnh báo Telegram</div>
     <div class="sidebar-divider need-ql"></div>
@@ -1188,6 +1232,11 @@ body:not(.can-cost) .need-cost{display:none!important}
 </div>
 
 <!-- ===================== MODALS ===================== -->
+<!-- Modal: chi tiết 1 phiên bản (v5.28) -->
+<div class="modal-bg" id="modal-ver" style="display:none" onclick="closeModalBg(event,'modal-ver')">
+  <div class="modal-sheet"><div class="modal-handle"></div><div id="modal-ver-body"></div>
+    <button class="btn-full" style="background:var(--bg);color:var(--text2);margin-top:14px" onclick="closeModal('modal-ver')">Đóng</button></div>
+</div>
 <!-- Modal: Admin sửa phiếu -->
 <div class="modal-bg" id="modal-edit-txn" style="display:none" onclick="closeModalBg(event,'modal-edit-txn')">
   <div class="modal-sheet">
@@ -1593,7 +1642,6 @@ body:not(.can-cost) .need-cost{display:none!important}
 
 <div class="ph-viewer" id="ph-viewer" onclick="this.style.display='none'"><img alt="Ảnh biên bản"><button>✕</button></div>
 
-<button class="upd-bar" id="upd-bar" onclick="doAppUpdate()"></button>
 <!-- Modal: Hướng dẫn cài app -->
 <div class="modal-bg" id="modal-install" style="display:none" onclick="closeModalBg(event,'modal-install')">
   <div class="modal-sheet">
@@ -1611,7 +1659,7 @@ body:not(.can-cost) .need-cost{display:none!important}
 // ============================================================
 // CONFIG
 // ============================================================
-const APP_VERSION = '5.27.0';
+const APP_VERSION = '5.28.0';
 const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbw6Rmi80I7RI3ij2U7RdRF5pYuQTnPrwEmGmUZS5xpxzLwwVynfoFUujZe1lm6HS1ymxw/exec';
 // ============================================================
 
@@ -1809,6 +1857,7 @@ function applyRoleUI() {
   renderAvatar();
   document.getElementById('sb-name').textContent = me?.name || '';
   document.getElementById('sb-role').innerHTML = `${roleTag(role)} <span style="opacity:.7">· @${escHtml(me?.username || '')}</span>`;
+  try { verRefresh(); } catch (e) {}                            // v5.28: quyền xem nội dung cập nhật có thể vừa đổi
 }
 function renderAvatar() {
   const av = document.getElementById('header-avatar');
@@ -1823,6 +1872,7 @@ function setPendingBadge(n) {
 }
 async function setupApp(pre) {
   applyRoleUI(); bioCheck(); renderBioMenu();
+  setTimeout(() => { try { verAfterLogin(); } catch (e) {} }, 1500);   // v5.28: "Có gì mới" + kiểm tra bản mới
   document.getElementById('exp-range').onchange = function() {
     document.getElementById('exp-custom').style.display = this.value === 'custom' ? '' : 'none';
   };
@@ -2247,6 +2297,7 @@ function goTab(tab) {
     body.innerHTML = '<div id="lead-body" style="padding:12px 14px 20px"></div>';
     renderSummary();
     if (sumTab !== 2 && (!sumData || Date.now() - (sumData._at || 0) > 5 * 60e3)) loadSummary();   // đang ở Chi phí thì chưa cần tính Tổng quan
+    verMount();
     return;
   }
   if (!curProj) {
@@ -2274,6 +2325,7 @@ function goTab(tab) {
   else if (tab === 'baocao') renderBaoCao(body);
   else if (tab === 'lsnhap' || tab === 'lsxuat') renderHistTab(body, tab === 'lsnhap' ? 'nhap' : 'xuat');
   if (isLeadRole()) body.insertAdjacentHTML('afterbegin', `<div class="lead-back" onclick="goTab('lead')">‹ Về tổng hợp các dự án<span>Đang xem: ${escHtml(curProj)}</span></div>`);
+  verMount();
   body.scrollTop = 0;
 }
 const goHome = () => goTab(isLeadRole() ? 'lead' : hp('v_home') ? 'home' : 'pyc');   // v5.18: không có Tổng quan → vào thẳng Phiếu YC
@@ -5791,36 +5843,176 @@ async function runDiag() {
   line(null, `Thiết bị: ${deviceName()} · App ${APP_VERSION}`);
   el.innerHTML = out.join('<br>');
 }
-// ===== TỰ KIỂM TRA BẢN MỚI TRÊN GITHUB =====
-let _updChecked = 0;
-async function checkAppUpdate() {
-  if (Date.now() - _updChecked < 3 * 60000 || !navigator.onLine) return;
+// ===== CẬP NHẬT PHIÊN BẢN MỚI (v5.28.0) =====
+// Điện thoại giữ bản đang dùng (sw.js lưu mỗi bản 1 bộ nhớ riêng). Có bản mới trên GitHub → thẻ thông báo: Cập nhật / Để sau.
+// Nội dung từng bản do máy chủ gửi (verLog), chỉ chức danh có quyền v_ver mới đọc được; người khác chỉ thấy thông báo ngắn.
+const VER_CORE = ['./', './index.html', './manifest.json', './icon-192.png', './icon-512.png', './icon-maskable-192.png', './icon-maskable-512.png', './bg-login.jpg'];
+const LS_LATER = 'fecon_upd_later', LS_SEEN = 'fecon_seen_ver', LS_VLOG = 'fecon_verlog';
+let verNew = '', verLog = null, _updChecked = 0, _vlogAt = 0, _updating = false, verWhatsNew = '';
+try { verLog = JSON.parse(localStorage.getItem(LS_VLOG) || 'null'); } catch (e) {}
+const verCmp = (a, b) => { const x = String(a).split('.').map(Number), y = String(b).split('.').map(Number); for (let i = 0; i < 3; i++) { const d = (x[i] || 0) - (y[i] || 0); if (d) return d; } return 0; };
+const canVer = () => !!me && hp('v_ver');
+const lsGet = k => { try { return localStorage.getItem(k) || ''; } catch (e) { return ''; } };
+const lsSet = (k, v) => { try { localStorage.setItem(k, v); } catch (e) {} };
+const verEntry = v => (verLog || []).find(x => x.v === v);
+const VER_TY = {bug:['🐞 Sửa lỗi','bug'], up:['⬆️ Nâng cấp','up'], new:['✨ Tính năng mới','new']};
+const verChip = t => VER_TY[t] ? `<span class="vu-chip ${VER_TY[t][1]}">${VER_TY[t][0]}</span>` : '';
+
+async function verLoad(force) {                     // nội dung các phiên bản (chỉ người có quyền)
+  if (!canVer() || !navigator.onLine) return;
+  if (!force && Date.now() - _vlogAt < 10 * 60000 && verLog) return;
+  const r = await api('verLog', {}, 20000);
+  if (r && r.success && Array.isArray(r.log)) { verLog = r.log; _vlogAt = Date.now(); lsSet(LS_VLOG, JSON.stringify(verLog)); }
+}
+async function checkAppUpdate(force) {
+  if (!force && Date.now() - _updChecked < 3 * 60000) return;
+  if (!navigator.onLine) { if (force) toast('📴 Điện thoại đang không có mạng'); return; }
   _updChecked = Date.now();
   try {
-    const html = await (await fetch('./index.html?v=' + Date.now(), {cache:'no-store'})).text();
-    const m = html.match(/const APP_VERSION = '([^']+)'/);
-    if (m && m[1] !== APP_VERSION) {
-      const b = document.getElementById('upd-bar');
-      b.textContent = `🔄 Có bản mới ${m[1]} (đang dùng ${APP_VERSION}) — bấm để cập nhật`;
-      b.style.display = 'block';
+    const t = await (await fetch('./sw.js?fresh=' + Date.now(), {cache:'no-store'})).text();
+    const m = t.match(/const VERSION = '([^']+)'/);
+    verNew = m && verCmp(m[1], APP_VERSION) > 0 ? m[1] : '';
+    if (verNew || force) await verLoad(force);
+    verRefresh();
+    if (force) toast(verNew ? '🔔 Có phiên bản mới ' + verNew : '✅ Bạn đang dùng bản mới nhất');
+  } catch (e) { if (force) toast('⚠️ Không kiểm tra được, thử lại sau'); }
+}
+// Tải các file chính của bản `ver` trên GitHub vào bộ nhớ riêng của bản đó. Đúng bản → true.
+async function verStage(ver) {
+  const c = await caches.open('fecon-app-' + ver);
+  let ok = false;
+  for (const u of VER_CORE) {
+    try {
+      const r = await fetch(u + '?fresh=' + Date.now(), {cache:'no-store'});
+      if (!r.ok) continue;
+      if (u === './' || u === './index.html') {
+        const txt = await r.clone().text();
+        if (!txt.includes(`const APP_VERSION = '${ver}'`)) continue;   // GitHub đang có bản khác → không lưu nhầm
+        if (u === './index.html') ok = true;
+      }
+      await c.put(u, r);
+    } catch (e) {}
+  }
+  return ok;
+}
+async function verSetActive(ver) { const m = await caches.open('fecon-meta'); await m.put('./__active', new Response(ver)); }
+async function doAppUpdate() {
+  if (_updating || !verNew) return; _updating = true;
+  const target = verNew;
+  showLoader('Đang cập nhật lên ' + target + '...');
+  const go = fresh => location.replace(location.pathname + (fresh ? '?fresh=' + Date.now() : ''));
+  const safety = setTimeout(() => go(true), 20000);            // chốt an toàn: không đứng quá 20 giây
+  try {
+    if (!('caches' in window)) throw 0;                         // máy không có bộ nhớ app: tải thẳng bản mới
+    if (!(await verStage(target))) {                            // GitHub chưa có đủ bản mới (vừa tải lên dở) → không đổi gì
+      clearTimeout(safety); hideLoader(); _updating = false;
+      toast('⚠️ Bản ' + target + ' trên máy chủ chưa đầy đủ — thử lại sau ít phút'); return;
+    }
+    await verSetActive(target);
+    const keys = await caches.keys();                          // dọn bộ nhớ các bản khác
+    await Promise.all(keys.filter(k => (k.startsWith('fecon-app-') && k !== 'fecon-app-' + target) || k.startsWith('fecon-kho-')).map(k => caches.delete(k)));
+    try { const reg = await navigator.serviceWorker?.getRegistration(); reg && reg.update().catch(() => {}); } catch (e) {}
+    clearTimeout(safety); go(false);
+  } catch (e) { clearTimeout(safety); go(true); }                // dự phòng: tải thẳng bản mới từ mạng
+}
+// Mở app: bản đang chạy phải là "bản đang dùng" đã lưu (trường hợp vừa cập nhật dự phòng / máy xóa bộ nhớ tạm)
+async function verBoot() {
+  if (/[?&]fresh=/.test(location.search)) { try { history.replaceState(null, '', location.pathname); } catch (e) {} }
+  if (!('caches' in window)) return;
+  try {
+    const m = await caches.open('fecon-meta'), r = await m.match('./__active');
+    const act = r ? await r.text() : '';
+    const has = await (await caches.open('fecon-app-' + APP_VERSION)).match('./index.html');
+    if (act !== APP_VERSION || !has) {
+      if (!has) await verStage(APP_VERSION);
+      await verSetActive(APP_VERSION);
+      const keys = await caches.keys();
+      await Promise.all(keys.filter(k => (k.startsWith('fecon-app-') && verCmp(k.slice(10), APP_VERSION) < 0) || k.startsWith('fecon-kho-')).map(k => caches.delete(k)));
     }
   } catch (e) {}
 }
-// iPhone (app đã cài) đôi khi treo ở bước xóa bộ nhớ tạm / cập nhật service worker → mỗi bước tối đa 3 giây,
-// sau đó luôn mở lại trang với địa chỉ mới để chắc chắn tải bản mới từ GitHub.
-let _updating = false;
-async function doAppUpdate() {
-  if (_updating) return; _updating = true;
-  document.getElementById('upd-bar').textContent = '⏳ Đang cập nhật...';
-  const limit = (p, ms) => Promise.race([p, new Promise(r => setTimeout(r, ms))]);
-  const go = () => location.replace(location.pathname + '?v=' + Date.now());
-  setTimeout(go, 8000);                                 // chốt an toàn: không bao giờ đứng quá 8 giây
-  try { await limit(caches.keys().then(keys => Promise.all(keys.map(k => caches.delete(k)))), 3000); } catch (e) {}
-  try { await limit((navigator.serviceWorker?.getRegistrations() || Promise.resolve([])).then(regs => Promise.all(regs.map(r => r.update().catch(() => {})))), 3000); } catch (e) {}
-  go();
+// Giao diện
+function verDetailHtml(c) {
+  const e = escHtml, li = a => (a || []).map(x => `<li>${e(x)}</li>`).join('');
+  const thu = a => (a || []).map(x => `<div class="${x[0] ? 'vd-ok' : 'vd-no'}">${x[0] ? '✅' : '⏳'} ${e(x[1])}</div>`).join('');
+  let h = c.who ? `<div class="vd-sec"><div class="vd-h">Ảnh hưởng tới</div><div class="vd-txt">${e(c.who)}</div></div>` : '';
+  if (c.bugs && c.bugs.length) h += `<div class="vd-sec"><div class="vd-h">Lỗi đã sửa (${c.bugs.length})</div>` + c.bugs.map((b, i) => `<div class="vd-bug"><div class="vd-bug-t">${i + 1}. ${e(b.t)}</div>
+      <div class="vd-k"><span>Lỗi gì</span><div>${e(b.loi)}</div><span>Cách sửa</span><div>${e(b.sua)}</div>
+      ${b.thu && b.thu.length ? `<span>Thử nghiệm</span><div>${thu(b.thu)}</div>` : ''}</div></div>`).join('') + '</div>';
+  if (c.txt && c.txt.length) h += `<div class="vd-sec"><div class="vd-h">Nội dung</div><ul class="vd-txt">${li(c.txt)}</ul></div>`;
+  else if (c.old) h += `<div class="vd-sec"><ul class="vd-txt">${li(c.sum)}</ul></div>`;
+  if (c.thu && c.thu.length) h += `<div class="vd-sec"><div class="vd-h">Thử nghiệm</div><div class="vd-txt">${thu(c.thu)}</div></div>`;
+  if (c.todo) h += `<div class="vd-sec"><div class="vd-h">Bạn cần làm gì</div><div class="vd-txt">${e(c.todo)}</div></div>`;
+  if (c.old) h += `<div class="vd-old">Bản trước 5.28: thời đó chưa ghi mục thử nghiệm.</div>`;
+  return h;
+}
+function verDetail(v) {
+  const c = verEntry(v); if (!c) { toast('Chưa tải được nội dung bản ' + v); return; }
+  document.getElementById('modal-ver-body').innerHTML = `<div class="vm-h"><b>Bản ${escHtml(c.v)}</b>${verChip(c.type)}</div>
+    <div class="vm-t">${escHtml(c.title)}</div>${c.d ? `<div class="vm-d">${escHtml(c.d)}</div>` : ''}${verDetailHtml(c)}`;
+  openModal('modal-ver');
+}
+function verCardHtml() {
+  if (verWhatsNew) {                                             // vừa cập nhật xong: "Có gì mới" (1 lần)
+    const c = verEntry(verWhatsNew); if (!c) return '';
+    return `<div class="vu-card vu-done" id="vu-card"><div class="vu-top"><div class="vu-ico">✓</div><div style="flex:1">
+      <div class="vu-ttl">Đã cập nhật lên ${escHtml(c.v)} — Có gì mới</div><div class="vu-sub">${verChip(c.type)}${c.d ? `<span>${escHtml(c.d)}</span>` : ''}</div></div></div>
+      <ul class="vu-sum">${(c.sum || []).map(x => `<li>${escHtml(x)}</li>`).join('')}</ul>
+      <a class="vu-more" onclick="verDetail('${escHtml(c.v)}')">Xem chi tiết${c.bugs ? ': lỗi gì, cách sửa, thử nghiệm' : ''} ›</a>
+      <div class="vu-btns"><button class="vu-ok" onclick="verSeen()">Đã hiểu</button></div></div>`;
+  }
+  if (!verNew || lsGet(LS_LATER) === verNew) return '';
+  const c = canVer() ? verEntry(verNew) : null;
+  const btns = `<div class="vu-btns"><button class="vu-ok" onclick="doAppUpdate()">Cập nhật</button><button class="vu-later" onclick="verLater()">Để sau, giữ bản ${APP_VERSION}</button></div>`;
+  if (!c) return `<div class="vu-card" id="vu-card"><div class="vu-top"><div class="vu-ico">🔔</div><div style="flex:1">
+      <div class="vu-ttl">${canVer() ? 'Cập nhật phiên bản mới' : 'Có phiên bản mới'} ${escHtml(verNew)}</div><div class="vu-sub"><span>Bạn đang dùng ${APP_VERSION}</span></div></div></div>${btns}</div>`;
+  return `<div class="vu-card" id="vu-card"><div class="vu-top"><div class="vu-ico">🔔</div><div style="flex:1">
+      <div class="vu-ttl">Cập nhật phiên bản mới ${escHtml(c.v)}</div><div class="vu-sub">${verChip(c.type)}${c.d ? `<span>${escHtml(c.d)}</span>` : ''}<span>· đang dùng ${APP_VERSION}</span></div></div></div>
+      <ul class="vu-sum">${(c.sum || []).map(x => `<li>${escHtml(x)}</li>`).join('')}</ul>
+      <a class="vu-more" onclick="verDetail('${escHtml(c.v)}')">Xem chi tiết${c.bugs ? ': lỗi gì, cách sửa, thử nghiệm' : ''} ›</a>${btns}</div>`;
+}
+function verMount() {                                            // thẻ ở đầu màn hình chính (Tổng quan / Phiếu YC / Tổng hợp)
+  document.getElementById('vu-card')?.remove();
+  if (!me || !['home', 'pyc', 'lead'].includes(curTab)) return;
+  const h = verCardHtml(); if (!h) return;
+  document.getElementById('main-body')?.insertAdjacentHTML('afterbegin', h);
+}
+function verRefresh() {
+  const dot = document.getElementById('sb-ver-dot'); if (dot) dot.style.display = verNew ? '' : 'none';
+  if (document.getElementById('pg-app')?.classList.contains('active')) verMount();
+  if (document.getElementById('dp-ver')?.classList.contains('show')) renderVer();
+}
+function verLater() { lsSet(LS_LATER, verNew); verMount(); toast('Giữ bản ' + APP_VERSION + ' — cập nhật sau trong Menu → Cập nhật phiên bản mới'); }
+function verSeen() { verWhatsNew = ''; lsSet(LS_SEEN, APP_VERSION); verMount(); }
+async function verAfterLogin() {                                 // gọi khi đã vào màn chính
+  const seen = lsGet(LS_SEEN);
+  if (seen !== APP_VERSION) {
+    if (canVer()) { await verLoad(); if (verEntry(APP_VERSION)) verWhatsNew = APP_VERSION; else lsSet(LS_SEEN, APP_VERSION); }
+    else { lsSet(LS_SEEN, APP_VERSION); if (seen) toast('✅ Đã cập nhật lên ' + APP_VERSION); }
+  }
+  checkAppUpdate();
+  verRefresh();
+}
+function openVer() { openDp('dp-ver', renderVer); if (canVer()) verLoad().then(() => { if (document.getElementById('dp-ver').classList.contains('show')) renderVer(); }); }
+function renderVer() {
+  const body = document.getElementById('dp-ver-body'); if (!body) return;
+  const cv = canVer(), pend = verNew ? (cv ? verEntry(verNew) : null) : null;
+  body.innerHTML = `<div class="vp-cur"><div class="vp-row"><span>Bản app đang dùng</span><b>${APP_VERSION}</b></div>
+      <div class="vp-row"><span>Máy chủ</span><b>${escHtml(String(serverVerInfo || '').replace(/^Máy chủ\s*/, '') || '—')}</b></div>
+      ${verNew ? `<div class="vp-new"><div class="vp-new-h"><b>Có bản mới ${escHtml(verNew)}</b>${pend ? verChip(pend.type) : ''}</div>
+        ${pend ? `<div class="vp-new-t">${escHtml(pend.title)}</div>` : ''}
+        <div class="vp-btns"><button class="vu-ok" onclick="doAppUpdate()">Cập nhật</button>${pend ? `<button class="vu-later" onclick="verDetail('${escHtml(verNew)}')">Xem chi tiết</button>` : ''}</div></div>`
+      : `<div class="vp-latest">✅ Bạn đang dùng bản mới nhất</div>`}
+      <button class="vp-chk" onclick="checkAppUpdate(true)">🔄 Kiểm tra bản mới</button></div>
+    ${!cv ? '<div class="info-box">Nội dung từng phiên bản chỉ hiện với các chức danh được Admin cho phép.</div>'
+      : !verLog ? '<div class="info-box">Chưa tải được lịch sử cập nhật — cần có mạng.</div>'
+      : `<div class="grp-label">LỊCH SỬ CẬP NHẬT · bấm vào để xem chi tiết</div>` + verLog.map(c => `<div class="vh-item"><div class="vh-head" onclick="this.parentNode.classList.toggle('open')">
+        <div class="vh-v">${escHtml(c.v)}</div><div class="vh-mid"><div><b>${escHtml(c.title)}</b></div><small>${VER_TY[c.type] ? VER_TY[c.type][0] : ''}${c.d ? ' · ' + escHtml(c.d) : ''}${c.v === APP_VERSION ? ' · <b style="color:var(--primary)">đang dùng</b>' : c.v === verNew ? ' · <b style="color:var(--orange)">chưa cập nhật</b>' : ''}</small></div><div class="vh-arr">›</div></div>
+        <div class="vh-body">${verDetailHtml(c)}</div></div>`).join('')}`;
 }
 document.addEventListener('visibilitychange', () => { if (!document.hidden) checkAppUpdate(); });
-setTimeout(checkAppUpdate, 4000);
+verBoot();
+setTimeout(() => checkAppUpdate(), 4000);
 // ===== CÀI APP VÀO ĐIỆN THOẠI =====
 let installEvt = null;
 const UA = navigator.userAgent;
@@ -6728,7 +6920,7 @@ let listLimit = {nhap:100, xuat:100, dieuchinh:100};
 
 // ===== v5.18.0: CHỨC DANH & PHÂN QUYỀN (Admin cài trong app) =====
 const PERM_UI = [
-  ['Màn hình được thấy', [['v_pyc','Phiếu yêu cầu',''],['v_home','Tổng quan',''],['v_nhap','Phiếu nhập (xem)',''],['v_xuat','Phiếu xuất (xem)',''],['v_ton','Tồn kho (số lượng)',''],['v_baocao','Báo cáo',''],['v_stat','Thống kê dự án đang làm','Chi phí, tiến độ của dự án được giao'],['v_all','Tổng hợp các dự án','Xem mọi dự án, so sánh, chi phí nhiều dự án']]],
+  ['Màn hình được thấy', [['v_pyc','Phiếu yêu cầu',''],['v_home','Tổng quan',''],['v_nhap','Phiếu nhập (xem)',''],['v_xuat','Phiếu xuất (xem)',''],['v_ton','Tồn kho (số lượng)',''],['v_baocao','Báo cáo',''],['v_stat','Thống kê dự án đang làm','Chi phí, tiến độ của dự án được giao'],['v_all','Tổng hợp các dự án','Xem mọi dự án, so sánh, chi phí nhiều dự án'],['v_ver','Xem nội dung cập nhật phiên bản','Thông báo đầy đủ, chi tiết từng bản, lịch sử cập nhật']]],
   ['Kho', [['k_nhap','Lập phiếu nhập',''],['k_xuat','Lập phiếu xuất (xuất thẳng)',''],['k_edit','Sửa / điều chỉnh phiếu',''],['k_kk','Kiểm kê',''],['k_dm','Thêm, sửa tên + nhóm vật tư / thiết bị','Đổi đơn vị và xóa: chỉ Admin'],['k_copy','Chép vật tư từ dự án khác',''],['k_loan','Cho mượn / trả dụng cụ',''],['k_meter','Ghi giờ máy thiết bị','Khi xuất dầu, vào / kết thúc công trình']]],
   ['Giá & chi phí', [['g_view','Xem giá, chi phí',''],['g_price','Sửa bảng giá',''],['g_prog','Cập nhật tiến độ thi công','']]],
   ['Phiếu yêu cầu', [['y_tao','Tạo phiếu',''],['y_bs','Xin bổ sung ngoài định mức',''],['y_duyet','Duyệt phiếu',''],['y_giao','Giao hàng theo phiếu (kho)',''],['y_nhan','Xác nhận nhận hàng',''],['y_xem','Xem mọi phiếu của dự án','Tắt = chỉ thấy phiếu của mình']]],
@@ -6744,7 +6936,7 @@ const GROUP_UI = {
   g6:['⑥ Lãnh đạo', V6.concat(['v_stat','v_all','g_view','y_xem','x_nxt','x_pyc'])],
   gq:['Quản lý (cũ)', PERM_KEYS.filter(k => k !== 'v_all')], ga:['Quản trị', PERM_KEYS]
 };
-function presetPerm(code, g) { const o = {}, on = (GROUP_UI[g] || GROUP_UI.g2)[1]; PERM_KEYS.forEach(k => o[k] = on.includes(k) ? 1 : 0); if (code === 'CM' || code === 'DCM') o.y_tao = o.y_bs = o.y_duyet = o.y_nhan = 1; if (code === 'ACC' || code === 'PD') o.k_meter = 0; return o; }
+function presetPerm(code, g) { const o = {}, on = (GROUP_UI[g] || GROUP_UI.g2)[1]; PERM_KEYS.forEach(k => o[k] = on.includes(k) ? 1 : 0); if (code === 'CM' || code === 'DCM') o.y_tao = o.y_bs = o.y_duyet = o.y_nhan = 1; if (code === 'ACC' || code === 'PD') o.k_meter = 0; if (['CM','DCM','EQM','DEQ'].includes(code)) o.v_ver = 1; return o; }
 function setRoles(r) { ROLES = r || {}; try { localStorage.setItem('fecon_roles_v515', JSON.stringify(ROLES)); } catch (e) {} }
 let rlSel = '', rlDraft = null, rlUsers = null, rlAdd = false;
 async function openRoles() {
@@ -7122,7 +7314,7 @@ async function loadDevAdminLog(d) {
   box.innerHTML = `<b>🔒 Nhật ký sửa của Admin</b> <small>(chỉ Admin thấy)</small>` + (rows ? (rows.length ? rows.map(x => `<div class="al-row"><span>${escHtml(x.t)} · ${escHtml(x.by)}</span>${escHtml(x.x)}</div>`).join('') : '<div class="pyc-empty">Chưa sửa lần nào</div>') : '<div class="pyc-empty">Không tải được (cần mạng)</div>');
 }
 
-const GUIDES = [{"id":"khoaapp","g":"Bắt đầu","t":"Mở khóa bằng Face ID / vân tay","p":"","s":["Sau khi đăng nhập bằng mật khẩu, app hỏi \"Bật mở khóa bằng Face ID / vân tay?\" → bấm Bật (hoặc Menu → \"Khóa app bằng Face ID / vân tay\").","Mỗi ngày, lần đầu mở app (sau 0:00) quét Face ID / vân tay một lần, sau đó dùng bình thường cả ngày.","Không quét được thì bấm \"Dùng mật khẩu\". Đăng xuất thì tính năng tự tắt."]},{"id": "dangnhap", "g": "Bắt đầu", "t": "Đăng nhập & liên kết Telegram", "p": "", "s": ["Mở app, nhập tên đăng nhập do Admin cấp.", "Nhập mật khẩu rồi bấm \"Đăng nhập\". Chấm màu dưới khung cho biết mạng tốt hay yếu.", "Bấm ☰ (Menu) → \"Nhận cảnh báo Telegram\".", "Bấm \"Mở Telegram để liên kết\" → bấm Start trong Telegram. Khoảng 1 phút sau bấm \"Kiểm tra\"."]}, {"id": "pyc_coc", "g": "Phiếu yêu cầu", "t": "Tạo phiếu yêu cầu cóc nối", "p": "y_tao", "s": ["Vào tab Phiếu YC, bấm \"+ Tạo phiếu yêu cầu\".", "Chọn hạng mục (Cọc / Tường vây), gõ tên cấu kiện (VD: P3.11) rồi chọn trong danh sách.", "Chọn mức nối cóc theo thực tế thi công (bắt buộc). App tự tính số cóc theo bản vẽ.", "Kiểm tra bảng số lượng, ghi chú nếu cần rồi bấm \"Gửi phiếu\". Phiếu tới kho ngay, thủ kho nhận tin Telegram."]}, {"id": "pyc_vt", "g": "Phiếu yêu cầu", "t": "Tạo phiếu vật tư khác (dầu, mỡ, răng gàu…)", "p": "y_tao", "s": ["Bấm \"+ Tạo phiếu yêu cầu\" → chọn thẻ \"Vật tư khác\".", "Gõ tên vật tư (không cần dấu, VD: \"dau do\") rồi chọn trong danh sách gợi ý.", "Dầu, mỡ, răng gàu… bắt buộc chọn máy sử dụng. Chọn \"Dùng chung\" thì ghi lý do.", "Nhập số lượng rồi bấm \"Gửi phiếu\"."]}, {"id": "pyc_duyet", "g": "Phiếu yêu cầu", "t": "Duyệt phiếu (CHT / CHP)", "p": "y_duyet", "s": ["Tab Phiếu YC → phiếu có dải vàng \"Chờ CHT/CHP duyệt\". Bấm để mở.", "Xem trạng thái phiếu và số lượng từng vật tư. Kho vẫn giao trước được khi bạn chưa duyệt.", "Bấm \"✅ Duyệt phiếu\". Không đồng ý thì nhập lý do và bấm \"Từ chối\" / \"Hủy\"."]}, {"id": "pyc_giao", "g": "Phiếu yêu cầu", "t": "Giao hàng theo phiếu yêu cầu", "p": "y_giao", "s": ["Tab Phiếu YC → mục \"Cần giao gấp\", bấm vào phiếu có dải đỏ.", "Đọc khung Trạng thái phiếu: việc của bạn, phiếu đã được CHT/CHP duyệt chưa.", "Mỗi vật tư nhập số \"Giao lần này\", hoặc bấm \"Giao đủ\". Kho thiếu thì giao một phần hoặc bấm Kiểm kê.", "Bấm \"🚚 Giao hàng – trừ tồn kho\". App trừ tồn, tạo phiếu xuất và báo người lập phiếu."]}, {"id": "pyc_nhan", "g": "Phiếu yêu cầu", "t": "Xác nhận nhận hàng / báo nhận thiếu", "p": "y_nhan", "s": ["Kho giao xong, phiếu chuyển dải xanh \"Kho đã giao\". Bấm để mở.", "Kiểm hàng thực tế với số \"Kho đã giao\" của từng vật tư.", "Đủ thì bấm \"✅ Tôi đã nhận đủ hàng\". Thiếu thì bấm \"⚠️ Nhận thiếu\", nhập số thực nhận rồi xác nhận."]}, {"id": "nhap", "g": "Kho", "t": "Nhập kho", "p": "k_nhap", "s": ["Tab Tổng quan → bấm ô \"Nhập kho\".", "Chọn vật tư (gõ để tìm), nhập số lượng, nhà cung cấp, chụp ảnh biên bản nếu có.", "Bấm \"✅ Xác nhận nhập kho\". Mất mạng vẫn lưu được, có mạng app tự gửi."]}, {"id": "xuat", "g": "Kho", "t": "Xuất kho & xuất dầu ghi giờ máy", "p": "k_xuat", "s": ["Tab Tổng quan → \"Xuất kho\". Chọn vật tư và nhập số lượng.", "Xuất dầu cho máy: chọn máy nhận dầu.", "Bắt buộc nhập SỐ ĐỒNG HỒ GIỜ MÁY đọc trên máy (không phải giờ trong ngày). Đồng hồ hỏng thì tích ô và ghi lý do.", "Bấm \"📤 Xác nhận xuất kho\"."]}, {"id": "kiemke", "g": "Kho", "t": "Kiểm kê thực tế", "p": "k_kk", "s": ["Bấm ☰ (Menu) → \"Đợt kiểm kê\" (hoặc tab Phiếu YC → \"Đợt kiểm kê\").", "Đếm thực tế và nhập số đếm vào từng dòng vật tư. Số khác với app sẽ tự tô viền cam.", "Bấm \"Lưu đợt kiểm kê\". Số đếm thành mốc để app tính tồn kho về sau."]}, {"id": "muontra", "g": "Kho", "t": "Cho mượn / trả dụng cụ", "p": "k_loan", "s": ["Bấm ☰ (Menu) → \"Cho mượn / Trả\".", "Bấm \"+\" để lập phiếu mượn.", "Chọn loại phiếu (Cho mượn / Đi mượn), vật tư, người mượn, số lượng rồi lưu. Khi trả, mở phiếu và bấm \"Xác nhận\" trả."]}, {"id": "themmay", "g": "Máy móc", "t": "Thêm máy & giờ máy lúc vào", "p": "k_dm", "s": ["Menu → \"Máy móc & Thiết bị\" → bấm \"+ Thêm\".", "Bấm ô Tên thiết bị → chọn máy có sẵn trong danh sách (gõ tên hoặc mã để tìm). Không có thì gõ tên mới.", "Kiểm tra thông tin tự điền, nhập NGÀY VÀO và SỐ ĐỒNG HỒ GIỜ MÁY lúc máy vào công trình.", "Bấm \"Lưu\"."]}, {"id": "ketthuc", "g": "Máy móc", "t": "Kết thúc máy rời công trình", "p": "k_meter", "s": ["Mở máy trong danh sách Máy móc. Khung giờ máy cho biết ngày vào, tổng giờ chạy, lít dầu/giờ.", "Máy rời công trình: bấm \"Kết thúc · máy rời công trình\".", "Chọn ngày kết thúc, nhập số đồng hồ lúc rời rồi \"Xác nhận kết thúc\"."]}, {"id": "baocao", "g": "Báo cáo", "t": "Xem báo cáo & xuất Excel", "p": "x_nxt", "s": ["Bấm tab \"Báo cáo\" ở thanh dưới.", "Bấm \"Xuất báo cáo Excel\" (tab Phiếu YC có thêm \"Xuất báo cáo phiếu YC\").", "Chọn kỳ báo cáo rồi bấm \"⬇️ Xuất Excel\" → tải về hoặc gửi Zalo."]}, {"id": "thanhvien", "g": "Quản trị", "t": "Thành viên & phân quyền chức danh", "p": "ADM", "s": ["Bấm ☰ (Menu) → \"Thành viên\".", "Bấm vào một người → chọn chức danh và TÍCH DỰ ÁN (bắt buộc với chức danh cần dự án) → Lưu.", "Menu → \"Phân quyền chức danh\" → bấm một chức danh.", "Tích / bỏ tích từng quyền rồi bấm \"Lưu\". Áp dụng ngay cho mọi người cùng chức danh."]}, {"id": "saoluu", "g": "Quản trị", "t": "Sao lưu dữ liệu", "p": "ADM", "s": ["Bấm ☰ (Menu) → \"Sao lưu dữ liệu\".", "Xem lần sao lưu gần nhất. Bấm \"Sao lưu ngay\" trước việc lớn; mở thư mục Drive để xem các bản sao."]}];
+const GUIDES = [{"id":"capnhat","g":"Bắt đầu","t":"Cập nhật phiên bản mới","p":"","s":["Có bản mới, đầu màn hình chính hiện thẻ \"Cập nhật phiên bản mới\".","Bấm \"Cập nhật\" để lên bản mới ngay (app tải lại khoảng vài giây). Bấm \"Để sau, giữ bản cũ\" thì vẫn dùng bản đang có.","Muốn cập nhật sau: bấm ☰ (Menu) → \"🆕 Cập nhật phiên bản mới\" (có chấm đỏ) → \"Cập nhật\". Bấm \"Kiểm tra bản mới\" để hỏi lại ngay.","Người được Admin cho phép xem thêm nội dung từng bản: lỗi gì, cách sửa, đã thử nghiệm chưa, và lịch sử cập nhật."]},{"id":"khoaapp","g":"Bắt đầu","t":"Mở khóa bằng Face ID / vân tay","p":"","s":["Sau khi đăng nhập bằng mật khẩu, app hỏi \"Bật mở khóa bằng Face ID / vân tay?\" → bấm Bật (hoặc Menu → \"Khóa app bằng Face ID / vân tay\").","Mỗi ngày, lần đầu mở app (sau 0:00) quét Face ID / vân tay một lần, sau đó dùng bình thường cả ngày.","Không quét được thì bấm \"Dùng mật khẩu\". Đăng xuất thì tính năng tự tắt."]},{"id": "dangnhap", "g": "Bắt đầu", "t": "Đăng nhập & liên kết Telegram", "p": "", "s": ["Mở app, nhập tên đăng nhập do Admin cấp.", "Nhập mật khẩu rồi bấm \"Đăng nhập\". Chấm màu dưới khung cho biết mạng tốt hay yếu.", "Bấm ☰ (Menu) → \"Nhận cảnh báo Telegram\".", "Bấm \"Mở Telegram để liên kết\" → bấm Start trong Telegram. Khoảng 1 phút sau bấm \"Kiểm tra\"."]}, {"id": "pyc_coc", "g": "Phiếu yêu cầu", "t": "Tạo phiếu yêu cầu cóc nối", "p": "y_tao", "s": ["Vào tab Phiếu YC, bấm \"+ Tạo phiếu yêu cầu\".", "Chọn hạng mục (Cọc / Tường vây), gõ tên cấu kiện (VD: P3.11) rồi chọn trong danh sách.", "Chọn mức nối cóc theo thực tế thi công (bắt buộc). App tự tính số cóc theo bản vẽ.", "Kiểm tra bảng số lượng, ghi chú nếu cần rồi bấm \"Gửi phiếu\". Phiếu tới kho ngay, thủ kho nhận tin Telegram."]}, {"id": "pyc_vt", "g": "Phiếu yêu cầu", "t": "Tạo phiếu vật tư khác (dầu, mỡ, răng gàu…)", "p": "y_tao", "s": ["Bấm \"+ Tạo phiếu yêu cầu\" → chọn thẻ \"Vật tư khác\".", "Gõ tên vật tư (không cần dấu, VD: \"dau do\") rồi chọn trong danh sách gợi ý.", "Dầu, mỡ, răng gàu… bắt buộc chọn máy sử dụng. Chọn \"Dùng chung\" thì ghi lý do.", "Nhập số lượng rồi bấm \"Gửi phiếu\"."]}, {"id": "pyc_duyet", "g": "Phiếu yêu cầu", "t": "Duyệt phiếu (CHT / CHP)", "p": "y_duyet", "s": ["Tab Phiếu YC → phiếu có dải vàng \"Chờ CHT/CHP duyệt\". Bấm để mở.", "Xem trạng thái phiếu và số lượng từng vật tư. Kho vẫn giao trước được khi bạn chưa duyệt.", "Bấm \"✅ Duyệt phiếu\". Không đồng ý thì nhập lý do và bấm \"Từ chối\" / \"Hủy\"."]}, {"id": "pyc_giao", "g": "Phiếu yêu cầu", "t": "Giao hàng theo phiếu yêu cầu", "p": "y_giao", "s": ["Tab Phiếu YC → mục \"Cần giao gấp\", bấm vào phiếu có dải đỏ.", "Đọc khung Trạng thái phiếu: việc của bạn, phiếu đã được CHT/CHP duyệt chưa.", "Mỗi vật tư nhập số \"Giao lần này\", hoặc bấm \"Giao đủ\". Kho thiếu thì giao một phần hoặc bấm Kiểm kê.", "Bấm \"🚚 Giao hàng – trừ tồn kho\". App trừ tồn, tạo phiếu xuất và báo người lập phiếu."]}, {"id": "pyc_nhan", "g": "Phiếu yêu cầu", "t": "Xác nhận nhận hàng / báo nhận thiếu", "p": "y_nhan", "s": ["Kho giao xong, phiếu chuyển dải xanh \"Kho đã giao\". Bấm để mở.", "Kiểm hàng thực tế với số \"Kho đã giao\" của từng vật tư.", "Đủ thì bấm \"✅ Tôi đã nhận đủ hàng\". Thiếu thì bấm \"⚠️ Nhận thiếu\", nhập số thực nhận rồi xác nhận."]}, {"id": "nhap", "g": "Kho", "t": "Nhập kho", "p": "k_nhap", "s": ["Tab Tổng quan → bấm ô \"Nhập kho\".", "Chọn vật tư (gõ để tìm), nhập số lượng, nhà cung cấp, chụp ảnh biên bản nếu có.", "Bấm \"✅ Xác nhận nhập kho\". Mất mạng vẫn lưu được, có mạng app tự gửi."]}, {"id": "xuat", "g": "Kho", "t": "Xuất kho & xuất dầu ghi giờ máy", "p": "k_xuat", "s": ["Tab Tổng quan → \"Xuất kho\". Chọn vật tư và nhập số lượng.", "Xuất dầu cho máy: chọn máy nhận dầu.", "Bắt buộc nhập SỐ ĐỒNG HỒ GIỜ MÁY đọc trên máy (không phải giờ trong ngày). Đồng hồ hỏng thì tích ô và ghi lý do.", "Bấm \"📤 Xác nhận xuất kho\"."]}, {"id": "kiemke", "g": "Kho", "t": "Kiểm kê thực tế", "p": "k_kk", "s": ["Bấm ☰ (Menu) → \"Đợt kiểm kê\" (hoặc tab Phiếu YC → \"Đợt kiểm kê\").", "Đếm thực tế và nhập số đếm vào từng dòng vật tư. Số khác với app sẽ tự tô viền cam.", "Bấm \"Lưu đợt kiểm kê\". Số đếm thành mốc để app tính tồn kho về sau."]}, {"id": "muontra", "g": "Kho", "t": "Cho mượn / trả dụng cụ", "p": "k_loan", "s": ["Bấm ☰ (Menu) → \"Cho mượn / Trả\".", "Bấm \"+\" để lập phiếu mượn.", "Chọn loại phiếu (Cho mượn / Đi mượn), vật tư, người mượn, số lượng rồi lưu. Khi trả, mở phiếu và bấm \"Xác nhận\" trả."]}, {"id": "themmay", "g": "Máy móc", "t": "Thêm máy & giờ máy lúc vào", "p": "k_dm", "s": ["Menu → \"Máy móc & Thiết bị\" → bấm \"+ Thêm\".", "Bấm ô Tên thiết bị → chọn máy có sẵn trong danh sách (gõ tên hoặc mã để tìm). Không có thì gõ tên mới.", "Kiểm tra thông tin tự điền, nhập NGÀY VÀO và SỐ ĐỒNG HỒ GIỜ MÁY lúc máy vào công trình.", "Bấm \"Lưu\"."]}, {"id": "ketthuc", "g": "Máy móc", "t": "Kết thúc máy rời công trình", "p": "k_meter", "s": ["Mở máy trong danh sách Máy móc. Khung giờ máy cho biết ngày vào, tổng giờ chạy, lít dầu/giờ.", "Máy rời công trình: bấm \"Kết thúc · máy rời công trình\".", "Chọn ngày kết thúc, nhập số đồng hồ lúc rời rồi \"Xác nhận kết thúc\"."]}, {"id": "baocao", "g": "Báo cáo", "t": "Xem báo cáo & xuất Excel", "p": "x_nxt", "s": ["Bấm tab \"Báo cáo\" ở thanh dưới.", "Bấm \"Xuất báo cáo Excel\" (tab Phiếu YC có thêm \"Xuất báo cáo phiếu YC\").", "Chọn kỳ báo cáo rồi bấm \"⬇️ Xuất Excel\" → tải về hoặc gửi Zalo."]}, {"id": "thanhvien", "g": "Quản trị", "t": "Thành viên & phân quyền chức danh", "p": "ADM", "s": ["Bấm ☰ (Menu) → \"Thành viên\".", "Bấm vào một người → chọn chức danh và TÍCH DỰ ÁN (bắt buộc với chức danh cần dự án) → Lưu.", "Menu → \"Phân quyền chức danh\" → bấm một chức danh.", "Tích / bỏ tích từng quyền rồi bấm \"Lưu\". Áp dụng ngay cho mọi người cùng chức danh."]}, {"id": "saoluu", "g": "Quản trị", "t": "Sao lưu dữ liệu", "p": "ADM", "s": ["Bấm ☰ (Menu) → \"Sao lưu dữ liệu\".", "Xem lần sao lưu gần nhất. Bấm \"Sao lưu ngay\" trước việc lớn; mở thư mục Drive để xem các bản sao."]}];
 
 // v5.25: HƯỚNG DẪN SỬ DỤNG — ảnh trong thư mục huongdan/ (chỉ tải khi mở bài, xem rồi thì lưu lại trên máy)
 const GUIDE_ICO = {'Bắt đầu':'👋', 'Phiếu yêu cầu':'📝', 'Kho':'📦', 'Máy móc':'🏗', 'Báo cáo':'📊', 'Quản trị':'🛡'};
@@ -7156,7 +7348,7 @@ function helpFor(where) {
   const M = {home:'', lead:'', pyc, lsnhap:'nhap', nhap:'nhap', lsxuat:'xuat', xuat:'xuat', ton:'kiemke', baocao:'baocao',
     'dp-req': hp('y_giao') ? 'pyc_giao' : hp('y_duyet') ? 'pyc_duyet' : 'pyc_nhan', 'dp-req-new': (typeof rf !== 'undefined' && rf && rf.mode === 'vt') ? 'pyc_vt' : 'pyc_coc',
     'dp-kk':'kiemke', 'dp-loans':'muontra', 'dp-devices-list':'themmay', 'dp-device':'ketthuc', 'dp-members':'thanhvien', 'dp-roles':'thanhvien',
-    'dp-backup':'saoluu', 'dp-tg':'dangnhap'};
+    'dp-backup':'saoluu', 'dp-tg':'dangnhap', 'dp-ver':'capnhat'};
   return M[where] || '';
 }
 function openHelp(where) {
