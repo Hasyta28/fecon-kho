@@ -660,6 +660,27 @@ body.can-ql .hide-ql{display:none!important}
 .saved-bar button{border:none;border-radius:8px;padding:8px 10px;font-size:12px;font-weight:700;cursor:pointer;white-space:nowrap;font-family:inherit}
 .rp-text{width:100%;border:1.5px solid var(--border);border-radius:var(--r-sm);padding:10px 12px;font-size:13px;line-height:1.5;font-family:inherit;color:var(--text);min-height:260px;resize:vertical}
 /* v5.28: cập nhật phiên bản mới */
+/* v5.29: danh mục P.QLTB */
+.combo-head{font-size:11px;font-weight:800;color:var(--text3);padding:8px 12px 4px;text-transform:uppercase;letter-spacing:.4px;background:#F7F9FB}
+.combo-opt.ql span{font-weight:600}
+.ql-badge{display:inline-block;font-size:10.5px;font-weight:800;border-radius:6px;padding:1px 6px;margin-top:3px}
+.ql-badge.ok{background:#EEF4FF;color:#1F5FA8}.ql-badge.out{background:#FFF1E8;color:#C2410C}
+.mv-box{border:1.5px solid #BFD7F2;background:#F5F9FF;border-radius:14px;padding:12px;margin-bottom:14px}
+.mv-card{display:flex;gap:10px;align-items:flex-start;margin-bottom:12px}.mv-card b{display:block;font-size:14.5px;line-height:1.3}.mv-card small{display:block;font-size:12px;color:var(--text2);margin-top:3px}
+.mv-ico{width:40px;height:40px;border-radius:12px;background:#fff;border:1px solid #BFD7F2;display:flex;align-items:center;justify-content:center;font-size:21px;flex-shrink:0}
+.mv-x{border:1px solid var(--border);background:#fff;border-radius:8px;font-size:11.5px;font-weight:700;color:var(--text2);padding:5px 8px;font-family:inherit;flex-shrink:0}
+.txn-ico.dv{font-size:20px}.badge-in{background:#E9F7EF;color:#1E7A45}.badge-mra{background:#FDECEC;color:#B42318}
+.odm-btns{display:flex;flex-direction:column;gap:8px}.odm-btns .btn-full{margin:0}
+.ql-dev-h{font-size:11px;font-weight:900;color:var(--text3);letter-spacing:.5px;text-transform:uppercase;margin-bottom:6px}
+.ql-dev-r{display:flex;justify-content:space-between;gap:10px;font-size:13px;padding:3px 0}.ql-dev-r span{color:var(--text2)}.ql-dev-r b{text-align:right;word-break:break-all}
+.ql-link{margin-top:8px;border:1.5px solid var(--primary);background:#fff;color:var(--primary);border-radius:10px;padding:8px 12px;font-weight:800;font-family:inherit}
+.ql-ev{display:flex;gap:8px;align-items:baseline;font-size:13px;padding:4px 0;border-top:1px dashed var(--border)}.ql-ev span{font-weight:800;min-width:46px}.ql-ev span.in{color:var(--green)}.ql-ev span.out{color:var(--red)}.ql-ev small{color:var(--text3);margin-left:auto}
+.ql-err{background:#FDECEC;border:1px solid #F5B5B5;color:#B42318;border-radius:10px;padding:8px 10px;font-size:12px;line-height:1.5;margin-top:8px}
+.ql-sample{margin-top:10px;font-size:13px;line-height:1.5}.ql-sample b{display:block;margin-top:6px;font-size:11px;color:var(--text3);text-transform:uppercase}.ql-sample small{display:block;color:var(--text3);font-size:11.5px}
+.qm-row{background:#fff;border-radius:14px;box-shadow:var(--shadow);padding:12px 14px;margin-bottom:8px}
+.qm-name{font-weight:800;font-size:14px}.qm-sug{font-size:13px;margin-top:6px;background:#F5F9FF;border-radius:8px;padding:6px 8px}.qm-sug small{display:block;color:var(--text3);font-size:11.5px}
+.qm-btns{display:flex;gap:6px;margin-top:8px;flex-wrap:wrap}.qm-btns button{flex:1;min-width:90px;border-radius:10px;padding:9px 6px;font-size:12.5px;font-weight:800;font-family:inherit}
+.qmp-list{max-height:50vh;overflow-y:auto;margin-bottom:10px;border:1px solid var(--border);border-radius:10px}
 .btn-busy{opacity:.75;cursor:wait}
 .dup-msg{font-size:14.5px;line-height:1.55;color:var(--text);margin:4px 0 16px;padding:12px;background:#FFF4EC;border-radius:12px;border:1px solid #FFD8C2}
 .vu-card{background:#fff;border-radius:16px;box-shadow:var(--shadow);margin:12px 14px 4px;overflow:hidden;border:1.5px solid #FFD8C2}
@@ -1076,6 +1097,14 @@ body:not(.can-cost) .need-cost{display:none!important}
   <div class="detail-header"><button class="back-btn" onclick="closeDp('dp-ver')">‹</button><div class="detail-title">🆕 Cập nhật phiên bản mới</div></div>
   <div class="detail-body" id="dp-ver-body"></div>
 </div>
+<div class="detail-page" id="dp-qltb">
+  <div class="detail-header"><button class="back-btn" onclick="closeDp('dp-qltb')">‹</button><div class="detail-title">📚 Danh mục P.QLTB</div></div>
+  <div class="detail-body" id="dp-qltb-body"></div>
+</div>
+<div class="detail-page" id="dp-qlmap">
+  <div class="detail-header"><button class="back-btn" onclick="closeDp('dp-qlmap')">‹</button><div class="detail-title">🔗 Gắn mã P.QLTB</div></div>
+  <div class="detail-body" id="dp-qlmap-body"></div>
+</div>
 <div class="detail-page" id="dp-tg">
   <div class="detail-header"><button class="back-btn" onclick="closeDp('dp-tg')">‹</button><div class="detail-title">🔔 Cảnh báo Telegram</div></div>
   <div class="detail-body" id="dp-tg-body"></div>
@@ -1212,6 +1241,7 @@ body:not(.can-cost) .need-cost{display:none!important}
     <div class="sidebar-item" data-p="k_copy" onclick="closeSidebar();setTimeout(openCopyItems,300)"><span class="sidebar-item-ico">📋</span>Chép vật tư từ dự án khác</div>
     <div class="sidebar-item" data-p="k_kk" onclick="closeSidebar();setTimeout(openKK,300)"><span class="sidebar-item-ico">🔢</span>Đợt kiểm kê</div>
     <div class="sidebar-item need-cost" onclick="openDpSb('dp-coc')"><span class="sidebar-item-ico">🔗</span>Đối chiếu cóc nối</div>
+    <div class="sidebar-item" data-p="k_dm" onclick="closeSidebar();setTimeout(openQlMap,300)"><span class="sidebar-item-ico">🔗</span>Gắn mã P.QLTB</div>
     <div class="sidebar-item" onclick="closeSidebar();setTimeout(openGuides,300)"><span class="sidebar-item-ico">📖</span>Hướng dẫn sử dụng</div>
     <div class="sidebar-item" onclick="closeSidebar();setTimeout(openVer,300)"><span class="sidebar-item-ico">🆕</span>Cập nhật phiên bản mới<span class="sb-dot" id="sb-ver-dot" style="display:none"></span></div>
     <div class="sidebar-item" id="sb-bio" style="display:none" onclick="bioToggle()"><span class="sidebar-item-ico">🔒</span><span id="sb-bio-lbl" style="flex:1">Khóa app bằng Face ID</span><span class="bio-sw" id="sb-bio-sw"></span></div>
@@ -1224,6 +1254,7 @@ body:not(.can-cost) .need-cost{display:none!important}
     <div class="sidebar-item need-admin" onclick="purgeItemsUI()"><span class="sidebar-item-ico">🗑</span>Xóa danh mục vật tư dự án</div>
     <div class="sidebar-item need-admin" onclick="closeSidebar();setTimeout(openBackup,300)"><span class="sidebar-item-ico">💾</span>Sao lưu dữ liệu</div>
     <div class="sidebar-item need-admin" onclick="closeSidebar();setTimeout(openRoles,300)"><span class="sidebar-item-ico">🛡</span>Phân quyền chức danh</div>
+    <div class="sidebar-item need-admin" onclick="closeSidebar();setTimeout(openQltb,300)"><span class="sidebar-item-ico">📚</span>Danh mục P.QLTB</div>
     <div class="sidebar-item need-admin" onclick="openDpSb('dp-pycfg')"><span class="sidebar-item-ico">⚙️</span>Cài đặt phiếu yêu cầu</div>
     <div class="sidebar-divider"></div>
     <div class="sidebar-item inst-btn" style="display:none" onclick="closeSidebar();doInstall()"><span class="sidebar-item-ico">📲</span>Cài app vào điện thoại</div>
@@ -1388,7 +1419,7 @@ body:not(.can-cost) .need-cost{display:none!important}
   <div class="modal-sheet">
     <div class="modal-handle"></div>
     <div class="modal-title" id="modal-device-title">🏗️ Thêm máy / Thiết bị</div>
-    <input type="hidden" id="ad-id">
+    <input type="hidden" id="ad-id"><input type="hidden" id="ad-maql">
     <div class="fg"><label>Tên thiết bị</label>
       <div class="combo">
         <input type="text" id="ad-name" autocomplete="off" placeholder="Bấm để chọn máy có sẵn, hoặc gõ tên mới"
@@ -1661,7 +1692,7 @@ body:not(.can-cost) .need-cost{display:none!important}
 // ============================================================
 // CONFIG
 // ============================================================
-const APP_VERSION = '5.28.1';
+const APP_VERSION = '5.29.0';
 const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbw6Rmi80I7RI3ij2U7RdRF5pYuQTnPrwEmGmUZS5xpxzLwwVynfoFUujZe1lm6HS1ymxw/exec';
 // ============================================================
 
@@ -1745,7 +1776,7 @@ const UNITS = ['Lít','Phuy','Thùng','Xô','Kg','Tấn','Cái','Bộ','Cây','T
 // Dữ liệu chỉ tải từ máy chủ SAU KHI đăng nhập (không còn nhúng trong file này)
 const isLow = i => (+i.minStock > 0) && (+i.stock <= +i.minStock);
 const DEVICE_FUEL_DEFAULT = Object.fromEntries(DEVICE_CATS.map(c => [c.id, c.fuel]));
-const emptyDb = () => ({categories: CATEGORIES, projects: [], items: [], devices: [], transactions: [], repairs: [], notes: [], photos: [], loans: [], txnTotal: 0, txnLastId: '',
+const emptyDb = () => ({categories: CATEGORIES, projects: [], items: [], devices: [], devlog: [], transactions: [], repairs: [], notes: [], photos: [], loans: [], txnTotal: 0, txnLastId: '',
   reqs: [], cauKien: [], projCfg: {haoHut:0}, rolePerm: {}, kkMoc: {}, tg: {}});
 let db = emptyDb();
 
@@ -1875,6 +1906,7 @@ function setPendingBadge(n) {
 async function setupApp(pre) {
   applyRoleUI(); bioCheck(); renderBioMenu();
   setTimeout(() => { try { verAfterLogin(); } catch (e) {} }, 1500);   // v5.28: "Có gì mới" + kiểm tra bản mới
+  setTimeout(() => { try { if (hp('k_nhap') || hp('k_dm')) qltbLoad(); } catch (e) {} }, 2500);   // v5.29: danh mục P.QLTB
   document.getElementById('exp-range').onchange = function() {
     document.getElementById('exp-custom').style.display = this.value === 'custom' ? '' : 'none';
   };
@@ -1955,7 +1987,7 @@ function setSyncBar(msg, color) {
 }
 const serverOn = () => SCRIPT_URL && SCRIPT_URL !== 'GOOGLE_SCRIPT_URL';
 // Mọi yêu cầu (đọc + ghi) đi qua POST và luôn kèm token
-const RETRY_READ = {getAll:1, getVersion:1, me:1, ping:1, backupInfo:1, listItemsOf:1, deviceCatalog:1, listUsers:1, getLog:1, getSummary:1, getCost:1, getPrices:1, login:1};
+const RETRY_READ = {qltbList:1, getAll:1, getVersion:1, me:1, ping:1, backupInfo:1, listItemsOf:1, deviceCatalog:1, listUsers:1, getLog:1, getSummary:1, getCost:1, getPrices:1, login:1};
 let rolesRv = localStorage.getItem('fecon_rv') || '';
 // v5.23: gặp lỗi tạm thời của Google (404 / 5xx / rớt kết nối) thì tự thử lại sau 1, 2, 4 giây rồi mới báo lỗi
 async function api(action, data, timeoutMs) {
@@ -2077,9 +2109,11 @@ function applyServer(r) {
   const P = curProj;
   // Xóa dữ liệu lưu trên máy của dự án không còn được giao
   // v5.23: giữ dữ liệu các dự án khác trên máy (đổi tài khoản tải nhanh); app chỉ hiện dự án tài khoản được giao
-  if (r.items) db.items = r.items.map(i => ({...i, id:+i.id, stock:+i.stock||0, minStock:+i.minStock||0, capThang:+i.capThang||0, canMay:+i.canMay||0}));
+  if (r.items) db.items = r.items.map(i => ({...i, id:+i.id, stock:+i.stock||0, minStock:+i.minStock||0, capThang:+i.capThang||0, canMay:+i.canMay||0, maQL:String(i.maQL || ''), ngoaiDM:+i.ngoaiDM || ''}));
+  if (r.devlog) db.devlog = r.devlog.map(e => ({...e, deviceId:+e.deviceId, date:fmtDateInput(e.date), meter:e.meter === '' || e.meter === undefined ? '' : +e.meter}));   // v5.29: máy vào / ra
   ['reqs','cauKien','ckv','projCfg','rolePerm','kkMoc','tg'].forEach(k => { if (r[k] !== undefined) db[k] = r[k]; });   // máy chủ 5.13+
   if (r.devices) db.devices = r.devices.map(d => ({...d, id:+d.id, fuelRate:+d.fuelRate||20, meterUnit:d.meterUnit || 'h',
+    maQL:String(d.maQL || ''), ngoaiDM:+d.ngoaiDM || '',
     inDate:fmtDateInput(d.inDate), outDate:fmtDateInput(d.outDate), inMeter:d.inMeter === '' || d.inMeter === undefined ? '' : +d.inMeter, outMeter:d.outMeter === '' || d.outMeter === undefined ? '' : +d.outMeter}));
   db.repairs = (r.repairs||[]).map(rp => ({...rp, id:+rp.id, deviceId:+rp.deviceId, cost:+rp.cost||0}));
   db.notes = (r.notes||[]).map(n => ({...n, id:+n.id}));
@@ -2340,10 +2374,12 @@ function todayCount(type) {
 function renderHistTab(c, type) {
   let txns = filtTxns().filter(t => t.type === type);
   if (type === 'xuat' && xuatF !== 'all') txns = txns.filter(t => xuatF === 'pyc' ? isPycRef(t.refId) : !isPycRef(t.refId));
+  const dev = curProj !== 'all' && (type === 'nhap' || xuatF === 'all') ? devEvents(type === 'nhap' ? 'vao' : 'ra') : [];   // v5.29: máy vào / ra
+  const nPh = txns.length; txns = txns.concat(dev);
   const fchip = (k, l) => `<div class="chip ${xuatF === k ? 'on' : ''}" onclick="xuatF='${k}';goTab('lsxuat')">${l}</div>`;
   const lbl = type === 'nhap' ? 'phiếu nhập' : 'phiếu xuất';
   c.innerHTML = `
-    <div class="hist-head"><b>${fmtNum(txns.length)} ${lbl}</b><span>Hôm nay: ${todayCount(type)} · ${escHtml(curProj === 'all' ? 'Tất cả dự án' : curProj)}</span></div>
+    <div class="hist-head"><b>${fmtNum(nPh)} ${lbl}${dev.length ? ` · ${dev.length} lượt máy ${type === 'nhap' ? 'vào' : 'ra'}` : ''}</b><span>Hôm nay: ${todayCount(type)} · ${escHtml(curProj === 'all' ? 'Tất cả dự án' : curProj)}</span></div>
     ${type === 'xuat' ? `<div class="chip-row" style="margin-bottom:10px">${fchip('all', 'Tất cả')}${fchip('pyc', 'Theo phiếu YC')}${fchip('thang', 'Xuất thẳng')}</div>` : ''}
     <div style="padding:0 14px 14px">${renderTxnList(txns, type)}</div>`;
 }
@@ -2919,18 +2955,18 @@ function renderTxnList(txns, type) {
 function renderNhap(c) {
   c.innerHTML = `<div style="padding:14px">
     <div class="form-section">
-      <div class="form-section-title">📥 Phiếu Nhập Kho</div>
+      <div class="form-section-title" id="fn-title">📥 Phiếu Nhập Kho</div>
       <div class="fg"><label>Dự án</label>
         <select id="fn-proj" disabled><option>${escHtml(curProj)}</option></select>
       </div>
-      <div class="fg"><label>Nhóm vật tư</label>
+      <div class="fg" id="fn-cat-row"><label>Nhóm vật tư</label>
         <select id="fn-cat" onchange="fillNhapItems()">
           ${db.categories.map(cat=>`<option value="${cat.id}">${cat.icon} ${cat.name}</option>`).join('')}
         </select>
       </div>
       <div class="fg"><label>Tên vật tư</label>
         <div class="combo">
-          <input type="text" id="fn-item-txt" autocomplete="off" placeholder="Gõ tên để tìm, hoặc nhập tên mới để thêm..."
+          <input type="text" id="fn-item-txt" autocomplete="off" placeholder="Gõ tên vật tư / máy (có danh mục P.QLTB)..."
             oninput="comboInput('fn')" onfocus="comboInput('fn')" onblur="setTimeout(()=>comboHide('fn'),200)">
           <button type="button" class="combo-clear" id="fn-clear" onmousedown="event.preventDefault()" onclick="comboClear('fn',true)">✕</button>
           <div class="combo-list" id="fn-list"></div>
@@ -2938,20 +2974,30 @@ function renderNhap(c) {
         <input type="hidden" id="fn-item">
         <div class="combo-hint" id="fn-hint"></div>
       </div>
-      <div class="fg-row">
+      <div id="fn-dev-box" class="mv-box" style="display:none">
+        <div class="mv-card" id="fn-dev-card"></div>
+        <div class="fg-row"><div class="fg"><label>Ngày vào công trường</label><input type="date" id="fn-dv-date"></div>
+          <div class="fg"><label>Loại hình</label><select id="fn-dv-type"><option value="own">Công ty</option><option value="hire">Thuê ngoài</option></select></div></div>
+        <div class="fg-row"><div class="fg"><label>Đồng hồ</label><select id="fn-dv-unit" onchange="fnDevUnit()"><option value="h">Giờ máy</option><option value="km">Km</option><option value="none">Không có</option></select></div>
+          <div class="fg" id="fn-dv-mrow"><label id="fn-dv-mlbl">Số đồng hồ giờ máy lúc vào</label><input type="number" id="fn-dv-meter" inputmode="decimal" min="0" step="0.1" placeholder="Đọc trên đồng hồ"></div></div>
+        <div class="pyc-hint" style="margin:-4px 0 10px">Lưu xong: máy có trong Máy móc &amp; Thiết bị và hiện ở Lịch sử nhập (🏗 Máy vào). Không tính vào tồn vật tư.</div>
+      </div>
+      <div class="fg-row" id="fn-qty-row">
         <div class="fg"><label>Số lượng</label><input type="number" id="fn-qty" placeholder="0" min="0.1" step="0.1" inputmode="decimal"></div>
         <div class="fg"><label>Đơn vị</label><input type="text" id="fn-unit" readonly style="background:var(--bg)" placeholder="—">
           <select id="fn-unit-sel" style="display:none">${UNITS.map(u=>`<option>${u}</option>`).join('')}</select></div>
       </div>
-      <div class="fg"><label>Nhà cung cấp</label><input type="text" id="fn-ncc" placeholder="Tên nhà cung cấp"></div>
+      <div class="fg" id="fn-ncc-row"><label>Nhà cung cấp</label><input type="text" id="fn-ncc" placeholder="Tên nhà cung cấp"></div>
       <div class="fg"><label>Số phiếu / Ghi chú</label><textarea id="fn-note" rows="2" placeholder="Ghi chú..."></textarea></div>
       <div class="fg need-admin"><label>Ngày giờ phiếu (để trống = bây giờ)</label><input type="datetime-local" id="fn-time"></div>
-      ${photoFieldHtml('fn')}
-      <button class="btn-full btn-green" onclick="doNhap()">✅ Xác nhận nhập kho</button>
+      <div id="fn-photo-row">${photoFieldHtml('fn')}</div>
+      <button class="btn-full btn-green" id="fn-save" onclick="doNhap()">✅ Xác nhận nhập kho</button>
     </div>
   </div>`;
+  fnQL = null; fnDev = null;
   fillNhapItems();
   renderFormPhotos('fn');
+  if (!qlOn()) qltbLoad();
 }
 // ===== COMBO: tìm / chọn / thêm vật tư =====
 const normVN = t => (t||'').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/đ/g,'d').replace(/\s+/g,' ').trim();
@@ -2971,6 +3017,12 @@ function comboInput(p) {
   const exact = q ? db.items.find(i => normVN(i.name) === q) : null;
   let html = list.slice(0, 40).map(i => `<div class="combo-opt" onmousedown="event.preventDefault()" onclick="comboPick('${p}',${i.id})">
       <span>${escHtml(i.name)}</span><small>Tồn: ${fmtNum(i.stock)} ${escHtml(i.unit)}</small></div>`).join('');
+  if (p === 'fn') {                                         // v5.29: gợi ý từ danh mục P.QLTB
+    if (fnDev && txt !== fnDev.name) fnSetDev(null);
+    if (fnQL && normVN(txt) !== normVN(fnQL.name)) fnQL = null;
+    const qh = qlComboHtml(q);
+    if (qh) html = (html ? `<div class="combo-head">📦 Vật tư trong kho dự án</div>` + html : '') + qh;
+  }
   if (allowNew && q && !exact) html += `<div class="combo-opt new" onmousedown="event.preventDefault()" onclick="comboPickNew('${p}')">➕ Thêm vật tư mới: “${escHtml(txt.trim())}”</div>`;
   if (!html) html = `<div class="combo-opt empty">${q ? 'Không tìm thấy vật tư trong kho' : 'Nhóm này chưa có vật tư'}</div>`;
   const lst = document.getElementById(p+'-list');
@@ -3008,6 +3060,7 @@ function comboClear(p, focus) {
 function fillNhapItems() { comboClear('fn', false); }
 function fillXuatItems() { comboClear('fx', false); }
 async function doNhap() {
+  if (fnDev) return doNhapMay();                             // v5.29: máy vào công trường
   const name = document.getElementById('fn-item-txt').value.trim();
   const qty = +document.getElementById('fn-qty').value;
   const proj = document.getElementById('fn-proj').value;
@@ -3016,8 +3069,13 @@ async function doNhap() {
   let item = db.items.find(i => i.id === +document.getElementById('fn-item').value) || db.items.find(i => normVN(i.name) === normVN(name));
   if (item && !(await askIfDupTxn('nhap', item, qty))) return;    // v5.28.1: vừa nhập cùng vật tư, cùng số lượng → hỏi lại
   closeKeyboard();
+  let qlMa = '', qlOut = '';
+  if (!item) {                                               // v5.29: vật tư mới — theo danh mục P.QLTB hay ngoài danh mục
+    if (fnQL && normVN(fnQL.name) === normVN(name)) qlMa = fnQL.ma;
+    else if (qlOn()) { const a = await askOutDM(name, false); if (a === 'fix') { document.getElementById('fn-item-txt').focus(); return; } qlOut = a === 'out' ? 1 : 2; }
+  }
   if (!item) {
-    item = {id:newId(), name, cat:document.getElementById('fn-cat').value, unit:document.getElementById('fn-unit-sel').value, stock:0, minStock:0, project:curProj};
+    item = {id:newId(), name, cat:document.getElementById('fn-cat').value, unit:document.getElementById('fn-unit-sel').value, stock:0, minStock:0, project:curProj, maQL:qlMa, ngoaiDM:qlOut};
     db.items.push(item);
     addLog('Thêm vật tư', name);
     push('upsert', {table:'items', rows:[item]});      // gửi nền, giữ đúng thứ tự trong hàng chờ
@@ -3904,7 +3962,7 @@ function renderDevicesList() {
             <div class="ri-left">
               ${devIcon(d)}
               <div class="ri-texts">
-                <div class="ri-name">${d.name}</div>
+                <div class="ri-name">${escHtml(d.name)}</div>${d.maQL || +d.ngoaiDM === 1 ? `<div>${qlBadge(d)}</div>` : ''}
                 <div class="ri-sub">${d.type==='own'?'Công ty':'Thuê ngoài'} · ${fmtNum(totalFuel)} Lít dầu · ${repairs.length} lần sửa</div>
                 ${mUnit(d) !== 'none' ? (() => { const lm = lastMeter(d); return lm !== null && lm !== undefined ? `<div class="ri-sub">⏱ ${mLbl(d)} ${fmtNum(lm)}${d.inDate ? ' · vào ' + d.inDate.split('-').reverse().join('/') : ''}${d.outDate ? ' · ra ' + d.outDate.split('-').reverse().join('/') : ''}</div>` : ''; })() : ''}
                 <div class="dev-by">${d.addedBy ? 'Thêm bởi ' + escHtml(d.addedBy) + (d.addedAt ? ' · ' + escHtml(String(d.addedAt).replace(/^\d{1,2}:\d{2}(:\d{2})?\s*/, '')) : '') : 'Chưa rõ người thêm'}</div>
@@ -4069,8 +4127,12 @@ async function saveDevice() {
   } else {
     const mu = document.getElementById('ad-meter-unit').value, im = document.getElementById('ad-in-meter').value;
     if (mu !== 'none' && im === '') { toast('⚠️ Nhập ' + (mu === 'km' ? 'số km' : 'giờ máy') + ' lúc vào công trình'); return; }
+    let maQL = document.getElementById('ad-maql').value, ngoaiDM = '';            // v5.29: theo danh mục P.QLTB hay ngoài danh mục
+    const qx = qlByMa(maQL); if (!qx || vnNorm(qx.name) !== vnNorm(name)) maQL = '';
+    if (maQL && qlDevHere(maQL)) { toast('⚠️ Máy này đang ở dự án từ ngày ' + fmtDMY(qlDevHere(maQL).inDate)); return; }
+    if (!maQL && qlOn()) { const a = await askOutDM(name, true); if (a === 'fix') return; ngoaiDM = 1; }
     const device = {id:newId(), name, cat:document.getElementById('ad-cat').value, type:document.getElementById('ad-type').value, fuelRate:+document.getElementById('ad-fuel').value||20, plate:document.getElementById('ad-plate').value, note:document.getElementById('ad-note').value, project:curProj,
-      meterUnit:mu, inDate:document.getElementById('ad-in-date').value, inMeter:im === '' ? '' : +im, outDate:'', outMeter:'', addedBy:me?.name || '', addedAt:nowStr()};
+      meterUnit:mu, inDate:document.getElementById('ad-in-date').value, inMeter:im === '' ? '' : +im, outDate:'', outMeter:'', addedBy:me?.name || '', addedAt:nowStr(), maQL, ngoaiDM};
     db.devices.push(device);
     saved = device;
     addLog('Thêm thiết bị', name);
@@ -4484,9 +4546,10 @@ async function buildNxtWorkbook() {
   // ---------- 3 & 4. BẢNG NHẬP – XUẤT – TỒN ----------
   const q = s => `'${s.replace(/'/g, "''")}'`;
   function nxtSheet(name, log, fuel) {
-    const ws = sheet(name, [5, 34, 9, 13, 13, 13, 13, 13, 12, 12], 5);
-    title(ws, 'BẢNG TỔNG HỢP NHẬP – XUẤT – TỒN' + (fuel ? ' DẦU NHỚT' : ' VẬT TƯ'), 10);
-    header(ws, 5, ['STT', 'Tên vật tư', 'Đơn vị', 'Tồn đầu kỳ', 'Nhập', 'Xuất', 'Điều chỉnh', 'Tồn cuối kỳ', 'Tối thiểu', 'Tình trạng'], 1);
+    const QC = !fuel && qlOn();                                   // v5.29: thêm 3 cột đối chiếu P.QLTB
+    const ws = sheet(name, [5, 34, 9, 13, 13, 13, 13, 13, 12, 12].concat(QC ? [30, 36, 16] : []), 5);
+    title(ws, 'BẢNG TỔNG HỢP NHẬP – XUẤT – TỒN' + (fuel ? ' DẦU NHỚT' : ' VẬT TƯ'), QC ? 13 : 10);
+    header(ws, 5, ['STT', 'Tên vật tư', 'Đơn vị', 'Tồn đầu kỳ', 'Nhập', 'Xuất', 'Điều chỉnh', 'Tồn cuối kỳ', 'Tối thiểu', 'Tình trạng'].concat(QC ? ['Mã P.QLTB', 'Tên theo P.QLTB', 'Ngoài danh mục'] : []), 1);
     const L = q(log.name), rg = c => `${L}!$${c}$${log.first}:$${c}$${log.last}`;
     const items = db.items.filter(i => isFuelGroup(i) === fuel);
     let r = 6, mismatch = 0;
@@ -4513,7 +4576,10 @@ async function buildNxtWorkbook() {
       ws.getCell(r, 9).value = +it.minStock || 0;
       ws.getCell(r, 10).value = {formula:`IF(H${r}<=0,"Hết hàng",IF(AND(I${r}>0,H${r}<=I${r}),"Sắp hết","Đủ hàng"))`, result:st};
       [4, 5, 6, 7, 8, 9].forEach(c => ws.getCell(r, c).numFmt = '#,##0.##;-#,##0.##;"-"');
-      body(ws, r, 1, 10);
+      if (QC) { const qx = qlByMa(it.maQL); ws.getCell(r, 11).value = it.maQL || null; ws.getCell(r, 12).value = qx ? qx.name : null;
+        ws.getCell(r, 13).value = +it.ngoaiDM === 1 ? 'Ngoài danh mục' : +it.ngoaiDM === 2 ? 'Không thuộc P.QLTB' : null;
+        if (+it.ngoaiDM === 1) ws.getCell(r, 13).fill = {type:'pattern', pattern:'solid', fgColor:{argb:'FFFFE3D1'}}; }
+      body(ws, r, 1, QC ? 13 : 10);
       ws.getCell(r, 8).font = {...FONT, bold:true};
       // Xuất toàn bộ mà tồn đầu kỳ ≠ 0 → số tồn hệ thống không khớp tổng Nhập − Xuất trong sổ
       if (!R.from && Math.abs(open) > 1e-9) {
@@ -4524,7 +4590,7 @@ async function buildNxtWorkbook() {
       if (st !== 'Đủ hàng') ws.getCell(r, 10).font = {...FONT, bold:true, color:{argb:'FFC0392B'}};
       r++;
     });
-    ws.autoFilter = {from:{row:5, column:1}, to:{row:5, column:10}};
+    ws.autoFilter = {from:{row:5, column:1}, to:{row:5, column:QC ? 13 : 10}};
     const n = ws.getCell(r + 1, 2);
     n.value = 'Tồn đầu kỳ = tồn hiện tại trên hệ thống trừ các phiếu phát sinh từ đầu kỳ. Nhập/Xuất/Điều chỉnh cộng từ sheet "' + log.name + '".'
       + (hasLoans ? ' Tồn cuối kỳ đã tính cả hàng cho mượn / đi mượn (cột "Tăng/giảm tồn" ở sheet "' + MT.name + '").' : '');
@@ -4662,6 +4728,48 @@ async function buildNxtWorkbook() {
     });
   }
 
+  // ---------- 9. ĐỐI CHIẾU P.QLTB (v5.29) ----------
+  const qlAdded = qlOn() || db.devices.some(d => d.maQL) || db.items.some(i => i.maQL);
+  if (qlAdded) {
+    const ws = sheet('Đối chiếu P.QLTB', [6, 34, 40, 40, 18, 12, 13, 13, 16, 18], 5);
+    title(ws, 'ĐỐI CHIẾU MÁY MÓC, THIẾT BỊ, VẬT TƯ PHỤ TRỢ VỚI DANH MỤC P.QLTB', 10);
+    let r = 4;
+    ws.getCell(r, 2).value = 'A. MÁY MÓC & THIẾT BỊ (theo từng chiếc)'; ws.getCell(r, 2).font = {...FONT, bold:true};
+    header(ws, 5, ['STT', 'Mã P.QLTB', 'Tên trong app', 'Tên theo P.QLTB', 'Nhóm', 'Loại hình', 'Ngày vào', 'Ngày ra', 'Tình trạng', 'Đối chiếu'], 1);
+    r = 6;
+    const dmy = v => { const m = String(v || '').match(/(\d{4})-(\d{2})-(\d{2})/); return m ? new Date(Date.UTC(+m[1], +m[2] - 1, +m[3])) : null; };
+    db.devices.slice().sort((a, b) => (a.maQL || 'zz').localeCompare(b.maQL || 'zz')).forEach((d, i) => {
+      const qx = qlByMa(d.maQL), chk = d.maQL ? (qx ? 'Khớp danh mục' : 'Mã không còn trong danh mục') : +d.ngoaiDM === 1 ? 'Ngoài danh mục' : 'Chưa gắn mã';
+      [i + 1, d.maQL || null, d.name, qx ? qx.name : null, devCatOf(d.cat).name, d.type === 'hire' ? 'Thuê ngoài' : 'Công ty', dmy(d.inDate), dmy(d.outDate), devActive(d) ? 'Đang ở công trường' : 'Đã rời', chk]
+        .forEach((v, k) => ws.getCell(r, k + 1).value = v);
+      [7, 8].forEach(c => ws.getCell(r, c).numFmt = 'dd/mm/yyyy');
+      if (chk !== 'Khớp danh mục') ws.getCell(r, 10).fill = {type:'pattern', pattern:'solid', fgColor:{argb:'FFFFE3D1'}};
+      body(ws, r, 1, 10); r++;
+    });
+    r += 1; ws.getCell(r, 2).value = 'B. VẬT TƯ PHỤ TRỢ (theo loại + quy cách)'; ws.getCell(r, 2).font = {...FONT, bold:true}; r++;
+    header(ws, r, ['STT', 'Mã P.QLTB', 'Tên trong app', 'Tên theo P.QLTB', 'Đơn vị', 'Nhập', 'Xuất', 'Tồn hiện tại', 'Tình trạng', 'Đối chiếu'], 1); r++;
+    db.items.filter(i => i.maQL || +i.ngoaiDM === 1).forEach((it, i) => {
+      const qx = qlByMa(it.maQL), mine = db.transactions.filter(t => t.itemId === it.id);
+      const nh = mine.filter(t => t.type === 'nhap').reduce((a, t) => a + effQty(t), 0), xu = mine.filter(t => t.type === 'xuat').reduce((a, t) => a + effQty(t), 0);
+      const chk = it.maQL ? (qx ? 'Khớp danh mục' : 'Mã không còn trong danh mục') : 'Ngoài danh mục';
+      [i + 1, it.maQL || null, it.name, qx ? qx.name : null, it.unit, nh, xu, +it.stock || 0, (+it.stock || 0) > 0 ? 'Đang ở công trường' : 'Hết', chk].forEach((v, k) => ws.getCell(r, k + 1).value = v);
+      [6, 7, 8].forEach(c => ws.getCell(r, c).numFmt = '#,##0.##');
+      if (chk !== 'Khớp danh mục') ws.getCell(r, 10).fill = {type:'pattern', pattern:'solid', fgColor:{argb:'FFFFE3D1'}};
+      body(ws, r, 1, 10); r++;
+    });
+    r += 1; ws.getCell(r, 2).value = 'C. LỊCH SỬ MÁY VÀO / RA CÔNG TRƯỜNG'; ws.getCell(r, 2).font = {...FONT, bold:true}; r++;
+    header(ws, r, ['STT', 'Mã P.QLTB', 'Tên máy', 'Vào / Ra', 'Ngày', 'Số đồng hồ', 'Người ghi', 'Ghi chú'], 1); r++;
+    devEvents('vao').concat(devEvents('ra')).sort((a, b) => (parseVN(a.datetime) || 0) - (parseVN(b.datetime) || 0)).forEach((e, i) => {
+      const d = db.devices.find(x => +x.id === +e.deviceId);
+      [i + 1, e.maQL || d?.maQL || null, d?.name || e.deviceName, e.kind === 'vao' ? 'Máy vào' : 'Máy ra', dmy(e.date), e.meter === '' || e.meter === undefined ? null : +e.meter, e.by || null, e.note || null]
+        .forEach((v, k) => ws.getCell(r, k + 1).value = v);
+      ws.getCell(r, 5).numFmt = 'dd/mm/yyyy'; body(ws, r, 1, 8); r++;
+    });
+    const nn = ws.getCell(r + 1, 2);
+    nn.value = 'Danh mục P.QLTB: ' + (qltb?.info ? `${qltb.info.file || ''} · nạp ${qltb.info.at || ''}` : 'chưa nạp') + '. "Ngoài danh mục" = tên không có trong file P.QLTB, cần P.QLTB kiểm tra.';
+    nn.font = {...FONT, italic:true, size:9, color:{argb:'FF777777'}};
+  }
+
   // v5.17.1: thêm 4 trang phiếu yêu cầu / đối chiếu cóc / kiểm kê (nếu dự án có dùng)
   let pycAdded = false;
   if (projReqs().length || db.transactions.some(t => t.type === 'kiemke')) { addPycSheets(wb, R, P); pycAdded = true; }
@@ -4672,7 +4780,7 @@ async function buildNxtWorkbook() {
   lastExport = new File([buf], fname, {type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'});
   closeModal('modal-export');
   document.getElementById('xf-name').textContent = fname;
-  document.getElementById('xf-gom').textContent = 'Gồm: Số liệu ngày (dầu nhớt) · Vật tư · NXT dầu nhớt · NXT vật tư · Theo dõi dầu thiết bị · Chi tiết phiếu' + (pycAdded ? ' · Tóm tắt phiếu YC · Phiếu yêu cầu · Đối chiếu cóc nối · Kiểm kê' : '') + (meterAdded ? ' · Giờ máy' : '');
+  document.getElementById('xf-gom').textContent = 'Gồm: Số liệu ngày (dầu nhớt) · Vật tư · NXT dầu nhớt · NXT vật tư · Theo dõi dầu thiết bị · Chi tiết phiếu' + (pycAdded ? ' · Tóm tắt phiếu YC · Phiếu yêu cầu · Đối chiếu cóc nối · Kiểm kê' : '') + (meterAdded ? ' · Giờ máy' : '') + (qlAdded ? ' · Đối chiếu P.QLTB' : '');
   document.getElementById('xf-share').style.display = navigator.canShare && navigator.canShare({files:[lastExport]}) ? '' : 'none';
   openModal('modal-xfile');
 }
@@ -7153,13 +7261,17 @@ async function devClose(id) {
   const last = lastMeter(d); if (mEl && last !== null && last !== undefined && +m < last && !confirm(`Số ${fmtNum(+m)} nhỏ hơn lần ghi trước (${fmtNum(last)}). Vẫn lưu?`)) return;
   showLoader('Đang lưu...'); const r = await api('closeDevice', {id, outDate:date, outMeter:m}); hideLoader();
   if (!r || !r.success) { toast('⚠️ ' + ((r && r.error) || 'Không lưu được')); return; }
-  d.outDate = date; d.outMeter = m === '' ? '' : +m; saveLocal(); toast('✅ Đã kết thúc máy ở công trình'); renderDeviceDetail(id); renderDevicesList();
+  d.outDate = date; d.outMeter = m === '' ? '' : +m;
+  (db.devlog = db.devlog || []).push({id:'L' + Date.now(), deviceId:d.id, deviceName:d.name, maQL:d.maQL || '', kind:'ra', date, meter:d.outMeter, project:curProj, by:me?.name || '', at:nowStr(), _local:1});   // v5.29: Máy ra
+  saveLocal(); toast('✅ Đã kết thúc máy ở công trình'); renderDeviceDetail(id); renderDevicesList();
 }
 async function devReopen(id) {
   const d = db.devices.find(x => x.id === id); if (!d || !confirm('Mở lại máy ở công trình?')) return;
   showLoader('Đang lưu...'); const r = await api('closeDevice', {id, reopen:1}); hideLoader();
   if (!r || !r.success) { toast('⚠️ ' + ((r && r.error) || 'Không lưu được')); return; }
-  d.outDate = ''; d.outMeter = ''; saveLocal(); toast('✅ Đã mở lại'); renderDeviceDetail(id); renderDevicesList();
+  d.outDate = ''; d.outMeter = '';
+  (db.devlog = db.devlog || []).push({id:'L' + Date.now(), deviceId:d.id, deviceName:d.name, maQL:d.maQL || '', kind:'vao', date:new Date().toISOString().slice(0, 10), meter:'', project:curProj, by:me?.name || '', at:nowStr(), _local:1});
+  saveLocal(); toast('✅ Đã mở lại'); renderDeviceDetail(id); renderDevicesList();
 }
 function adMeterUnit() {
   const u = document.getElementById('ad-meter-unit').value;
@@ -7171,7 +7283,8 @@ function adMeterUnit() {
 function openAddDevice() {
   document.getElementById('ad-adm-box').style.display = 'none';
   document.getElementById('ad-id').value = '';
-  ['ad-name','ad-plate','ad-note','ad-in-meter'].forEach(i => document.getElementById(i).value = '');
+  ['ad-name','ad-plate','ad-note','ad-in-meter','ad-maql'].forEach(i => document.getElementById(i).value = '');
+  if (!qlOn()) qltbLoad();
   document.getElementById('ad-fuel').value = 20;
   document.getElementById('ad-meter-unit').value = 'h';
   document.getElementById('ad-in-date').value = new Date().toISOString().slice(0, 10);
@@ -7265,10 +7378,11 @@ async function loadDevCatSrv() {
 function devCatalog() {
   const seen = new Set(), out = [], key = n => vnNorm(n).replace(/\s+/g, ' ').trim();
   const srv = devCatSrv || [];
-  DEV_FILE.forEach(([n, c, code, ts, u, loc, st]) => {
+  const FILE = qlOn() ? qlList().filter(x => x.kind === 'may').map(x => [x.name, x.cat, '', x.ma, x.meterUnit || 'h', '', '', x.plate]) : DEV_FILE;   // v5.29: danh mục P.QLTB
+  FILE.forEach(([n, c, code, ts, u, loc, st, pl]) => {
     const k = key(n); seen.add(k);
     const app = srv.find(d => key(d.name) === k);
-    out.push({name:n, cat:app?.cat || c, code, ts, u:app?.meterUnit || u, loc:String(loc || '').replace(/^U\.\d+_/, ''), st, fuel:app?.fuelRate || 0, plate:app?.plate || '', type:app?.type || 'own', src:'file'});
+    out.push({name:n, cat:app?.cat || c, code, ts, u:app?.meterUnit || u, loc:String(loc || '').replace(/^U\.\d+_/, ''), st, fuel:app?.fuelRate || 0, plate:app?.plate || pl || '', type:app?.type || 'own', src:'file'});
   });
   srv.forEach(d => { const k = key(d.name); if (seen.has(k)) return; seen.add(k);
     out.push({name:d.name, cat:d.cat, code:'', ts:'', u:d.meterUnit || 'h', loc:d.project, st:d.out ? 'Đã rời' : 'Đang dùng', fuel:d.fuelRate, plate:d.plate, type:d.type || 'own', src:'app'}); });
@@ -7279,6 +7393,7 @@ function adNameList() {
   if (!el || !inp || document.activeElement !== inp) return;
   const toks = vnNorm(inp.value).split(/\s+/).filter(Boolean), editId = +document.getElementById('ad-id').value;
   const have = new Set(db.devices.filter(d => d.id !== editId).map(d => vnNorm(d.name).replace(/\s+/g, ' ').trim()));   // máy đã thêm: không hiện nữa
+  db.devices.filter(d => d.id !== editId && d.maQL && devActive(d)).forEach(d => { const q = qlByMa(d.maQL); if (q) have.add(vnNorm(q.name).replace(/\s+/g, ' ').trim()); });
   const full = devCatalog(), ord = c => { const i = DEVICE_CATS.findIndex(d => d.id === c); return i < 0 ? 99 : i; };
   const all = full.map((x, i) => Object.assign({}, x, {i})).filter(x => !have.has(vnNorm(x.name).replace(/\s+/g, ' ').trim())).filter(x => !toks.length || toks.every(t => vnNorm(x.name + ' ' + x.code + ' ' + devCatOf(x.cat).name).includes(t)))
     .sort((a, b) => ord(a.cat) - ord(b.cat) || a.i - b.i);
@@ -7287,7 +7402,7 @@ function adNameList() {
     const g = devCatOf(x.cat).name;
     if (g !== last) { html += `<div class="combo-head">${escHtml(devCatOf(x.cat).icon + ' ' + g)}</div>`; last = g; }
     html += `<div class="combo-item" onmousedown="event.preventDefault()" onclick="adPick(${x.i})">
-      <b>${escHtml(x.name)}</b>${x.code ? `<small>Mã ${escHtml(x.code)}</small>` : ''}</div>`;
+      <b>${escHtml(x.name)}</b>${x.code || x.ts ? `<small>Mã ${escHtml(x.code || x.ts)}</small>` : ''}</div>`;
   });
   const dupFree = have.has(vnNorm(inp.value).replace(/\s+/g, ' ').trim());
   el.innerHTML = html + (dupFree ? `<div class="combo-empty" style="color:var(--red)">Máy "${escHtml(inp.value.trim())}" đã có trong dự án này</div>` : '') + (inp.value.trim() && !dupFree ? `<div class="combo-item free" onmousedown="event.preventDefault()" onclick="adFree()"><b>✏️ Dùng tên tự nhập: "${escHtml(inp.value.trim())}"</b><small>Máy không có trong danh sách</small></div>` : '')
@@ -7305,6 +7420,7 @@ function adPick(i) {
   if (!document.getElementById('ad-plate').value) document.getElementById('ad-plate').value = x.plate || x.code || '';
   const note = document.getElementById('ad-note'); if (x.ts && !note.value.includes(x.ts)) note.value = (note.value ? note.value + '\n' : '') + 'Mã TS: ' + x.ts;
   document.getElementById('ad-meter-unit').value = x.u || 'h'; adMeterUnit();
+  document.getElementById('ad-maql').value = /^FCS_/.test(x.ts || '') ? x.ts : '';   // v5.29: mã P.QLTB
   adNameHide();
   toast('✅ Đã điền sẵn thông tin máy — kiểm tra lại rồi nhập giờ máy lúc vào');
 }
@@ -7330,7 +7446,7 @@ async function loadDevAdminLog(d) {
   box.innerHTML = `<b>🔒 Nhật ký sửa của Admin</b> <small>(chỉ Admin thấy)</small>` + (rows ? (rows.length ? rows.map(x => `<div class="al-row"><span>${escHtml(x.t)} · ${escHtml(x.by)}</span>${escHtml(x.x)}</div>`).join('') : '<div class="pyc-empty">Chưa sửa lần nào</div>') : '<div class="pyc-empty">Không tải được (cần mạng)</div>');
 }
 
-const GUIDES = [{"id":"capnhat","g":"Bắt đầu","t":"Cập nhật phiên bản mới","p":"","s":["Có bản mới, đầu màn hình chính hiện thẻ \"Cập nhật phiên bản mới\".","Bấm \"Cập nhật\" để lên bản mới ngay (app tải lại khoảng vài giây). Bấm \"Để sau, giữ bản cũ\" thì vẫn dùng bản đang có.","Muốn cập nhật sau: bấm ☰ (Menu) → \"🆕 Cập nhật phiên bản mới\" (có chấm đỏ) → \"Cập nhật\". Bấm \"Kiểm tra bản mới\" để hỏi lại ngay.","Người được Admin cho phép xem thêm nội dung từng bản: lỗi gì, cách sửa, đã thử nghiệm chưa, và lịch sử cập nhật."]},{"id":"khoaapp","g":"Bắt đầu","t":"Mở khóa bằng Face ID / vân tay","p":"","s":["Sau khi đăng nhập bằng mật khẩu, app hỏi \"Bật mở khóa bằng Face ID / vân tay?\" → bấm Bật (hoặc Menu → \"Khóa app bằng Face ID / vân tay\").","Mỗi ngày, lần đầu mở app (sau 0:00) quét Face ID / vân tay một lần, sau đó dùng bình thường cả ngày.","Không quét được thì bấm \"Dùng mật khẩu\". Đăng xuất thì tính năng tự tắt."]},{"id": "dangnhap", "g": "Bắt đầu", "t": "Đăng nhập & liên kết Telegram", "p": "", "s": ["Mở app, nhập tên đăng nhập do Admin cấp.", "Nhập mật khẩu rồi bấm \"Đăng nhập\". Chấm màu dưới khung cho biết mạng tốt hay yếu.", "Bấm ☰ (Menu) → \"Nhận cảnh báo Telegram\".", "Bấm \"Mở Telegram để liên kết\" → bấm Start trong Telegram. Khoảng 1 phút sau bấm \"Kiểm tra\"."]}, {"id": "pyc_coc", "g": "Phiếu yêu cầu", "t": "Tạo phiếu yêu cầu cóc nối", "p": "y_tao", "s": ["Vào tab Phiếu YC, bấm \"+ Tạo phiếu yêu cầu\".", "Chọn hạng mục (Cọc / Tường vây), gõ tên cấu kiện (VD: P3.11) rồi chọn trong danh sách.", "Chọn mức nối cóc theo thực tế thi công (bắt buộc). App tự tính số cóc theo bản vẽ.", "Kiểm tra bảng số lượng, ghi chú nếu cần rồi bấm \"Gửi phiếu\". Phiếu tới kho ngay, thủ kho nhận tin Telegram."]}, {"id": "pyc_vt", "g": "Phiếu yêu cầu", "t": "Tạo phiếu vật tư khác (dầu, mỡ, răng gàu…)", "p": "y_tao", "s": ["Bấm \"+ Tạo phiếu yêu cầu\" → chọn thẻ \"Vật tư khác\".", "Gõ tên vật tư (không cần dấu, VD: \"dau do\") rồi chọn trong danh sách gợi ý.", "Dầu, mỡ, răng gàu… bắt buộc chọn máy sử dụng. Chọn \"Dùng chung\" thì ghi lý do.", "Nhập số lượng rồi bấm \"Gửi phiếu\"."]}, {"id": "pyc_duyet", "g": "Phiếu yêu cầu", "t": "Duyệt phiếu (CHT / CHP)", "p": "y_duyet", "s": ["Tab Phiếu YC → phiếu có dải vàng \"Chờ CHT/CHP duyệt\". Bấm để mở.", "Xem trạng thái phiếu và số lượng từng vật tư. Kho vẫn giao trước được khi bạn chưa duyệt.", "Bấm \"✅ Duyệt phiếu\". Không đồng ý thì nhập lý do và bấm \"Từ chối\" / \"Hủy\"."]}, {"id": "pyc_giao", "g": "Phiếu yêu cầu", "t": "Giao hàng theo phiếu yêu cầu", "p": "y_giao", "s": ["Tab Phiếu YC → mục \"Cần giao gấp\", bấm vào phiếu có dải đỏ.", "Đọc khung Trạng thái phiếu: việc của bạn, phiếu đã được CHT/CHP duyệt chưa.", "Mỗi vật tư nhập số \"Giao lần này\", hoặc bấm \"Giao đủ\". Kho thiếu thì giao một phần hoặc bấm Kiểm kê.", "Bấm \"🚚 Giao hàng – trừ tồn kho\". App trừ tồn, tạo phiếu xuất và báo người lập phiếu."]}, {"id": "pyc_nhan", "g": "Phiếu yêu cầu", "t": "Xác nhận nhận hàng / báo nhận thiếu", "p": "y_nhan", "s": ["Kho giao xong, phiếu chuyển dải xanh \"Kho đã giao\". Bấm để mở.", "Kiểm hàng thực tế với số \"Kho đã giao\" của từng vật tư.", "Đủ thì bấm \"✅ Tôi đã nhận đủ hàng\". Thiếu thì bấm \"⚠️ Nhận thiếu\", nhập số thực nhận rồi xác nhận."]}, {"id": "nhap", "g": "Kho", "t": "Nhập kho", "p": "k_nhap", "s": ["Tab Tổng quan → bấm ô \"Nhập kho\".", "Chọn vật tư (gõ để tìm), nhập số lượng, nhà cung cấp, chụp ảnh biên bản nếu có.", "Bấm \"✅ Xác nhận nhập kho\". Mất mạng vẫn lưu được, có mạng app tự gửi."]}, {"id": "xuat", "g": "Kho", "t": "Xuất kho & xuất dầu ghi giờ máy", "p": "k_xuat", "s": ["Tab Tổng quan → \"Xuất kho\". Chọn vật tư và nhập số lượng.", "Xuất dầu cho máy: chọn máy nhận dầu.", "Bắt buộc nhập SỐ ĐỒNG HỒ GIỜ MÁY đọc trên máy (không phải giờ trong ngày). Đồng hồ hỏng thì tích ô và ghi lý do.", "Bấm \"📤 Xác nhận xuất kho\"."]}, {"id": "kiemke", "g": "Kho", "t": "Kiểm kê thực tế", "p": "k_kk", "s": ["Bấm ☰ (Menu) → \"Đợt kiểm kê\" (hoặc tab Phiếu YC → \"Đợt kiểm kê\").", "Đếm thực tế và nhập số đếm vào từng dòng vật tư. Số khác với app sẽ tự tô viền cam.", "Bấm \"Lưu đợt kiểm kê\". Số đếm thành mốc để app tính tồn kho về sau."]}, {"id": "muontra", "g": "Kho", "t": "Cho mượn / trả dụng cụ", "p": "k_loan", "s": ["Bấm ☰ (Menu) → \"Cho mượn / Trả\".", "Bấm \"+\" để lập phiếu mượn.", "Chọn loại phiếu (Cho mượn / Đi mượn), vật tư, người mượn, số lượng rồi lưu. Khi trả, mở phiếu và bấm \"Xác nhận\" trả."]}, {"id": "themmay", "g": "Máy móc", "t": "Thêm máy & giờ máy lúc vào", "p": "k_dm", "s": ["Menu → \"Máy móc & Thiết bị\" → bấm \"+ Thêm\".", "Bấm ô Tên thiết bị → chọn máy có sẵn trong danh sách (gõ tên hoặc mã để tìm). Không có thì gõ tên mới.", "Kiểm tra thông tin tự điền, nhập NGÀY VÀO và SỐ ĐỒNG HỒ GIỜ MÁY lúc máy vào công trình.", "Bấm \"Lưu\"."]}, {"id": "ketthuc", "g": "Máy móc", "t": "Kết thúc máy rời công trình", "p": "k_meter", "s": ["Mở máy trong danh sách Máy móc. Khung giờ máy cho biết ngày vào, tổng giờ chạy, lít dầu/giờ.", "Máy rời công trình: bấm \"Kết thúc · máy rời công trình\".", "Chọn ngày kết thúc, nhập số đồng hồ lúc rời rồi \"Xác nhận kết thúc\"."]}, {"id": "baocao", "g": "Báo cáo", "t": "Xem báo cáo & xuất Excel", "p": "x_nxt", "s": ["Bấm tab \"Báo cáo\" ở thanh dưới.", "Bấm \"Xuất báo cáo Excel\" (tab Phiếu YC có thêm \"Xuất báo cáo phiếu YC\").", "Chọn kỳ báo cáo rồi bấm \"⬇️ Xuất Excel\" → tải về hoặc gửi Zalo."]}, {"id": "thanhvien", "g": "Quản trị", "t": "Thành viên & phân quyền chức danh", "p": "ADM", "s": ["Bấm ☰ (Menu) → \"Thành viên\".", "Bấm vào một người → chọn chức danh và TÍCH DỰ ÁN (bắt buộc với chức danh cần dự án) → Lưu.", "Menu → \"Phân quyền chức danh\" → bấm một chức danh.", "Tích / bỏ tích từng quyền rồi bấm \"Lưu\". Áp dụng ngay cho mọi người cùng chức danh."]}, {"id": "saoluu", "g": "Quản trị", "t": "Sao lưu dữ liệu", "p": "ADM", "s": ["Bấm ☰ (Menu) → \"Sao lưu dữ liệu\".", "Xem lần sao lưu gần nhất. Bấm \"Sao lưu ngay\" trước việc lớn; mở thư mục Drive để xem các bản sao."]}];
+const GUIDES = [{"id":"qltb_nhap","g":"Kho","t":"Nhập máy / vật tư theo danh mục P.QLTB","p":"k_nhap","s":["Phiếu nhập → gõ tên hoặc mã vào ô tên (không cần dấu). Danh sách có 2 nhóm: Vật tư trong kho dự án và 📚 Danh mục P.QLTB.","Chọn một máy (🏗): phiếu đổi thành \"Máy vào công trường\" — nhập ngày vào và số đồng hồ lúc vào rồi Xác nhận. Máy tự có trong Máy móc & Thiết bị và hiện ở Lịch sử nhập (🏗 Máy vào).","Chọn vật tư phụ trợ (📦: gầu, tole, tải ép cọc…): nhập số lượng như phiếu nhập thường, vật tư mang tên và mã theo P.QLTB.","Gõ tên không có trong danh mục: app nhắc kiểm tra với P.QLTB. Chọn \"Đã kiểm tra, vẫn nhập\" (ghi Ngoài danh mục) hoặc \"Vật tư tiêu hao\" cho dầu, que hàn… Máy rời công trường: mở máy → Kết thúc (hiện ở Lịch sử xuất, 🏗 Máy ra)."]},{"id":"qltb_ganma","g":"Kho","t":"Gắn mã P.QLTB cho máy / vật tư đã có","p":"k_dm","s":["Bấm ☰ (Menu) → \"🔗 Gắn mã P.QLTB\".","Mỗi dòng có tên gợi ý gần nhất trong danh mục. Đúng thì bấm \"Gắn mã này\", không đúng thì \"Chọn khác\" để tìm.","Máy không có trong danh mục: \"Ngoài danh mục\". Vật tư tiêu hao: \"Không thuộc P.QLTB\"."]},{"id":"capnhat","g":"Bắt đầu","t":"Cập nhật phiên bản mới","p":"","s":["Có bản mới, đầu màn hình chính hiện thẻ \"Cập nhật phiên bản mới\".","Bấm \"Cập nhật\" để lên bản mới ngay (app tải lại khoảng vài giây). Bấm \"Để sau, giữ bản cũ\" thì vẫn dùng bản đang có.","Muốn cập nhật sau: bấm ☰ (Menu) → \"🆕 Cập nhật phiên bản mới\" (có chấm đỏ) → \"Cập nhật\". Bấm \"Kiểm tra bản mới\" để hỏi lại ngay.","Người được Admin cho phép xem thêm nội dung từng bản: lỗi gì, cách sửa, đã thử nghiệm chưa, và lịch sử cập nhật."]},{"id":"khoaapp","g":"Bắt đầu","t":"Mở khóa bằng Face ID / vân tay","p":"","s":["Sau khi đăng nhập bằng mật khẩu, app hỏi \"Bật mở khóa bằng Face ID / vân tay?\" → bấm Bật (hoặc Menu → \"Khóa app bằng Face ID / vân tay\").","Mỗi ngày, lần đầu mở app (sau 0:00) quét Face ID / vân tay một lần, sau đó dùng bình thường cả ngày.","Không quét được thì bấm \"Dùng mật khẩu\". Đăng xuất thì tính năng tự tắt."]},{"id": "dangnhap", "g": "Bắt đầu", "t": "Đăng nhập & liên kết Telegram", "p": "", "s": ["Mở app, nhập tên đăng nhập do Admin cấp.", "Nhập mật khẩu rồi bấm \"Đăng nhập\". Chấm màu dưới khung cho biết mạng tốt hay yếu.", "Bấm ☰ (Menu) → \"Nhận cảnh báo Telegram\".", "Bấm \"Mở Telegram để liên kết\" → bấm Start trong Telegram. Khoảng 1 phút sau bấm \"Kiểm tra\"."]}, {"id": "pyc_coc", "g": "Phiếu yêu cầu", "t": "Tạo phiếu yêu cầu cóc nối", "p": "y_tao", "s": ["Vào tab Phiếu YC, bấm \"+ Tạo phiếu yêu cầu\".", "Chọn hạng mục (Cọc / Tường vây), gõ tên cấu kiện (VD: P3.11) rồi chọn trong danh sách.", "Chọn mức nối cóc theo thực tế thi công (bắt buộc). App tự tính số cóc theo bản vẽ.", "Kiểm tra bảng số lượng, ghi chú nếu cần rồi bấm \"Gửi phiếu\". Phiếu tới kho ngay, thủ kho nhận tin Telegram."]}, {"id": "pyc_vt", "g": "Phiếu yêu cầu", "t": "Tạo phiếu vật tư khác (dầu, mỡ, răng gàu…)", "p": "y_tao", "s": ["Bấm \"+ Tạo phiếu yêu cầu\" → chọn thẻ \"Vật tư khác\".", "Gõ tên vật tư (không cần dấu, VD: \"dau do\") rồi chọn trong danh sách gợi ý.", "Dầu, mỡ, răng gàu… bắt buộc chọn máy sử dụng. Chọn \"Dùng chung\" thì ghi lý do.", "Nhập số lượng rồi bấm \"Gửi phiếu\"."]}, {"id": "pyc_duyet", "g": "Phiếu yêu cầu", "t": "Duyệt phiếu (CHT / CHP)", "p": "y_duyet", "s": ["Tab Phiếu YC → phiếu có dải vàng \"Chờ CHT/CHP duyệt\". Bấm để mở.", "Xem trạng thái phiếu và số lượng từng vật tư. Kho vẫn giao trước được khi bạn chưa duyệt.", "Bấm \"✅ Duyệt phiếu\". Không đồng ý thì nhập lý do và bấm \"Từ chối\" / \"Hủy\"."]}, {"id": "pyc_giao", "g": "Phiếu yêu cầu", "t": "Giao hàng theo phiếu yêu cầu", "p": "y_giao", "s": ["Tab Phiếu YC → mục \"Cần giao gấp\", bấm vào phiếu có dải đỏ.", "Đọc khung Trạng thái phiếu: việc của bạn, phiếu đã được CHT/CHP duyệt chưa.", "Mỗi vật tư nhập số \"Giao lần này\", hoặc bấm \"Giao đủ\". Kho thiếu thì giao một phần hoặc bấm Kiểm kê.", "Bấm \"🚚 Giao hàng – trừ tồn kho\". App trừ tồn, tạo phiếu xuất và báo người lập phiếu."]}, {"id": "pyc_nhan", "g": "Phiếu yêu cầu", "t": "Xác nhận nhận hàng / báo nhận thiếu", "p": "y_nhan", "s": ["Kho giao xong, phiếu chuyển dải xanh \"Kho đã giao\". Bấm để mở.", "Kiểm hàng thực tế với số \"Kho đã giao\" của từng vật tư.", "Đủ thì bấm \"✅ Tôi đã nhận đủ hàng\". Thiếu thì bấm \"⚠️ Nhận thiếu\", nhập số thực nhận rồi xác nhận."]}, {"id": "nhap", "g": "Kho", "t": "Nhập kho", "p": "k_nhap", "s": ["Tab Tổng quan → bấm ô \"Nhập kho\".", "Chọn vật tư (gõ để tìm), nhập số lượng, nhà cung cấp, chụp ảnh biên bản nếu có.", "Bấm \"✅ Xác nhận nhập kho\". Mất mạng vẫn lưu được, có mạng app tự gửi."]}, {"id": "xuat", "g": "Kho", "t": "Xuất kho & xuất dầu ghi giờ máy", "p": "k_xuat", "s": ["Tab Tổng quan → \"Xuất kho\". Chọn vật tư và nhập số lượng.", "Xuất dầu cho máy: chọn máy nhận dầu.", "Bắt buộc nhập SỐ ĐỒNG HỒ GIỜ MÁY đọc trên máy (không phải giờ trong ngày). Đồng hồ hỏng thì tích ô và ghi lý do.", "Bấm \"📤 Xác nhận xuất kho\"."]}, {"id": "kiemke", "g": "Kho", "t": "Kiểm kê thực tế", "p": "k_kk", "s": ["Bấm ☰ (Menu) → \"Đợt kiểm kê\" (hoặc tab Phiếu YC → \"Đợt kiểm kê\").", "Đếm thực tế và nhập số đếm vào từng dòng vật tư. Số khác với app sẽ tự tô viền cam.", "Bấm \"Lưu đợt kiểm kê\". Số đếm thành mốc để app tính tồn kho về sau."]}, {"id": "muontra", "g": "Kho", "t": "Cho mượn / trả dụng cụ", "p": "k_loan", "s": ["Bấm ☰ (Menu) → \"Cho mượn / Trả\".", "Bấm \"+\" để lập phiếu mượn.", "Chọn loại phiếu (Cho mượn / Đi mượn), vật tư, người mượn, số lượng rồi lưu. Khi trả, mở phiếu và bấm \"Xác nhận\" trả."]}, {"id": "themmay", "g": "Máy móc", "t": "Thêm máy & giờ máy lúc vào", "p": "k_dm", "s": ["Menu → \"Máy móc & Thiết bị\" → bấm \"+ Thêm\".", "Bấm ô Tên thiết bị → chọn máy có sẵn trong danh sách (gõ tên hoặc mã để tìm). Không có thì gõ tên mới.", "Kiểm tra thông tin tự điền, nhập NGÀY VÀO và SỐ ĐỒNG HỒ GIỜ MÁY lúc máy vào công trình.", "Bấm \"Lưu\"."]}, {"id": "ketthuc", "g": "Máy móc", "t": "Kết thúc máy rời công trình", "p": "k_meter", "s": ["Mở máy trong danh sách Máy móc. Khung giờ máy cho biết ngày vào, tổng giờ chạy, lít dầu/giờ.", "Máy rời công trình: bấm \"Kết thúc · máy rời công trình\".", "Chọn ngày kết thúc, nhập số đồng hồ lúc rời rồi \"Xác nhận kết thúc\"."]}, {"id": "baocao", "g": "Báo cáo", "t": "Xem báo cáo & xuất Excel", "p": "x_nxt", "s": ["Bấm tab \"Báo cáo\" ở thanh dưới.", "Bấm \"Xuất báo cáo Excel\" (tab Phiếu YC có thêm \"Xuất báo cáo phiếu YC\").", "Chọn kỳ báo cáo rồi bấm \"⬇️ Xuất Excel\" → tải về hoặc gửi Zalo."]}, {"id": "thanhvien", "g": "Quản trị", "t": "Thành viên & phân quyền chức danh", "p": "ADM", "s": ["Bấm ☰ (Menu) → \"Thành viên\".", "Bấm vào một người → chọn chức danh và TÍCH DỰ ÁN (bắt buộc với chức danh cần dự án) → Lưu.", "Menu → \"Phân quyền chức danh\" → bấm một chức danh.", "Tích / bỏ tích từng quyền rồi bấm \"Lưu\". Áp dụng ngay cho mọi người cùng chức danh."]}, {"id": "saoluu", "g": "Quản trị", "t": "Sao lưu dữ liệu", "p": "ADM", "s": ["Bấm ☰ (Menu) → \"Sao lưu dữ liệu\".", "Xem lần sao lưu gần nhất. Bấm \"Sao lưu ngay\" trước việc lớn; mở thư mục Drive để xem các bản sao."]}];
 
 // v5.25: HƯỚNG DẪN SỬ DỤNG — ảnh trong thư mục huongdan/ (chỉ tải khi mở bài, xem rồi thì lưu lại trên máy)
 const GUIDE_ICO = {'Bắt đầu':'👋', 'Phiếu yêu cầu':'📝', 'Kho':'📦', 'Máy móc':'🏗', 'Báo cáo':'📊', 'Quản trị':'🛡'};
@@ -7361,10 +7477,10 @@ function renderGuide() {
 // Nút "?" → bài hướng dẫn của màn đang xem
 function helpFor(where) {
   const pyc = hp('y_giao') ? 'pyc_giao' : hp('y_tao') ? 'pyc_coc' : 'pyc_nhan';
-  const M = {home:'', lead:'', pyc, lsnhap:'nhap', nhap:'nhap', lsxuat:'xuat', xuat:'xuat', ton:'kiemke', baocao:'baocao',
+  const M = {home:'', lead:'', pyc, lsnhap:'nhap', nhap:'qltb_nhap', lsxuat:'xuat', xuat:'xuat', ton:'kiemke', baocao:'baocao',
     'dp-req': hp('y_giao') ? 'pyc_giao' : hp('y_duyet') ? 'pyc_duyet' : 'pyc_nhan', 'dp-req-new': (typeof rf !== 'undefined' && rf && rf.mode === 'vt') ? 'pyc_vt' : 'pyc_coc',
     'dp-kk':'kiemke', 'dp-loans':'muontra', 'dp-devices-list':'themmay', 'dp-device':'ketthuc', 'dp-members':'thanhvien', 'dp-roles':'thanhvien',
-    'dp-backup':'saoluu', 'dp-tg':'dangnhap', 'dp-ver':'capnhat'};
+    'dp-backup':'saoluu', 'dp-tg':'dangnhap', 'dp-ver':'capnhat', 'dp-qlmap':'qltb_ganma', 'dp-qltb':'qltb_ganma'};
   return M[where] || '';
 }
 function openHelp(where) {
@@ -7547,6 +7663,385 @@ window.addEventListener('error', e => reportError(e.message, e.filename, e.linen
 window.addEventListener('unhandledrejection', e => { const r = e.reason; reportError('Promise: ' + (r && r.message || r), '', 0, 0, r && r.stack); });
 
 // ===== KHỞI ĐỘNG =====
+
+// ===== v5.29.0: DANH MỤC CHUẨN P.QLTB =====
+// Danh mục do Admin nạp từ file Excel của P.QLTB (sheet DM_THIET_BI). Máy (TBC/TBP) theo từng chiếc; vật tư phụ trợ (VTP) gộp theo loại + quy cách.
+const QL_DICT = {"loai":{"TBC_CAU_CBX":"Cẩu Bánh xích","TBC_CAU_CGX":"Cẩu gắn xe/ Cẩu thùng","TBC_CAU_COT":"Cẩu ô tô","TBC_CAU_CBL":"Cẩu Bánh lốp","TBC_CAU_CTH":"Cẩu tháp","TBC_KHO_CKD":"Cần khoan đất/ Cần Kelly","TBC_KHO_KRT":"Máy khoan xoay rotary","TBC_KHO_RCD":"Máy khoan tuần hoàn ngược RCD","TBC_KHO_KCD":"Máy khoan cáp/đập","TBC_CAP_MCV":"Máy cạp tường vây","TBC_CAP_CTH":"Máy cắt hào thủy lực","TBC_DAT_DBX":"Máy đào bánh xích","TBC_DAT_DBL":"Máy đào bánh lốp","TBC_DAT_XLT":"Máy xúc lật","TBC_DAT_MUI":"Máy ủi","TBC_DAT_MSA":"Máy san","TBC_DAT_LRT":"Lu rung trơn","TBC_DAT_LRC":"Lu rung chân cừu","TBC_DAT_LBT":"Lu bánh thép","TBC_DAT_LBL":"Lu bánh lốp","TBC_DAT_MLN":"Máy lu nền bê tông","TBC_COC_MEC":"Máy ép cọc","TBC_COC_BDC":"Búa đóng cọc diesel","TBC_COC_BRU":"Búa rung","TBC_CTD_JET":"Thiết bị jet grouting","TBC_CTD_CDM":"Thiết bị CDM","TBC_TAI_XBE":"Xe ben","TBC_TAI_XTT":"Xe tải thùng","TBC_TAI_XTK":"Xe tải thùng kín","TBC_TAI_XNL":"Xe tải nâng đầu","TBC_KEO_DKL":"Đầu kéo","TBC_KEO_RSL":"Sơ-mi rơ-moóc sàn","TBC_KEO_RLU":"Rơ-moóc lùn/fooc lùn","TBC_KEO_RLC":"Rơ-moóc cổ cò","TBC_BON_XBN":"Xe bồn nước","TBC_BON_XBD":"Xe bồn dầu","TBC_CDU_XTR":"Xe trộn bê tông","TBC_CDU_XCT":"Xe chở chất thải/bùn","TBP_CDU_XCS":"Xe cứu hộ/sửa chữa lưu động","TBP_PVU_XBK":"Xe bán tải","TBP_PVU_XCN":"Xe con","TBP_PVU_XKH":"Xe khách/đưa đón","TBP_DTH_XUO":"Xuồng","TBP_BOM_BHL":"Bơm hút lửng","TBP_BOM_BHD":"Bơm hút đáy","TBP_BOM_BTN":"Bơm trục ngang","TBP_BOM_BCH":"Bơm chìm","TBP_BOM_BCB":"Bơm chìm nước bẩn/bùn","TBP_BOM_BBU":"Bơm bùn đặc","TBP_BOM_BDD":"Bơm dung dịch khoan","TBP_BOM_BBT":"Bơm bentonite","TBP_BOM_BVM":"Bơm vữa piston","TBP_BOM_BVT":"Bơm vữa trục vít","TBP_BOM_BVK":"Bơm vữa khí nén","TBP_BOM_BMB":"Bơm màng khí nén","TBP_BOM_BBE":"Bơm bê tông tĩnh","TBP_BOM_BDL":"Bơm dầu thủy lực","TBP_BOM_BHO":"Bơm hóa chất","TBP_DDK_TPD":"Trạm pha dung dịch","TBP_DDK_MSC":"Máy sàng cát","TBP_DDK_TTH":"Trạm thu hồi dung dịch","TBP_DDK_HTD":"Hệ thống dung dịch hoàn chỉnh","TBP_DDK_TBE":"Máy trộn bentonite","TBP_DDK_KDD":"Máy khuấy dung dịch","TBP_VUA_TTV":"Trạm trộn vữa","TBP_VUA_TBV":"Trạm trộn-bơm vữa","TBP_VUA_TAV":"Trạm vữa tự động","TBP_VUA_XCO":"Xe cuốn ống bơm vữa","TBP_VUA_BDV":"Bồn đảo vữa","TBP_VUA_TVU":"Máy trộn vữa/ xi măng","TBP_VUA_TCS":"Máy trộn cưỡng bức","TBP_VUA_TCA":"Máy trộn cao tốc","TBP_VUA_KVT":"Máy khuấy vữa","TBP_BTG_MTB":"Máy trộn bê tông","TBP_BTG_TTB":"Trạm trộn bê tông","TBP_BTG_TTM":"Trạm bê tông mini","TBP_BTG_TTT":"Trạm tái chế bê tông","TBP_DIE_MPD":"Máy phát điện","TBP_DIE_MBA":"Máy biến áp","TBP_DIE_TDT":"Tủ điện tổng","TBP_DIE_TDP":"Tủ điện phân phối","TBP_DIE_ATS":"Tủ chuyển nguồn tự động","TBP_DIE_TDL":"Tháp đèn lưu động","TBP_DIE_DPL":"Đèn pha lưu động có khung","TBP_KNE_NKD":"Máy nén khí diesel","TBP_KNE_NKS":"Máy nén khí điện","TBP_KNE_BTK":"Bình tích khí","TBP_KNE_SLK":"Máy sấy khí","TBP_HAN_HQU":"Máy hàn que","TBP_HAN_HMI":"Máy hàn Mig","TBP_HAN_HTI":"Máy hàn TIG","TBP_HAN_HDA":"Máy hàn đa năng","TBP_HAN_HDP":"Máy hàn động cơ diesel","TBP_HAN_HBU":"Máy hàn bu-lông","TBP_HAN_HOD":"Máy hàn ống đối đầu","TBP_CAT_CPL":"Máy cắt plasma","TBP_CAT_CKG":"Máy cắt khí tự động","TBP_CAT_CCD":"Máy cưa đĩa kim loại","TBP_CAT_CVG":"Máy cưa vòng","TBP_GCK_MCT":"Máy cắt thép","TBP_GCK_MUT":"Máy uốn thép","TBP_GCK_MDT":"Máy duỗi thép","TBP_GCK_CUT":"Máy cắt-uốn thép liên hợp","TBP_GCK_ULU":"Máy uốn lưới thép","TBP_GCK_MTR":"Máy ren ống","TBP_GCK_MCO":"Máy cắt ống","TBP_GCK_MUO":"Máy uốn ống","TBP_GCK_MVM":"Máy vát mép ống","TBP_GCK_MKT":"Máy khoan từ","TBP_GCK_MKB":"Máy khoan bàn","TBP_GCK_MTI":"Máy tiện","TBP_GCK_MPH":"Máy phay","TBP_GCK_ETL":"Máy ép thủy lực","TBP_GCK_MMB":"Máy mài để bàn","TBP_TGG_QHD":"Quạt hướng dòng","TBP_TGG_QHT":"Quạt hút công nghiệp","TBP_TGG_QCN":"Quạt cấp khí nối ống mềm","TBP_NCN_PLT":"Pa lăng xích kéo tay","TBP_NCN_PLD":"Pa lăng xích điện","TBP_NCN_TDT":"Tời điện","TBP_NCN_TTQ":"Tời quay tay","TBP_NCN_KTL":"Kích thủy lực","TBP_NCN_KRC":"Kích rỗng tâm","TBP_NCN_XNT":"Xe nâng tay","TBP_NCN_XND":"Xe nâng động cơ","TBP_NCN_XNB":"Xe nâng người","TBP_DCM_MMA":"Máy mài góc","TBP_DCM_KBT":"Máy khoan bê tông","TBP_DCM_KCD":"Máy khoan cầm tay","TBP_DCM_DBT":"Máy đục bê tông","TBP_DCM_CST":"Máy cắt sắt cầm tay","TBP_DCM_CBT":"Máy cắt bê tông","TBP_DCM_SBL":"Máy siết bu-lông","TBP_DCM_DCR":"Máy đầm cóc","TBP_DCM_DBN":"Máy đầm bàn","TBP_DCM_DUI":"Máy đầm dùi","TBP_VSN_MRA":"Máy rửa áp lực","TBP_VSN_HBU":"Máy hút bụi công nghiệp","TBP_VSN_HBN":"Máy hút bùn/hút nước","TBP_VSN_QST":"Máy quét sàn","VTP_KHO_GKH":"Gàu khoan đất","VTP_KHO_GKD":"Gàu khoan đá","VTP_KHO_GVD":"Gàu vét đáy","VTP_KHO_GCV":"Gàu cắt vành","VTP_KHO_GRG":"Gàu ruột gà","VTP_KHO_MKA":"Mũi khoan xoắn/auger","VTP_KHO_MKL":"Mũi khoan lõi/core barrel","VTP_KHO_MCD":"Mũi khoan chùm đập","VTP_KHO_OVA":"Ống vách/casing","VTP_KHO_DOV":"Đầu nối ống vách","VTP_KHO_CKE":"Cần Kelly","VTP_KHO_DKQ":"Đầu khoan quay","VTP_CAP_GCT":"Gàu cạp thủy lực","VTP_CAP_GTV":"Gàu cạp tường vây","VTP_CAP_GSH":"Gàu sửa hố đào tường vây","VTP_CAP_KDH":"Khung dẫn hướng gàu","VTP_CAP_BCT":"Bánh cắt tường vây","VTP_DBT_BOD":"Bộ ống đổ tremie","VTP_DBT_OTR":"Ống tremie","VTP_DBT_DTR":"Đầu nối ống tremie","VTP_DBT_PTR":"Phễu tremie","VTP_DBT_GDO":"Giá đỡ/kẹp ống tremie","VTP_DBT_KTR":"Khung nâng ống tremie","VTP_NHA_MNI":"Ma ní","VTP_NHA_BCT":"Bộ chia tải cẩu","VTP_NHA_DTC":"Đối trọng cẩu","VTP_NHA_CCC":"Bộ cáp cẩu thép","VTP_NHA_XCC":"Bộ xích cẩu","VTP_NHA_SCV":"Sling cáp vải","VTP_NHA_DNT":"Dầm chia tải/traverse","VTP_NHA_KNT":"Khung chia tải/nâng","VTP_NHA_GNV":"Gầu nâng vật liệu","VTP_NHA_GNN":"Giỏ nâng người","VTP_NHA_KTC":"Kẹp tôn","VTP_NHA_KCU":"Kẹp cừ","VTP_NHA_MCC":"Móc cẩu chuyên dụng","VTP_BOM_OBV":"Ống bơm vữa","VTP_BOM_OBB":"Ống bơm bê tông","VTP_BOM_ODD":"Ống dẫn dung dịch","VTP_BOM_VDM":"Vòi bơm mềm","VTP_BOM_BCV":"Bộ chia vữa","VTP_COC_CDC":"Chụp đầu cọc đóng","VTP_COC_KRC":"Kẹp cọc búa rung","VTP_COC_KDC":"Khung dẫn cọc","VTP_COC_MEC":"Mũ ép cọc","VTP_CCL_SXM":"Silo xi măng","VTP_CCL_SBT":"Silo bentonite","VTP_CCL_BCT":"Bồn chứa dung dịch","VTP_CCL_BCN":"Bồn chứa nước","VTP_CCL_BCD":"Bồn chứa dầu","VTP_CCL_HCL":"Hệ thống cấp liệu","VTP_TAN_BEN":"Thùng/ Tank chứa Bentonite","VTP_TAN_NUO":"Thùng/ Tank chứa nước","VTP_TAN_DAT":"Thùng/ Tank chứa Đất","VTP_CTH_XUO":"Xuồng chuyển vật tư cho cẩu tháp","VTP_CON_CVP":"Container văn phòng","VTP_CON_CVS":"Container vệ sinh","VTP_CON_CKH":"Container kho","VTP_CON_CNG":"Container nghỉ","VTP_CON_CBV":"Container bảo vệ","VTP_LOT_TOL":"Tole lót đường","VTP_LOT_TLP":"Tấm lót polymer/composite","VTP_KCT_CLU":"Cừ Larsen chữ U","VTP_KCT_CLZ":"Cừ thép chữ Z","VTP_KCT_HBE":"Thép hình H/H-beam","VTP_KCT_WAL":"Dầm bo/waler","VTP_KCT_TCO":"Thanh chống thép hình","VTP_KCT_CWS":"Cừ tường vây CWS","VTP_KCT_TCK":"Thanh chống ống thép","VTP_BCH_TOL":"Tôn bao che","VTP_BCH_HRR":"Hàng rào rời","VTP_BCH_HRM":"Hàng rào lưới module","VTP_BCH_LCA":"Lan can an toàn","VTP_BCH_CCG":"Cổng công trường","VTP_STC_STT":"Sàn thao tác thép","VTP_STC_STM":"Sàn thao tác module","VTP_STC_GKG":"Giàn giáo khung","VTP_STC_GNR":"Giàn giáo nêm/ringlock","VTP_STC_CTL":"Cầu thang lắp ghép","VTP_STC_TLE":"Thang leo thép","TBC_CAU_XCT":"Xe cẩu thùng","TBC_DAT_XXL":"Xe xúc lật","TBC_VUA_SHA":"Máy shaft grouting","TBP_BTO_MLN":"Máy lu nền bê tông","TBP_VUA_CTV":"Cối trộn vữa, xi măng","VTP_KCT_TON":"Thép tấm/ Tole/ Tôn","VTP_MEC_TAI":"Cục tải máy ép cọc","VTP_PKH_DKQ":"Đầu khoan quay","VTP_PKH_GKH":"Gầu khoan đất","VTP_PKH_GVD":"Gàu vét đáy","VTP_PKH_OVA":"Ống vách/casing","VTP_PKH_GRG":"Gầu ruột gà","VTP_PKH_GCV":"Gầu cắt vành","VTP_PKH_GKD":"Gầu khoan đá"},"nhom":{"TBC_CAU":"Cẩu","TBC_KHO":"Khoan","TBC_CAP":"Cạp/cắt hào","TBC_DAT":"Máy công tác đất","TBC_COC":"Thi công cọc","TBC_CTD":"Thi công Cải tạo đất","TBC_TAI":"Xe tải","TBC_KEO":"Đầu kéo và rơ-moóc","TBC_BON":"Xe bồn","TBC_CDU":"Xe chuyên dụng","TBP_CDU":"Xe chuyên dụng","TBP_PVU":"Xe phục vụ","TBP_DTH":"Đường Thủy","TBP_BOM":"Bơm","TBP_DDK":"Dung dịch khoan","TBP_VUA":"Vữa","TBP_BTG":"Bê tông","TBP_DIE":"Điện","TBP_KNE":"Khí nén","TBP_HAN":"Hàn","TBP_CAT":"Cắt","TBP_GCK":"Gia công cơ khí","TBP_TGG":"Thông gió","TBP_NCN":"Nâng chuyển","TBP_DCM":"Dụng cụ máy","TBP_VSN":"Vệ sinh công nghiệp","VTP_KHO":"Phụ kiện khoan","VTP_CAP":"Phụ kiện cạp tường vây","VTP_DBT":"Đổ bê tông","VTP_NHA":"Phụ kiện nâng hạ","VTP_BOM":"Phụ kiện bơm","VTP_COC":"Phụ kiện thi công cọc","VTP_CCL":"Chứa và cấp liệu","VTP_TAN":"Thùng/ Tank chứa","VTP_CTH":"Phụ kiện cẩu tháp","VTP_CON":"Container","VTP_LOT":"Lót đường","VTP_KCT":"Kết cấu thép biện pháp","VTP_BCH":"Bao che và an toàn","VTP_STC":"Sàn và tiếp cận","TBC_VUA":"Máy bơm Vữa","TBP_BTO":"Bê Tông","VTP_MEC":"Phụ kiện máy ép cọc","VTP_PKH":"Phụ kiện khoan"}};
+const LS_QLTB = 'fecon_qltb_v1';
+let qltb = null, _qlLoading = null;
+try { qltb = JSON.parse(localStorage.getItem(LS_QLTB) || 'null'); } catch (e) {}
+const qlList = () => (qltb && qltb.list) || [];
+const qlByMa = ma => ma ? qlList().find(x => x.ma === ma) : null;
+const qlOn = () => qlList().length > 0;
+async function qltbLoad(force) {
+  if (!token || !navigator.onLine) return;
+  if (_qlLoading) return _qlLoading;
+  _qlLoading = (async () => {
+    const r = await api('qltbList', {rev: force || !qltb ? '' : (qltb.rev || '')}, 25000);
+    if (r && r.success) {
+      if (r.same && qltb) qltb.info = r.info;
+      else {
+        const list = (r.rows || []).map(a => { const o = {}; (r.cols || []).forEach((c, i) => o[c] = a[i]); return o; });
+        qltb = {rev:r.rev || '', info:r.info || null, list};
+      }
+      try { localStorage.setItem(LS_QLTB, JSON.stringify(qltb)); } catch (e) {}
+    }
+  })();
+  try { await _qlLoading; } finally { _qlLoading = null; }
+}
+// ---- Đọc file Excel của P.QLTB ----
+const qlCell = v => { if (v === null || v === undefined) return ''; if (v instanceof Date) return v.toISOString().slice(0, 10);
+  if (typeof v === 'object') { if ('result' in v || 'formula' in v || 'sharedFormula' in v) return qlCell(v.result); if (v.richText) return v.richText.map(t => t.text).join(''); if ('text' in v) return String(v.text); if (v.error) return ''; }
+  return String(v).trim(); };
+function qlDevCat(m3, m4, name) {
+  const n = vnNorm(name);
+  if (m3 === 'KHO' && m4 === 'KRT') return 'mayKhoan';
+  if (m3 === 'CAU') return /cap/.test(n) ? 'mayCap' : 'mayCau';
+  if (m3 === 'CAP') return 'mayCap';
+  if (m3 === 'DAT' && (m4 === 'DBX' || m4 === 'DBL')) return 'mayDao';
+  if (m3 === 'DAT' && (m4 === 'XXL' || m4 === 'XLT')) return 'xucLat';
+  if (m3 === 'TAI' && m4 === 'XBE') return 'xeBen';
+  if (m3 === 'BOM') return 'mayBom';
+  if (/may phat|mpd/.test(n) || m4 === 'MPD') return 'mayPhat';
+  return 'khac';
+}
+function qlMeter(nhom, m3, m4, name, code) {
+  const f = DEV_FILE.find(x => x[3] === code); if (f) return f[4] || 'h';
+  const n = vnNorm(name);
+  if (['TAI', 'KEO', 'BON', 'CDU'].includes(m3) || m4 === 'XCT' || /^xe (cau|tai|ben|bon|dau keo)/.test(n)) return 'km';
+  if (m4 === 'CKD') return 'none';
+  if (nhom === 'TBC') return 'h';
+  return /may phat/.test(n) ? 'h' : 'none';
+}
+const QL_VT_CAT = {PKH:'gau', CAP:'gau', KCT:'thep', MEC:'thep', NHA:'capNang'};
+const QL_VT_UNIT = {TON:'Tấm', TAI:'Cái', CWS:'Cây', CLU:'Cây', BOD:'Bộ', BCT:'Bộ'};
+function qlCleanName(s) {
+  return String(s || '').replace(/^\d+\s*-\s*/, '').replace(/\(\s*\d+\s*(tấm|q|quả|cái|bộ|cây|c)\s*\)/gi, '')
+    .replace(/\bsố\s*\d+(\s*-\s*\d+)?/gi, '').replace(/\s*-\s*0?\d{1,2}\s*$/, '').replace(/\s+/g, ' ').replace(/[\s,;-]+$/, '').trim();
+}
+function qlParse(wb, fileName) {
+  const out = {rows:[], errors:[], warns:[], src:0, sheet:'', file:fileName || ''};
+  const wsList = wb.worksheets || [];
+  const hasHead = ws => { for (let r = 1; r <= Math.min(25, ws.rowCount); r++) { const v = Array.from(ws.getRow(r).values || [], x => vnNorm(qlCell(x))); if (v.includes('ma thiet bi') && v.includes('ten tai san')) return r; } return 0; };
+  let ws = wsList.find(w => w.name === 'DM_THIET_BI' && hasHead(w)) || wsList.find(w => hasHead(w));
+  if (!ws) { out.errors.push('Không tìm thấy sheet có cột "Mã thiết bị" và "Tên tài sản" (thường là sheet DM_THIET_BI)'); return out; }
+  out.sheet = ws.name;
+  const hr = hasHead(ws), head = Array.from(ws.getRow(hr).values || [], x => vnNorm(qlCell(x)));
+  const col = (...names) => { for (const n of names) { const i = head.findIndex(h => h === n || h.startsWith(n)); if (i > 0) return i; } return 0; };
+  const C = {code:col('ma thiet bi'), kt:col('ma tai san'), name:col('ten tai san'), ct:col('ten goi cong truong'), m2:col('ma 2'), m3:col('ma 3'), m4:col('ma 4'), m5:col('ma 5'),
+    serial:col('serial')};
+  const seen = {}, vt = {};
+  for (let r = hr + 1; r <= ws.rowCount; r++) {
+    const row = ws.getRow(r), g = c => c ? qlCell(row.getCell(c).value) : '';
+    const code = g(C.code).replace(/\s+/g, '');
+    if (!code) continue;
+    out.src++;
+    const name = g(C.name);
+    const p = code.split('_');
+    if (p[0] !== 'FCS' || p.length < 5 || !/^\d{4}$/.test(p[4])) { out.errors.push(`Dòng ${r}: mã "${code}" không đúng dạng FCS_Nhóm_Nhóm phụ_Loại_STT_Quy cách`); continue; }
+    if (seen[code]) { out.errors.push(`Dòng ${r}: mã ${code} bị trùng (dòng ${seen[code]})`); continue; }
+    seen[code] = r;
+    if (!name) { out.errors.push(`Dòng ${r}: mã ${code} thiếu tên tài sản`); continue; }
+    const nhom = g(C.m2) || p[1], m3 = g(C.m3) || p[2], m4 = g(C.m4) || p[3], m5 = g(C.m5) || p.slice(5).join('_');
+    const tenLoai = QL_DICT.loai[`${nhom}_${m3}_${m4}`] || '';
+    if (nhom === 'TBC' || nhom === 'TBP') {
+      const plate = (name.match(/\b\d{2}[A-Z]{1,2}-?\d{3}\.?\d{2}\b/) || [''])[0];
+      out.rows.push({ma:code, kind:'may', nhom, ma3:m3, ma4:m4, ma5:m5, name, tenLoai, tenCT:g(C.ct), maKT:g(C.kt), cat:qlDevCat(m3, m4, name), unit:'Máy', plate, meterUnit:qlMeter(nhom, m3, m4, name, code), sl:1});
+    } else if (nhom === 'VTP') {
+      const k = `FCS_VTP_${m3}_${m4}_${m5}`;
+      (vt[k] = vt[k] || {k, m3, m4, m5, tenLoai, names:[], kts:[]}).names.push(name);
+      vt[k].kts.push(g(C.kt));
+    } else out.warns.push(`Dòng ${r}: nhóm "${nhom}" không phải TBC / TBP / VTP — bỏ qua`);
+  }
+  Object.values(vt).forEach(v => {
+    const cl = v.names.map(qlCleanName), uniq = [...new Set(cl.map(x => vnNorm(x)))];
+    const cnt = {}; cl.forEach(x => cnt[x] = (cnt[x] || 0) + 1);
+    const common = Object.keys(cnt).sort((a, b) => cnt[b] - cnt[a])[0];
+    const name = uniq.length === 1 ? cl[0] : (v.tenLoai ? `${v.tenLoai} ${v.m5}` : common);
+    out.rows.push({ma:v.k, kind:'vt', nhom:'VTP', ma3:v.m3, ma4:v.m4, ma5:v.m5, name, tenLoai:v.tenLoai, tenCT:'', maKT:[...new Set(v.kts.filter(Boolean))].slice(0, 5).join(', '),
+      cat:QL_VT_CAT[v.m3] || 'khac', unit:QL_VT_UNIT[v.m4] || 'Cái', plate:'', meterUnit:'', sl:v.names.length});
+  });
+  const dupName = {};
+  out.rows.filter(x => x.kind === 'vt').forEach(x => { const k = vnNorm(x.name); if (dupName[k]) x.name += ' (' + x.ma5 + ')'; dupName[k] = 1; });
+  return out;
+}
+// ---- Tìm trong danh mục ----
+const qlTok = s => vnNorm(s).replace(/(\d),(\d)/g, '$1.$2').split(/[^a-z0-9.]+/).filter(t => t && t !== '.');
+function qlScore(a, b) {                                     // giống nhau theo từ; từ có số (D1000, 285, 13.5T…) nặng gấp 3
+  const A = new Set(qlTok(a)), B = new Set(qlTok(b)); if (!A.size || !B.size) return 0;
+  const w = t => /\d/.test(t) ? 3 : 1;
+  let inter = 0, uni = 0; A.forEach(t => { uni += w(t); if (B.has(t)) inter += w(t); }); B.forEach(t => { if (!A.has(t)) uni += w(t); });
+  return inter / uni;
+}
+function qlFind(q, kind, limit) {
+  const toks = vnNorm(q).split(/\s+/).filter(Boolean); if (!toks.length) return [];
+  return qlList().filter(x => (!kind || x.kind === kind) && toks.every(t => vnNorm(x.name + ' ' + x.ma + ' ' + (x.tenCT || '') + ' ' + (x.tenLoai || '')).includes(t))).slice(0, limit || 30);
+}
+const qlDevHere = ma => db.devices.find(d => d.maQL === ma && devActive(d));
+const qlDevLeft = ma => db.devices.find(d => d.maQL === ma && !devActive(d));
+const qlItemHere = ma => db.items.find(i => i.maQL === ma);
+const qlBadge = o => o && o.maQL ? `<span class="ql-badge ok" title="Mã P.QLTB">📚 ${escHtml(o.maQL)}</span>` : (+o?.ngoaiDM === 1 ? '<span class="ql-badge out">Ngoài danh mục P.QLTB</span>' : '');
+
+// ---- Hỏi lại khi tên ngoài danh mục ----
+function askOutDM(name, isDev) {
+  return new Promise(res => {
+    if (!document.getElementById('modal-odm')) document.body.insertAdjacentHTML('beforeend', `<div class="modal-bg" id="modal-odm" style="display:none;z-index:1200">
+      <div class="modal-sheet"><div class="modal-handle"></div><div class="modal-title">⚠️ Tên ngoài danh mục P.QLTB</div><div class="dup-msg" id="odm-msg"></div>
+      <div class="odm-btns"><button class="btn-full" id="odm-ok" style="background:var(--orange)">Đã kiểm tra, vẫn nhập</button>
+      <button class="btn-full" id="odm-th" style="background:#fff;color:var(--text);border:1.5px solid var(--border)">Vật tư tiêu hao — không thuộc P.QLTB</button>
+      <button class="btn-full" id="odm-fix" style="background:var(--bg);color:var(--text2)">Sửa lại</button></div></div></div>`);
+    const m = document.getElementById('modal-odm');
+    document.getElementById('odm-msg').innerHTML = `“<b>${escHtml(name)}</b>” không có trong danh mục P.QLTB.<br>${isDev ? 'Kiểm tra đối chiếu tên máy với P.QLTB trước khi nhập.' : 'Nếu đây là thiết bị / vật tư phụ trợ của P.QLTB (gầu, tole, ống vách, container, tải ép cọc…), kiểm tra đối chiếu với P.QLTB trước khi nhập.'}`;
+    document.getElementById('odm-th').style.display = isDev ? 'none' : '';
+    const done = v => { m.style.display = 'none'; res(v); };
+    document.getElementById('odm-ok').onclick = () => done('out');
+    document.getElementById('odm-th').onclick = () => done('tieuhao');
+    document.getElementById('odm-fix').onclick = () => done('fix');
+    m.onclick = e => { if (e.target === m) done('fix'); };
+    m.style.display = 'flex';
+  });
+}
+
+// ---- Phiếu nhập: gợi ý danh mục P.QLTB + Máy vào công trường ----
+let fnQL = null, fnDev = null;                    // fnQL: loại VTP đã chọn; fnDev: máy đã chọn (phiếu chuyển sang "Máy vào công trường")
+function qlComboHtml(q) {
+  if (!qlOn() || !q) return '';
+  const list = qlFind(q, '', 40).filter(x => x.kind === 'may' ? !qlDevHere(x.ma) : !qlItemHere(x.ma)).slice(0, 25);
+  if (!list.length) return '';
+  return `<div class="combo-head">📚 Danh mục P.QLTB</div>` + list.map(x => {
+    const left = x.kind === 'may' && qlDevLeft(x.ma);
+    return `<div class="combo-opt ql" onmousedown="event.preventDefault()" onclick="comboPickQL('${escHtml(x.ma)}')">
+      <span>${x.kind === 'may' ? '🏗 ' : '📦 '}${escHtml(x.name)}</span><small>${escHtml(x.ma)}${x.kind === 'may' ? ' · máy' + (left ? ' · đã rời, nhập lại' : '') : ' · ' + escHtml(x.unit || '')}</small></div>`;
+  }).join('');
+}
+function comboPickQL(ma) {
+  const x = qlByMa(ma); if (!x) return;
+  comboHide('fn');
+  if (x.kind === 'may') { fnSetDev(x); return; }
+  fnSetDev(null);
+  document.getElementById('fn-item-txt').value = x.name;
+  const cs = document.getElementById('fn-cat'); if ([...cs.options].some(o => o.value === x.cat)) cs.value = x.cat;
+  comboInput('fn'); comboHide('fn');
+  fnQL = x;
+  if (!document.getElementById('fn-item').value) {
+    const us = document.getElementById('fn-unit-sel'); if (us && [...us.options].some(o => o.value === x.unit)) us.value = x.unit;
+    document.getElementById('fn-hint').innerHTML = `<span style="color:var(--primary)">📚 Theo danh mục P.QLTB · mã loại <b>${escHtml(x.ma)}</b> · vật tư mới trong kho dự án</span>`;
+  }
+  document.getElementById('fn-qty')?.focus();
+}
+function fnSetDev(x) {
+  fnDev = x;
+  const show = (id, on) => { const e = document.getElementById(id); if (e) e.style.display = on ? '' : 'none'; };
+  ['fn-cat-row', 'fn-qty-row', 'fn-ncc-row', 'fn-photo-row'].forEach(id => show(id, !x));
+  show('fn-dev-box', !!x);
+  const btn = document.getElementById('fn-save'); if (btn) btn.innerHTML = x ? '🏗 Xác nhận máy vào công trường' : '✅ Xác nhận nhập kho';
+  const ttl = document.getElementById('fn-title'); if (ttl) ttl.textContent = x ? '🏗 Máy vào công trường' : '📥 Phiếu Nhập Kho';
+  if (!x) return;
+  const left = qlDevLeft(x.ma), dc = devCatOf(x.cat);
+  document.getElementById('fn-item-txt').value = x.name; document.getElementById('fn-item').value = '';
+  document.getElementById('fn-hint').innerHTML = '';
+  document.getElementById('fn-dev-card').innerHTML = `<div class="mv-ico">${dc.icon}</div><div style="flex:1;min-width:0"><b>${escHtml(x.name)}</b>
+    <small>📚 ${escHtml(x.ma)} · ${escHtml(dc.name)}${x.plate ? ' · ' + escHtml(x.plate) : ''}</small>
+    ${left ? `<small style="color:var(--orange);font-weight:700">Máy đã ở dự án này trước đây (rời ngày ${fmtDMY(left.outDate)}) — lưu sẽ ghi máy vào lại</small>` : ''}</div>
+    <button class="mv-x" onclick="fnSetDev(null);comboClear('fn',true)">Chọn lại</button>`;
+  document.getElementById('fn-dv-date').value = new Date().toISOString().slice(0, 10);
+  document.getElementById('fn-dv-type').value = 'own';
+  document.getElementById('fn-dv-unit').value = x.meterUnit || 'h';
+  fnDevUnit();
+}
+function fnDevUnit() {
+  const u = document.getElementById('fn-dv-unit').value;
+  document.getElementById('fn-dv-mrow').style.display = u === 'none' ? 'none' : '';
+  document.getElementById('fn-dv-mlbl').textContent = u === 'km' ? 'Số km lúc vào' : 'Số đồng hồ giờ máy lúc vào';
+}
+const fmtDMY = s => { const m = String(s || '').match(/(\d{4})-(\d{2})-(\d{2})/); return m ? `${+m[3]}/${+m[2]}/${m[1]}` : String(s || ''); };
+async function doNhapMay() {
+  const x = fnDev; if (!x) return;
+  const date = document.getElementById('fn-dv-date').value, unit = document.getElementById('fn-dv-unit').value, mv = document.getElementById('fn-dv-meter').value;
+  if (!date) { toast('⚠️ Chọn ngày vào công trường'); return; }
+  if (unit !== 'none' && mv === '') { toast('⚠️ Nhập ' + (unit === 'km' ? 'số km' : 'số đồng hồ giờ máy') + ' lúc vào'); return; }
+  const here = qlDevHere(x.ma); if (here) { toast(`⚠️ Máy này đang ở dự án từ ngày ${fmtDMY(here.inDate)} — không nhập trùng`); return; }
+  const note = document.getElementById('fn-note').value.trim(), type = document.getElementById('fn-dv-type').value, meter = mv === '' ? '' : +mv;
+  const left = qlDevLeft(x.ma);
+  if (left) {                                                   // máy quay lại dự án → Mở lại với ngày + số đồng hồ vào mới
+    if (!navigator.onLine) { toast('📴 Cần có mạng để ghi máy vào lại'); return; }
+    showLoader('Đang lưu...'); const r = await api('closeDevice', {id:left.id, reopen:1, inDate:date, inMeter:meter, note:note || 'Máy vào lại công trường'}); hideLoader();
+    if (!r || !r.success) { toast('⚠️ ' + ((r && r.error) || 'Không lưu được')); return; }
+    Object.assign(left, {outDate:'', outMeter:'', inDate:date, inMeter:meter});
+    (db.devlog = db.devlog || []).push({id:'L' + Date.now(), deviceId:left.id, deviceName:left.name, maQL:x.ma, kind:'vao', date, meter, note, project:curProj, by:me?.name || '', at:nowStr(), _local:1});
+    saveLocal(); toast('🏗 Đã ghi máy vào lại công trường: ' + left.name); fnSetDev(null); goTab('home'); syncAll(true).then(ok => { if (ok) refreshCurrentView(false); });
+    return;
+  }
+  const nk = vnNorm(x.name).replace(/\s+/g, ' ').trim();
+  if (db.devices.some(d => devActive(d) && vnNorm(d.name).replace(/\s+/g, ' ').trim() === nk)) { toast(`⚠️ Máy "${x.name}" đã có trong dự án — dùng Gắn mã P.QLTB cho máy đó`); return; }
+  const f = DEV_FILE.find(a => a[3] === x.ma);
+  const device = {id:newId(), name:x.name, cat:x.cat || 'khac', type, fuelRate:devCatOf(x.cat).fuel || 20, plate:x.plate || '', note: 'Mã TS: ' + x.ma + (note ? '\n' + note : ''),
+    project:curProj, meterUnit:unit, inDate:date, inMeter:meter, outDate:'', outMeter:'', addedBy:me?.name || '', addedAt:nowStr(), maQL:x.ma, ngoaiDM:''};
+  db.devices.push(device);
+  push('upsert', {table:'devices', rows:[device]});
+  toast('🏗 Đã ghi máy vào công trường: ' + x.name);
+  fnSetDev(null); goTab('home');
+}
+
+// ---- Máy vào / ra trong lịch sử nhập / xuất ----
+function devEvents(kind) {
+  const logs = (db.devlog || []).filter(e => e.kind === kind), byDev = new Set((db.devlog || []).map(e => +e.deviceId));
+  const ev = logs.map(e => ({...e}));
+  db.devices.forEach(d => {                                     // máy thêm trước 5.29 (chưa có nhật ký vào/ra): lấy từ ngày vào / kết thúc
+    if (byDev.has(+d.id)) return;
+    if (kind === 'vao' && d.inDate) ev.push({id:'s' + d.id, deviceId:d.id, deviceName:d.name, maQL:d.maQL, kind, date:d.inDate, meter:d.inMeter, by:d.addedBy, at:d.addedAt});
+    if (kind === 'ra' && d.outDate) ev.push({id:'t' + d.id, deviceId:d.id, deviceName:d.name, maQL:d.maQL, kind, date:d.outDate, meter:d.outMeter, by:'', at:''});
+  });
+  return ev.map(e => {
+    const m = String(e.date || '').match(/(\d{4})-(\d{2})-(\d{2})/), at = parseVN(e.at);
+    const same = m && at && at.getFullYear() === +m[1] && at.getMonth() + 1 === +m[2] && at.getDate() === +m[3];
+    const tm = same ? `${String(at.getHours()).padStart(2, '0')}:${String(at.getMinutes()).padStart(2, '0')}:00 ` : '';
+    return {...e, _dev:true, id:'dv-' + e.id, type: kind === 'vao' ? 'nhap' : 'xuat', qty:0, datetime: m ? `${tm}${+m[3]}/${+m[2]}/${m[1]}` : String(e.at || '')};
+  });
+}
+function devEvRow(t) {
+  const d = db.devices.find(x => +x.id === +t.deviceId), vao = t.kind === 'vao';
+  const meter = t.meter !== '' && t.meter !== undefined && t.meter !== null ? ` · ${d && mUnit(d) === 'km' ? 'km' : 'giờ máy'} ${fmtNum(+t.meter)}` : '';
+  return `<div class="row-item" onclick="${d ? `openDp('dp-devices-list',renderDevicesList);setTimeout(()=>openDeviceDetail(${d.id}),250)` : ''}">
+    <div class="txn-ico ${vao ? 'in' : 'out'} dv">🏗</div>
+    <div style="flex:1;min-width:0">
+      <div class="txn-name">${escHtml(d?.name || t.deviceName || '?')}</div>
+      <div class="txn-sub"><b style="color:${vao ? 'var(--green)' : 'var(--red)'}">${vao ? 'Máy vào công trường' : 'Máy ra · rời công trường'}</b> · ${escHtml(fmtDMY(t.date))}${escHtml(meter)}</div>
+      ${t.maQL ? `<div class="txn-sub">📚 ${escHtml(t.maQL)}</div>` : ''}
+      ${t.by ? `<div class="txn-sub">👤 ${escHtml(t.by)}</div>` : ''}
+    </div>
+    <div style="flex-shrink:0;margin-left:8px"><span class="txn-badge ${vao ? 'badge-in' : 'badge-mra'}">${vao ? '🏗 Máy vào' : '🏗 Máy ra'}</span></div>
+  </div>`;
+}
+const _txnRow0 = txnRow; txnRow = t => t && t._dev ? devEvRow(t) : _txnRow0(t);
+const _effQty0 = effQty; effQty = t => t && t._dev ? 0 : _effQty0(t);
+
+// ---- Chi tiết máy: mã P.QLTB + lịch sử vào / ra ----
+const _rdd0 = renderDeviceDetail;
+renderDeviceDetail = function (id) {
+  _rdd0(id);
+  const d = db.devices.find(x => x.id === id), body = document.getElementById('dp-device-body'); if (!d || !body) return;
+  const ev = devEvents('vao').concat(devEvents('ra')).filter(e => +e.deviceId === +d.id).sort((a, b) => (parseVN(b.datetime) || 0) - (parseVN(a.datetime) || 0));
+  const ql = qlByMa(d.maQL);
+  body.insertAdjacentHTML('afterbegin', `<div class="form-section ql-dev">
+    <div class="ql-dev-h">📚 Danh mục P.QLTB</div>
+    ${d.maQL ? `<div class="ql-dev-r"><span>Mã</span><b>${escHtml(d.maQL)}</b></div>${ql && ql.name !== d.name ? `<div class="ql-dev-r"><span>Tên theo P.QLTB</span><b>${escHtml(ql.name)}</b></div>` : ''}`
+      : `<div class="ql-dev-r"><span>Chưa gắn mã</span><b>${+d.ngoaiDM === 1 ? 'Ngoài danh mục' : '—'}</b></div>${hp('k_dm') ? `<button class="ql-link" onclick="openQlMap()">🔗 Gắn mã P.QLTB</button>` : ''}`}
+    ${ev.length ? `<div class="ql-dev-h" style="margin-top:10px">Lịch sử vào / ra công trường</div>` + ev.map(e => `<div class="ql-ev"><span class="${e.kind === 'vao' ? 'in' : 'out'}">${e.kind === 'vao' ? '⬇ Vào' : '⬆ Ra'}</span><b>${escHtml(fmtDMY(e.date))}</b><small>${e.meter !== '' && e.meter !== undefined && e.meter !== null ? escHtml(mLbl(d) + ' ' + fmtNum(+e.meter)) : ''}${e.by ? ' · ' + escHtml(e.by) : ''}</small></div>`).join('') : ''}
+  </div>`);
+};
+
+// ---- Menu (Admin) → Danh mục P.QLTB ----
+let qlDraft = null;
+function openQltb() { qlDraft = null; openDp('dp-qltb', renderQltb); qltbLoad(true).then(() => { if (document.getElementById('dp-qltb').classList.contains('show')) renderQltb(); }); }
+function renderQltb() {
+  const b = document.getElementById('dp-qltb-body'); if (!b) return;
+  const inf = qltb && qltb.info, L = qlList(), nm = L.filter(x => x.kind === 'may').length, nv = L.filter(x => x.kind === 'vt').length;
+  let h = `<div class="vp-cur">
+    ${L.length ? `<div class="vp-row"><span>Danh mục đang dùng</span><b>${nm} máy · ${nv} loại vật tư phụ trợ</b></div>
+      ${inf ? `<div class="vp-row"><span>File</span><b style="text-align:right;max-width:60%">${escHtml(inf.file || '')}</b></div><div class="vp-row"><span>Nạp lúc</span><b>${escHtml(inf.at || '')}</b></div><div class="vp-row"><span>Người nạp</span><b>${escHtml(inf.by || '')}</b></div>` : ''}`
+      : `<div class="vp-latest" style="color:var(--text2)">Chưa có danh mục — chọn file Excel của P.QLTB để nạp</div>`}
+    <label class="vp-chk" style="display:block;text-align:center">📂 Chọn file Excel của P.QLTB<input type="file" accept=".xlsx" style="display:none" onchange="qlPickFile(this)"></label>
+    <div class="info-box" style="margin:10px 0 0">File phải có sheet <b>DM_THIET_BI</b> (cột Mã thiết bị, Tên tài sản, Mã 2–5). Máy TBC/TBP nạp theo từng chiếc; vật tư VTP gộp theo loại + quy cách.</div></div>`;
+  if (qlDraft) {
+    const D = qlDraft, dm = D.rows.filter(x => x.kind === 'may'), dv = D.rows.filter(x => x.kind === 'vt');
+    h += `<div class="grp-label">XEM TRƯỚC FILE MỚI · ${escHtml(D.file)}</div><div class="vp-cur">
+      <div class="vp-row"><span>Sheet</span><b>${escHtml(D.sheet)}</b></div>
+      <div class="vp-row"><span>Dòng có mã</span><b>${D.src}</b></div>
+      <div class="vp-row"><span>Máy / thiết bị (TBC + TBP)</span><b>${dm.length}</b></div>
+      <div class="vp-row"><span>Loại vật tư phụ trợ (VTP)</span><b>${dv.length}</b></div>
+      ${D.errors.length ? `<div class="ql-err"><b>⚠️ ${D.errors.length} dòng lỗi — bỏ qua khi lưu</b>${D.errors.slice(0, 8).map(e => `<div>${escHtml(e)}</div>`).join('')}${D.errors.length > 8 ? `<div>… và ${D.errors.length - 8} dòng khác</div>` : ''}</div>` : '<div class="vp-latest">✅ Không có dòng lỗi</div>'}
+      ${D.warns.length ? `<div class="ql-err" style="background:#FFF8E6;border-color:#F5D58A;color:#8A6100">${D.warns.slice(0, 4).map(e => `<div>${escHtml(e)}</div>`).join('')}</div>` : ''}
+      <div class="ql-sample"><b>Ví dụ máy</b>${dm.slice(0, 3).map(x => `<div>🏗 ${escHtml(x.name)}<small>${escHtml(x.ma)} · ${escHtml(devCatOf(x.cat).name)}</small></div>`).join('')}
+        <b>Ví dụ vật tư phụ trợ</b>${dv.slice(0, 4).map(x => `<div>📦 ${escHtml(x.name)}<small>${escHtml(x.ma)} · ${x.sl} dòng trong file · ${escHtml(x.unit)}</small></div>`).join('')}</div>
+      <div class="vp-btns" style="margin-top:12px"><button class="vu-ok" onclick="qlSave()" ${D.rows.length ? '' : 'disabled'}>Lưu danh mục</button><button class="vu-later" onclick="qlDraft=null;renderQltb()">Hủy</button></div></div>`;
+  }
+  if (L.length) h += `<div class="grp-label">DANH MỤC HIỆN TẠI</div>${searchBox('ql-q', qlQ, 'Tìm tên, mã...', 'setQlQ')}<div class="card" style="margin-top:8px">` +
+    (qlQ ? qlFind(qlQ, '', 60) : L.slice(0, 60)).map(x => `<div class="row-item"><div style="flex:1;min-width:0"><div class="txn-name">${x.kind === 'may' ? '🏗 ' : '📦 '}${escHtml(x.name)}</div><div class="txn-sub">${escHtml(x.ma)}${x.kind === 'vt' ? ' · ' + x.sl + ' dòng trong file' : ''}</div></div></div>`).join('') +
+    `</div>${!qlQ && L.length > 60 ? `<div class="pyc-hint">Hiện 60 / ${L.length} — gõ để tìm</div>` : ''}`;
+  b.innerHTML = h;
+}
+let qlQ = '';
+function setQlQ(v) { qlQ = v; renderQltb(); const e = document.getElementById('ql-q'); if (e) { e.focus(); e.setSelectionRange(v.length, v.length); } }
+async function qlPickFile(inp) {
+  const f = inp.files && inp.files[0]; if (!f) return;
+  showLoader('Đang đọc file...');
+  try {
+    if (!(await ensureExcelJS())) throw new Error('Không tải được công cụ đọc Excel — cần có mạng');
+    const wb = new ExcelJS.Workbook(); await wb.xlsx.load(await f.arrayBuffer());
+    qlDraft = qlParse(wb, f.name);
+  } catch (e) { qlDraft = null; toast('⚠️ Không đọc được file: ' + e.message); }
+  hideLoader(); inp.value = ''; renderQltb();
+}
+async function qlSave() {
+  if (!qlDraft || !qlDraft.rows.length) return;
+  showLoader('Đang lưu danh mục...');
+  const r = await api('qltbSave', {rows:qlDraft.rows, file:qlDraft.file, src:qlDraft.src}, 60000);
+  hideLoader();
+  if (!r || !r.success) { toast('⚠️ ' + ((r && (r.error || r.reason)) || 'Không lưu được')); return; }
+  qlDraft = null; await qltbLoad(true); renderQltb(); toast('✅ Đã nạp danh mục P.QLTB');
+}
+
+// ---- Menu → Gắn mã P.QLTB (vật tư / máy đã có trong dự án) ----
+let qmTab = 'may', qmPick = null;
+function openQlMap() { qmTab = 'may'; openDp('dp-qlmap', renderQlMap); if (!qlOn()) qltbLoad().then(() => renderQlMap()); }
+function qlBest(o, kind) {
+  let best = null, bs = 0;
+  qlList().forEach(x => { if (x.kind !== kind) return; const s = Math.max(qlScore(o.name, x.name), x.tenCT ? qlScore(o.name, x.tenCT) : 0); if (s > bs) { bs = s; best = x; } });
+  return best ? {x:best, s:bs} : null;
+}
+function renderQlMap() {
+  const b = document.getElementById('dp-qlmap-body'); if (!b) return;
+  if (!qlOn()) { b.innerHTML = '<div class="info-box">Chưa có danh mục P.QLTB — Admin nạp ở Menu → Danh mục P.QLTB.</div>'; return; }
+  const devs = db.devices.filter(d => !d.maQL && +d.ngoaiDM !== 2), itemsAll = db.items.filter(i => !i.maQL && +i.ngoaiDM !== 2);
+  const items = itemsAll.map(i => ({i, m:qlBest(i, 'vt')})).filter(z => z.m && z.m.s >= 0.3), other = itemsAll.length - items.length;
+  const done = db.devices.filter(d => d.maQL).length + db.items.filter(i => i.maQL).length;
+  const row = (o, m, kind) => `<div class="qm-row">
+    <div class="qm-name">${kind === 'may' ? '🏗 ' : '📦 '}${escHtml(o.name)}${+o.ngoaiDM === 1 ? ' <span class="ql-badge out">Ngoài DM</span>' : ''}</div>
+    ${m ? `<div class="qm-sug">Gợi ý: <b>${escHtml(m.x.name)}</b><small>${escHtml(m.x.ma)} · giống ${Math.round(m.s * 100)}%</small></div>` : '<div class="qm-sug" style="color:var(--text3)">Không tìm thấy tên gần giống</div>'}
+    <div class="qm-btns">${m ? `<button class="vu-ok" onclick="qmLink('${kind}',${o.id},'${escHtml(m.x.ma)}')">Gắn mã này</button>` : ''}
+      <button class="vu-later" onclick="qmOther('${kind}',${o.id})">Chọn khác</button>
+      <button class="vu-later" onclick="qmNone('${kind}',${o.id})">${kind === 'may' ? 'Ngoài danh mục' : 'Không thuộc P.QLTB'}</button></div></div>`;
+  b.innerHTML = `<div class="info-box">Gắn mã P.QLTB cho máy / vật tư đã nhập trước khi có danh mục. Bấm <b>Gắn mã này</b>: vật tư đổi tên theo P.QLTB, máy giữ tên đang dùng (để không lệch lịch sử cấp dầu); số liệu, phiếu cũ giữ nguyên. Đã gắn: <b>${done}</b>.</div>
+    <div class="chip-row" style="margin-bottom:10px"><div class="chip ${qmTab === 'may' ? 'on' : ''}" onclick="qmTab='may';renderQlMap()">Máy (${devs.length})</div><div class="chip ${qmTab === 'vt' ? 'on' : ''}" onclick="qmTab='vt';renderQlMap()">Vật tư (${items.length})</div></div>
+    ${qmTab === 'may' ? (devs.length ? devs.map(d => row(d, qlBest(d, 'may'), 'may')).join('') : '<div class="empty-state"><p>✅ Máy nào cũng đã có mã</p></div>')
+      : (items.length ? items.map(z => row(z.i, z.m, 'vt')).join('') : '<div class="empty-state"><p>✅ Không còn vật tư nào giống danh mục P.QLTB</p></div>') + (other ? `<div class="pyc-hint">${other} vật tư khác (dầu, cóc nối, que hàn…) không giống mục nào trong danh mục — không cần gắn</div>` : '')}`;
+}
+async function qmSave(kind, o) {
+  const r = await push('upsert', {table: kind === 'may' ? 'devices' : 'items', rows:[o]});
+  if (r === 'rejected') return false;
+  renderQlMap(); return true;
+}
+async function qmLink(kind, id, ma) {
+  const x = qlByMa(ma), o = (kind === 'may' ? db.devices : db.items).find(z => z.id === id); if (!x || !o) return;
+  if (kind === 'may' && qlDevHere(ma) && qlDevHere(ma).id !== id) { toast('⚠️ Mã này đã gắn cho máy khác đang ở dự án'); return; }
+  if (kind === 'vt' && qlItemHere(ma) && qlItemHere(ma).id !== id) { toast('⚠️ Mã này đã gắn cho vật tư khác: ' + qlItemHere(ma).name); return; }
+  // Vật tư: đổi tên theo P.QLTB (phiếu cũ gắn theo mã vật tư nên không ảnh hưởng). Máy: GIỮ tên (phiếu xuất dầu cũ gắn theo tên máy)
+  const nameClash = kind === 'vt' && db.items.some(z => z.id !== id && vnNorm(z.name) === vnNorm(x.name));
+  o.maQL = ma; o.ngoaiDM = ''; if (kind === 'vt' && !nameClash) o.name = x.name;
+  if (await qmSave(kind, o)) toast(`🔗 Đã gắn mã ${ma}${nameClash ? ' (giữ tên cũ vì trùng tên vật tư khác)' : ''}`);
+}
+function qmOther(kind, id) {
+  qmPick = {kind, id};
+  if (!document.getElementById('modal-qmpick')) document.body.insertAdjacentHTML('beforeend', `<div class="modal-bg" id="modal-qmpick" style="display:none" onclick="closeModalBg(event,'modal-qmpick')">
+    <div class="modal-sheet"><div class="modal-handle"></div><div class="modal-title">Chọn trong danh mục P.QLTB</div>
+    <div class="fg"><input type="text" id="qmp-q" placeholder="Gõ tên hoặc mã..." oninput="qmPickList()"></div><div id="qmp-list" class="qmp-list"></div>
+    <button class="btn-full" style="background:var(--bg);color:var(--text2)" onclick="closeModal('modal-qmpick')">Đóng</button></div></div>`);
+  const o = (kind === 'may' ? db.devices : db.items).find(z => z.id === id);
+  document.getElementById('qmp-q').value = (o?.name || '').split(/\s+/).slice(0, 2).join(' ');
+  openModal('modal-qmpick'); qmPickList();
+}
+function qmPickList() {
+  const q = document.getElementById('qmp-q').value, k = qmPick.kind;
+  document.getElementById('qmp-list').innerHTML = (q ? qlFind(q, k, 40) : qlList().filter(x => x.kind === k).slice(0, 40)).map(x =>
+    `<div class="combo-opt" onclick="closeModal('modal-qmpick');qmLink('${k}',${qmPick.id},'${escHtml(x.ma)}')"><span>${escHtml(x.name)}</span><small>${escHtml(x.ma)}</small></div>`).join('') || '<div class="combo-opt empty">Không tìm thấy</div>';
+}
+async function qmNone(kind, id) {
+  const o = (kind === 'may' ? db.devices : db.items).find(z => z.id === id); if (!o) return;
+  o.ngoaiDM = kind === 'may' ? 1 : 2;
+  if (await qmSave(kind, o)) toast(kind === 'may' ? 'Đã đánh dấu ngoài danh mục P.QLTB' : 'Đã đánh dấu không thuộc P.QLTB');
+}
+
 // ===== v5.28.1: CHỐNG BẤM 2 LẦN =====
 // Bấm nút lưu → nút khóa, đổi thành "Đang lưu…", mọi cú bấm sau bị bỏ qua cho tới khi xong (hoặc lỗi).
 const _busy = {};
