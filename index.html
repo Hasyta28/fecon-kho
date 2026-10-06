@@ -667,9 +667,9 @@ body.can-ql .hide-ql{display:none!important}
 .ev-ql>div{flex:1;min-width:0}.ev-ql small{display:block;font-size:11px;font-weight:800;color:var(--text3)}.ev-ql b{display:block;font-size:13px;word-break:break-all}.ev-ql i{display:block;font-style:normal;font-weight:600;color:var(--text2);font-size:12px}
 .ev-ql button{flex-shrink:0;border:1.5px solid var(--primary);background:#fff;color:var(--primary);border-radius:10px;padding:8px 10px;font-weight:800;font-family:inherit}
 .combo-head{font-size:11px;font-weight:800;color:var(--text3);padding:8px 12px 4px;text-transform:uppercase;letter-spacing:.4px;background:#F7F9FB}
-.combo-opt.ql span{font-weight:600}
+.combo-opt.ql span{font-weight:600}#et-list .combo-opt{flex-direction:column;align-items:flex-start;gap:2px}#et-list .combo-opt small{white-space:normal}
 .ql-badge{display:inline-block;font-size:10.5px;font-weight:800;border-radius:6px;padding:1px 6px;margin-top:3px}
-.ql-badge.ok{background:#EEF4FF;color:#1F5FA8}.ql-own{display:inline-block;font-size:10.5px;font-weight:800;border-radius:6px;padding:1px 6px;background:#EEF7EE;color:#2E7D32}.ql-own.hire{background:#FFF4D6;color:#8A5A00}.ql-warn{font-size:12px;color:#B45309;background:#FFF7E6;border-radius:8px;padding:6px 8px;margin-top:6px}.ql-badge.out{background:#FFF1E8;color:#C2410C}
+.ql-badge.ok{background:#EEF4FF;color:#1F5FA8}.et-pct{color:var(--primary);font-weight:800}.ql-own{display:inline-block;font-size:10.5px;font-weight:800;border-radius:6px;padding:1px 6px;background:#EEF7EE;color:#2E7D32}.ql-own.hire{background:#FFF4D6;color:#8A5A00}.ql-warn{font-size:12px;color:#B45309;background:#FFF7E6;border-radius:8px;padding:6px 8px;margin-top:6px}.ql-badge.out{background:#FFF1E8;color:#C2410C}
 .mv-box{border:1.5px solid #BFD7F2;background:#F5F9FF;border-radius:14px;padding:12px;margin-bottom:14px}
 .mv-card{display:flex;gap:10px;align-items:flex-start;margin-bottom:12px}.mv-card b{display:block;font-size:14.5px;line-height:1.3}.mv-card small{display:block;font-size:12px;color:var(--text2);margin-top:3px}
 .mv-ico{width:40px;height:40px;border-radius:12px;background:#fff;border:1px solid #BFD7F2;display:flex;align-items:center;justify-content:center;font-size:21px;flex-shrink:0}
@@ -1281,7 +1281,8 @@ body:not(.can-cost) .need-cost{display:none!important}
     <div class="modal-handle"></div>
     <div class="modal-title" id="et-title">✏️ Sửa phiếu</div>
     <div class="fg"><label>Vật tư</label>
-      <div class="combo"><input type="text" id="et-item-txt" autocomplete="off" placeholder="Gõ để tìm vật tư trong kho hoặc danh mục P.QLTB" oninput="etInput()" onfocus="etInput()" onblur="setTimeout(()=>{const l=document.getElementById('et-list');if(l)l.style.display='none'},200)">
+      <div class="combo"><input type="text" id="et-item-txt" autocomplete="off" placeholder="Gõ để tìm vật tư trong kho hoặc danh mục P.QLTB" oninput="etInput()" onfocus="etInput()" onblur="setTimeout(()=>{const l=document.getElementById('et-list');if(l)l.style.display='none'},200)" style="padding-right:40px">
+        <button type="button" class="combo-clear" id="et-clear" onmousedown="event.preventDefault()" onclick="etClear()">✕</button>
         <div class="combo-list" id="et-list"></div></div>
       <input type="hidden" id="et-item"><div class="combo-hint" id="et-hint"></div></div>
     <div class="fg"><label id="et-qty-label">Số lượng</label><input type="number" id="et-qty" step="any" inputmode="decimal"></div>
@@ -1702,7 +1703,7 @@ body:not(.can-cost) .need-cost{display:none!important}
 // ============================================================
 // CONFIG
 // ============================================================
-const APP_VERSION = '5.29.2';
+const APP_VERSION = '5.29.3';
 const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbw6Rmi80I7RI3ij2U7RdRF5pYuQTnPrwEmGmUZS5xpxzLwwVynfoFUujZe1lm6HS1ymxw/exec';
 // ============================================================
 
@@ -5329,6 +5330,7 @@ function openEditTxn() {
   etQL = null; etProj = t.project;
   document.getElementById('et-item').value = t.itemId;
   document.getElementById('et-item-txt').value = it0 ? it0.name : (t.itemName || '');
+  document.getElementById('et-clear').style.display = document.getElementById('et-item-txt').value ? 'block' : 'none';
   document.getElementById('et-hint').innerHTML = it0 ? `<span style="color:var(--text2)">Đơn vị: ${escHtml(it0.unit)}${it0.maQL ? ' · 📚 ' + escHtml(it0.maQL) : ''}</span>` : '';
   document.getElementById('et-qty-label').textContent = dc ? 'Số lượng điều chỉnh (+ tăng / − giảm)' : 'Số lượng';
   document.getElementById('et-qty').value = t.qty;
@@ -5346,26 +5348,50 @@ function openEditTxn() {
   openModal('modal-edit-txn');
 }
 let etQL = null, etProj = '';
-function etInput() {
+function etInput() {                                          // v5.29.3: mở ô là có gợi ý (theo tên đang chọn), gõ tìm theo cách so tên của Gắn mã
   const txt = document.getElementById('et-item-txt').value, q = normVN(txt), cur = db.items.find(i => i.id === +document.getElementById('et-item').value);
-  if (!cur || normVN(cur.name) !== q) { if (!etQL || normVN(etQL.name) !== q) { etQL = null; document.getElementById('et-item').value = ''; document.getElementById('et-hint').innerHTML = q ? '<span style="color:var(--red)">Chọn một dòng trong danh sách</span>' : ''; } }
+  const same = (cur && normVN(cur.name) === q) || (etQL && normVN(etQL.name) === q);
+  if (!same) { etQL = null; document.getElementById('et-item').value = ''; document.getElementById('et-hint').innerHTML = q ? '<span style="color:var(--red)">Chọn một dòng trong danh sách</span>' : ''; }
+  document.getElementById('et-clear').style.display = txt ? 'block' : 'none';
   const mine = db.items.filter(i => i.project === etProj || !i.project);
-  const list = (q ? mine.filter(i => normVN(i.name + ' ' + (i.maQL || '')).includes(q)) : mine).slice(0, 30);
-  let h = list.map(i => `<div class="combo-opt" onmousedown="event.preventDefault()" onclick="etPick(${i.id})"><span>${escHtml(i.name)}</span><small>Tồn: ${fmtNum(i.stock)} ${escHtml(i.unit)}</small></div>`).join('');
-  if (q && qlOn()) {
-    const ql = qlFind(q, 'vt', 20).filter(x => !mine.some(i => i.maQL === x.ma));
-    if (ql.length) h = (h ? `<div class="combo-head">📦 Vật tư trong kho dự án</div>` + h : '') + `<div class="combo-head">📚 Danh mục P.QLTB</div>` + ql.map(x => `<div class="combo-opt ql" onmousedown="event.preventDefault()" onclick="etPickQL('${escHtml(x.ma)}')"><span>📦 ${escHtml(x.name)}</span><small>${escHtml(x.ma)} · ${escHtml(x.unit || '')}</small></div>`).join('');
+  const pct = s => `<b class="et-pct">giống ${Math.round(s * 100)}%</b>`;
+  const opt = (i, s) => `<div class="combo-opt" onmousedown="event.preventDefault()" onclick="etPick(${i.id})"><span>${escHtml(i.name)}</span><small>Tồn: ${fmtNum(i.stock)} ${escHtml(i.unit)}${i.maQL ? ' · 📚 ' + escHtml(i.maQL) : ''}${s ? ' · ' + pct(s) : ''}</small></div>`;
+  const optQ = (x, s) => `<div class="combo-opt ql" onmousedown="event.preventDefault()" onclick="etPickQL('${escHtml(x.ma)}')"><span>📦 ${escHtml(x.name)}</span><small>${escHtml(x.ma)} · ${escHtml(x.unit || '')}${s ? ' · ' + pct(s) : ''}</small></div>`;
+  const qScore = (a, x) => Math.max(qlScore(a, x.name), x.tenCT ? qlScore(a, x.tenCT) : 0);
+  let h = '';
+  if (same || !q) {                                             // chưa gõ gì mới: vật tư đang chọn + gợi ý gần giống
+    const base = same ? (cur || etQL) : null, nm = base ? base.name : '';
+    if (cur && same) h += `<div class="combo-head">✔ Đang chọn</div>` + opt(cur);
+    const kho = nm ? mine.filter(i => !cur || i.id !== cur.id).map(i => ({i, s:qlScore(nm, i.name)})).filter(z => z.s >= 0.35).sort((a, b) => b.s - a.s).slice(0, 5) : [];
+    if (kho.length) h += `<div class="combo-head">📦 Vật tư trong kho gần giống</div>` + kho.map(z => opt(z.i, z.s)).join('');
+    if (qlOn() && nm) {
+      const ql = qlList().filter(x => x.kind === 'vt' && !mine.some(i => i.maQL === x.ma)).map(x => ({x, s:qScore(nm, x)})).filter(z => z.s >= 0.35).sort((a, b) => b.s - a.s).slice(0, 5);
+      if (ql.length) h += `<div class="combo-head">📚 Gợi ý theo danh mục P.QLTB</div>` + ql.map(z => optQ(z.x, z.s)).join('');
+    }
+    if (!nm) h += mine.slice(0, 30).map(i => opt(i)).join('');
+    h += `<div class="combo-opt empty">Gõ để tìm vật tư khác (gõ không dấu, VD: tole 20 ly)</div>`;
+  } else {                                                      // đang gõ: khớp chữ trước, rồi gần giống (tole = thép tấm, 6m = 6000mm…)
+    const kho = mine.map(i => ({i, c:normVN(i.name + ' ' + (i.maQL || '')).includes(q), s:qlScore(txt, i.name)})).filter(z => z.c || z.s >= 0.35)
+      .sort((a, b) => (b.c - a.c) || b.s - a.s).slice(0, 20);
+    if (kho.length) h += `<div class="combo-head">📦 Vật tư trong kho dự án</div>` + kho.map(z => opt(z.i, z.c ? 0 : z.s)).join('');
+    if (qlOn()) {
+      const hit = new Set(qlFind(txt, 'vt', 40).map(x => x.ma));
+      const ql = qlList().filter(x => x.kind === 'vt' && !mine.some(i => i.maQL === x.ma)).map(x => ({x, c:hit.has(x.ma), s:qScore(txt, x)})).filter(z => z.c || z.s >= 0.35)
+        .sort((a, b) => (b.c - a.c) || b.s - a.s).slice(0, 20);
+      if (ql.length) h += `<div class="combo-head">📚 Danh mục P.QLTB</div>` + ql.map(z => optQ(z.x, z.c ? 0 : z.s)).join('');
+    }
   }
   const l = document.getElementById('et-list'); l.innerHTML = h || '<div class="combo-opt empty">Không tìm thấy</div>'; l.style.display = 'block';
 }
+function etClear() { const e = document.getElementById('et-item-txt'); e.value = ''; etInput(); e.focus(); }
 function etPick(id) {
   const i = db.items.find(x => x.id === id); if (!i) return; etQL = null;
-  document.getElementById('et-item').value = id; document.getElementById('et-item-txt').value = i.name; document.getElementById('et-list').style.display = 'none';
+  document.getElementById('et-item').value = id; document.getElementById('et-item-txt').value = i.name; document.getElementById('et-list').style.display = 'none'; document.getElementById('et-clear').style.display = 'block';
   document.getElementById('et-hint').innerHTML = `<span style="color:var(--text2)">Đơn vị: ${escHtml(i.unit)}${i.maQL ? ' · 📚 ' + escHtml(i.maQL) : ''}</span>`;
 }
 function etPickQL(ma) {
   const x = qlByMa(ma); if (!x) return; etQL = x;
-  document.getElementById('et-item').value = ''; document.getElementById('et-item-txt').value = x.name; document.getElementById('et-list').style.display = 'none';
+  document.getElementById('et-item').value = ''; document.getElementById('et-item-txt').value = x.name; document.getElementById('et-list').style.display = 'none'; document.getElementById('et-clear').style.display = 'block';
   document.getElementById('et-hint').innerHTML = `<span style="color:var(--primary)">📚 Theo danh mục P.QLTB · ${escHtml(x.ma)} · lưu sẽ tạo vật tư mới (${escHtml(x.unit || '')}) và chuyển phiếu sang. Tồn 2 vật tư tự tính lại.</span>`;
 }
 async function saveEditTxn() {
