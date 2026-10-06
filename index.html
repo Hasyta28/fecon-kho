@@ -661,6 +661,11 @@ body.can-ql .hide-ql{display:none!important}
 .rp-text{width:100%;border:1.5px solid var(--border);border-radius:var(--r-sm);padding:10px 12px;font-size:13px;line-height:1.5;font-family:inherit;color:var(--text);min-height:260px;resize:vertical}
 /* v5.28: cập nhật phiên bản mới */
 /* v5.29: danh mục P.QLTB */
+.qm-bulk{background:#FFF8E6;border:1px solid #F5D58A;border-radius:12px;padding:10px 12px;margin-bottom:10px;font-size:12.5px;line-height:1.5;color:#6B4E00}
+.qm-bulk button{display:block;width:100%;margin-top:8px;border:1.5px solid #D9A400;background:#fff;color:#6B4E00;border-radius:10px;padding:9px;font-weight:800;font-family:inherit}
+.ev-ql{display:flex;align-items:center;gap:10px;background:#F5F9FF;border:1px solid #BFD7F2;border-radius:12px;padding:10px 12px;margin:-4px 0 12px}
+.ev-ql>div{flex:1;min-width:0}.ev-ql small{display:block;font-size:11px;font-weight:800;color:var(--text3)}.ev-ql b{display:block;font-size:13px;word-break:break-all}.ev-ql i{display:block;font-style:normal;font-weight:600;color:var(--text2);font-size:12px}
+.ev-ql button{flex-shrink:0;border:1.5px solid var(--primary);background:#fff;color:var(--primary);border-radius:10px;padding:8px 10px;font-weight:800;font-family:inherit}
 .combo-head{font-size:11px;font-weight:800;color:var(--text3);padding:8px 12px 4px;text-transform:uppercase;letter-spacing:.4px;background:#F7F9FB}
 .combo-opt.ql span{font-weight:600}
 .ql-badge{display:inline-block;font-size:10.5px;font-weight:800;border-radius:6px;padding:1px 6px;margin-top:3px}
@@ -1275,7 +1280,10 @@ body:not(.can-cost) .need-cost{display:none!important}
   <div class="modal-sheet">
     <div class="modal-handle"></div>
     <div class="modal-title" id="et-title">✏️ Sửa phiếu</div>
-    <div class="fg"><label>Vật tư</label><select id="et-item"></select></div>
+    <div class="fg"><label>Vật tư</label>
+      <div class="combo"><input type="text" id="et-item-txt" autocomplete="off" placeholder="Gõ để tìm vật tư trong kho hoặc danh mục P.QLTB" oninput="etInput()" onfocus="etInput()" onblur="setTimeout(()=>{const l=document.getElementById('et-list');if(l)l.style.display='none'},200)">
+        <div class="combo-list" id="et-list"></div></div>
+      <input type="hidden" id="et-item"><div class="combo-hint" id="et-hint"></div></div>
     <div class="fg"><label id="et-qty-label">Số lượng</label><input type="number" id="et-qty" step="any" inputmode="decimal"></div>
     <div class="fg" id="et-party-wrap"><label id="et-party-label">Người nhận</label><input type="text" id="et-party"></div>
     <div class="fg" id="et-dev-wrap"><label>Thiết bị nhận</label><select id="et-dev"></select></div>
@@ -1387,6 +1395,7 @@ body:not(.can-cost) .need-cost{display:none!important}
     <div class="modal-title" id="ev-title">📦 Vật tư</div>
     <input type="hidden" id="ev-id">
     <div class="stock-box"><span>Tồn kho hiện tại</span><b id="ev-stock-txt">0</b></div>
+    <div class="ev-ql" id="ev-ql"></div>
     <button class="btn-full btn-adj need-tk" onclick="openCountAdjust(+document.getElementById('ev-id').value)">⚖️ Kiểm kê / Điều chỉnh tồn</button>
     <div class="lock-note">Tồn kho chỉ thay đổi qua phiếu nhập, xuất hoặc điều chỉnh (có lý do, ghi tên người lập).</div>
     <div class="need-tk">
@@ -1692,7 +1701,7 @@ body:not(.can-cost) .need-cost{display:none!important}
 // ============================================================
 // CONFIG
 // ============================================================
-const APP_VERSION = '5.29.0';
+const APP_VERSION = '5.29.1';
 const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbw6Rmi80I7RI3ij2U7RdRF5pYuQTnPrwEmGmUZS5xpxzLwwVynfoFUujZe1lm6HS1ymxw/exec';
 // ============================================================
 
@@ -2687,6 +2696,9 @@ function editVatTu(id) {
   // Vật tư đã có phiếu thì không xóa được (giữ lịch sử)
   document.getElementById('ev-del-btn').style.display = role === 'ADM' && !db.transactions.some(t => t.itemId === id) ? '' : 'none';   // v5.18: chỉ Admin xóa
   const eu = document.getElementById('ev-unit'); eu.disabled = role !== 'ADM'; eu.title = role !== 'ADM' ? 'Chỉ Admin đổi đơn vị' : '';
+  const qx = qlByMa(item.maQL), canMap = hp('k_dm') && qlOn();     // v5.29.1: mã P.QLTB ngay trong màn vật tư
+  document.getElementById('ev-ql').innerHTML = `<div><small>📚 Mã P.QLTB</small><b>${item.maQL ? escHtml(item.maQL) + (qx && qx.name !== item.name ? `<i>${escHtml(qx.name)}</i>` : '') : +item.ngoaiDM === 1 ? 'Ngoài danh mục' : +item.ngoaiDM === 2 ? 'Vật tư tiêu hao' : 'Chưa gắn mã'}</b></div>`
+    + (canMap ? `<button onclick="qmOther('vt',${id})">🔗 ${item.maQL ? 'Đổi mã' : 'Gắn mã'}</button>` : '');
   openModal('modal-edit-vattu');
 }
 async function saveVatTu() {
@@ -5304,8 +5316,11 @@ function openEditTxn() {
   const t = db.transactions.find(x => x.id === curTxnId); if (!t || !can('admin')) return;
   const dc = t.type === 'dieuchinh';
   document.getElementById('et-title').textContent = '✏️ Sửa ' + (dc ? 'phiếu điều chỉnh' : t.type === 'nhap' ? 'phiếu nhập' : 'phiếu xuất');
-  const items = db.items.filter(i => i.project === t.project || !i.project).slice().sort((a, b) => a.name.localeCompare(b.name, 'vi'));
-  document.getElementById('et-item').innerHTML = items.map(i => `<option value="${i.id}" ${i.id === t.itemId ? 'selected' : ''}>${escHtml(i.name)} (${escHtml(i.unit)})</option>`).join('');
+  const it0 = db.items.find(i => i.id === t.itemId);                     // v5.29.1: ô tìm có gợi ý (kho dự án + danh mục P.QLTB)
+  etQL = null; etProj = t.project;
+  document.getElementById('et-item').value = t.itemId;
+  document.getElementById('et-item-txt').value = it0 ? it0.name : (t.itemName || '');
+  document.getElementById('et-hint').innerHTML = it0 ? `<span style="color:var(--text2)">Đơn vị: ${escHtml(it0.unit)}${it0.maQL ? ' · 📚 ' + escHtml(it0.maQL) : ''}</span>` : '';
   document.getElementById('et-qty-label').textContent = dc ? 'Số lượng điều chỉnh (+ tăng / − giảm)' : 'Số lượng';
   document.getElementById('et-qty').value = t.qty;
   document.getElementById('et-party-wrap').style.display = dc ? 'none' : '';
@@ -5321,6 +5336,29 @@ function openEditTxn() {
   closeModal('modal-txn');
   openModal('modal-edit-txn');
 }
+let etQL = null, etProj = '';
+function etInput() {
+  const txt = document.getElementById('et-item-txt').value, q = normVN(txt), cur = db.items.find(i => i.id === +document.getElementById('et-item').value);
+  if (!cur || normVN(cur.name) !== q) { if (!etQL || normVN(etQL.name) !== q) { etQL = null; document.getElementById('et-item').value = ''; document.getElementById('et-hint').innerHTML = q ? '<span style="color:var(--red)">Chọn một dòng trong danh sách</span>' : ''; } }
+  const mine = db.items.filter(i => i.project === etProj || !i.project);
+  const list = (q ? mine.filter(i => normVN(i.name + ' ' + (i.maQL || '')).includes(q)) : mine).slice(0, 30);
+  let h = list.map(i => `<div class="combo-opt" onmousedown="event.preventDefault()" onclick="etPick(${i.id})"><span>${escHtml(i.name)}</span><small>Tồn: ${fmtNum(i.stock)} ${escHtml(i.unit)}</small></div>`).join('');
+  if (q && qlOn()) {
+    const ql = qlFind(q, 'vt', 20).filter(x => !mine.some(i => i.maQL === x.ma));
+    if (ql.length) h = (h ? `<div class="combo-head">📦 Vật tư trong kho dự án</div>` + h : '') + `<div class="combo-head">📚 Danh mục P.QLTB</div>` + ql.map(x => `<div class="combo-opt ql" onmousedown="event.preventDefault()" onclick="etPickQL('${escHtml(x.ma)}')"><span>📦 ${escHtml(x.name)}</span><small>${escHtml(x.ma)} · ${escHtml(x.unit || '')}</small></div>`).join('');
+  }
+  const l = document.getElementById('et-list'); l.innerHTML = h || '<div class="combo-opt empty">Không tìm thấy</div>'; l.style.display = 'block';
+}
+function etPick(id) {
+  const i = db.items.find(x => x.id === id); if (!i) return; etQL = null;
+  document.getElementById('et-item').value = id; document.getElementById('et-item-txt').value = i.name; document.getElementById('et-list').style.display = 'none';
+  document.getElementById('et-hint').innerHTML = `<span style="color:var(--text2)">Đơn vị: ${escHtml(i.unit)}${i.maQL ? ' · 📚 ' + escHtml(i.maQL) : ''}</span>`;
+}
+function etPickQL(ma) {
+  const x = qlByMa(ma); if (!x) return; etQL = x;
+  document.getElementById('et-item').value = ''; document.getElementById('et-item-txt').value = x.name; document.getElementById('et-list').style.display = 'none';
+  document.getElementById('et-hint').innerHTML = `<span style="color:var(--primary)">📚 Theo danh mục P.QLTB · ${escHtml(x.ma)} · lưu sẽ tạo vật tư mới (${escHtml(x.unit || '')}) và chuyển phiếu sang. Tồn 2 vật tư tự tính lại.</span>`;
+}
 async function saveEditTxn() {
   const t = db.transactions.find(x => x.id === curTxnId); if (!t) return;
   const dc = t.type === 'dieuchinh';
@@ -5328,7 +5366,17 @@ async function saveEditTxn() {
   if (dc ? !qty : !(qty > 0)) { toast(dc ? '⚠️ Số lượng điều chỉnh phải khác 0' : '⚠️ Số lượng phải lớn hơn 0'); return; }
   const time = localToVN(document.getElementById('et-time').value);
   if (!time) { toast('⚠️ Chọn ngày giờ phiếu'); return; }
-  const data = {id:t.id, itemId:+document.getElementById('et-item').value, qty,
+  let itemId = +document.getElementById('et-item').value;
+  if (etQL) {                                                // chọn loại P.QLTB chưa có trong kho → tạo vật tư mới rồi chuyển phiếu sang
+    const nk = normVN(etQL.name), ex = db.items.find(i => i.project === t.project && (i.maQL === etQL.ma || normVN(i.name) === nk));
+    if (ex) itemId = ex.id;
+    else {
+      const ni = {id:newId(), name:etQL.name, cat:etQL.cat || 'khac', unit:etQL.unit || 'Cái', stock:0, minStock:0, project:t.project, maQL:etQL.ma, ngoaiDM:''};
+      db.items.push(ni); push('upsert', {table:'items', rows:[ni]}); itemId = ni.id;
+    }
+  }
+  if (!itemId || !db.items.some(i => i.id === itemId)) { toast('⚠️ Chọn vật tư trong danh sách gợi ý'); return; }
+  const data = {id:t.id, itemId, qty,
     supplierOrReceiver:document.getElementById('et-party').value.trim(), thietBi:document.getElementById('et-dev').value,
     reason:document.getElementById('et-reason').value.trim(), note:document.getElementById('et-note').value.trim(), datetime:time};
   closeModal('modal-edit-txn');
@@ -7766,12 +7814,25 @@ function qlParse(wb, fileName) {
   return out;
 }
 // ---- Tìm trong danh mục ----
-const qlTok = s => vnNorm(s).replace(/(\d),(\d)/g, '$1.$2').split(/[^a-z0-9.]+/).filter(t => t && t !== '.');
-function qlScore(a, b) {                                     // giống nhau theo từ; từ có số (D1000, 285, 13.5T…) nặng gấp 3
-  const A = new Set(qlTok(a)), B = new Set(qlTok(b)); if (!A.size || !B.size) return 0;
-  const w = t => /\d/.test(t) ? 3 : 1;
-  let inter = 0, uni = 0; A.forEach(t => { uni += w(t); if (B.has(t)) inter += w(t); }); B.forEach(t => { if (!A.has(t)) uni += w(t); });
-  return inter / uni;
+// v5.29.1: so khớp tên — hiểu từ cùng nghĩa (tole / tôn / thép tấm, casing / ống vách…) và kích thước viết khác kiểu (6M*2M*20MM = 20x2000x6000mm)
+const QL_SYN = [[/\bthep tam\b/g, 'tole'], [/\bton\b/g, 'tole'], [/\bcasing\b/g, 'ong vach'], [/\bgau\b/g, 'gau'], [/\bcan kelly\b/g, 'can khoan'], [/\bthung\b/g, 'tank'], [/\bcong ten no\b|\bcontainer\b/g, 'container']];
+const qlNorm = s => { let t = vnNorm(s).replace(/(\d),(\d)/g, '$1.$2'); QL_SYN.forEach(([r, v]) => t = t.replace(r, v)); return t; };
+const qlTok = s => qlNorm(s).split(/[^a-z0-9.]+/).filter(t => t && t !== '.');
+const QL_STOP = new Set(['so', 'loai', 'cu', 'moi', 'va', 'cho', 'cua', 'bo', 'cai', 'tam', 'q']);
+function qlNums(s) {                                        // các con số trong tên, đổi m / cm ra mm (bỏ m3, m2)
+  const out = new Set(); const t = qlNorm(s);
+  t.replace(/(\d+(?:\.\d+)?)\s*(mm|cm|ly|m(?![a-z0-9]))?/g, (m, n, u) => { let v = +n; if (u === 'm') v *= 1000; else if (u === 'cm') v *= 10; out.add(Math.round(v * 100) / 100); return m; });
+  return out;
+}
+function qlScore(a, b) {                                     // 0…1: nửa theo chữ, nửa theo con số / kích thước
+  const W = s => new Set(qlTok(s).filter(t => !/\d/.test(t) && t.length > 1 && !QL_STOP.has(t)));
+  const A = W(a), B = W(b), NA = qlNums(a), NB = qlNums(b);
+  let inter = 0; A.forEach(t => { if (B.has(t)) inter++; });
+  const ws = A.size && B.size ? inter / (A.size + B.size - inter) : 0;
+  if (!ws) return 0;                                         // không chung chữ nào → không phải cùng loại
+  if (!NA.size || !NB.size) return ws * (NA.size || NB.size ? 0.8 : 1);
+  let ni = 0; NA.forEach(v => { if (NB.has(v)) ni++; });
+  return 0.5 * ws + 0.5 * ni / Math.min(NA.size, NB.size);
 }
 function qlFind(q, kind, limit) {
   const toks = vnNorm(q).split(/\s+/).filter(Boolean); if (!toks.length) return [];
@@ -7994,7 +8055,8 @@ function renderQlMap() {
   const b = document.getElementById('dp-qlmap-body'); if (!b) return;
   if (!qlOn()) { b.innerHTML = '<div class="info-box">Chưa có danh mục P.QLTB — Admin nạp ở Menu → Danh mục P.QLTB.</div>'; return; }
   const devs = db.devices.filter(d => !d.maQL && +d.ngoaiDM !== 2), itemsAll = db.items.filter(i => !i.maQL && +i.ngoaiDM !== 2);
-  const items = itemsAll.map(i => ({i, m:qlBest(i, 'vt')})).filter(z => z.m && z.m.s >= 0.3), other = itemsAll.length - items.length;
+  const items = itemsAll.map(i => { const m = qlBest(i, 'vt'); return {i, m: m && m.s >= 0.35 ? m : null}; }).sort((a, b) => (b.m ? b.m.s : 0) - (a.m ? a.m.s : 0) || a.i.name.localeCompare(b.i.name, 'vi'));
+  const other = items.filter(z => !z.m).length;
   const done = db.devices.filter(d => d.maQL).length + db.items.filter(i => i.maQL).length;
   const row = (o, m, kind) => `<div class="qm-row">
     <div class="qm-name">${kind === 'may' ? '🏗 ' : '📦 '}${escHtml(o.name)}${+o.ngoaiDM === 1 ? ' <span class="ql-badge out">Ngoài DM</span>' : ''}</div>
@@ -8005,7 +8067,8 @@ function renderQlMap() {
   b.innerHTML = `<div class="info-box">Gắn mã P.QLTB cho máy / vật tư đã nhập trước khi có danh mục. Bấm <b>Gắn mã này</b>: vật tư đổi tên theo P.QLTB, máy giữ tên đang dùng (để không lệch lịch sử cấp dầu); số liệu, phiếu cũ giữ nguyên. Đã gắn: <b>${done}</b>.</div>
     <div class="chip-row" style="margin-bottom:10px"><div class="chip ${qmTab === 'may' ? 'on' : ''}" onclick="qmTab='may';renderQlMap()">Máy (${devs.length})</div><div class="chip ${qmTab === 'vt' ? 'on' : ''}" onclick="qmTab='vt';renderQlMap()">Vật tư (${items.length})</div></div>
     ${qmTab === 'may' ? (devs.length ? devs.map(d => row(d, qlBest(d, 'may'), 'may')).join('') : '<div class="empty-state"><p>✅ Máy nào cũng đã có mã</p></div>')
-      : (items.length ? items.map(z => row(z.i, z.m, 'vt')).join('') : '<div class="empty-state"><p>✅ Không còn vật tư nào giống danh mục P.QLTB</p></div>') + (other ? `<div class="pyc-hint">${other} vật tư khác (dầu, cóc nối, que hàn…) không giống mục nào trong danh mục — không cần gắn</div>` : '')}`;
+      : (other ? `<div class="qm-bulk"><span>${other} vật tư chưa tìm thấy tên gần giống (thường là dầu, cóc nối, que hàn…). Kiểm tra danh sách bên dưới — vật tư nào thuộc P.QLTB thì bấm <b>Chọn khác</b>.</span><button onclick="qmBulkNone()">Đánh dấu ${other} vật tư chưa có gợi ý là tiêu hao</button></div>` : '')
+        + (items.length ? items.map(z => row(z.i, z.m, 'vt')).join('') : '<div class="empty-state"><p>✅ Vật tư nào cũng đã gắn mã hoặc đã đánh dấu</p></div>')}`;
 }
 async function qmSave(kind, o) {
   const r = await push('upsert', {table: kind === 'may' ? 'devices' : 'items', rows:[o]});
@@ -8020,6 +8083,7 @@ async function qmLink(kind, id, ma) {
   const nameClash = kind === 'vt' && db.items.some(z => z.id !== id && vnNorm(z.name) === vnNorm(x.name));
   o.maQL = ma; o.ngoaiDM = ''; if (kind === 'vt' && !nameClash) o.name = x.name;
   if (await qmSave(kind, o)) toast(`🔗 Đã gắn mã ${ma}${nameClash ? ' (giữ tên cũ vì trùng tên vật tư khác)' : ''}`);
+  if (kind === 'vt' && document.getElementById('modal-edit-vattu').style.display === 'flex' && +document.getElementById('ev-id').value === id) editVatTu(id);
 }
 function qmOther(kind, id) {
   qmPick = {kind, id};
@@ -8035,6 +8099,15 @@ function qmPickList() {
   const q = document.getElementById('qmp-q').value, k = qmPick.kind;
   document.getElementById('qmp-list').innerHTML = (q ? qlFind(q, k, 40) : qlList().filter(x => x.kind === k).slice(0, 40)).map(x =>
     `<div class="combo-opt" onclick="closeModal('modal-qmpick');qmLink('${k}',${qmPick.id},'${escHtml(x.ma)}')"><span>${escHtml(x.name)}</span><small>${escHtml(x.ma)}</small></div>`).join('') || '<div class="combo-opt empty">Không tìm thấy</div>';
+}
+async function qmBulkNone() {
+  const list = db.items.filter(i => !i.maQL && +i.ngoaiDM !== 2).filter(i => { const m = qlBest(i, 'vt'); return !(m && m.s >= 0.35); });
+  if (!list.length) return;
+  if (!(await askDup(`Đánh dấu ${list.length} vật tư là "vật tư tiêu hao — không thuộc P.QLTB": ${list.slice(0, 6).map(i => i.name).join(', ')}${list.length > 6 ? '…' : ''}. Có thể gắn mã lại sau ở màn chi tiết vật tư.`, 'Đúng, đánh dấu'))) return;
+  list.forEach(i => i.ngoaiDM = 2);
+  const r = await push('upsert', {table:'items', rows:list});
+  if (r !== 'rejected') toast(`Đã đánh dấu ${list.length} vật tư tiêu hao`);
+  renderQlMap();
 }
 async function qmNone(kind, id) {
   const o = (kind === 'may' ? db.devices : db.items).find(z => z.id === id); if (!o) return;
