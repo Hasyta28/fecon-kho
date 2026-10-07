@@ -675,8 +675,9 @@ body.can-ql .hide-ql{display:none!important}
 .ct-mode button small{display:block;font-weight:600;font-size:11px;margin-top:2px}
 .ct-mode button.on{border-color:var(--primary);color:var(--primary);background:#EAF2FB}
 .ct-mode button.on.ct{border-color:var(--orange);color:var(--orange);background:#FFF2EA}
-.ct-mode button:disabled{opacity:.45}
-.ct-hint{font-size:12px;margin:0 0 12px;line-height:1.4}
+.ct-mode.need button{border-color:var(--red)}
+.ct-hint{font-size:12px;margin:0 0 12px;line-height:1.4;color:var(--red);font-weight:800}.ct-hint:empty{margin:0 0 8px}
+.btn-gray{background:#B8C2CC}#fn-list{max-height:min(58vh,440px)}.combo-more{color:var(--primary);font-weight:800;font-size:12.5px}.combo-opt.ds small{color:#8A6A00}
 .ct-info{background:#FFF2EA;border-left:4px solid var(--orange);border-radius:8px;padding:8px 10px;font-size:12.5px;color:#7a3a10;margin:0 0 12px;line-height:1.45}
 .pyc-tag.ct{background:#FFF2EA;color:#C2410C}
 .ct-chips{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:12px}
@@ -1111,7 +1112,7 @@ body:not(.can-cost) .need-cost{display:none!important}
   <div class="detail-body" id="dp-pycfg-body"></div>
 </div>
 <div class="detail-page" id="dp-thang">
-  <div class="detail-header"><button class="back-btn" onclick="closeDp('dp-thang')">‹</button><div class="detail-title">🏗 Vật tư xuất thẳng công trường</div></div>
+  <div class="detail-header"><button class="back-btn" onclick="closeDp('dp-thang')">‹</button><div class="detail-title">⭐ Tên vật tư gợi ý thêm</div></div>
   <div class="detail-body" id="dp-thang-body"></div>
 </div>
 <div class="detail-page" id="dp-ver">
@@ -1277,7 +1278,7 @@ body:not(.can-cost) .need-cost{display:none!important}
     <div class="sidebar-item need-admin" onclick="closeSidebar();setTimeout(openRoles,300)"><span class="sidebar-item-ico">🛡</span>Phân quyền chức danh</div>
     <div class="sidebar-item need-admin" onclick="closeSidebar();setTimeout(openQltb,300)"><span class="sidebar-item-ico">📚</span>Danh mục P.QLTB</div>
     <div class="sidebar-item need-admin" onclick="openDpSb('dp-pycfg')"><span class="sidebar-item-ico">⚙️</span>Cài đặt phiếu yêu cầu</div>
-    <div class="sidebar-item need-admin" onclick="openDpSb('dp-thang')"><span class="sidebar-item-ico">🏗</span>Vật tư xuất thẳng công trường</div>
+    <div class="sidebar-item need-admin" onclick="openDpSb('dp-thang')"><span class="sidebar-item-ico">⭐</span>Tên vật tư gợi ý thêm</div>
     <div class="sidebar-divider"></div>
     <div class="sidebar-item inst-btn" style="display:none" onclick="closeSidebar();doInstall()"><span class="sidebar-item-ico">📲</span>Cài app vào điện thoại</div>
     <div class="sidebar-item" onclick="openChPw()"><span class="sidebar-item-ico">🔒</span>Đổi mật khẩu</div>
@@ -3046,7 +3047,7 @@ function renderNhap(c) {
       <button class="btn-full btn-green" id="fn-save" onclick="doNhap()">✅ Xác nhận nhập kho</button>
     </div>
   </div>`;
-  fnQL = null; fnDev = null; fnMode = 'kho';
+  fnQL = null; fnDev = null; fnMode = ''; fnMore = {};
   fillNhapItems();
   renderFormPhotos('fn');
   if (!qlOn()) qltbLoad();
@@ -3067,13 +3068,13 @@ function comboInput(p) {
   document.getElementById(p+'-clear').style.display = txt ? 'block' : 'none';
   let list = q ? db.items.filter(i => normVN(i.name).includes(q)) : db.items.filter(i => i.cat === cat);
   const exact = q ? db.items.find(i => normVN(i.name) === q) : null;
-  let html = list.slice(0, 40).map(i => `<div class="combo-opt" onmousedown="event.preventDefault()" onclick="comboPick('${p}',${i.id})">
-      <span>${escHtml(i.name)}</span><small>Tồn: ${fmtNum(i.stock)} ${escHtml(i.unit)}</small></div>`).join('');
+  const optK = i => `<div class="combo-opt" onmousedown="event.preventDefault()" onclick="comboPick('${p}',${i.id})">
+      <span>${escHtml(i.name)}</span><small>Tồn: ${fmtNum(i.stock)} ${escHtml(i.unit)}</small></div>`;
+  let html = list.slice(0, 40).map(optK).join('');
   if (p === 'fn') {                                         // v5.29: gợi ý từ danh mục P.QLTB
     if (fnDev && txt !== fnDev.name) fnSetDev(null);
     if (fnQL && normVN(txt) !== normVN(fnQL.name)) fnQL = null;
-    const qh = qlComboHtml(q);
-    if (qh) html = (html ? `<div class="combo-head">📦 Vật tư trong kho dự án</div>` + html : '') + qh;
+    html = fnSuggestHtml(q, optK);                          // v5.30: 3 nhóm — kho dự án · tên gợi ý thêm · danh mục P.QLTB
   }
   if (allowNew && q && !exact) html += `<div class="combo-opt new" onmousedown="event.preventDefault()" onclick="comboPickNew('${p}')">➕ Thêm vật tư mới: “${escHtml(txt.trim())}”</div>`;
   if (!html) html = `<div class="combo-opt empty">${q ? 'Không tìm thấy vật tư trong kho' : 'Nhóm này chưa có vật tư'}</div>`;
@@ -3092,6 +3093,41 @@ function comboInput(p) {
   }
   if (p === 'fn') fnModeUpdate();
 }
+// v5.30: bấm vào ô tên (phiếu nhập) là thấy tất cả tên; gõ thì lọc cả 3 nhóm. Mỗi nhóm hiện 6 dòng đầu + "Xem thêm"
+let fnMore = {};
+function fnSuggestHtml(q, optK) {
+  const N = 6, more = (k, n) => n > N && !fnMore[k] ? `<div class="combo-opt combo-more" data-k="${k}" onmousedown="event.preventDefault()" onclick="fnMore['${k}']=1;comboInput('fn')">Xem thêm ${fmtNum(n - N)} tên…</div>` : '';
+  const cut = (k, arr) => fnMore[k] ? arr : arr.slice(0, N);
+  const have = new Set(db.items.map(i => normVN(i.name)));
+  const toks = q.split(' ').filter(Boolean), hit = n => toks.every(t => normVN(n).includes(t));   // gõ nhiều chữ, không cần đúng thứ tự
+  const kho = (q ? db.items.filter(i => hit(i.name + ' ' + (i.maQL || ''))) : db.items.slice().sort((a, b) => a.name.localeCompare(b.name, 'vi')));
+  const ds = (db.thangDS || []).filter(x => !have.has(normVN(x)) && (!q || hit(x)));
+  let ql = [];
+  if (qlOn()) {
+    const ok = x => x.kind === 'may' ? !qlDevHere(x.ma) : !qlItemHere(x.ma);
+    const ws = x => toks.filter(t => (' ' + normVN(x.name).replace(/[^a-z0-9]+/g, ' ')).includes(' ' + t)).length;   // chữ gõ trùng đầu từ → lên trước
+    ql = q ? qlFind(q, '', 300).filter(ok).map(x => [x, ws(x)]).sort((a, b) => b[1] - a[1] || (a[0].kind === 'may') - (b[0].kind === 'may') || a[0].name.localeCompare(b[0].name, 'vi')).map(z => z[0])
+      : qlList().filter(ok).sort((a, b) => (a.kind === 'may') - (b.kind === 'may') || a.name.localeCompare(b.name, 'vi'));
+    ql = ql.filter(x => !have.has(normVN(x.name)));
+  }
+  const optQ = x => { const left = x.kind === 'may' && qlDevLeft(x.ma);
+    return `<div class="combo-opt ql" onmousedown="event.preventDefault()" onclick="comboPickQL('${escHtml(x.ma)}')">
+      <span>${x.kind === 'may' ? '🏗 ' : '📦 '}${escHtml(x.name)}</span><small>${escHtml(x.ma)}${x.kind === 'may' ? ' · máy' + (left ? ' · đã rời, nhập lại' : '') : ' · ' + escHtml(x.unit || '')}</small>${qlOwnTag(x)}</div>`; };
+  let h = '';
+  if (kho.length) h += `<div class="combo-head">📦 Trong kho dự án (${kho.length})</div>` + cut('kho', kho).map(optK).join('') + more('kho', kho.length);
+  if (ds.length) h += `<div class="combo-head">⭐ Tên gợi ý thêm (${ds.length})</div>` + cut('ds', ds).map(x => `<div class="combo-opt ds" onmousedown="event.preventDefault()" onclick="comboPickDS(${JSON.stringify(x).replace(/"/g, '&quot;')})"><span>${escHtml(x)}</span><small>Tên Admin nạp thêm · vật tư mới trong kho dự án</small></div>`).join('') + more('ds', ds.length);
+  if (ql.length) h += `<div class="combo-head">📚 Danh mục P.QLTB (${ql.length})</div>` + cut('ql', ql).map(optQ).join('') + more('ql', ql.length);
+  return h;
+}
+function comboPickDS(name) {
+  fnSetDev(null); fnQL = null;
+  document.getElementById('fn-item-txt').value = name;
+  const n = normVN(name), cs = document.getElementById('fn-cat');            // đoán nhóm cho vật tư mới, thủ kho đổi được
+  const cat = /^(thep|sat)\b/.test(n) ? 'thep' : /^ong sieu am/.test(n) ? 'ongSieuAm' : /^(dau|nhot|mo)\b/.test(n) ? 'nhienLieu' : 'vatLieu';
+  if ([...cs.options].some(o => o.value === cat)) cs.value = cat;
+  comboInput('fn'); comboHide('fn');
+  document.getElementById('fn-unit-sel')?.focus();
+}
 function comboPick(p, id) {
   const it = db.items.find(i => i.id === id); if (!it) return;
   document.getElementById(p+'-item-txt').value = it.name;
@@ -3104,6 +3140,7 @@ function comboPickNew(p) { comboInput(p); comboHide(p); document.getElementById(
 function comboHide(p) { const l = document.getElementById(p+'-list'); if (l) l.style.display = 'none'; }
 function comboClear(p, focus) {
   const t = document.getElementById(p+'-item-txt'); if (!t) return;
+  if (p === 'fn') fnMore = {};
   t.value = ''; document.getElementById(p+'-item').value = '';
   document.getElementById(p+'-hint').innerHTML = '';
   document.getElementById(p+'-clear').style.display = 'none';
@@ -3120,6 +3157,11 @@ async function doNhap() {
   const proj = document.getElementById('fn-proj').value;
   if (!name) { toast('⚠️ Nhập hoặc chọn tên vật tư'); return; }
   if (!qty || qty <= 0) { toast('⚠️ Nhập số lượng hợp lệ'); return; }
+  if (thangOn() && !fnMode) {                                // v5.30: thủ kho phải tự chọn 📦 / 🏗
+    document.querySelector('#fn-ct-box .ct-mode').classList.add('need'); document.getElementById('fn-ct-hint').textContent = 'Chọn một ô';
+    document.getElementById('fn-ct-box').scrollIntoView({block:'center', behavior:'smooth'});
+    toast('⚠️ Chọn 📦 Vào kho hoặc 🏗 Thẳng ra công trường'); return;
+  }
   let item = db.items.find(i => i.id === +document.getElementById('fn-item').value) || db.items.find(i => normVN(i.name) === normVN(name));
   if (item && !(await askIfDupTxn('nhap', item, qty))) return;    // v5.28.1: vừa nhập cùng vật tư, cùng số lượng → hỏi lại
   closeKeyboard();
@@ -3134,7 +3176,7 @@ async function doNhap() {
     addLog('Thêm vật tư', name);
     push('upsert', {table:'items', rows:[item]});      // gửi nền, giữ đúng thứ tự trong hàng chờ
   }
-  if (fnMode === 'ct' && thangOn() && thangHit(item.name)) return doNhapThang(item, qty, proj);   // v5.30: thẳng ra công trường
+  if (fnMode === 'ct' && thangOn()) return doNhapThang(item, qty, proj);   // v5.30: thẳng ra công trường
   item.stock = Math.round((item.stock + qty) * 100) / 100;
   const txn = {id:newId(), type:'nhap', itemId:item.id, itemName:item.name, qty, unit:item.unit, project:proj,
     supplierOrReceiver:document.getElementById('fn-ncc').value,
@@ -3152,33 +3194,22 @@ async function doNhap() {
 }
 
 // ===== v5.30: NHẬP THẲNG RA CÔNG TRƯỜNG (nhập + xuất cùng lúc, tồn không đổi) =====
-let fnMode = 'kho';
-const thangOn = () => Array.isArray(db.thangDS) && hp('k_thang');
-const thangNorm = t => (t || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/đ/g, 'd').replace(/[×*]/g, 'x').replace(/\s+/g, ' ').trim();
-// Tên vật tư chứa trọn một cụm trong danh sách (theo từ: "Cát" không khớp "Cáp") — giống máy chủ
-function thangHit(name) {
-  const n = ' ' + thangNorm(name).replace(/[^a-z0-9x.]+/g, ' ') + ' ';
-  return (db.thangDS || []).find(k => { const t = thangNorm(k).replace(/[^a-z0-9x.]+/g, ' ').trim(); return t && n.includes(' ' + t + ' '); }) || '';
-}
+let fnMode = '';                                             // '' = chưa chọn · 'kho' · 'ct'
+const thangOn = () => Array.isArray(db.thangDS) && hp('k_thang');   // máy chủ 5.22+ và có quyền
+const thangNorm = t => (t || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/đ/g, 'd').replace(/\s+/g, ' ').trim();
 function fnSetMode(m) { fnMode = m; fnModeUpdate(); }
 function fnModeUpdate() {
   const box = document.getElementById('fn-ct-box'); if (!box) return;
-  const name = (document.getElementById('fn-item-txt').value || '').trim();
-  const on = thangOn() && !fnDev && !!name, hit = on ? thangHit(name) : '';
+  const on = thangOn() && !fnDev;
   box.style.display = on ? '' : 'none';
-  if (!hit) fnMode = 'kho';
-  const ct = fnMode === 'ct';
-  const bk = document.getElementById('fn-m-kho'), bc = document.getElementById('fn-m-ct');
-  bk.className = ct ? '' : 'on'; bc.className = ct ? 'on ct' : ''; bc.disabled = !hit;
-  bc.querySelector('small').textContent = hit ? 'Nhập + xuất cùng lúc' : 'Không áp dụng';
-  document.getElementById('fn-ct-hint').innerHTML = !on ? '' : hit
-    ? `<span style="color:var(--orange)">✔ Thuộc danh sách xuất thẳng (${escHtml(hit)}) → được chọn 🏗</span>`
-    : `<span style="color:var(--text3)">${escHtml(name)} không thuộc danh sách xuất thẳng → chỉ nhập vào kho.</span>`;
+  const ct = on && fnMode === 'ct', kho = on && fnMode === 'kho';
+  document.getElementById('fn-m-kho').className = kho ? 'on' : ''; document.getElementById('fn-m-ct').className = ct ? 'on ct' : '';
+  if (fnMode) { box.querySelector('.ct-mode').classList.remove('need'); document.getElementById('fn-ct-hint').textContent = ''; }
   document.getElementById('fn-ct-info').style.display = ct ? '' : 'none';
   document.getElementById('fn-giao-row').style.display = ct ? '' : 'none';
   if (fnDev) return;
   const btn = document.getElementById('fn-save');
-  if (btn) { btn.innerHTML = ct ? '🏗 Xác nhận nhập + xuất thẳng' : '✅ Xác nhận nhập kho'; btn.className = 'btn-full ' + (ct ? 'btn-orange' : 'btn-green'); }
+  if (btn) { btn.innerHTML = ct ? '🏗 Xác nhận nhập + xuất thẳng' : on && !kho ? 'Xác nhận' : '✅ Xác nhận nhập kho'; btn.className = 'btn-full ' + (ct ? 'btn-orange' : on && !kho ? 'btn-gray' : 'btn-green'); }
 }
 async function doNhapThang(item, qty, proj) {
   const nId = newId(), now = nowStr(), who = me?.name || ''; let xId = newId(); while (xId === nId) xId = newId();
@@ -3192,7 +3223,7 @@ async function doNhapThang(item, qty, proj) {
   push('addThang', {nhap:n, xuat:x});
   const ph = formPhotos.fn.splice(0);
   toast(`✅ Nhập + xuất thẳng ${fmtNum(qty)} ${item.unit} ${item.name}${ph.length ? ` · ${ph.length} ảnh` : ''}`);
-  fnMode = 'kho';
+  fnMode = '';
   afterSave(n);
   if (ph.length) queuePhotos(n.id, ph);
 }
@@ -6947,10 +6978,9 @@ function renderPycCfg() {
 function renderThangDS() {
   const body = document.getElementById('dp-thang-body'), ds = db.thangDS;
   if (!Array.isArray(ds)) { body.innerHTML = '<div class="info-box">Máy chủ chưa lên bản 5.22.0 — triển khai Apps Script mới rồi tải lại app.</div>'; return; }
-  const used = n => db.items.filter(i => thangHit(i.name) && thangNorm(thangHit(i.name)) === thangNorm(n)).length;
-  body.innerHTML = `<div class="info-box">Tên vật tư chứa một trong các từ dưới đây thì phiếu nhập được chọn <b>🏗 Thẳng ra công trường</b> (VD "Thép" áp dụng cho Thép D25, Thép D10…). Chỉ Admin thêm / bớt. Áp dụng chung cho mọi kho / dự án. Chỉ chức danh có quyền "Nhập thẳng ra công trường" (mặc định Thủ kho) mới thấy lựa chọn này.</div>
+  body.innerHTML = `<div class="info-box">Các tên này hiện trong ô Tên vật tư ở phiếu nhập (cùng tên trong kho dự án và danh mục P.QLTB). Thủ kho chọn tên thì app tạo vật tư mới đúng tên đó. Chỉ Admin thêm / bớt, dùng chung mọi kho / dự án.</div>
     <div class="card" style="padding:14px">
-      <div class="ct-chips">${ds.length ? ds.map((x, i) => `<span class="ct-chip">${escHtml(x)}<small style="font-weight:600;color:var(--text3)">${used(x) ? used(x) + ' vt' : ''}</small><button onclick="thangDel(${i})" title="Bỏ">✕</button></span>`).join('') : '<span style="color:var(--text3);font-size:13px">Danh sách trống — chưa vật tư nào nhập thẳng được</span>'}</div>
+      <div class="ct-chips">${ds.length ? ds.map((x, i) => `<span class="ct-chip">${escHtml(x)}<button onclick="thangDel(${i})" title="Bỏ">✕</button></span>`).join('') : '<span style="color:var(--text3);font-size:13px">Danh sách trống</span>'}</div>
       <div class="fg-row" style="align-items:flex-end"><div class="fg" style="margin:0;flex:2"><input type="text" id="ct-new" placeholder="Thêm tên vật tư…" onkeydown="if(event.key==='Enter')thangAdd()"></div>
         <button class="btn-ok" style="flex:0 0 90px;background:var(--green)" onclick="thangAdd()">＋ Thêm</button></div>
     </div>`;
@@ -6967,7 +6997,7 @@ function thangAdd() {
 }
 function thangDel(i) {
   const x = (db.thangDS || [])[i]; if (x === undefined) return;
-  if (!confirm(`Bỏ "${x}" khỏi danh sách xuất thẳng?\nPhiếu đã lập giữ nguyên; từ nay vật tư này chỉ nhập vào kho.`)) return;
+  if (!confirm(`Bỏ "${x}" khỏi tên gợi ý thêm?\nVật tư đã có trong kho và phiếu đã lập giữ nguyên.`)) return;
   thangSave(db.thangDS.filter((_, k) => k !== i));
 }
 
@@ -7254,7 +7284,7 @@ let listLimit = {nhap:100, xuat:100, dieuchinh:100};
 // ===== v5.18.0: CHỨC DANH & PHÂN QUYỀN (Admin cài trong app) =====
 const PERM_UI = [
   ['Màn hình được thấy', [['v_pyc','Phiếu yêu cầu',''],['v_home','Tổng quan',''],['v_nhap','Phiếu nhập (xem)',''],['v_xuat','Phiếu xuất (xem)',''],['v_ton','Tồn kho (số lượng)',''],['v_baocao','Báo cáo',''],['v_stat','Thống kê dự án đang làm','Chi phí, tiến độ của dự án được giao'],['v_all','Tổng hợp các dự án','Xem mọi dự án, so sánh, chi phí nhiều dự án'],['v_ver','Xem nội dung cập nhật phiên bản','Thông báo đầy đủ, chi tiết từng bản, lịch sử cập nhật']]],
-  ['Kho', [['k_nhap','Lập phiếu nhập',''],['k_xuat','Lập phiếu xuất (xuất thẳng)',''],['k_edit','Sửa / điều chỉnh phiếu',''],['k_kk','Kiểm kê',''],['k_dm','Thêm, sửa tên + nhóm vật tư / thiết bị','Đổi đơn vị và xóa: chỉ Admin'],['k_copy','Chép vật tư từ dự án khác',''],['k_loan','Cho mượn / trả dụng cụ',''],['k_meter','Ghi giờ máy thiết bị','Khi xuất dầu, vào / kết thúc công trình'],['k_thang','Nhập thẳng ra công trường','Nhập + xuất cùng lúc, tồn không đổi (vật tư trong danh sách xuất thẳng)']]],
+  ['Kho', [['k_nhap','Lập phiếu nhập',''],['k_xuat','Lập phiếu xuất (xuất thẳng)',''],['k_edit','Sửa / điều chỉnh phiếu',''],['k_kk','Kiểm kê',''],['k_dm','Thêm, sửa tên + nhóm vật tư / thiết bị','Đổi đơn vị và xóa: chỉ Admin'],['k_copy','Chép vật tư từ dự án khác',''],['k_loan','Cho mượn / trả dụng cụ',''],['k_meter','Ghi giờ máy thiết bị','Khi xuất dầu, vào / kết thúc công trình'],['k_thang','Nhập thẳng ra công trường','Phiếu nhập có 2 ô 📦 Vào kho / 🏗 Thẳng ra công trường (nhập + xuất cùng lúc, tồn không đổi)']]],
   ['Giá & chi phí', [['g_view','Xem giá, chi phí',''],['g_price','Sửa bảng giá',''],['g_prog','Cập nhật tiến độ thi công','']]],
   ['Phiếu yêu cầu', [['y_tao','Tạo phiếu',''],['y_bs','Xin bổ sung ngoài định mức',''],['y_duyet','Duyệt phiếu',''],['y_giao','Giao hàng theo phiếu (kho)',''],['y_nhan','Xác nhận nhận hàng',''],['y_xem','Xem mọi phiếu của dự án','Tắt = chỉ thấy phiếu của mình']]],
   ['Xuất file', [['x_nxt','Xuất Excel NXT',''],['x_pyc','Xuất báo cáo phiếu YC','']]]
