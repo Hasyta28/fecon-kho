@@ -670,6 +670,18 @@ body.can-ql .hide-ql{display:none!important}
 .combo-opt.ql span{font-weight:600}#et-list .combo-opt{flex-direction:column;align-items:flex-start;gap:2px}#et-list .combo-opt small{white-space:normal}
 .ql-badge{display:inline-block;font-size:10.5px;font-weight:800;border-radius:6px;padding:1px 6px;margin-top:3px}
 .ql-badge.ok{background:#EEF4FF;color:#1F5FA8}.et-pct{color:var(--primary);font-weight:800}.ql-own{display:inline-block;font-size:10.5px;font-weight:800;border-radius:6px;padding:1px 6px;background:#EEF7EE;color:#2E7D32}.ql-own.hire{background:#FFF4D6;color:#8A5A00}.ql-warn{font-size:12px;color:#B45309;background:#FFF7E6;border-radius:8px;padding:6px 8px;margin-top:6px}.ql-badge.out{background:#FFF1E8;color:#C2410C}
+.ct-mode{display:flex;gap:8px;margin:-2px 0 6px}
+.ct-mode button{flex:1;border:2px solid var(--border);background:#fff;border-radius:12px;padding:9px 6px;font-family:inherit;font-weight:800;font-size:13.5px;color:var(--text2);line-height:1.25}
+.ct-mode button small{display:block;font-weight:600;font-size:11px;margin-top:2px}
+.ct-mode button.on{border-color:var(--primary);color:var(--primary);background:#EAF2FB}
+.ct-mode button.on.ct{border-color:var(--orange);color:var(--orange);background:#FFF2EA}
+.ct-mode button:disabled{opacity:.45}
+.ct-hint{font-size:12px;margin:0 0 12px;line-height:1.4}
+.ct-info{background:#FFF2EA;border-left:4px solid var(--orange);border-radius:8px;padding:8px 10px;font-size:12.5px;color:#7a3a10;margin:0 0 12px;line-height:1.45}
+.pyc-tag.ct{background:#FFF2EA;color:#C2410C}
+.ct-chips{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:12px}
+.ct-chip{display:inline-flex;align-items:center;gap:6px;background:#FFF2EA;color:#A2470F;border-radius:20px;padding:6px 6px 6px 12px;font-size:13px;font-weight:700}
+.ct-chip button{border:0;background:#fff;color:var(--text3);border-radius:50%;width:22px;height:22px;font-weight:900;font-family:inherit;line-height:1}
 .mv-box{border:1.5px solid #BFD7F2;background:#F5F9FF;border-radius:14px;padding:12px;margin-bottom:14px}
 .mv-card{display:flex;gap:10px;align-items:flex-start;margin-bottom:12px}.mv-card b{display:block;font-size:14.5px;line-height:1.3}.mv-card small{display:block;font-size:12px;color:var(--text2);margin-top:3px}
 .mv-ico{width:40px;height:40px;border-radius:12px;background:#fff;border:1px solid #BFD7F2;display:flex;align-items:center;justify-content:center;font-size:21px;flex-shrink:0}
@@ -1098,6 +1110,10 @@ body:not(.can-cost) .need-cost{display:none!important}
   <div class="detail-header"><button class="back-btn" onclick="closeDp('dp-pycfg')">‹</button><div class="detail-title">⚙️ Cài đặt phiếu yêu cầu</div></div>
   <div class="detail-body" id="dp-pycfg-body"></div>
 </div>
+<div class="detail-page" id="dp-thang">
+  <div class="detail-header"><button class="back-btn" onclick="closeDp('dp-thang')">‹</button><div class="detail-title">🏗 Vật tư xuất thẳng công trường</div></div>
+  <div class="detail-body" id="dp-thang-body"></div>
+</div>
 <div class="detail-page" id="dp-ver">
   <div class="detail-header"><button class="back-btn" onclick="closeDp('dp-ver')">‹</button><div class="detail-title">🆕 Cập nhật phiên bản mới</div></div>
   <div class="detail-body" id="dp-ver-body"></div>
@@ -1261,6 +1277,7 @@ body:not(.can-cost) .need-cost{display:none!important}
     <div class="sidebar-item need-admin" onclick="closeSidebar();setTimeout(openRoles,300)"><span class="sidebar-item-ico">🛡</span>Phân quyền chức danh</div>
     <div class="sidebar-item need-admin" onclick="closeSidebar();setTimeout(openQltb,300)"><span class="sidebar-item-ico">📚</span>Danh mục P.QLTB</div>
     <div class="sidebar-item need-admin" onclick="openDpSb('dp-pycfg')"><span class="sidebar-item-ico">⚙️</span>Cài đặt phiếu yêu cầu</div>
+    <div class="sidebar-item need-admin" onclick="openDpSb('dp-thang')"><span class="sidebar-item-ico">🏗</span>Vật tư xuất thẳng công trường</div>
     <div class="sidebar-divider"></div>
     <div class="sidebar-item inst-btn" style="display:none" onclick="closeSidebar();doInstall()"><span class="sidebar-item-ico">📲</span>Cài app vào điện thoại</div>
     <div class="sidebar-item" onclick="openChPw()"><span class="sidebar-item-ico">🔒</span>Đổi mật khẩu</div>
@@ -1280,6 +1297,7 @@ body:not(.can-cost) .need-cost{display:none!important}
   <div class="modal-sheet">
     <div class="modal-handle"></div>
     <div class="modal-title" id="et-title">✏️ Sửa phiếu</div>
+    <div class="ct-info" id="et-pair" style="display:none">🏗 Phiếu thẳng ra công trường: sửa vật tư, số lượng, ngày giờ thì phiếu đi cặp đổi theo.</div>
     <div class="fg"><label>Vật tư</label>
       <div class="combo"><input type="text" id="et-item-txt" autocomplete="off" placeholder="Gõ để tìm vật tư trong kho hoặc danh mục P.QLTB" oninput="etInput()" onfocus="etInput()" onblur="setTimeout(()=>{const l=document.getElementById('et-list');if(l)l.style.display='none'},200)" style="padding-right:40px">
         <button type="button" class="combo-clear" id="et-clear" onmousedown="event.preventDefault()" onclick="etClear()">✕</button>
@@ -1577,7 +1595,7 @@ body:not(.can-cost) .need-cost{display:none!important}
     <div class="modal-title" id="mt-title">Chi tiết phiếu</div>
     <div id="mt-body"></div>
     <button class="btn-full btn-zalo" onclick="shareTxn(curTxnId)" style="margin:0 0 10px">💬 Gửi Zalo (kèm ảnh)</button>
-    <div class="lock-note">🔒 Phiếu đã lưu không sửa hay xóa được. Nếu ghi sai, tạo phiếu điều chỉnh có lý do.</div>
+    <div class="lock-note" id="mt-lock">🔒 Phiếu đã lưu không sửa hay xóa được. Nếu ghi sai, tạo phiếu điều chỉnh có lý do.</div>
     <div class="modal-actions">
       <button class="btn-cancel" onclick="closeModal('modal-txn')">Đóng</button>
       <button class="btn-ok need-tk" id="mt-adjust-btn" style="background:var(--primary)" onclick="adjustFromTxn()">⚖️ Tạo phiếu điều chỉnh</button>
@@ -1703,7 +1721,7 @@ body:not(.can-cost) .need-cost{display:none!important}
 // ============================================================
 // CONFIG
 // ============================================================
-const APP_VERSION = '5.29.3';
+const APP_VERSION = '5.30.0';
 const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbw6Rmi80I7RI3ij2U7RdRF5pYuQTnPrwEmGmUZS5xpxzLwwVynfoFUujZe1lm6HS1ymxw/exec';
 // ============================================================
 
@@ -1788,7 +1806,7 @@ const UNITS = ['Lít','Phuy','Thùng','Xô','Kg','Tấn','Cái','Bộ','Cây','T
 const isLow = i => (+i.minStock > 0) && (+i.stock <= +i.minStock);
 const DEVICE_FUEL_DEFAULT = Object.fromEntries(DEVICE_CATS.map(c => [c.id, c.fuel]));
 const emptyDb = () => ({categories: CATEGORIES, projects: [], items: [], devices: [], devlog: [], transactions: [], repairs: [], notes: [], photos: [], loans: [], txnTotal: 0, txnLastId: '',
-  reqs: [], cauKien: [], projCfg: {haoHut:0}, rolePerm: {}, kkMoc: {}, tg: {}});
+  reqs: [], cauKien: [], projCfg: {haoHut:0}, rolePerm: {}, kkMoc: {}, tg: {}, thangDS: null});
 let db = emptyDb();
 
 // ===== QUYỀN =====
@@ -2087,6 +2105,7 @@ async function flushOutbox() {
           console.warn('Máy chủ từ chối:', op.action, r.error);
           lastReject = r.error; outbox.shift();
           if (op.action === 'addTransaction') db.transactions = db.transactions.filter(t => t.id !== op.data.id);
+          if (op.action === 'addThang') db.transactions = db.transactions.filter(t => t.id !== op.data.nhap.id && t.id !== op.data.xuat.id);
           if (LOAN_ACTIONS[op.action]) {                 // bỏ phần đã ghi tạm trên máy của thao tác mượn bị từ chối
             const ids = new Set([op.data.txnId, op.data.id, op.data.id2].filter(Boolean));
             db.transactions = db.transactions.filter(t => !(t._local && ids.has(t.id)));
@@ -2123,6 +2142,7 @@ function applyServer(r) {
   if (r.items) db.items = r.items.map(i => ({...i, id:+i.id, stock:+i.stock||0, minStock:+i.minStock||0, capThang:+i.capThang||0, canMay:+i.canMay||0, maQL:String(i.maQL || ''), ngoaiDM:+i.ngoaiDM || ''}));
   if (r.devlog) db.devlog = r.devlog.map(e => ({...e, deviceId:+e.deviceId, date:fmtDateInput(e.date), meter:e.meter === '' || e.meter === undefined ? '' : +e.meter}));   // v5.29: máy vào / ra
   ['reqs','cauKien','ckv','projCfg','rolePerm','kkMoc','tg'].forEach(k => { if (r[k] !== undefined) db[k] = r[k]; });   // máy chủ 5.13+
+  db.thangDS = Array.isArray(r.thangDS) ? r.thangDS : null;   // v5.30: máy chủ 5.22+ mới có danh sách xuất thẳng
   if (r.devices) db.devices = r.devices.map(d => ({...d, id:+d.id, fuelRate:+d.fuelRate||20, meterUnit:d.meterUnit || 'h',
     maQL:String(d.maQL || ''), ngoaiDM:+d.ngoaiDM || '',
     inDate:fmtDateInput(d.inDate), outDate:fmtDateInput(d.outDate), inMeter:d.inMeter === '' || d.inMeter === undefined ? '' : +d.inMeter, outMeter:d.outMeter === '' || d.outMeter === undefined ? '' : +d.outMeter}));
@@ -2177,6 +2197,8 @@ function reapplyOutbox() {
       const it = db.items.find(i => i.id === d.itemId);
       if (it) { const q = +d.qty || 0; it.stock = Math.round((it.stock + (d.type === 'xuat' ? -q : q)) * 100) / 100; }
       if (!db.transactions.some(t => t.id === d.id)) db.transactions.push(d);
+    } else if (op.action === 'addThang') {                // v5.30: cặp nhập + xuất thẳng ra công trường, tồn không đổi
+      [d.nhap, d.xuat].forEach(t => { if (t && t.project === curProj && !db.transactions.some(x => x.id === t.id)) db.transactions.push(t); });
     } else if (LOAN_ACTIONS[op.action]) {
       applyLoanOp(op.action, d);
     } else if (ADMIN_ACTIONS[op.action]) {
@@ -2230,6 +2252,7 @@ async function syncAll(silent) {
 // Trả về: true = đã lưu lên máy chủ · false = offline, đang chờ gửi · 'rejected' = máy chủ từ chối
 async function push(action, data) {
   if (action === 'addTransaction') data._local = 1;     // phiếu tạm trên máy, chờ máy chủ xác nhận
+  if (action === 'addThang') { data.nhap._local = 1; data.xuat._local = 1; }
   outbox.push({action, data, ts:Date.now()});
   saveLocal();
   setSyncBar('⏳ Đang lưu...');
@@ -2384,14 +2407,18 @@ function todayCount(type) {
 }
 function renderHistTab(c, type) {
   let txns = filtTxns().filter(t => t.type === type);
-  if (type === 'xuat' && xuatF !== 'all') txns = txns.filter(t => xuatF === 'pyc' ? isPycRef(t.refId) : !isPycRef(t.refId));
-  const dev = curProj !== 'all' && (type === 'nhap' || xuatF === 'all') ? devEvents(type === 'nhap' ? 'vao' : 'ra') : [];   // v5.29: máy vào / ra
+  const F = type === 'nhap' ? nhapF : xuatF;
+  if (F === 'ct') txns = txns.filter(t => t.thangCT);                // v5.30: thẳng ra công trường
+  else if (type === 'xuat' && F !== 'all') txns = txns.filter(t => xuatF === 'pyc' ? isPycRef(t.refId) : !isPycRef(t.refId) && !t.thangCT);
+  const dev = curProj !== 'all' && F === 'all' ? devEvents(type === 'nhap' ? 'vao' : 'ra') : [];   // v5.29: máy vào / ra
   const nPh = txns.length; txns = txns.concat(dev);
-  const fchip = (k, l) => `<div class="chip ${xuatF === k ? 'on' : ''}" onclick="xuatF='${k}';goTab('lsxuat')">${l}</div>`;
+  const fchip = (k, l) => `<div class="chip ${F === k ? 'on' : ''}" onclick="${type}F='${k}';goTab('ls${type}')">${l}</div>`;
+  const hasCt = filtTxns().some(t => t.thangCT);
   const lbl = type === 'nhap' ? 'phiếu nhập' : 'phiếu xuất';
   c.innerHTML = `
     <div class="hist-head"><b>${fmtNum(nPh)} ${lbl}${dev.length ? ` · ${dev.length} lượt máy ${type === 'nhap' ? 'vào' : 'ra'}` : ''}</b><span>Hôm nay: ${todayCount(type)} · ${escHtml(curProj === 'all' ? 'Tất cả dự án' : curProj)}</span></div>
-    ${type === 'xuat' ? `<div class="chip-row" style="margin-bottom:10px">${fchip('all', 'Tất cả')}${fchip('pyc', 'Theo phiếu YC')}${fchip('thang', 'Xuất thẳng')}</div>` : ''}
+    ${type === 'xuat' ? `<div class="chip-row" style="margin-bottom:10px">${fchip('all', 'Tất cả')}${fchip('pyc', 'Theo phiếu YC')}${fchip('thang', 'Xuất thẳng')}${hasCt ? fchip('ct', '🏗 Thẳng CT') : ''}</div>`
+      : hasCt ? `<div class="chip-row" style="margin-bottom:10px">${fchip('all', 'Tất cả')}${fchip('ct', '🏗 Thẳng CT')}</div>` : ''}
     <div style="padding:0 14px 14px">${renderTxnList(txns, type)}</div>`;
 }
 function refreshListOnly(type) {
@@ -2424,7 +2451,7 @@ const DP_RENDER = {
   'dp-summary': () => renderSummary(),
   'dp-price': () => renderPrice(),
   'dp-costd': () => renderCostDetail(),
-  'dp-req': () => renderReqDetail(), 'dp-coc': () => renderCoc(), 'dp-pycfg': () => renderPycCfg(), 'dp-tg': () => renderTg()
+  'dp-req': () => renderReqDetail(), 'dp-coc': () => renderCoc(), 'dp-pycfg': () => renderPycCfg(), 'dp-thang': () => renderThangDS(), 'dp-tg': () => renderTg()
 };
 function openDp(id, renderFn) {
   const fn = renderFn || DP_RENDER[id];
@@ -2549,7 +2576,7 @@ function renderHome(c) {
           const it = db.items.find(i => i.id === t.itemId);
           const dc = t.type === 'dieuchinh';
           const who = dc ? (t.reason || '') : t.type==='xuat' ? (t.thietBi || t.supplierOrReceiver) : t.supplierOrReceiver;
-          const lbl = dc ? 'Điều chỉnh' : t.type==='nhap' ? 'Nhập' : 'Xuất';
+          const lbl = (dc ? 'Điều chỉnh' : t.type==='nhap' ? 'Nhập' : 'Xuất') + (t.thangCT ? ' · 🏗 Thẳng CT' : '');
           return `<div class="txn-row" onclick="openTxn(${t.id})" style="cursor:pointer">
             <div class="txn-ico ${dc?'adj':t.type==='nhap'?'in':'out'}">${dc?'⚖️':t.type==='nhap'?'📥':'📤'}</div>
             <div style="flex:1;min-width:0">
@@ -2790,7 +2817,7 @@ function txnRow(t) {
   const fixed = !dc && adjMap()[t.id];
   const sign = dc ? (t.qty > 0 ? '+' : '') : t.type === 'nhap' ? '+' : '-';
   const pr = t.type === 'xuat' && isPycRef(t.refId) ? (db.reqs || []).find(r => r.id === t.refId) : null;
-  const xTag = t.type !== 'xuat' ? '' : isPycRef(t.refId)
+  const xTag = t.thangCT ? `<div class="txn-sub"><span class="pyc-tag ct">🏗 Thẳng CT</span></div>` : t.type !== 'xuat' ? '' : isPycRef(t.refId)
     ? `<div class="txn-sub"><span class="pyc-tag">📝 Theo ${escHtml(t.refId)}</span>${pr && pr.duyet === 'chua' ? '<span class="pyc-tag warn">⚠️ CHT/CHP chưa duyệt</span>' : ''}</div>`
     : `<div class="txn-sub"><span class="pyc-tag gray">Xuất thẳng</span></div>`;
   return `<div class="row-item" onclick="openTxn(${t.id})">
@@ -2828,7 +2855,8 @@ function openTxn(id) {
     <div class="kv-box">
       ${kv('Vật tư', escHtml(it?.name || t.itemName || '?'))}
       ${kv(kk ? 'Số đếm thực tế (mốc)' : dc ? 'Điều chỉnh tồn' : 'Số lượng', `${!kk && dc && t.qty > 0 ? '+' : ''}${fmtNum(t.qty)} ${unit}`)}
-      ${t.type === 'xuat' ? kv('Hình thức', isPycRef(t.refId) ? `<a onclick="closeModal('modal-txn');openReq('${escHtml(t.refId)}')">Theo phiếu ${escHtml(t.refId)}</a>` : 'Xuất thẳng') : ''}
+      ${t.thangCT ? kv('Hình thức', '🏗 Thẳng ra công trường') + kv('Phiếu đi cặp', pairOf(t) ? `<a onclick="openTxn(${+t.thangCT})">${t.type === 'nhap' ? 'Xuất' : 'Nhập'} #${+t.thangCT}</a>` : '#' + escHtml(String(t.thangCT))) : ''}
+      ${t.type === 'xuat' && !t.thangCT ? kv('Hình thức', isPycRef(t.refId) ? `<a onclick="closeModal('modal-txn');openReq('${escHtml(t.refId)}')">Theo phiếu ${escHtml(t.refId)}</a>` : 'Xuất thẳng') : ''}
       ${adjs.length ? kv('Số lượng sau điều chỉnh', `${fmtNum(effQty(t))} ${unit}`) : ''}
       ${kv('Dự án', escHtml(t.project || ''))}
       ${dc ? '' : kv(t.type === 'nhap' ? 'Nhà cung cấp' : 'Người nhận', escHtml(t.supplierOrReceiver || ''))}
@@ -2843,13 +2871,14 @@ function openTxn(id) {
     </div>
     ${adjs.length ? `<div class="grp-label">Đã điều chỉnh ${adjs.length} lần</div><div class="card" style="margin-bottom:12px">${adjs.map(txnRow).join('')}</div>` : ''}`;
   document.getElementById('mt-body').insertAdjacentHTML('beforeend', txnPhotosHtml(t));
-  document.getElementById('mt-adjust-btn').style.display = dc ? 'none' : '';
+  document.getElementById('mt-adjust-btn').style.display = dc || t.thangCT ? 'none' : '';
+  document.getElementById('mt-lock').textContent = t.thangCT ? '🔒 Phiếu thẳng ra công trường đi cặp nhập + xuất, tồn kho không đổi. Ghi sai: nhờ Admin sửa phiếu (sửa cả cặp).' : '🔒 Phiếu đã lưu không sửa hay xóa được. Nếu ghi sai, tạo phiếu điều chỉnh có lý do.';
   openModal('modal-txn');
   loadTxnPhotos(t);
 }
 let adjCtx = null;
 function adjustFromTxn() {
-  const t = db.transactions.find(x => x.id === curTxnId); if (!t || t.type === 'dieuchinh') return;
+  const t = db.transactions.find(x => x.id === curTxnId); if (!t || t.type === 'dieuchinh' || t.thangCT) return;
   const it = db.items.find(i => i.id === t.itemId);
   if (!it) { toast('⚠️ Vật tư của phiếu này không còn trong danh sách'); return; }
   closeModal('modal-txn');
@@ -2988,6 +3017,12 @@ function renderNhap(c) {
         <input type="hidden" id="fn-item">
         <div class="combo-hint" id="fn-hint"></div>
       </div>
+      <div id="fn-ct-box" style="display:none">
+        <div class="ct-mode"><button type="button" id="fn-m-kho" onclick="fnSetMode('kho')">📦 Vào kho<small>Cộng vào tồn</small></button>
+          <button type="button" id="fn-m-ct" onclick="fnSetMode('ct')">🏗 Thẳng ra công trường<small>Nhập + xuất cùng lúc</small></button></div>
+        <div class="ct-hint" id="fn-ct-hint"></div>
+        <div class="ct-info" id="fn-ct-info" style="display:none">Hàng giao thẳng ra công trường, không qua kho. App tự ghi <b>1 phiếu nhập + 1 phiếu xuất</b> cùng số lượng. Tồn kho không đổi.</div>
+      </div>
       <div id="fn-dev-box" class="mv-box" style="display:none">
         <div class="mv-card" id="fn-dev-card"></div>
         <div class="fg-row"><div class="fg"><label>Ngày vào công trường</label><input type="date" id="fn-dv-date"></div>
@@ -3004,13 +3039,14 @@ function renderNhap(c) {
           <select id="fn-unit-sel" style="display:none">${UNITS.map(u=>`<option>${u}</option>`).join('')}</select></div>
       </div>
       <div class="fg" id="fn-ncc-row"><label>Nhà cung cấp</label><input type="text" id="fn-ncc" placeholder="Tên nhà cung cấp"></div>
+      <div class="fg" id="fn-giao-row" style="display:none"><label>Giao cho (không bắt buộc)</label><input type="text" id="fn-giao" placeholder="Tổ đội / hạng mục nhận…"></div>
       <div class="fg"><label>Số phiếu / Ghi chú</label><textarea id="fn-note" rows="2" placeholder="Ghi chú..."></textarea></div>
       <div class="fg need-admin"><label>Ngày giờ phiếu (để trống = bây giờ)</label><input type="datetime-local" id="fn-time"></div>
       <div id="fn-photo-row">${photoFieldHtml('fn')}</div>
       <button class="btn-full btn-green" id="fn-save" onclick="doNhap()">✅ Xác nhận nhập kho</button>
     </div>
   </div>`;
-  fnQL = null; fnDev = null;
+  fnQL = null; fnDev = null; fnMode = 'kho';
   fillNhapItems();
   renderFormPhotos('fn');
   if (!qlOn()) qltbLoad();
@@ -3054,6 +3090,7 @@ function comboInput(p) {
     if (allowNew && q) { comboSetUnit(p, 'new'); hint.innerHTML = `<span style="color:var(--green)">➕ Vật tư mới — chọn đơn vị, sẽ được thêm vào nhóm đang chọn</span>`; }
     else { comboSetUnit(p, 'old', ''); hint.innerHTML = ''; }
   }
+  if (p === 'fn') fnModeUpdate();
 }
 function comboPick(p, id) {
   const it = db.items.find(i => i.id === id); if (!it) return;
@@ -3072,6 +3109,7 @@ function comboClear(p, focus) {
   document.getElementById(p+'-clear').style.display = 'none';
   comboSetUnit(p, 'old', '');
   if (focus) { t.focus(); comboInput(p); } else comboHide(p);
+  if (p === 'fn') fnModeUpdate();
 }
 function fillNhapItems() { comboClear('fn', false); }
 function fillXuatItems() { comboClear('fx', false); }
@@ -3096,6 +3134,7 @@ async function doNhap() {
     addLog('Thêm vật tư', name);
     push('upsert', {table:'items', rows:[item]});      // gửi nền, giữ đúng thứ tự trong hàng chờ
   }
+  if (fnMode === 'ct' && thangOn() && thangHit(item.name)) return doNhapThang(item, qty, proj);   // v5.30: thẳng ra công trường
   item.stock = Math.round((item.stock + qty) * 100) / 100;
   const txn = {id:newId(), type:'nhap', itemId:item.id, itemName:item.name, qty, unit:item.unit, project:proj,
     supplierOrReceiver:document.getElementById('fn-ncc').value,
@@ -3111,6 +3150,53 @@ async function doNhap() {
   afterSave(txn);
   if (ph.length) queuePhotos(txn.id, ph);
 }
+
+// ===== v5.30: NHẬP THẲNG RA CÔNG TRƯỜNG (nhập + xuất cùng lúc, tồn không đổi) =====
+let fnMode = 'kho';
+const thangOn = () => Array.isArray(db.thangDS) && hp('k_thang');
+const thangNorm = t => (t || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/đ/g, 'd').replace(/[×*]/g, 'x').replace(/\s+/g, ' ').trim();
+// Tên vật tư chứa trọn một cụm trong danh sách (theo từ: "Cát" không khớp "Cáp") — giống máy chủ
+function thangHit(name) {
+  const n = ' ' + thangNorm(name).replace(/[^a-z0-9x.]+/g, ' ') + ' ';
+  return (db.thangDS || []).find(k => { const t = thangNorm(k).replace(/[^a-z0-9x.]+/g, ' ').trim(); return t && n.includes(' ' + t + ' '); }) || '';
+}
+function fnSetMode(m) { fnMode = m; fnModeUpdate(); }
+function fnModeUpdate() {
+  const box = document.getElementById('fn-ct-box'); if (!box) return;
+  const name = (document.getElementById('fn-item-txt').value || '').trim();
+  const on = thangOn() && !fnDev && !!name, hit = on ? thangHit(name) : '';
+  box.style.display = on ? '' : 'none';
+  if (!hit) fnMode = 'kho';
+  const ct = fnMode === 'ct';
+  const bk = document.getElementById('fn-m-kho'), bc = document.getElementById('fn-m-ct');
+  bk.className = ct ? '' : 'on'; bc.className = ct ? 'on ct' : ''; bc.disabled = !hit;
+  bc.querySelector('small').textContent = hit ? 'Nhập + xuất cùng lúc' : 'Không áp dụng';
+  document.getElementById('fn-ct-hint').innerHTML = !on ? '' : hit
+    ? `<span style="color:var(--orange)">✔ Thuộc danh sách xuất thẳng (${escHtml(hit)}) → được chọn 🏗</span>`
+    : `<span style="color:var(--text3)">${escHtml(name)} không thuộc danh sách xuất thẳng → chỉ nhập vào kho.</span>`;
+  document.getElementById('fn-ct-info').style.display = ct ? '' : 'none';
+  document.getElementById('fn-giao-row').style.display = ct ? '' : 'none';
+  if (fnDev) return;
+  const btn = document.getElementById('fn-save');
+  if (btn) { btn.innerHTML = ct ? '🏗 Xác nhận nhập + xuất thẳng' : '✅ Xác nhận nhập kho'; btn.className = 'btn-full ' + (ct ? 'btn-orange' : 'btn-green'); }
+}
+async function doNhapThang(item, qty, proj) {
+  const nId = newId(), now = nowStr(), who = me?.name || ''; let xId = newId(); while (xId === nId) xId = newId();
+  const giao = document.getElementById('fn-giao').value.trim();
+  const base = {itemId:item.id, itemName:item.name, qty, unit:item.unit, project:proj, datetime:now, createdByName:who};
+  const n = {...base, id:nId, type:'nhap', supplierOrReceiver:document.getElementById('fn-ncc').value, note:document.getElementById('fn-note').value, thangCT:xId};
+  const x = {...base, id:xId, type:'xuat', supplierOrReceiver:giao, thietBi:'', note:'', thangCT:nId};
+  withAdminTime(n, 'fn-time'); if (n.datetime !== now) x.datetime = n.datetime;
+  db.transactions.push(n, x);                                // tồn kho không đổi
+  addLog('Nhập thẳng ra công trường', `${qty} ${item.unit} ${item.name}${giao ? ' → ' + giao : ''} — ${proj}`);
+  push('addThang', {nhap:n, xuat:x});
+  const ph = formPhotos.fn.splice(0);
+  toast(`✅ Nhập + xuất thẳng ${fmtNum(qty)} ${item.unit} ${item.name}${ph.length ? ` · ${ph.length} ảnh` : ''}`);
+  fnMode = 'kho';
+  afterSave(n);
+  if (ph.length) queuePhotos(n.id, ph);
+}
+const pairOf = t => t && t.thangCT ? db.transactions.find(x => x.id === +t.thangCT) : null;
 
 // ===== XUAT KHO TAB =====
 function renderXuat(c) {
@@ -3393,10 +3479,16 @@ function txnShareText(t) {
   const unit = it?.unit || t.unit || '', name = it?.name || t.itemName || '?';
   const dc = t.type === 'dieuchinh';
   const L = [];
-  L.push(`${dc ? '⚖️ PHIẾU ĐIỀU CHỈNH' : t.type === 'nhap' ? '📥 PHIẾU NHẬP KHO' : '📤 PHIẾU XUẤT KHO'} — ${t.project || ''}`);
+  const pr = pairOf(t);
+  L.push(`${dc ? '⚖️ PHIẾU ĐIỀU CHỈNH' : t.thangCT ? '🏗 NHẬP THẲNG RA CÔNG TRƯỜNG' : t.type === 'nhap' ? '📥 PHIẾU NHẬP KHO' : '📤 PHIẾU XUẤT KHO'} — ${t.project || ''}`);
   L.push(`Vật tư: ${name}`);
   L.push(`Số lượng: ${dc ? (t.qty > 0 ? '+' : '') : t.type === 'nhap' ? '+' : '-'}${fmtNum(t.qty)} ${unit}${adjMap()[t.id] ? ` (sau điều chỉnh: ${fmtNum(effQty(t))})` : ''}`);
-  if (!dc && t.supplierOrReceiver) L.push(`${t.type === 'nhap' ? 'Nhà cung cấp' : 'Người nhận'}: ${t.supplierOrReceiver}`);
+  if (t.thangCT) {                                            // v5.30: 1 tin cho cả cặp nhập + xuất
+    const n = t.type === 'nhap' ? t : pr, x = t.type === 'nhap' ? pr : t;
+    if (n && n.supplierOrReceiver) L.push(`Nhà cung cấp: ${n.supplierOrReceiver}`);
+    if (x && x.supplierOrReceiver) L.push(`Giao cho: ${x.supplierOrReceiver}`);
+    L.push('Nhập + xuất cùng lúc, không qua kho');
+  } else if (!dc && t.supplierOrReceiver) L.push(`${t.type === 'nhap' ? 'Nhà cung cấp' : 'Người nhận'}: ${t.supplierOrReceiver}`);
   if (t.thietBi) L.push(`Thiết bị: ${t.thietBi}`);
   if (t.note && t.note !== t.supplierOrReceiver) L.push(`Ghi chú: ${t.note}`);
   if (t.reason) L.push(`Lý do: ${t.reason}`);
@@ -4672,22 +4764,23 @@ async function buildNxtWorkbook() {
 
   // ---------- 6. CHI TIẾT PHIẾU (đủ thông tin hệ thống để đối chiếu) ----------
   {
-    const ws = sheet('Chi tiết phiếu', [6, 18, 12, 9, 12, 30, 12, 12, 9, 24, 28, 26, 30, 18, 20, 20], 5);
-    title(ws, 'CHI TIẾT PHIẾU NHẬP – XUẤT – ĐIỀU CHỈNH', 16);
-    header(ws, 5, ['STT', 'Số phiếu', 'Ngày', 'Giờ', 'Loại', 'Vật tư', 'Số lượng ghi', 'SL sau điều chỉnh', 'Đơn vị', 'NCC/Người nhận', 'Thiết bị', 'Ghi chú', 'Lý do điều chỉnh', 'Phiếu gốc', 'Người lập', 'Ảnh biên bản'], 1);
+    const ws = sheet('Chi tiết phiếu', [6, 18, 12, 9, 12, 30, 12, 12, 9, 24, 28, 26, 30, 18, 20, 20, 22], 5);
+    title(ws, 'CHI TIẾT PHIẾU NHẬP – XUẤT – ĐIỀU CHỈNH', 17);
+    header(ws, 5, ['STT', 'Số phiếu', 'Ngày', 'Giờ', 'Loại', 'Vật tư', 'Số lượng ghi', 'SL sau điều chỉnh', 'Đơn vị', 'NCC/Người nhận', 'Thiết bị', 'Ghi chú', 'Lý do điều chỉnh', 'Phiếu gốc', 'Người lập', 'Ảnh biên bản', 'Thẳng CT'], 1);
     let r = 6;
     sorted(db.transactions.filter(inRange)).forEach((t, i) => {
       const it = itemById(t.itemId), d = parseVN(t.datetime);
       const vals = [i + 1, String(t.id), xd(d), (t.datetime || '').match(/\d{1,2}:\d{2}/)?.[0] || '', TYPE[t.type], it?.name || t.itemName,
         +t.qty, t.type === 'dieuchinh' ? null : effQty(t), it?.unit || t.unit, t.type === 'dieuchinh' ? '' : (t.supplierOrReceiver || ''),
-        t.thietBi || '', t.note || '', t.reason || '', t.refId ? String(t.refId) : '', t.createdByName || '', photosOf(t.id).length || null];
+        t.thietBi || '', t.note || '', t.reason || '', t.refId ? String(t.refId) : '', t.createdByName || '', photosOf(t.id).length || null,
+        t.thangCT ? `Thẳng CT · cặp #${t.thangCT}` : ''];
       vals.forEach((v, k) => ws.getCell(r, k + 1).value = v === '' ? null : v);
       ws.getCell(r, 3).numFmt = 'dd/mm/yyyy';
       [7, 8].forEach(c => ws.getCell(r, c).numFmt = '#,##0.##;-#,##0.##;"-"');
-      body(ws, r, 1, 16);
+      body(ws, r, 1, 17);
       r++;
     });
-    ws.autoFilter = {from:{row:5, column:1}, to:{row:5, column:16}};
+    ws.autoFilter = {from:{row:5, column:1}, to:{row:5, column:17}};
   }
 
   // ---------- 7. MƯỢN – TRẢ (nếu có) ----------
@@ -5289,8 +5382,11 @@ function applyAdminOp(action, d) {
     if (t.type === 'dieuchinh') t.reason = d.reason;
     if (d.datetime) t.datetime = d.datetime;
     stockAdd(t.itemId, txnEffect(t));
+    const pr = pairOf(t);                                     // v5.30: phiếu đi cặp đổi theo (vật tư, số lượng, ngày giờ)
+    if (pr) { stockAdd(pr.itemId, -txnEffect(pr)); Object.assign(pr, {itemId:t.itemId, itemName:t.itemName, unit:t.unit, qty:t.qty, datetime:t.datetime, clientTime:''}); stockAdd(pr.itemId, txnEffect(pr)); }
   } else if (action === 'deleteTxn') {
-    const gone = db.transactions.filter(x => x.id === d.id || (x.type === 'dieuchinh' && +x.refId === d.id));
+    const t0 = db.transactions.find(x => x.id === d.id), roots = [d.id].concat(pairOf(t0) ? [pairOf(t0).id] : []);   // v5.30: xóa cả cặp
+    const gone = db.transactions.filter(x => roots.includes(x.id) || (x.type === 'dieuchinh' && roots.includes(+x.refId)));
     if (!gone.length) return;
     gone.forEach(x => stockAdd(x.itemId, -txnEffect(x)));
     const ids = new Set(gone.map(x => x.id));
@@ -5344,6 +5440,7 @@ function openEditTxn() {
   document.getElementById('et-reason').value = t.reason || '';
   document.getElementById('et-note').value = t.note || '';
   document.getElementById('et-time').value = vnToLocal(t.datetime);
+  document.getElementById('et-pair').style.display = t.thangCT ? '' : 'none';
   closeModal('modal-txn');
   openModal('modal-edit-txn');
 }
@@ -5426,6 +5523,7 @@ async function deleteTxnAdmin() {
   const it = db.items.find(i => i.id === t.itemId);
   if (!confirm(`Xóa hẳn phiếu ${t.type === 'nhap' ? 'nhập' : t.type === 'xuat' ? 'xuất' : 'điều chỉnh'} ${fmtNum(t.qty)} ${it?.unit || t.unit || ''} ${it?.name || t.itemName || ''}?`
     + (kids ? `\nCả ${kids} phiếu điều chỉnh của phiếu này cũng bị xóa.` : '')
+    + (t.thangCT ? `\nPhiếu thẳng ra công trường: phiếu ${t.type === 'nhap' ? 'xuất' : 'nhập'} đi cặp #${t.thangCT} cũng bị xóa.` : '')
     + (photosOf(t.id).length ? `\n${photosOf(t.id).length} ảnh biên bản cũng bị xóa.` : '')
     + '\n\nTồn kho sẽ được tính lại. Không khôi phục được.')) return;
   closeModal('modal-txn');
@@ -6299,7 +6397,7 @@ const reqRemain = r => (r.lines || []).reduce((a, l) => a + Math.max(0, (+l.req 
 const reqOpen = r => ['cho','gui','chohang'].includes(r.status);
 const shortNm = n => String(n || '').trim().split(/\s+/).pop();
 const cocShort = s => String(s || '').replace(/Cóc nối thép /i, 'Cóc ');
-let reqListMode = 'open', curReqId = null, reqUI = {}, rf = null, kkCat = 'cocNoi', kkIn = {}, xuatF = 'all';
+let reqListMode = 'open', curReqId = null, reqUI = {}, rf = null, kkCat = 'cocNoi', kkIn = {}, xuatF = 'all', nhapF = 'all';
 
 function reqLook(r) {
   const part = reqRemain(r) > 0;
@@ -6845,6 +6943,34 @@ function renderPycCfg() {
     <div class="card" style="padding:12px 14px;font-size:13px">${tg.bot ? `Đã kết nối bot <b>@${escHtml(tg.bot)}</b>. Mỗi người tự liên kết trong Menu → Nhận cảnh báo Telegram.` : 'Chưa cài bot. Chủ Google Sheet làm theo hướng dẫn: dán mã bot vào TELEGRAM_BOT_TOKEN rồi chạy hàm CAI_DAT_telegram.'}</div>`;
 }
 
+// ---------- v5.30: Danh sách vật tư xuất thẳng công trường (Admin, dùng chung mọi kho) ----------
+function renderThangDS() {
+  const body = document.getElementById('dp-thang-body'), ds = db.thangDS;
+  if (!Array.isArray(ds)) { body.innerHTML = '<div class="info-box">Máy chủ chưa lên bản 5.22.0 — triển khai Apps Script mới rồi tải lại app.</div>'; return; }
+  const used = n => db.items.filter(i => thangHit(i.name) && thangNorm(thangHit(i.name)) === thangNorm(n)).length;
+  body.innerHTML = `<div class="info-box">Tên vật tư chứa một trong các từ dưới đây thì phiếu nhập được chọn <b>🏗 Thẳng ra công trường</b> (VD "Thép" áp dụng cho Thép D25, Thép D10…). Chỉ Admin thêm / bớt. Áp dụng chung cho mọi kho / dự án. Chỉ chức danh có quyền "Nhập thẳng ra công trường" (mặc định Thủ kho) mới thấy lựa chọn này.</div>
+    <div class="card" style="padding:14px">
+      <div class="ct-chips">${ds.length ? ds.map((x, i) => `<span class="ct-chip">${escHtml(x)}<small style="font-weight:600;color:var(--text3)">${used(x) ? used(x) + ' vt' : ''}</small><button onclick="thangDel(${i})" title="Bỏ">✕</button></span>`).join('') : '<span style="color:var(--text3);font-size:13px">Danh sách trống — chưa vật tư nào nhập thẳng được</span>'}</div>
+      <div class="fg-row" style="align-items:flex-end"><div class="fg" style="margin:0;flex:2"><input type="text" id="ct-new" placeholder="Thêm tên vật tư…" onkeydown="if(event.key==='Enter')thangAdd()"></div>
+        <button class="btn-ok" style="flex:0 0 90px;background:var(--green)" onclick="thangAdd()">＋ Thêm</button></div>
+    </div>`;
+}
+async function thangSave(list) {
+  const res = await cfgAct('setThangDS', {list});
+  if (res) { db.thangDS = res.thangDS; saveLocal(); renderThangDS(); }
+}
+function thangAdd() {
+  const v = (document.getElementById('ct-new').value || '').trim().replace(/\s+/g, ' ');
+  if (v.length < 2) { toast('⚠️ Nhập tên vật tư'); return; }
+  if ((db.thangDS || []).some(x => thangNorm(x) === thangNorm(v))) { toast('⚠️ "' + v + '" đã có trong danh sách'); return; }
+  thangSave((db.thangDS || []).concat([v]));
+}
+function thangDel(i) {
+  const x = (db.thangDS || [])[i]; if (x === undefined) return;
+  if (!confirm(`Bỏ "${x}" khỏi danh sách xuất thẳng?\nPhiếu đã lập giữ nguyên; từ nay vật tư này chỉ nhập vào kho.`)) return;
+  thangSave(db.thangDS.filter((_, k) => k !== i));
+}
+
 // ---------- Telegram (mỗi người) ----------
 function renderTg() {
   const tg = db.tg || {}, body = document.getElementById('dp-tg-body');
@@ -7115,7 +7241,7 @@ function dataSig() {
   let s = 0; db.items.forEach(i => { s += (+i.stock || 0) * 7 + String(i.name).length; });
   return [curProj, db.transactions.length, db.txnLastId, db.items.length, Math.round(s * 1000), db.devices.length, (db.loans || []).length, (db.notes || []).length,
     (db.repairs || []).length, (db.photos || []).length, (db.reqs || []).map(r => r.id + r.status + r.duyet + (r.lines || []).map(l => l.sent).join(',')).join(';'),
-    JSON.stringify(db.rolePerm || {}).length, JSON.stringify(db.projCfg || {})].join('|');
+    JSON.stringify(db.rolePerm || {}).length, JSON.stringify(db.projCfg || {}), (db.thangDS || []).join(',')].join('|');
 }
 // Bảng tra vật tư theo id (dùng khi vẽ danh sách dài)
 let _imap = {src:null, len:-1, m:{}};
@@ -7128,7 +7254,7 @@ let listLimit = {nhap:100, xuat:100, dieuchinh:100};
 // ===== v5.18.0: CHỨC DANH & PHÂN QUYỀN (Admin cài trong app) =====
 const PERM_UI = [
   ['Màn hình được thấy', [['v_pyc','Phiếu yêu cầu',''],['v_home','Tổng quan',''],['v_nhap','Phiếu nhập (xem)',''],['v_xuat','Phiếu xuất (xem)',''],['v_ton','Tồn kho (số lượng)',''],['v_baocao','Báo cáo',''],['v_stat','Thống kê dự án đang làm','Chi phí, tiến độ của dự án được giao'],['v_all','Tổng hợp các dự án','Xem mọi dự án, so sánh, chi phí nhiều dự án'],['v_ver','Xem nội dung cập nhật phiên bản','Thông báo đầy đủ, chi tiết từng bản, lịch sử cập nhật']]],
-  ['Kho', [['k_nhap','Lập phiếu nhập',''],['k_xuat','Lập phiếu xuất (xuất thẳng)',''],['k_edit','Sửa / điều chỉnh phiếu',''],['k_kk','Kiểm kê',''],['k_dm','Thêm, sửa tên + nhóm vật tư / thiết bị','Đổi đơn vị và xóa: chỉ Admin'],['k_copy','Chép vật tư từ dự án khác',''],['k_loan','Cho mượn / trả dụng cụ',''],['k_meter','Ghi giờ máy thiết bị','Khi xuất dầu, vào / kết thúc công trình']]],
+  ['Kho', [['k_nhap','Lập phiếu nhập',''],['k_xuat','Lập phiếu xuất (xuất thẳng)',''],['k_edit','Sửa / điều chỉnh phiếu',''],['k_kk','Kiểm kê',''],['k_dm','Thêm, sửa tên + nhóm vật tư / thiết bị','Đổi đơn vị và xóa: chỉ Admin'],['k_copy','Chép vật tư từ dự án khác',''],['k_loan','Cho mượn / trả dụng cụ',''],['k_meter','Ghi giờ máy thiết bị','Khi xuất dầu, vào / kết thúc công trình'],['k_thang','Nhập thẳng ra công trường','Nhập + xuất cùng lúc, tồn không đổi (vật tư trong danh sách xuất thẳng)']]],
   ['Giá & chi phí', [['g_view','Xem giá, chi phí',''],['g_price','Sửa bảng giá',''],['g_prog','Cập nhật tiến độ thi công','']]],
   ['Phiếu yêu cầu', [['y_tao','Tạo phiếu',''],['y_bs','Xin bổ sung ngoài định mức',''],['y_duyet','Duyệt phiếu',''],['y_giao','Giao hàng theo phiếu (kho)',''],['y_nhan','Xác nhận nhận hàng',''],['y_xem','Xem mọi phiếu của dự án','Tắt = chỉ thấy phiếu của mình']]],
   ['Xuất file', [['x_nxt','Xuất Excel NXT',''],['x_pyc','Xuất báo cáo phiếu YC','']]]
@@ -7138,7 +7264,7 @@ const V6 = ['v_pyc','v_home','v_nhap','v_xuat','v_ton','v_baocao'];
 const GROUP_UI = {
   g1:['① Phiếu YC', ['v_pyc','y_tao','y_bs','y_nhan','y_xem']], g2:['② Giám sát', ['v_pyc','y_xem']],
   g3:['③ Xem toàn bộ', V6.concat(['v_stat','g_view','y_xem','x_nxt','x_pyc'])],
-  g4:['④ Kho', V6.concat(['k_nhap','k_xuat','k_edit','k_kk','k_dm','k_copy','k_loan','y_giao','y_xem','x_nxt','x_pyc','k_meter'])],
+  g4:['④ Kho', V6.concat(['k_nhap','k_xuat','k_edit','k_kk','k_dm','k_copy','k_loan','y_giao','y_xem','x_nxt','x_pyc','k_meter','k_thang'])],
   g5:['⑤ Đầy đủ', V6.concat(['v_stat','g_view','g_prog','y_xem','x_nxt','x_pyc','k_meter'])],
   g6:['⑥ Lãnh đạo', V6.concat(['v_stat','v_all','g_view','y_xem','x_nxt','x_pyc'])],
   gq:['Quản lý (cũ)', PERM_KEYS.filter(k => k !== 'v_all')], ga:['Quản trị', PERM_KEYS]
@@ -8229,6 +8355,7 @@ async function askIfDupTxn(type, item, qty) {
   const w = type === 'nhap' ? 'nhập' : 'xuất';
   return askDup(`Bạn vừa ${w} ${fmtNum(qty)} ${item.unit || ''} ${item.name} lúc ${hm}. Chắc chắn ${w} thêm 1 lần nữa cùng số lượng?`, `Đúng, ${w} thêm`);
 }
+{ const _fsd = fnSetDev; fnSetDev = x => { _fsd(x); fnModeUpdate(); }; }   // v5.30: chọn máy → ẩn lựa chọn thẳng ra công trường
 doNhap = guardBtn('nhap', doNhap); doXuat = guardBtn('xuat', doXuat); saveAdjust = guardBtn('adjust', saveAdjust);
 reqIssue = guardBtn('reqIssue', reqIssue); reqReceive = guardBtn('reqReceive', reqReceive); submitReq = guardBtn('submitReq', submitReq);
 saveKK = guardBtn('kk', saveKK); reqCountNow = guardBtn('kk', reqCountNow);
