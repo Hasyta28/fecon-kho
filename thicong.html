@@ -323,15 +323,25 @@ button{cursor:pointer;-webkit-tap-highlight-color:transparent}
 @media print{.bnav,.actbar,.hdr,.sync,.dhdr .back,.noprint{display:none!important}.main{overflow:visible}body{background:#fff}}
 @media (min-width:700px){body{background:#DDE2EA}.scr{box-shadow:0 0 40px rgba(0,0,0,.08)}}
 
+/* thẻ cọc / panel nổi trên mặt bằng */
+#peek.pkf{position:fixed;left:50%;transform:translateX(-50%);width:calc(100% - 16px);max-width:624px;bottom:calc(74px + env(safe-area-inset-bottom));z-index:40;max-height:46vh;overflow-y:auto;transition:max-height .2s;-webkit-overflow-scrolling:touch;padding:0;margin:0;border-radius:16px;box-shadow:0 -6px 28px rgba(16,24,40,.28);animation:pkUp .18s ease-out}
+#peek.pkf>.card{margin:0;border-radius:16px}
+@keyframes pkUp{from{opacity:0;transform:translate(-50%,24px)}to{opacity:1;transform:translate(-50%,0)}}
+#peek.pkf.big{max-height:80vh}
+.pk-grab{display:none}
+#peek.pkf .pk-grab{display:flex;justify-content:center;padding:0 0 8px;margin-top:-6px;cursor:pointer}
+#peek.pkf .pk-grab i{width:42px;height:5px;border-radius:3px;background:#C9D2DE}
+body.pk-open .main{padding-bottom:48vh}
+
 </style>
 </head>
 <body>
 <div id="app"></div>
 <script>
-// FECON South · THI CÔNG 1.1.0 — chạy cùng app Kho (đăng nhập ở index.html, dùng chung máy chủ Apps Script)
-const KHO_VERSION = '5.31.2';
+// FECON South · THI CÔNG 1.2.1 — chạy cùng app Kho (đăng nhập ở index.html, dùng chung máy chủ Apps Script)
+const KHO_VERSION = '5.31.3';
 // ===== FECON Thi công 1.0 — lõi: máy chủ, lưu trên máy, hàng đợi gửi, điều hướng =====
-const TC_APP_VERSION = '1.2.0';
+const TC_APP_VERSION = '1.2.1';
 const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbw6Rmi80I7RI3ij2U7RdRF5pYuQTnPrwEmGmUZS5xpxzLwwVynfoFUujZe1lm6HS1ymxw/exec';
 const LS_TOKEN = 'fecon_token_v5', LS_USER = 'fecon_user_v5';           // dùng chung phiên đăng nhập với Kho
 const LS_P = 'tc_proj', LS_BOOT = 'tc_boot2|', LS_OUT = 'tc_out_v1', LS_CA = 'tc_ca', LS_PART = 'fecon_part';
@@ -1384,6 +1394,7 @@ function render(top) {
   if (!B) { $('#app').innerHTML = shell({ body:'<div class="empty"><span class="spin" style="display:inline-block"></span><br>Đang tải dữ liệu thi công…</div>', tab:'home' }); setSync(); return; }
   if (!Object.keys(CK).length && cur.v !== 'qtri' && cur.v !== 'proj' && cur.v !== 'hd') { $('#app').innerHTML = shell({ body:noCkHtml(), tab:cur.v }); setSync(); return; }
   $('#app').innerHTML = v.render(cur.a);
+  document.body.classList.toggle('pk-open', !!document.querySelector('#peek.pkf'));
   setSync();
   if (v.after) v.after(cur.a);
   if (top) { const m = $('.main'); if (m) m.scrollTop = 0; }
@@ -1543,7 +1554,7 @@ VIEWS.plan = {
       <div class="section"><div class="cnt">${['nt', 'dd', 'dl', 'sl', 'cl', 'tt'].map(s => `<button class="${PV.st === s ? 'on' : ''}" onclick="PV.st=PV.st==='${s}'?'':'${s}';render(false)"><i style="background:${s === 'tt' ? '#E74C3C' : ST[s].c}"></i>${s === 'tt' ? 'Có tồn tại' : ST[s].t}<b>${cnt[s]}</b></button>`).join('')}</div></div>
       ${PV.mode === 'map' ? `<div class="section"><div class="planbox" id="pbox"><svg id="psvg"></svg><div class="zbtns"><button onclick="pz(1.6)">＋</button><button onclick="pz(1/1.6)">－</button><button onclick="PV.z=1;PV.cx=null;drawPlan()" title="Toàn bộ">⌖</button></div><div class="zlab" id="zlab"></div></div>
         <div class="small mt8">Chạm cọc / panel để xem · ＋ / － hoặc 2 ngón để phóng · kéo để di chuyển · mã hiện khi phóng ≥ 3×</div></div>
-        <div class="section" id="peek">${peekHtml()}</div>` : planList()}`;
+        <div class="section ${CK[PV.sel] ? 'pkf' : ''}" id="peek">${peekHtml()}</div>` : planList()}`;
     return shell({ body, tab:'plan' });
   },
   after() { if (PV.mode === 'map') { drawPlan(); planEvents(); } }
@@ -1610,7 +1621,7 @@ function planEvents() {
     if (moved && PV.z > 1 && start[2] !== null) { const k = ppm(); PV.cx = start[2] - dx / k; PV.cy = start[3] + dy / k; drawPlan(); }
   });
   const up = e => { pts.delete(e.pointerId); if (pts.size < 2) pinch = null;
-    if (!moved && e.type === 'pointerup') { const t = document.elementFromPoint(e.clientX, e.clientY); const code = t && t.getAttribute && t.getAttribute('data-c'); if (code) { PV.sel = code; drawPlan(); $('#peek').innerHTML = peekHtml(); } else { const near = nearestCk(e); if (near) { PV.sel = near; drawPlan(); $('#peek').innerHTML = peekHtml(); } } }
+    if (!moved && e.type === 'pointerup') { const t = document.elementFromPoint(e.clientX, e.clientY); const code = t && t.getAttribute && t.getAttribute('data-c'); if (code) { PV.sel = code; drawPlan(); setPeek(); } else { const near = nearestCk(e); if (near) { PV.sel = near; drawPlan(); setPeek(); } } }
     if (pts.size === 1) { const v = [...pts.values()][0]; start = [v[0], v[1], PV.cx, PV.cy]; } };
   box.addEventListener('pointerup', up); box.addEventListener('pointercancel', up);
   box.addEventListener('wheel', e => { e.preventDefault(); const r = box.getBoundingClientRect(); pz(e.deltaY < 0 ? 1.25 : 0.8, e.clientX - r.left, e.clientY - r.top); }, { passive:false });
@@ -1623,21 +1634,35 @@ function nearestCk(e) {           // chạm gần (ngón tay to): lấy cấu ki
   Object.keys(g.pts).forEach(code => { const p = g.pts[code].p, d = Math.hypot(p[0] - mx, p[1] - my); if (d < bd && planMatch(CK[code])) { bd = d; best = code; } });
   return best;
 }
+// thẻ thông tin nổi ngay trên mặt bằng (không phải cuộn xuống mới thấy)
+function setPeek() {
+  const el = $('#peek'); if (!el) return; const on = !!CK[PV.sel];
+  el.innerHTML = peekHtml(); el.classList.toggle('pkf', on); if (!on) el.classList.remove('big'); el.scrollTop = 0; document.body.classList.toggle('pk-open', on);
+  if (on) requestAnimationFrame(() => peekKeepVisible());
+}
+// cuộn để cọc đang chọn không bị thẻ nổi che
+function peekKeepVisible() {
+  const el = $('#peek'), m = document.querySelector('.main'); if (!el || !m || !el.classList.contains('pkf')) return;
+  const t = [...document.querySelectorAll('#psvg [data-c]')].find(x => x.getAttribute('data-c') === PV.sel); if (!t) return;
+  const r = t.getBoundingClientRect(), top = el.getBoundingClientRect().top, hd = m.getBoundingClientRect().top;
+  if (r.bottom + 16 > top) m.scrollTop += r.bottom + 16 - top; else if (r.top < hd + 8) m.scrollTop += r.top - hd - 8;
+}
+function peekBig() { const el = $('#peek'); if (el) el.classList.toggle('big'); }
 function peekHtml() {
   const c = CK[PV.sel];
   if (c) setTimeout(() => peekLoad(c.code), 0);
   if (!c) return `<div class="legend"><span><i style="background:#27AE60"></i>Nghiệm thu</span><span><i style="background:#0056A4"></i>Đã đổ</span><span><i style="background:#F26522"></i>Đang làm</span><span><i style="background:#F2C230"></i>Sắp làm</span><span><i style="background:#fff;box-shadow:inset 0 0 0 1.5px #9AA8BA"></i>Chưa làm</span><span><i style="background:#fff;box-shadow:inset 0 0 0 2px #E74C3C"></i>Có tồn tại</span></div>`;
   const z = dz(c);
   const k3 = c.loai === 'tv' ? [['Dài', fmtN(z.L, 2) + ' m'], ['Đáy', fmtZ(z.toe)], ['V LT', fmtN(z.vlt, 1) + ' m³']] : [['Z mũi', fmtZ(z.toe)], ['L khoan', fmtN(z.Lk, 1) + ' m'], ['V LT', fmtN(z.vlt, 2) + ' m³']];
-  return `<div class="card pad"><div class="split"><div><b style="font-size:18px;color:var(--navy)">${esc(c.code)}</b><div class="small">${esc(ckDesc(c))}${c.kv && c.kv !== 'TV' ? ' · ' + esc(c.kv) : ''}</div></div><span class="badge ${ST[c.st].b}">${ST[c.st].t}</span></div>
+  return `<div class="card pad"><div class="pk-grab" onclick="peekBig()"><i></i></div><div class="split"><div><b style="font-size:18px;color:var(--navy)">${esc(c.code)}</b><div class="small">${esc(ckDesc(c))}${c.kv && c.kv !== 'TV' ? ' · ' + esc(c.kv) : ''}</div></div><span class="badge ${ST[c.st].b}">${ST[c.st].t}</span></div>
     <div class="small mt8" style="color:var(--text2)">${esc(stepLabel(c))}${c.flag === 'tt' ? ' · <b class="c-rd">có NCR đang mở</b>' : ''}</div>
     <div id="pk-ht" class="mt8">${CKREC[c.code] ? htHtml(c) : `<div class="mini3">${k3.map(x => `<div>${x[0]}<b>${x[1]}</b></div>`).join('')}</div><div class="small mt8"><span class="spin" style="display:inline-block;width:12px;height:12px;vertical-align:-2px"></span> Đang tải mặt cắt & hiện trạng…</div>`}</div>
-    <div style="display:flex;gap:8px;margin-top:12px"><button class="btn ghost sm" onclick="PV.sel='';$('#peek').innerHTML=peekHtml();drawPlan()">Đóng</button>${c.loai !== 'tv' && c.truc ? `<button class="btn ghost sm" onclick="go('sec',{code:'${esc(c.code)}'})">📐 Mặt cắt</button>` : ''}<button class="btn sm" onclick="go('ck',{code:'${esc(c.code)}'})">Hồ sơ ›</button></div></div>`;
+    <div style="display:flex;gap:8px;margin-top:12px;position:sticky;bottom:0;background:#fff;padding:8px 0 2px"><button class="btn ghost sm" onclick="PV.sel='';setPeek();drawPlan()">✕ Đóng</button>${c.loai !== 'tv' && c.truc ? `<button class="btn ghost sm" onclick="go('sec',{code:'${esc(c.code)}'})">📐 Mặt cắt</button>` : ''}<button class="btn sm" onclick="go('ck',{code:'${esc(c.code)}'})">Hồ sơ ›</button></div></div>`;
 }
 async function peekLoad(code) {
-  if (CKREC[code] && !CKREC[code].stale) return;
+  if (CKREC[code] && !CKREC[code].stale) { requestAnimationFrame(peekKeepVisible); return; }
   await loadCk(code, true);
-  const el = $('#pk-ht'); if (el && PV.sel === code && CK[code]) el.innerHTML = htHtml(CK[code]);
+  const el = $('#pk-ht'); if (el && PV.sel === code && CK[code]) { el.innerHTML = htHtml(CK[code]); requestAnimationFrame(peekKeepVisible); }
 }
 // ---------- Mặt cắt 1 cấu kiện + hiện trạng (bấm vào cọc / panel) ----------
 function htData(c) {

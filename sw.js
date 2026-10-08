@@ -1,4 +1,5 @@
-// FECON Kho + Thi công - Service Worker v5.31.2
+// FECON Kho + Thi công - Service Worker v5.31.3
+// 5.31.3: Thi công 1.2.1 — bấm cọc / panel: thẻ mặt cắt + hiện trạng nổi ngay trên mặt bằng
 // 5.31.2: Thi công 1.2 — ngưỡng theo ITP đã duyệt, bộ biên bản in / Excel
 // 5.31.0: thêm trang thicong.html (Thi công) — mở thicong.html lấy đúng trang đó, không đổi sang index.html
 // Từ 5.28.0: điện thoại GIỮ bản đang dùng cho tới khi người dùng bấm "Cập nhật".
@@ -6,7 +7,7 @@
 //  - Mở app: lấy file từ bộ nhớ của bản đang dùng; thiếu file nào mới lấy từ mạng.
 //  - Có sw.js mới trên GitHub: tải sẵn bản mới vào bộ nhớ riêng nhưng KHÔNG đổi bản đang dùng.
 //  - Địa chỉ có ?fresh=... luôn lấy thẳng từ mạng (app dùng để kiểm tra / tải bản mới).
-const VERSION = '5.31.2';
+const VERSION = '5.31.3';
 const APP = 'fecon-app-', META = 'fecon-meta';
 const CORE = ['./', './index.html', './thicong.html', './manifest.json', './icon-192.png', './icon-512.png', './icon-maskable-192.png', './icon-maskable-512.png', './bg-login.jpg'];
 
