@@ -1,12 +1,13 @@
-// FECON Kho - Service Worker v5.29.3
+// FECON Kho + Thi công - Service Worker v5.31.0
+// 5.31.0: thêm trang thicong.html (Thi công) — mở thicong.html lấy đúng trang đó, không đổi sang index.html
 // Từ 5.28.0: điện thoại GIỮ bản đang dùng cho tới khi người dùng bấm "Cập nhật".
 //  - Mỗi bản app lưu trong 1 bộ nhớ riêng "fecon-app-<số bản>". Bản đang dùng ghi ở "fecon-meta" (/__active).
 //  - Mở app: lấy file từ bộ nhớ của bản đang dùng; thiếu file nào mới lấy từ mạng.
 //  - Có sw.js mới trên GitHub: tải sẵn bản mới vào bộ nhớ riêng nhưng KHÔNG đổi bản đang dùng.
 //  - Địa chỉ có ?fresh=... luôn lấy thẳng từ mạng (app dùng để kiểm tra / tải bản mới).
-const VERSION = '5.30.0';
+const VERSION = '5.31.0';
 const APP = 'fecon-app-', META = 'fecon-meta';
-const CORE = ['./', './index.html', './manifest.json', './icon-192.png', './icon-512.png', './icon-maskable-192.png', './icon-maskable-512.png', './bg-login.jpg'];
+const CORE = ['./', './index.html', './thicong.html', './manifest.json', './icon-192.png', './icon-512.png', './icon-maskable-192.png', './icon-maskable-512.png', './bg-login.jpg'];
 
 const getActive = () => caches.open(META).then(c => c.match('./__active')).then(r => r ? r.text() : '').catch(() => '');
 const setActive = v => caches.open(META).then(c => c.put('./__active', new Response(v)));
@@ -17,6 +18,7 @@ async function stage(ver) {                 // tải các file chính của bả
     .then(async r => {
       if (!r.ok) return;
       if ((u === './' || u === './index.html') && !(await r.clone().text()).includes("const APP_VERSION = '" + ver + "'")) return;   // GitHub đang có bản khác → không lưu nhầm
+      if (u === './thicong.html' && !(await r.clone().text()).includes("const KHO_VERSION = '" + ver + "'")) return;
       return c.put(u, r);
     }).catch(() => {})));
 }
@@ -49,7 +51,7 @@ self.addEventListener('fetch', e => {
   if (url.searchParams.has('fresh')) return;                      // kiểm tra / tải bản mới: đi thẳng ra mạng
   e.respondWith((async () => {
     const act = await getActive();
-    const key = req.mode === 'navigate' ? './index.html' : req;
+    const key = req.mode === 'navigate' ? (/thicong\.html$/.test(url.pathname) ? './thicong.html' : './index.html') : req;
     if (act) {
       const c = await caches.open(APP + act);
       const hit = await c.match(key, { ignoreSearch: true });

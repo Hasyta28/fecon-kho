@@ -1246,6 +1246,7 @@ body:not(.can-cost) .need-cost{display:none!important}
     </label>
   </div>
   <div class="sidebar-body">
+    <div class="sidebar-item" data-p="t_xem" onclick="closeSidebar();goTc()" style="background:#FFF1E8"><span class="sidebar-item-ico">🏗️</span><span style="flex:1">Chuyển sang Thi công</span><small style="color:#7B8BA1;font-size:11px;font-weight:700">giữ đăng nhập</small></div>
     <div class="sidebar-label">Chức năng</div>
     <div class="sidebar-item" data-p="v_pyc" onclick="goTabSb('pyc')"><span class="sidebar-item-ico">📝</span>Phiếu yêu cầu</div>
     <div class="sidebar-item" data-p="v_home" onclick="goTabSb('home')"><span class="sidebar-item-ico">🏠</span>Tổng quan</div>
@@ -1722,7 +1723,7 @@ body:not(.can-cost) .need-cost{display:none!important}
 // ============================================================
 // CONFIG
 // ============================================================
-const APP_VERSION = '5.30.0';
+const APP_VERSION = '5.31.0';
 const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbw6Rmi80I7RI3ij2U7RdRF5pYuQTnPrwEmGmUZS5xpxzLwwVynfoFUujZe1lm6HS1ymxw/exec';
 // ============================================================
 
@@ -1890,9 +1891,41 @@ function startSession(r) {
   } else if (!allProjRole(role) && (me.projects || []).length && !(me.projects || []).includes(curProj)) {
     loadProjCache(me.projects[0]);                               // máy chủ cũ: không hiện dữ liệu dự án người mới không được giao
   }
+  if (tcCan() && !khoCan()) { location.href = 'thicong.html'; return; }   // v5.31: chỉ có quyền Thi công → vào thẳng
   showPage('pg-app');
   setupApp(pre);
   bioAfterLogin();                                                // v5.27: hỏi bật Face ID / vân tay 1 lần
+  if (tcCan()) partChooser();                                     // v5.31: có cả Kho và Thi công → chọn phần làm việc
+}
+// ===== v5.31: THI CÔNG — chọn phần làm việc sau đăng nhập, chuyển qua lại giữ đăng nhập =====
+const LS_PART = 'fecon_part';
+const tcCan = () => hp('t_xem');
+const khoCan = () => ['v_pyc','v_home','v_nhap','v_xuat','v_ton','v_baocao','v_all'].some(hp);
+function goTc() { try { localStorage.setItem(LS_PART, 'tc'); } catch (e) {} location.href = 'thicong.html'; }
+function partChooser() {
+  document.getElementById('pg-part')?.remove();
+  const el = document.createElement('div'); el.id = 'pg-part';
+  el.innerHTML = `<style>#pg-part{position:fixed;inset:0;z-index:9000;background:#0B1B33;color:#fff;overflow:auto;padding:calc(30px + env(safe-area-inset-top)) 20px 30px;font-family:inherit}
+    #pg-part .pp{max-width:460px;margin:0 auto}#pg-part .hi{display:flex;gap:12px;align-items:center;margin:18px 0 22px}#pg-part .av{width:48px;height:48px;border-radius:50%;background:#FFF1E8;color:#0B2545;font-weight:900;display:flex;align-items:center;justify-content:center}
+    #pg-part .md{background:#fff;color:#1A2332;border-radius:20px;padding:18px;display:flex;gap:14px;align-items:center;box-shadow:0 10px 30px rgba(0,0,0,.25);margin-bottom:14px;cursor:pointer;border:none;width:100%;text-align:left;font-family:inherit}
+    #pg-part .ic{width:58px;height:58px;border-radius:16px;display:flex;align-items:center;justify-content:center;font-size:30px;flex-shrink:0}#pg-part .t{font-size:18px;font-weight:900}#pg-part .s{font-size:12px;color:#5A6A7A;margin-top:3px;font-weight:600;line-height:1.4}
+    #pg-part .lg{background:#fff;border-radius:18px;padding:14px 18px;display:flex;justify-content:center}#pg-part .lg img{width:190px}#pg-part label{display:flex;gap:8px;align-items:center;font-size:13px;font-weight:700;opacity:.85;margin-top:8px}
+    #pg-part .nt{font-size:12px;opacity:.7;line-height:1.5;margin-top:16px}</style>
+    <div class="pp"><div class="lg"><img src="${document.querySelector('.login-logo img')?.src || ''}" alt="FECON South"></div>
+    <div class="hi"><div class="av">${escHtml(initials(me?.name))}</div><div><div style="font-size:12px;opacity:.7;font-weight:700">Xin chào</div><div style="font-size:18px;font-weight:900">${escHtml(me?.name || '')}</div><div style="font-size:12px;opacity:.7">${escHtml(roleLabelOf(role))}</div></div></div>
+    <div style="font-size:12px;font-weight:800;letter-spacing:1.2px;opacity:.7;margin-bottom:10px">CHỌN PHẦN LÀM VIỆC</div>
+    <button class="md" onclick="partPick('kho')"><div class="ic" style="background:#EEF4FF">📦</div><div style="flex:1"><div class="t">Kho vật tư</div><div class="s">Phiếu YC · Nhập · Xuất · Tồn kho · Giờ máy</div></div><span style="font-size:22px;color:#C5CED9">›</span></button>
+    <button class="md" onclick="partPick('tc')"><div class="ic" style="background:#FFF1E8">🏗️</div><div style="flex:1"><div class="t">Thi công</div><div class="s">Cọc khoan nhồi · Tường vây · Nhật ký · Bê tông · Nghiệm thu</div></div><span style="font-size:22px;color:#C5CED9">›</span></button>
+    <label><input type="checkbox" id="pp-keep" checked> Lần sau vào thẳng phần đã chọn</label>
+    <div class="nt">🔐 Chỉ hiện phần bạn được Admin cấp quyền. Đổi phần bất cứ lúc nào ở Menu.</div></div>`;
+  document.body.appendChild(el);
+}
+function roleLabelOf(r) { try { const x = ROLES[r]; return x ? x.abbr + ' – ' + x.name : r; } catch (e) { return r || ''; } }
+function partPick(p) {
+  const keep = document.getElementById('pp-keep')?.checked;
+  try { localStorage.setItem(LS_PART, keep ? p : ''); } catch (e) {}
+  if (p === 'tc') { location.href = 'thicong.html'; return; }
+  document.getElementById('pg-part')?.remove();
 }
 // Nạp dữ liệu đã lưu trên máy của một dự án (nếu có)
 function loadProjCache(P) {
@@ -6172,7 +6205,7 @@ async function runDiag() {
 // ===== CẬP NHẬT PHIÊN BẢN MỚI (v5.28.0) =====
 // Điện thoại giữ bản đang dùng (sw.js lưu mỗi bản 1 bộ nhớ riêng). Có bản mới trên GitHub → thẻ thông báo: Cập nhật / Để sau.
 // Nội dung từng bản do máy chủ gửi (verLog), chỉ chức danh có quyền v_ver mới đọc được; người khác chỉ thấy thông báo ngắn.
-const VER_CORE = ['./', './index.html', './manifest.json', './icon-192.png', './icon-512.png', './icon-maskable-192.png', './icon-maskable-512.png', './bg-login.jpg'];
+const VER_CORE = ['./', './index.html', './thicong.html', './manifest.json', './icon-192.png', './icon-512.png', './icon-maskable-192.png', './icon-maskable-512.png', './bg-login.jpg'];
 const LS_LATER = 'fecon_upd_later', LS_SEEN = 'fecon_seen_ver', LS_VLOG = 'fecon_verlog';
 let verNew = '', verLog = null, _updChecked = 0, _vlogAt = 0, _updating = false, verWhatsNew = '';
 try { verLog = JSON.parse(localStorage.getItem(LS_VLOG) || 'null'); } catch (e) {}
@@ -7287,7 +7320,8 @@ const PERM_UI = [
   ['Kho', [['k_nhap','Lập phiếu nhập',''],['k_xuat','Lập phiếu xuất (xuất thẳng)',''],['k_edit','Sửa / điều chỉnh phiếu',''],['k_kk','Kiểm kê',''],['k_dm','Thêm, sửa tên + nhóm vật tư / thiết bị','Đổi đơn vị và xóa: chỉ Admin'],['k_copy','Chép vật tư từ dự án khác',''],['k_loan','Cho mượn / trả dụng cụ',''],['k_meter','Ghi giờ máy thiết bị','Khi xuất dầu, vào / kết thúc công trình'],['k_thang','Nhập thẳng ra công trường','Phiếu nhập có 2 ô 📦 Vào kho / 🏗 Thẳng ra công trường (nhập + xuất cùng lúc, tồn không đổi)']]],
   ['Giá & chi phí', [['g_view','Xem giá, chi phí',''],['g_price','Sửa bảng giá',''],['g_prog','Cập nhật tiến độ thi công','']]],
   ['Phiếu yêu cầu', [['y_tao','Tạo phiếu',''],['y_bs','Xin bổ sung ngoài định mức',''],['y_duyet','Duyệt phiếu',''],['y_giao','Giao hàng theo phiếu (kho)',''],['y_nhan','Xác nhận nhận hàng',''],['y_xem','Xem mọi phiếu của dự án','Tắt = chỉ thấy phiếu của mình']]],
-  ['Xuất file', [['x_nxt','Xuất Excel NXT',''],['x_pyc','Xuất báo cáo phiếu YC','']]]
+  ['Xuất file', [['x_nxt','Xuất Excel NXT',''],['x_pyc','Xuất báo cáo phiếu YC','']]],
+  ['⑦ Thi công', [['t_xem','Xem Thi công','Thấy ô 🏗️ Thi công: mặt bằng, hồ sơ cấu kiện, báo cáo'],['t_ghi','Ghi nhật ký hiện trường','Định vị, khoan, dung dịch, lồng thép, xe bê tông, tremie… · gửi kiểm tra'],['t_qa','Xác nhận QA/QC · giải phóng Hold','Xác nhận / trả về bản ghi, đóng NCR'],['t_cht','Duyệt nội bộ (CHT)','Duyệt hồ sơ nghiệm thu, sửa bản đã xác nhận (ghi lý do)'],['t_kh','Lập kế hoạch · đăng ký bê tông',''],['t_qs','QS · BOQ & khối lượng',''],['t_qt','Quản trị Thi công','Cấu hình ngưỡng, nạp danh sách cọc / panel, danh mục']]]
 ];
 const PERM_KEYS = PERM_UI.flatMap(s => s[1].map(p => p[0]));
 const V6 = ['v_pyc','v_home','v_nhap','v_xuat','v_ton','v_baocao'];
@@ -7299,7 +7333,9 @@ const GROUP_UI = {
   g6:['⑥ Lãnh đạo', V6.concat(['v_stat','v_all','g_view','y_xem','x_nxt','x_pyc'])],
   gq:['Quản lý (cũ)', PERM_KEYS.filter(k => k !== 'v_all')], ga:['Quản trị', PERM_KEYS]
 };
-function presetPerm(code, g) { const o = {}, on = (GROUP_UI[g] || GROUP_UI.g2)[1]; PERM_KEYS.forEach(k => o[k] = on.includes(k) ? 1 : 0); if (code === 'CM' || code === 'DCM') o.y_tao = o.y_bs = o.y_duyet = o.y_nhan = 1; if (code === 'ACC' || code === 'PD') o.k_meter = 0; if (['CM','DCM','EQM','DEQ'].includes(code)) o.v_ver = 1; return o; }
+const TC_DEF_UI = { TS:['t_xem','t_ghi'], SE:['t_xem','t_ghi'], EE:['t_xem','t_ghi'], HSE:['t_xem','t_ghi'], PE:['t_xem','t_ghi','t_kh'], SUP:['t_xem','t_qa'], QS:['t_xem','t_qs'], SK:[],
+  DCM:['t_xem','t_ghi','t_qa','t_cht','t_kh'], CM:['t_xem','t_ghi','t_qa','t_cht','t_kh'], PD:['t_xem','t_cht','t_kh','t_qs'] };   // v5.31
+function presetPerm(code, g) { const o = {}, on = (GROUP_UI[g] || GROUP_UI.g2)[1]; PERM_KEYS.forEach(k => o[k] = on.includes(k) ? 1 : 0); if (code === 'CM' || code === 'DCM') o.y_tao = o.y_bs = o.y_duyet = o.y_nhan = 1; if (code === 'ACC' || code === 'PD') o.k_meter = 0; if (['CM','DCM','EQM','DEQ'].includes(code)) o.v_ver = 1; if (g !== 'ga' && g !== 'gq') (TC_DEF_UI[code] || ['t_xem']).forEach(k => o[k] = 1); return o; }
 function setRoles(r) { ROLES = r || {}; try { localStorage.setItem('fecon_roles_v515', JSON.stringify(ROLES)); } catch (e) {} }
 let rlSel = '', rlDraft = null, rlUsers = null, rlAdd = false;
 async function openRoles() {
@@ -8400,6 +8436,9 @@ doLoan = guardBtn('loan', doLoan); saveLoanReturn = guardBtn('loan', saveLoanRet
   if (/Zalo/i.test(navigator.userAgent)) document.getElementById('zalo-hint').style.display = '';
   document.getElementById('login-ver').textContent = 'Phiên bản ' + APP_VERSION;
   showVersion();
+  const qPart = new URLSearchParams(location.search).get('part');
+  if (qPart === 'kho') { try { localStorage.setItem('fecon_part', 'kho'); history.replaceState(null, '', location.pathname); } catch (e) {} }
+  if (token && me && qPart !== 'kho' && tcCan() && (!khoCan() || localStorage.getItem('fecon_part') === 'tc')) { location.replace('thicong.html'); return; }   // v5.31
   if (token && me) {                  // đã đăng nhập trên máy này → vào luôn (dùng được cả khi mất mạng)
     showPage('pg-app');
     setupApp();
