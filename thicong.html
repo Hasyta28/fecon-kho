@@ -338,10 +338,10 @@ body.pk-open .main{padding-bottom:48vh}
 <body>
 <div id="app"></div>
 <script>
-// FECON South · THI CÔNG 1.3.0 — chạy cùng app Kho (đăng nhập ở index.html, dùng chung máy chủ Apps Script)
-const KHO_VERSION = '5.31.4';
+// FECON South · THI CÔNG 1.3.1 — chạy cùng app Kho (đăng nhập ở index.html, dùng chung máy chủ Apps Script)
+const KHO_VERSION = '5.31.5';
 // ===== FECON Thi công 1.0 — lõi: máy chủ, lưu trên máy, hàng đợi gửi, điều hướng =====
-const TC_APP_VERSION = '1.3.0';
+const TC_APP_VERSION = '1.3.1';
 const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbw6Rmi80I7RI3ij2U7RdRF5pYuQTnPrwEmGmUZS5xpxzLwwVynfoFUujZe1lm6HS1ymxw/exec';
 const LS_TOKEN = 'fecon_token_v5', LS_USER = 'fecon_user_v5';           // dùng chung phiên đăng nhập với Kho
 const LS_P = 'tc_proj', LS_BOOT = 'tc_boot2|', LS_OUT = 'tc_out_v1', LS_CA = 'tc_ca', LS_PART = 'fecon_part';
@@ -432,12 +432,19 @@ async function sync(force) {
   try {
     await flushOut();
     if (!force && B && B.tv) {
-      const v = await api('tcVer', { project:P }, 15000);
+      const vp = P, v = await api('tcVer', { project:vp }, 15000);
+      if (P !== vp) return;
       if (v.success && v.tv === B.tv && !outbox.length) { lastSync = Date.now(); syncErr = ''; return; }
     }
-    const r = await api('tcBoot', { project:P, ckRev: B && B.ck ? B.ckRev : '' }, 45000);
+    const reqP = P, haveCk = !!(B && B.ck && B.ck.length !== undefined && (!B.project || B.project === reqP));
+    let r = await api('tcBoot', { project:reqP, ckRev: haveCk ? B.ckRev : '' }, 45000);
+    if (P !== reqP) return;                                         // đã đổi dự án trong lúc chờ → bỏ kết quả cũ
+    if (r.success && !r.ck && !(haveCk && B.ckRev === r.ckRev)) {   // thiếu danh sách cấu kiện → xin lại đủ
+      r = await api('tcBoot', { project:reqP, ckRev:'' }, 45000);
+      if (P !== reqP) return;
+    }
     if (r.success) {
-      if (r.project !== P) { P = r.project; lsSet(LS_P, P); }
+      if (r.project !== P) { P = r.project; lsSet(LS_P, P); B = null; }
       if (r.me) { me = r.me; lsSet(LS_USER, JSON.stringify(me)); }
       setBoot(r); saveBoot(); lastSync = Date.now(); syncErr = '';
       setTimeout(() => bulkInit(), 1500);
@@ -856,7 +863,7 @@ async function tcCheckUpd(force) {
     TCU.nv = m && vCmp(m[1], KHO_VERSION) > 0 ? m[1] : '';
     if (TCU.nv && !TCU.log) { const r = await api('verLog', {}, 15000); if (r && r.success && Array.isArray(r.log)) TCU.log = r.log; }
     if (force) toast(TCU.nv ? '🔔 Có phiên bản mới ' + TCU.nv : '✅ Bạn đang dùng bản mới nhất ' + KHO_VERSION);
-    if (was !== TCU.nv) { updDot(); if (cur.v === 'home' || cur.v === 'upd') rerender(); }
+    if (was !== TCU.nv) { updDot(); if (cur.v === 'home' || cur.v === 'upd' || !B || !Object.keys(CK).length) rerender(); }
   } catch (e) { if (force) toast('⚠️ Không kiểm tra được, thử lại sau'); }
 }
 function updDot() { const d = document.getElementById('upd-dot'); if (d) d.style.display = TCU.nv ? '' : 'none'; }
@@ -1536,7 +1543,7 @@ function pickList() {
 // ===== Màn hình chính: Tổng quan, Dự án, Mặt bằng, Mặt cắt, Hồ sơ, Việc, Vật tư =====
 function render(top) {
   const v = VIEWS[cur.v] || VIEWS.home;
-  if (!B) { $('#app').innerHTML = shell({ body:'<div class="empty"><span class="spin" style="display:inline-block"></span><br>Đang tải dữ liệu thi công…</div>', tab:'home' }); setSync(); return; }
+  if (!B) { $('#app').innerHTML = shell({ body:`<div class="dbody">${updCardHtml()}</div><div class="empty"><span class="spin" style="display:inline-block"></span><br>Đang tải dữ liệu thi công…</div>`, tab:'home' }); setSync(); return; }
   if (!Object.keys(CK).length && cur.v !== 'qtri' && cur.v !== 'proj' && cur.v !== 'hd') { $('#app').innerHTML = shell({ body:noCkHtml(), tab:cur.v }); setSync(); return; }
   $('#app').innerHTML = v.render(cur.a);
   document.body.classList.toggle('pk-open', !!document.querySelector('#peek.pkf'));
@@ -1545,10 +1552,11 @@ function render(top) {
   if (top) { const m = $('.main'); if (m) m.scrollTop = 0; }
 }
 function noCkHtml() {
-  return `<div class="dbody"><div class="card pad center"><div style="font-size:40px">🏗️</div><div class="rname mt8">${esc(P || 'Chưa có dự án')}</div>
+  return `<div class="dbody">${updCardHtml()}<div class="card pad center"><div style="font-size:40px">🏗️</div><div class="rname mt8">${esc(P || 'Chưa có dự án')}</div>
     <div class="small mt8" style="line-height:1.5">Dự án chưa có danh sách cọc / panel trong phần Thi công.${hp('t_qt') ? '' : '<br>Nhờ Admin nạp danh sách cấu kiện.'}</div>
-    ${hp('t_qt') ? `<button class="btn mt12" onclick="go('qtri',{tab:'ck'})">📥 Nạp danh sách cấu kiện</button>${me.role === 'ADM' ? `<button class="btn ghost mt8" onclick="go('qtri',{tab:'mau'})">🧪 Nạp dữ liệu mẫu TTHC để tập</button>` : ''}` : ''}
-    ${(B.projects || []).length > 1 ? `<button class="btn ghost mt8" onclick="go('proj')">🏢 Đổi dự án</button>` : ''}</div></div>`;
+    ${hp('t_qt') ? `<button class="btn mt12" onclick="go('qtri',{tab:'ck'})">📥 Nạp danh sách cấu kiện</button>${me.role === 'ADM' && /tthc|hầm|công viên/i.test(P) ? `<button class="btn ghost mt8" onclick="go('qtri',{tab:'mau'})">🧪 Nạp dữ liệu mẫu TTHC để tập</button>` : ''}` : ''}
+    ${(B.projects || []).filter(x => x !== P).map(x => `<button class="btn ghost mt8" onclick="setProj('${esc(x)}')">↩ Chuyển sang dự án ${esc(x)}</button>`).join('')}</div>
+    <div class="note n-info mt12">ℹ️<span>Dự án đang chọn là <b>${esc(P)}</b>. Các mục Tổng quan, Cấu kiện, Việc… sẽ hiện khi dự án có danh sách cọc / panel. Muốn quay lại dự án khác: bấm nút "Chuyển sang dự án…" ở trên.</span></div></div>`;
 }
 
 // ---------- Việc cần làm ----------
@@ -1656,9 +1664,15 @@ function setCa(o) { lsSet(LS_CA, JSON.stringify(Object.assign(lsJ(LS_CA, {}), o)
 async function setProj(p) {
   if (p === P) return;
   if (outbox.length) { toast('Đang còn ' + outbox.length + ' thao tác chưa gửi — chờ gửi xong rồi đổi dự án'); return; }
-  P = p; lsSet(LS_P, p); B = null; CK = {}; REC = {}; CKREC = {}; KHO = null;
-  if (!loadCachedBoot()) render(true);
-  await sync(true); go('home');
+  showLoader('Đang chuyển sang ' + p + '…');
+  for (let i = 0; i < 100 && syncing; i++) await new Promise(r => setTimeout(r, 200));   // chờ lần đồng bộ đang chạy (dự án cũ) xong
+  P = p; lsSet(LS_P, p); B = null; CK = {}; REC = {}; CKREC = {}; KHO = null; PV.sel = ''; GEO = null;
+  document.body.classList.remove('pk-open');
+  loadCachedBoot();
+  syncing = false; await sync(true);
+  hideLoader();
+  if (!B) toast(syncErr || 'Chưa tải được dữ liệu dự án — kiểm tra mạng rồi thử lại');
+  go('home');
 }
 
 // ---------- M03 Mặt bằng ----------
@@ -2437,7 +2451,7 @@ VIEWS.qtri = {
       const demo = cfg.demo && cfg.demo.on, n = Object.keys(CK).length;
       inner = `${demo ? `<div class="note n-warn">🧪<span>Dự án đang có <b>dữ liệu mẫu</b> (nạp ${esc(cfg.demo.at || '')} bởi ${esc(cfg.demo.by || '')}). Mọi người tập ghi thoải mái.</span></div>` : ''}
         <div class="fsec"><div class="fsec-t">🧪 Dữ liệu mẫu Hầm để xe TTHC</div><div class="small" style="line-height:1.5">366 cọc + 117 panel (tọa độ VN2000 từ hồ sơ), ngưỡng, danh mục, BOQ, tài liệu và khoảng 2.000 bản ghi nhật ký mẫu theo trạng thái để mọi người tập. Chỉ nạp được khi dự án chưa có cấu kiện.</div>
-          ${me.role === 'ADM' ? `<button class="btn mt12" ${n ? 'disabled' : ''} onclick="seedDemo()">Nạp dữ liệu mẫu vào ${esc(P)}</button>` : '<div class="small mt8">Chỉ Admin nạp được.</div>'}</div>
+          ${me.role !== 'ADM' ? '<div class="small mt8">Chỉ Admin nạp được.</div>' : !/tthc|hầm|công viên/i.test(P) ? `<div class="note n-warn mt12">⚠️<span>Dữ liệu mẫu là của dự án Hầm để xe TTHC — không nạp vào dự án <b>${esc(P)}</b> (dự án làm thật).</span></div>` : `<button class="btn mt12" ${n ? 'disabled' : ''} onclick="seedDemo()">Nạp dữ liệu mẫu vào ${esc(P)}</button>`}</div>
         <div class="fsec"><div class="fsec-t">🧹 Xóa dữ liệu</div><div class="small" style="line-height:1.5">Trước khi xóa máy chủ tự sao lưu cả file Google Sheet.</div>
           ${me.role === 'ADM' ? `<button class="btn ghost mt12" onclick="resetTc(1)">Xóa bản ghi MẪU (giữ cấu kiện + bản ghi thật)</button><button class="btn rd mt8" onclick="resetTc(0)">Xóa TOÀN BỘ Thi công của dự án</button>` : '<div class="small mt8">Chỉ Admin.</div>'}</div>`;
     } else if (tab === 'ls') {
