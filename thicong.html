@@ -303,6 +303,11 @@ button{cursor:pointer;-webkit-tap-highlight-color:transparent}
 .demo{background:#FFF1E8;color:#9A3412;font-size:11.5px;font-weight:800;padding:6px 14px;text-align:center;border-bottom:1px solid #FCD9C2}
 .pill{display:inline-block;padding:2px 8px;border-radius:7px;font-size:10.5px;font-weight:800}
 .search{width:100%;border:1.5px solid var(--border);border-radius:12px;padding:11px 12px;font-size:14px;font-family:inherit;outline:none;background:#fff}
+.htl{flex:1;min-width:0;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:5px}
+.htk{background:#F6F8FB;border-radius:8px;padding:5px 7px;min-width:0}
+.htk span{display:block;font-size:9.5px;font-weight:800;color:var(--text3);text-transform:uppercase;letter-spacing:.2px;line-height:1.25}
+.htk b{display:block;font-size:12px;font-weight:800;color:var(--text);margin-top:1px;line-height:1.3;overflow-wrap:anywhere}
+.htk b small{font-size:10.5px;font-weight:700}
 .lvgrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:4px}
 .lvgrid div{background:#F6F8FB;border-radius:8px;padding:5px 8px;font-size:10.5px;font-weight:700;color:#5A6A7A;display:flex;justify-content:space-between;gap:6px}
 .lvgrid b{color:#1A2332;white-space:nowrap}
@@ -323,10 +328,10 @@ button{cursor:pointer;-webkit-tap-highlight-color:transparent}
 <body>
 <div id="app"></div>
 <script>
-// FECON South · THI CÔNG 1.0.0 — chạy cùng app Kho (đăng nhập ở index.html, dùng chung máy chủ Apps Script)
-const KHO_VERSION = '5.31.0';
+// FECON South · THI CÔNG 1.1.0 — chạy cùng app Kho (đăng nhập ở index.html, dùng chung máy chủ Apps Script)
+const KHO_VERSION = '5.31.2';
 // ===== FECON Thi công 1.0 — lõi: máy chủ, lưu trên máy, hàng đợi gửi, điều hướng =====
-const TC_APP_VERSION = '1.0.0';
+const TC_APP_VERSION = '1.2.0';
 const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbw6Rmi80I7RI3ij2U7RdRF5pYuQTnPrwEmGmUZS5xpxzLwwVynfoFUujZe1lm6HS1ymxw/exec';
 const LS_TOKEN = 'fecon_token_v5', LS_USER = 'fecon_user_v5';           // dùng chung phiên đăng nhập với Kho
 const LS_P = 'tc_proj', LS_BOOT = 'tc_boot2|', LS_OUT = 'tc_out_v1', LS_CA = 'tc_ca', LS_PART = 'fecon_part';
@@ -686,8 +691,51 @@ function dz(c) {
 }
 const r2 = v => Math.round(v * 100) / 100;
 function lvMap() { const o = {}; ((B && B.cfg && B.cfg.levels) || []).forEach(l => { if (/thi công/i.test(l[0])) o.gl = +l[1]; }); return o; }
-const LIM = () => Object.assign({ e:75, nghieng:1, kl:[1, 1.15], nhot:[28, 45], cat:[0, 4], ph:[8, 11], can:100, hMin:2, sut:[18, 20], qtCanh:25, qtDung:30, sauTre:90, ongDoan:3 }, (B && B.cfg && B.cfg.limits) || {});
+const LIM = () => Object.assign({ e:75, exy:50, nghieng:1, ngTV:0.5, kl:[1.05, 1.15], nhot:[18, 45], nhotTruoc:[18, 28], cat:[0, 5], ph:[7, 9], can:100, hMin:1.5, gianDoan:60, sut:[18, 20], qtCanh:25, qtDung:30, sauTre:90, ongDoan:3 }, (B && B.cfg && B.cfg.limits) || {});
 const RES = () => Object.assign({ to:[], may:[], do:[], tram:[], capPhoi:[] }, (B && B.cfg && B.cfg.res) || {});
+// Thông tin + ngưỡng + điểm kiểm tra theo ITP đã duyệt TTHC (ITP-0001-C cọc + Kingpost, ITP-0003-A tường vây, ITP-0002-A tường dẫn)
+const ITP_TTHC = {
+  info:{ ten:'Hầm để xe Công viên – TTHC', duAn:'Quảng trường Trung tâm Thành phố và Trung tâm Hành chính của Thành phố', goi:'Thi công cọc khoan nhồi đại trà và Tường vây - Hầm đậu xe Công viên',
+    diaDiem:'Phường An Khánh, Thành phố Hồ Chí Minh', cdt:'Công ty TNHH Đầu tư và Phát triển Mặt Trời Sài Gòn', tvgs:'Công ty TNHH Tư vấn Quản lý dự án Mặt Trời (SunPMC)',
+    ntc:'Công ty TNHH Xây dựng Dân dụng Nhật Nam', ntp:'Công ty Cổ phần FECON South', tienDo:'20/06 – 31/08/2026', soBB:'TTHC-BXN-SUN-FCS',
+    bvCoc:'Bản vẽ chi tiết cọc khoan nhồi đại trà số TTHC-BXN-SUN-FCS-SHO-0002-A chấp thuận ngày 04/06/2026', bvKp:'Bản vẽ shopdrawing Kingpost số TTHC-BXN-SUN-FCS-SHO-0004-A chấp thuận ngày 12/06/2026',
+    bvTv:'Shop drawing Tường vây số TTHC-BXN-SUN-FCS-SHO-0003 được chấp thuận', tcCoc:'TCVN 9395-2012: Cọc khoan nhồi - Thi công và nghiệm thu', tcTv:'TCVN 14213-2:2024: Tường Barrette - Phần 2: Yêu cầu kỹ thuật thi công; TCVN 9395-2012',
+    itpCoc:'TTHC-BXN-SUN-FCS-ITP-0001-C', itpTv:'TTHC-BXN-SUN-FCS-ITP-0003-A', itpTd:'TTHC-BXN-SUN-FCS-ITP-0002-A', macCoc:'B30', macTv:'B35', mau:0 },
+  limits:{ e:75, exy:50, nghieng:1, ngTV:0.5, kl:[1.05, 1.15], nhot:[18, 45], nhotTruoc:[18, 28], ph:[7, 9], cat:[0, 5], can:100, hMin:1.5, gianDoan:60, sut:[18, 20], sauTre:90, ongDoan:3, qtCanh:25, qtDung:30,
+    sauCoc:50, tvViTri:10, tvMui:200, tvLen:100, longKT:10, longDinh:50, longL:50, baoVeTV:75, nguon:'ITP-0001-C · ITP-0003-A' },
+  itp:{ coc:[['dv', 'W', 'Định vị tim cọc · lắp casing', 'FCS E · NTC C · TVGS Ra'], ['khoan', 'H', 'Khoan · mũi, chiều sâu', 'FCS E · NTC H · TVGS H,A'], ['hh', 'W', 'Thí nghiệm Koden', 'PTN T · NTC H · TVGS H'],
+      ['dd', 'W', 'Dung dịch trước / trong khi khoan / trước đổ', 'FCS T · NTC H · TVGS Ra'], ['truoc', 'H', 'Vệ sinh hố khoan · hạ ống đổ', 'FCS E · NTC C · TVGS H'], ['lt', 'H', 'Lồng thép · ống siêu âm · cao độ đỉnh lồng', 'FCS E · NTC C · TVGS H,A'],
+      ['xe', 'W', 'Tiếp nhận bê tông · độ sụt · lấy mẫu', 'NCC E · NTC C · TVGS H'], ['bt', 'W', 'Đổ bê tông · ngập ống ≥ 1,5 m · gián đoạn < 60 phút', 'FCS E · NTC H · TVGS Ra'], ['tn', 'W', 'Siêu âm · khoan lõi · nén mẫu', 'PTN T · NTC H · TVGS H'], ['nt', 'H', 'Hoàn công · tổng hợp hồ sơ', 'FCS E · NTC H · TVGS H']],
+    tv:[['dv', 'W', 'Vị trí tường vây (tọa độ, cao độ tường dẫn)', 'FCS E · NTC C · TVGS Ra'], ['khoan', 'H', 'Đào, cạp · mũi, chiều sâu +20 cm', 'FCS E · NTC H · TVGS H,A'], ['hh', 'W', 'Thí nghiệm Koden', 'PTN T · NTC H · TVGS H'], ['dd', 'W', 'Dung dịch trước / trong / trước đổ', 'FCS T · NTC H · TVGS Ra'],
+      ['moinoi', 'W', 'Tấm ngăn nước · thanh giữ gioăng', 'FCS E · NTC H · TVGS Ra'], ['truoc', 'H', 'Vệ sinh hố đào · hạ ống đổ', 'FCS E · NTC C · TVGS H'], ['lt', 'H', 'Lồng thép · ống siêu âm · lớp bảo vệ 75 mm', 'FCS E · NTC C · TVGS H,A'],
+      ['xe', 'W', 'Tiếp nhận bê tông · độ sụt · lấy mẫu', 'NCC E · NTC C · TVGS H'], ['bt', 'W', 'Đổ bê tông · ngập ống ≥ 1,5 m', 'FCS E · NTC H · TVGS Ra'], ['nt', 'H', 'Hoàn công · tổng hợp hồ sơ', 'FCS E · NTC H · TVGS H']] },
+  docs:[{ ten:'Shop drawing cọc khoan nhồi đại trà', so:'TTHC-BXN-SUN-FCS-SHO-0002-A', ver:'A', ngay:'2026-06-04', tt:'Đang hiệu lực', ghi:'Căn cứ biên bản hồ sơ cọc' },
+    { ten:'Shop drawing Kingpost', so:'TTHC-BXN-SUN-FCS-SHO-0004-A', ver:'A', ngay:'2026-06-12', tt:'Đang hiệu lực', ghi:'Kiểm tra lắp đặt Kingpost' },
+    { ten:'Shop drawing tường vây', so:'TTHC-BXN-SUN-FCS-SHO-0003 · DW Rev05', ver:'Rev05', ngay:'2026-07-08', tt:'Đang hiệu lực', ghi:'Gioăng cản nước +1,05 → −8,80' },
+    { ten:'ITP cọc khoan nhồi + Kingpost', so:'TTHC-BXN-SUN-FCS-ITP-0001-C', ver:'C', ngay:'2026-06-06', tt:'Đồng ý kèm điều kiện', ghi:'BQLDA: phê duyệt ITP, checklist phù hợp BVTK, spec, HĐ' },
+    { ten:'ITP tường vây', so:'TTHC-BXN-SUN-FCS-ITP-0003-A', ver:'A', ngay:'2026-06-01', tt:'Đồng ý kèm điều kiện', ghi:'Nước thủy cục để trộn bentonite' },
+    { ten:'ITP tường dẫn', so:'TTHC-BXN-SUN-FCS-ITP-0002-A', ver:'A', ngay:'2026-06-01', tt:'Đồng ý kèm điều kiện', ghi:'Bê tông lót B10, tường dẫn B15' }]
+};
+// Dung dịch: 2 mức — 'ok' đạt bảng ITP · 'bm' ngoài ITP nhưng còn trong biểu mẫu lý lịch · 'bad' ngoài cả hai
+// hàm lượng cát ghi "< 5 %" → cận trên không tính
+const ddIn = (k, r, x) => Array.isArray(r) && x >= r[0] && (k === 'cat' ? x < r[1] : x <= r[1]);
+const ddTxt = (k, r) => Array.isArray(r) ? (k === 'cat' && !r[0] ? '< ' + fmtN(r[1]) : fmtN(r[0]) + ' – ' + fmtN(r[1])) : '';
+const DD_KEYS = [['kl', 'KLR'], ['nhot', 'Nhớt'], ['ph', 'pH'], ['cat', 'Cát']];
+function ddLim(c, gd) {
+  const L = LIM(), tv = c && c.loai === 'tv', truoc = /Sau làm sạch|Trước đổ/.test(gd || '');
+  const itp = { kl:L.kl, nhot:truoc ? L.nhotTruoc : L.nhot, ph:L.ph, cat:L.cat };
+  const bm = (L.ddBM && L.ddBM[tv ? 'tv' : 'coc'] && L.ddBM[tv ? 'tv' : 'coc'][truoc ? 'truoc' : 'thuong']) || (tv ? { kl:[1.01, 1.15], nhot:truoc ? [18, 28] : [18, 45], ph:[8, 12], cat:[0, 5] } : (truoc ? { kl:[0, 1.25], nhot:[0, 28], ph:[7, 9], cat:[0, 8] } : { kl:[1.05, 1.15], nhot:[18, 45], ph:[7, 9], cat:[0, 5] }));
+  return { itp, bm };
+}
+function ddEval(c, d) {           // → {s:'ok'|'bm'|'bad'|'', bad:[...], bm:[...]}
+  const { itp, bm } = ddLim(c, d.gd);
+  const out = { s:'', bad:[], bm:[] };
+  let any = false;
+  DD_KEYS.forEach(([k, n]) => { const v = num(d[k]); if (!isFinite(v)) return; any = true; const inR = (r, x) => ddIn(k, r, x); if (!inR(itp[k], v)) { if (inR(bm[k], v)) out.bm.push(n); else out.bad.push(n); } });
+  out.s = !any ? '' : out.bad.length ? 'bad' : out.bm.length ? 'bm' : 'ok';
+  return out;
+}
+const DDB = { ok:['Đạt ITP', 'b-gr'], bm:['Chỉ đạt biểu mẫu', 'b-am'], bad:['Vượt', 'b-rd'], '':['—', 'b-gy'] };
 function itpOf(c) {
   const it = (B && B.cfg && B.cfg.itp) || {};
   const k = c && c.loai === 'tv' ? 'tv' : 'coc';
@@ -741,6 +789,15 @@ const YN = (k, l, opt, o) => Object.assign({ k, l, t:'yn', opt }, o || {});
 const C = (k, l, f, u, o) => Object.assign({ k, l, t:'calc', f, u }, o || {});
 const R = (k, cols, o) => Object.assign({ k, t:'rows', cols }, o || {});
 const row = (...f) => ({ row:f }), row3 = (...f) => ({ row3:f });
+// ô dung dịch: 2 mức theo ITP / biểu mẫu lý lịch
+const ddRng = key => (ctx, v) => {
+  const x = num(v); if (!isFinite(x)) return null;
+  const { itp, bm } = ddLim(ctx.c, ctx.d.gd), a = itp[key], b = bm[key];
+  const txt = r => ddTxt(key, r);
+  if (ddIn(key, a, x)) return { c:'o', m:`✓ đạt ITP ${txt(a)}` };
+  if (ddIn(key, b, x)) return { c:'w', m:`⚠ ngoài ITP ${txt(a)} · còn trong biểu mẫu ${txt(b)}` };
+  return { c:'w', m:`✕ vượt ITP ${txt(a)} và biểu mẫu ${txt(b)}` };
+};
 const rng = key => (ctx, v) => { const L = ctx.lim[key]; if (!Array.isArray(L) || !isFinite(num(v))) return null; const x = num(v); return x >= L[0] && x <= L[1] ? { c:'o', m:`✓ trong giới hạn ${fmtN(L[0])} – ${fmtN(L[1])}` } : { c:'w', m:`⚠ ngoài giới hạn ${fmtN(L[0])} – ${fmtN(L[1])} (theo BPTC)` }; };
 const maxL = key => (ctx, v) => { const L = ctx.lim[key]; if (!isFinite(+L) || !isFinite(num(v))) return null; return num(v) <= +L ? { c:'o', m:`✓ ≤ ${fmtN(L)}` } : { c:'w', m:`⚠ vượt ngưỡng ${fmtN(L)}` }; };
 const resMay = (ctx, k) => RES().may.filter(m => !k || !m[2] || k.test(m[2])).map(m => [m[0], m[0] + ' · ' + m[1]]);
@@ -755,9 +812,9 @@ const MODS = {
     ] : [
       { t:'🎯 Tim cọc · VN2000', f:[row(N('xTk', 'X thiết kế', '', { def:c => c.x, ro:1 }), N('yTk', 'Y thiết kế', '', { def:c => c.y, ro:1 })),
         row(N('xTt', 'X thực tế', 'm'), N('yTt', 'Y thực tế', 'm')),
-        row3(C('dX', 'ΔX', ctx => dmm(ctx.d.xTt, ctx.d.xTk), 'mm'), C('dY', 'ΔY', ctx => dmm(ctx.d.yTt, ctx.d.yTk), 'mm'),
+        row3(C('dX', 'ΔX', ctx => dmm(ctx.d.xTt, ctx.d.xTk), 'mm', { lim:(ctx, v) => axL(ctx, ctx.d.xTt, ctx.d.xTk) }), C('dY', 'ΔY', ctx => dmm(ctx.d.yTt, ctx.d.yTk), 'mm', { lim:(ctx, v) => axL(ctx, ctx.d.yTt, ctx.d.yTk) }),
           C('e', 'Sai lệch e', ctx => { const a = dmmN(ctx.d.xTt, ctx.d.xTk), b = dmmN(ctx.d.yTt, ctx.d.yTk); return isFinite(a) && isFinite(b) ? Math.round(Math.hypot(a, b)) : ''; }, 'mm', { lim:maxL('e') }))],
-        note:'e = √(ΔX² + ΔY²) · ngưỡng theo tiêu chí kỹ thuật dự án (Quản trị → Cấu hình) · tọa độ gốc giữ nguyên' },
+        note:'Dung sai ITP: ±50 mm theo từng trục X, Y (biên bản kiểm tra hố khoan) · e = √(ΔX² + ΔY²) để tham khảo · tọa độ gốc giữ nguyên' },
       { t:'🛢️ Ống vách', f:[row(T('ovD', 'Đường kính ngoài', { ph:'Theo BPTC' }), N('ovL', 'Chiều dài', 'm')), row(N('ovZ', 'Z đỉnh ống (mốc)', 'm', { def:c => dz(c).gl }), N('thang', 'Độ thẳng đứng', '%', { lim:maxL('nghieng') })),
         row(S('may', 'Máy hạ ống', ctx => resMay(ctx)), S('to', 'Tổ đội', ctx => RES().to)), T('nguoiDo', 'Người đo', { def:() => me.name })] }
     ] },
@@ -779,7 +836,7 @@ const MODS = {
       { t:'📡 Thiết bị & dữ liệu', f:[YN('thuoc', 'Cấu kiện thuộc danh sách kiểm tra?', [[1, 'Có'], [0, 'Không']]), row(S('tb', 'Thiết bị đo', ctx => RES().do.map(x => x[0])), T('tep', 'Tệp dữ liệu gốc')),
         row(N('sauDo', 'Chiều sâu đo được', 'm'), N('beDay', 'Bề dày / Ø nhỏ nhất', 'mm'))] },
       { t:'📉 Độ lệch theo chiều sâu', f:[R('rows', [{ k:'sau', l:'Sâu (m)', t:'num' }, { k:'x', l:'Lệch X (mm)', t:'num' }, { k:'y', l:'Lệch Y (mm)', t:'num' }], { add:'＋ Thêm điểm đo' }),
-        row(C('ngTinh', 'Nghiêng lớn nhất (tính)', ctx => { const v = ngMax(ctx.d.rows); return isFinite(v) ? fmtN(v, 2) : ''; }, '%', { lim:(ctx, v) => maxL('nghieng')(ctx, ngMax(ctx.d.rows)) }), N('ng', 'Hoặc nhập tay', '%', { lim:maxL('nghieng') }))] },
+        row(C('ngTinh', 'Nghiêng lớn nhất (tính)', ctx => { const v = ngMax(ctx.d.rows); return isFinite(v) ? fmtN(v, 2) : ''; }, '%', { lim:(ctx, v) => ngL(ctx, ngMax(ctx.d.rows)) }), N('ng', 'Hoặc nhập tay', '%', { lim:(ctx, v) => ngL(ctx, v) }))] },
       { t:'🧾 Kết luận', f:[YN('kl', '', [['', 'Chưa kết luận'], ['dat', 'Đạt', 'g'], ['kd', 'Không đạt', 'r']]), A('ghiChu', 'Ghi chú')],
         note:'ℹ️ Thiếu mốc, đơn vị hoặc ngưỡng thì app chỉ lưu dữ liệu, không tự kết luận Đạt / Không đạt.' }
     ] },
@@ -788,8 +845,8 @@ const MODS = {
     sec:ctx => [
       { t:'🧪 Mẫu kiểm tra', f:[row(T('mau', 'Mã mẫu', { def:c => 'M-' + c.code + '-' + pad2(recsOf(c.code, 'dd').length + 1) }), S('ddLoai', 'Dung dịch', ['Bentonite', 'Polymer'])),
         row(S('loai', 'Loại mẫu', ['Trong hố', 'Dung dịch mới', 'Thu hồi']), S('gd', 'Giai đoạn', ['Trong khi khoan', 'Trước làm sạch', 'Sau làm sạch', 'Trước đổ'])), T('viTri', 'Vị trí lấy mẫu', { ph:'VD: cách đáy 0,5 m' })] },
-      { t:'📊 Chỉ tiêu', f:[row(N('kl', 'Khối lượng riêng', 'g/cm³', { lim:rng('kl') }), N('nhot', 'Độ nhớt Marsh', 's', { lim:rng('nhot') })), row(N('cat', 'Hàm lượng cát', '%', { lim:rng('cat') }), N('ph', 'pH', '', { lim:rng('ph') }))],
-        note:'Giới hạn theo biện pháp thi công đã duyệt (Quản trị → Cấu hình) · mẫu "Sau làm sạch" dùng cho kiểm tra trước đổ' }
+      { t:'📊 Chỉ tiêu', f:[row(N('kl', 'Khối lượng riêng', 'g/cm³', { lim:ddRng('kl') }), N('nhot', 'Độ nhớt Marsh', 's', { lim:ddRng('nhot') })), row(N('cat', 'Hàm lượng cát', '%', { lim:ddRng('cat') }), N('ph', 'pH', '', { lim:ddRng('ph') }))],
+        note:'Giới hạn theo ITP đã duyệt (TCVN 9395:2012): xanh = đạt ITP · vàng = ngoài ITP nhưng còn trong biểu mẫu lý lịch · đỏ = vượt cả hai. Mẫu "Sau làm sạch / Trước đổ" dùng giới hạn trước đổ bê tông.' }
     ] },
   moinoi:{ t:'Mối nối & trình tự', i:'🔗', ck:'req', qa:1, only:'tv',
     top:ctx => `<div data-live="nb">${liveNb(ctx)}</div>`, live:{ nb:liveNb },
@@ -919,6 +976,8 @@ const MODS = {
 const QUICK = [['dv','🎯','Định vị'],['khoan','⛏️','Khoan / cạp'],['dd','💧','Dung dịch'],['lt','🧱','Lồng thép'],['xe','🚚','Xe bê tông'],['bt','📏','Tremie'],['kl','🧮','Khối lượng'],['sk','⚠️','Sự kiện'],['bg','🤝','Bàn giao ca']];
 
 // ---------- hàm phụ cho biểu mẫu ----------
+const axL = (ctx, a, b) => { const v = dmmN(a, b), L = ctx.lim.exy; if (!isFinite(v)) return null; return Math.abs(v) <= L ? { c:'o', m:`✓ ≤ ±${L} mm` } : { c:'w', m:`⚠ vượt ±${L} mm (ITP)` }; };
+const ngL = (ctx, v) => { const L = ctx.c && ctx.c.loai === 'tv' ? ctx.lim.ngTV : ctx.lim.nghieng, x = num(v); if (!isFinite(x)) return null; return x <= L ? { c:'o', m:`✓ ≤ ${fmtN(L, 1)}% (${ctx.c && ctx.c.loai === 'tv' ? 'TCVN 14213-2:2024' : '1/100'})` } : { c:'w', m:`⚠ vượt ${fmtN(L, 1)}%` }; };
 const dmmN = (a, b) => (num(a) - num(b)) * 1000;
 const dmm = (a, b) => { const v = dmmN(a, b); return isFinite(v) ? (v > 0 ? '+' : '') + Math.round(v) : ''; };
 function minDiff(a, b) { if (!a || !b) return NaN; const [h1, m1] = a.split(':').map(Number), [h2, m2] = b.split(':').map(Number); let d = (h2 * 60 + m2) - (h1 * 60 + m1); if (d < 0) d += 1440; return d; }
@@ -956,8 +1015,7 @@ function liveHH(ctx) {
 }
 function liveDD(ctx) {
   const l = recsOf(ctx.c.code, 'dd').filter(r => !ctx.rec || r.id !== ctx.rec.id).slice(-4).reverse();
-  if (!l.length) return '';
-  const L = LIM(), ok = r => ['kl', 'nhot', 'cat', 'ph'].every(k => !isFinite(num(r.d[k])) || !Array.isArray(L[k]) || (num(r.d[k]) >= L[k][0] && num(r.d[k]) <= L[k][1]));
+  return `<div class="card"><div class="pad" style="padding-bottom:4px"><span class="sec-title">Mẫu trước của ${esc(ctx.c.code)}</span></div>${l.map(r => { const e = ddEval(ctx.c, r.d); return `<div class="row"><div class="ico">💧</div><div class="rmain"><div class="rname">${esc(r.d.mau || '')} · ${esc(r.d.loai || '')}</div><div class="rsub">${esc(r.d.gd || '')} · ${fmtN(r.d.kl, 2)} · ${fmtN(r.d.nhot)} s · cát ${fmtN(r.d.cat, 1)}%</div></div><span class="badge ${DDB[e.s][1]}">${DDB[e.s][0]}</span></div>`; }).join('')}</div>`;
   return `<div class="card"><div class="pad" style="padding-bottom:4px"><span class="sec-title">Mẫu trước của ${esc(ctx.c.code)}</span></div>${l.map(r => `<div class="row"><div class="ico">💧</div><div class="rmain"><div class="rname">${esc(r.d.mau || '')} · ${esc(r.d.loai || '')}</div><div class="rsub">${esc(r.d.gd || '')} · ${fmtN(r.d.kl, 2)} · ${fmtN(r.d.nhot)} s · cát ${fmtN(r.d.cat, 1)}%</div></div><span class="badge ${ok(r) ? 'b-gr' : 'b-rd'}">${ok(r) ? 'Đạt' : 'Vượt'}</span></div>`).join('')}</div>`;
 }
 function liveNb(ctx) {
@@ -970,7 +1028,7 @@ function liveTruoc(ctx) {
   const c = ctx.c, L = LIM(), z = dz(c), d = ctx.d;
   const kh = recsOf(c.code, 'khoan'), dep = depthNow(c.code), xong = kh.some(r => +r.d.xong === 1);
   const hh = lastOf(c.code, 'hh'), dd = recsOf(c.code, 'dd').filter(r => /Sau làm sạch|Trước đổ/.test(r.d.gd || '')).slice(-1)[0];
-  const ddOk = dd && ['kl', 'nhot', 'cat', 'ph'].every(k => !isFinite(num(dd.d[k])) || !Array.isArray(L[k]) || (num(dd.d[k]) >= L[k][0] && num(dd.d[k]) <= L[k][1]));
+  const ddE = dd ? ddEval(c, dd.d) : null, ddOk = ddE && ddE.s !== 'bad';
   const cans = ['can1', 'can2', 'can3'].map(k => num(d[k])).filter(isFinite), canOk = cans.length && cans.every(v => v <= L.can);
   const lt = lastOf(c.code, 'lt'), kb = recsOf(c.code, 'khbt').slice(-1)[0];
   const it = (ok, t, s) => `<div class="row"><div class="ico ${ok === 1 ? 'gr' : ok === 0 ? 'rd' : 'gy'}">${ok === 1 ? '✓' : ok === 0 ? '✕' : '…'}</div><div class="rmain"><div class="rname">${t}</div><div class="rsub">${s}</div></div></div>`;
@@ -979,7 +1037,7 @@ function liveTruoc(ctx) {
   return `<div class="note ${hold ? 'n-ok' : 'n-err'}">${hold ? '✅' : '✋'}<span>${hold ? '<b>Đã giải phóng Hold</b> — được đổ bê tông' : '<b>Chưa được đổ bê tông</b>' + (st === 'gui' ? ' — đang chờ QA/QC giải phóng điểm Hold' : ' — hoàn tất các mục rồi gửi kiểm tra')}</span></div>
   <div class="card mt8">${it(xong ? 1 : dep ? null : 0, 'Chiều sâu đạt thiết kế', dep ? `Sâu ${fmtN(dep, 2)} m · Z đáy ${fmtZ(z.gl - dep)}${xong ? '' : ' · chưa chốt "Đạt" ở nhật ký'}` : 'Chưa có nhật ký khoan')}
     ${it(hh ? 1 : null, 'Hình học hố', hh ? (hh.d.thuoc == 0 ? 'Không thuộc danh sách kiểm tra' : 'Nghiêng ' + fmtN(isFinite(num(hh.d.ng)) ? hh.d.ng : ngMax(hh.d.rows), 2) + '%') : 'Chưa ghi (nếu thuộc danh sách)')}
-    ${it(dd ? (ddOk ? 1 : 0) : null, 'Dung dịch sau làm sạch', dd ? `${fmtN(dd.d.kl, 2)} · ${fmtN(dd.d.nhot)} s · cát ${fmtN(dd.d.cat, 1)}%` : 'Chưa có mẫu "Sau làm sạch"')}
+    ${it(dd ? (ddOk ? 1 : 0) : null, 'Dung dịch sau làm sạch', dd ? `${fmtN(dd.d.kl, 2)} · ${fmtN(dd.d.nhot)} s · cát ${fmtN(dd.d.cat, 1)}% · ${DDB[ddE.s][0]}` : 'Chưa có mẫu "Sau làm sạch"')}
     ${it(cans.length ? (canOk ? 1 : 0) : null, 'Cặn đáy', cans.length ? cans.map(v => fmtN(v)).join(' · ') + ' mm · ≤ ' + fmtN(L.can) : 'Nhập ở dưới')}
     ${it(lt ? 1 : null, 'Lồng thép đã hạ', lt ? `${fmtN(lt.d.n)} lồng · treo ${fmtZ(lt.d.zTreo)}` : 'Chưa ghi lồng thép')}
     ${it(kb ? 1 : null, 'Kế hoạch bê tông', kb ? `${esc(kb.d.capPhoi || '')} · ${fmtN(kb.d.m3)} m³ · ${dmy(kb.ngay)} ${esc(kb.d.gio || '')}` : 'Chưa đăng ký')}</div>`;
@@ -993,7 +1051,8 @@ function liveKhoLt(ctx) {
 function liveBT(ctx) {
   const c = ctx.c, z = dz(c), L = LIM(), rows = (ctx.d.rows || []).filter(r => isFinite(num(r.v)) || isFinite(num(r.zMat)));
   const last = rows[rows.length - 1] || {}, vx = vXe(c.code);
-  const v = Math.max(num(last.v) || 0, 0), h = num(last.zMat) - num(last.zOng);
+  const v = Math.max(num(last.v) || 0, num(ctx.d.luyKe) || 0, 0), h = num(last.zMat) - num(last.zOng);
+  if (!isFinite(num(last.zMat)) && isFinite(num(ctx.d.zCuoi))) last.zMat = ctx.d.zCuoi;
   const seg = +L.ongDoan || 3;
   const toe = z.tv ? z.toe : z.toe, top = z.tv ? z.top : z.col;
   let chart = '';
@@ -1025,7 +1084,7 @@ function liveITP(ctx) {
   const st = pts.map(p => [p, itpState(c, p[0])]);
   const miss = st.filter(x => x[1].s !== 'done' && x[0][0] !== 'tn' && x[0][0] !== 'hh');
   return `<div class="card"><div class="pad" style="padding-bottom:4px"><span class="sec-title">Bộ hồ sơ ${esc(c.code)}</span> <span class="small">· ${st.filter(x => x[1].s === 'done').length} / ${st.length} điểm đã xác nhận</span></div>
-    ${st.map(x => `<div class="row tap" onclick="openForm('${x[0][0]}','${esc(c.code)}')"><span class="tag ${x[0][1] === 'H' ? 'b-rd' : x[0][1] === 'W' ? 'b-am' : 'b-bl'}">${x[0][1]}</span><div class="rmain"><div class="rname">${esc(x[0][2])}</div><div class="rsub">${x[1].r ? esc(x[1].r.byName || '') + ' · ' + dmy(x[1].r.ngay) : 'chưa có bản ghi'}</div></div><span class="badge ${{ done:'b-gr', wait:'b-am', bad:'b-rd', now:'b-or', draft:'b-gy', none:'b-gy' }[x[1].s]}">${x[1].t}</span></div>`).join('')}</div>
+    ${st.map(x => `<div class="row tap" onclick="openForm('${x[0][0]}','${esc(c.code)}')"><span class="tag ${x[0][1] === 'H' ? 'b-rd' : x[0][1] === 'W' ? 'b-am' : 'b-bl'}">${x[0][1]}</span><div class="rmain"><div class="rname">${esc(x[0][2])}</div><div class="rsub">${x[1].r ? esc(x[1].r.byName || '') + ' · ' + dmy(x[1].r.ngay) : 'chưa có bản ghi'}${x[0][3] ? ' · <span class="c-mut">' + esc(x[0][3]) + '</span>' : ''}</div></div><span class="badge ${{ done:'b-gr', wait:'b-am', bad:'b-rd', now:'b-or', draft:'b-gy', none:'b-gy' }[x[1].s]}">${x[1].t}</span></div>`).join('')}</div>
     ${miss.length ? `<div class="note n-warn mt8">📎<span>Chưa xác nhận: ${miss.map(x => esc(x[0][2])).join(', ')}</span></div>` : '<div class="note n-ok mt8">✅<span>Các điểm chính đã xác nhận.</span></div>'}`;
 }
 function bgSnap() {
@@ -1097,12 +1156,20 @@ VIEWS.form = {
     const stb = r ? `<div class="stbar ${r.st === 'tra' ? 'n-err' : r.st === 'gui' ? 'n-warn' : r.st === 'xn' || r.st === 'duyet' ? 'n-ok' : 'n-gy'}" style="background:${r.st === 'tra' ? '#FDECEC' : r.st === 'gui' ? '#FFF7E0' : r.st === 'xn' || r.st === 'duyet' ? '#E9F7EF' : '#F0F2F5'}"><span class="badge ${RST[r.st] ? RST[r.st][1] : 'b-gy'}">${RST[r.st] ? RST[r.st][0] : r.st}</span><span style="flex:1">${esc(r.byName || '')}${r._pend ? ' · <b>chờ gửi</b>' : ''}${r.rev > 1 ? ' · sửa ' + (r.rev - 1) + ' lần' : ''}</span>${lastNote(r)}</div>` : '';
     const ckLine = M.ck === 'opt' || (M.ck === 'req' && !r) ? `<div class="card pad tap" style="display:flex;align-items:center;gap:10px;padding:10px 14px" ${ed ? 'onclick="fPickCk()"' : ''}><div class="ico gy">${c ? (c.loai === 'tv' ? '▬' : '●') : '🏗️'}</div><div class="rmain"><div class="small">Cấu kiện</div><div class="rname">${c ? esc(c.code) + ' <span class="small">· ' + esc(stepLabel(c)) + '</span>' : (M.ck === 'opt' ? 'Không gắn cấu kiện' : 'Chưa chọn')}</div></div>${ed ? '<span class="sec-link">Đổi ›</span>' : ''}</div>` : '';
     const body = `<div class="dbody">${stb}${ckLine}${M.top ? M.top(ctx) : ''}<div id="fbody" style="display:flex;flex-direction:column;gap:12px">${formBody(ctx, ed)}</div>
-      ${photoBlock(ed)}${r && r.sign && r.sign.length ? signBlock(r) : ''}${r && r.d._xungDot ? `<div class="note n-warn">⚠️<span>Bản này được giữ do sửa cùng lúc với bản ${esc(r.d._xungDot)} trên máy khác — đối chiếu rồi hủy bản thừa.</span></div>` : ''}</div>`;
+      ${r && r.d.nguon ? extraBlock(r) : ''}${photoBlock(ed)}${r && r.sign && r.sign.length ? signBlock(r) : ''}${r && r.d._xungDot ? `<div class="note n-warn">⚠️<span>Bản này được giữ do sửa cùng lúc với bản ${esc(r.d._xungDot)} trên máy khác — đối chiếu rồi hủy bản thừa.</span></div>` : ''}</div>`;
     return shell({ back:1, title:esc(title), sub:esc(sub), body, act:formActs(ed) });
   },
   after() { refreshCalc(); }
 };
 function fPickCk() { pickCk(code => { F.code = code; F.dirty = true; render(false); }, { mod:F.mod }); }
+// số liệu nạp từ sổ hồ sơ mà biểu mẫu không có ô riêng
+const XLBL = { tu:'Bắt đầu', den:'Kết thúc', matDat:'Cao độ mặt đất tự nhiên', sauTK:'Chiều sâu thiết kế (m)', sauKhoan:'Sâu sau khoan (m)', sauVet:'Sâu sau vét lắng (m)', sauCuoi:'Sâu trước đổ (m)', lOng:'Chiều dài ống đổ (m)', haOng:'Hạ ống đổ', giaCong:'Gia công lồng', haTu:'Hạ lồng từ', haDen:'Hạ lồng đến', thepTreo:'Thép treo lồng (m)', zDungTK:'Z dừng đổ TK', ncc:'Đơn vị cấp bê tông', thoiTiet:'Thời tiết', rutCasing:'Rút casing', lapDau:'Lấp đầu cọc', gioDi:'Xe khởi hành', batDau:'Bắt đầu', ketThuc:'Kết thúc', kiemTra:'Kiểm tra tấm ngăn nước', thanhGiu:'Hạ thanh giữ', ngX:'Koden X–X’ (%)', ngY:'Koden Y–Y’ (%)', diem:'Sâu 3 điểm (m)', gio:'Giờ' };
+function extraBlock(r) {
+  const keys = new Set(); const walk = l => (l || []).forEach(f => { if (f.row || f.row3) walk(f.row || f.row3); else keys.add(f.k); }); secs(formCtx()).forEach(s => walk(s.f));
+  const kv = Object.keys(r.d).filter(k => XLBL[k] && !keys.has(k) && r.d[k] !== '' && r.d[k] !== null && r.d[k] !== undefined).map(k => `<div class="kv"><span>${XLBL[k]}</span><b>${esc(Array.isArray(r.d[k]) ? r.d[k].join(' / ') : typeof r.d[k] === 'number' ? fmtN(r.d[k], 2) : r.d[k])}</b></div>`);
+  if (r.d.kp && r.d.kp.ten) kv.push(`<div class="kv"><span>Hạ kingpost</span><b>${esc(r.d.kp.ten)} · ${esc(r.d.kp.tu || '')}${r.d.kp.den ? '–' + esc(r.d.kp.den) : ''}${r.d.kp.topTT !== '' && r.d.kp.topTT !== undefined ? ' · đỉnh ' + fmtZ(r.d.kp.topTT) : ''}</b></div>`);
+  return `<div class="fsec"><div class="fsec-t">📚 Số liệu từ sổ hồ sơ<small>nạp Excel</small></div><div class="kv-box">${kv.join('') || '<div class="kv"><span>Không có số liệu thêm</span></div>'}</div></div>`;
+}
 function lastNote(r) { const t = (r.sign || []).filter(s => s.act === 'tra').slice(-1)[0]; return r.st === 'tra' && t ? `<span class="small" style="color:#9B1C1C">${esc(t.note || '')}</span>` : ''; }
 function formBody(ctx, ed) {
   return secs(ctx).map(s => {
@@ -1209,7 +1276,7 @@ function shrink(file, max, q) {
   });
 }
 // ---------- lịch sử xác nhận ----------
-const ACTN = { tao:'Tạo', gui:'Gửi kiểm tra', xn:'Xác nhận', tra:'Trả về', duyet:'Duyệt', dong:'Đóng', mo:'Mở lại', huy:'Hủy', sua:'Sửa', xungdot:'Xung đột', nhan:'Nhận ca', phanhoi:'Phản hồi' };
+const ACTN = { nap:'Nạp sổ', tao:'Tạo', gui:'Gửi kiểm tra', xn:'Xác nhận', tra:'Trả về', duyet:'Duyệt', dong:'Đóng', mo:'Mở lại', huy:'Hủy', sua:'Sửa', xungdot:'Xung đột', nhan:'Nhận ca', phanhoi:'Phản hồi' };
 function signBlock(r) {
   return `<div class="fsec"><div class="fsec-t">🕘 Lịch sử<small>ai · lúc nào · căn cứ</small></div><div class="signs">${r.sign.slice().reverse().map(s => `<div><b>${ACTN[s.act] || s.act}</b><span style="flex:1">${esc(s.byName || '')}${s.note ? ' · ' + esc(s.note) : ''}${s.diff && s.diff.length ? '<br><span class="small">' + s.diff.slice(0, 6).map(x => esc(x[0]) + ': ' + esc(x[1]) + ' → ' + esc(x[2])).join(' · ') + '</span>' : ''}</span><span class="small">${esc(s.at || '')}</span></div>`).join('')}</div></div>`;
 }
@@ -1452,7 +1519,7 @@ function geo() {
   let x0 = 1e9, x1 = -1e9, y0 = 1e9, y1 = -1e9;
   const ext = p => { x0 = Math.min(x0, p[0]); x1 = Math.max(x1, p[0]); y0 = Math.min(y0, p[1]); y1 = Math.max(y1, p[1]); };
   all.forEach(c => {
-    if (c.loai === 'tv' && c.m.a && c.m.b) { const a = tf(c.m.a[0], c.m.a[1]), b = tf(c.m.b[0], c.m.b[1]); pts[c.code] = { a, b, p:[(a[0] + b[0]) / 2, (a[1] + b[1]) / 2] }; ext(a); ext(b); }
+    if (c.loai === 'tv' && c.m.a && c.m.b) { const a = tf(c.m.a[0], c.m.a[1]), b = tf(c.m.b[0], c.m.b[1]); const pl = Array.isArray(c.m.poly) && c.m.poly.length >= 3 ? c.m.poly.map(q => tf(q[0], q[1])) : null; pts[c.code] = { a, b, pl, p:[(a[0] + b[0]) / 2, (a[1] + b[1]) / 2] }; ext(a); ext(b); }
     else if (c.x && c.y) { const p = tf(c.x, c.y); pts[c.code] = { p }; ext(p); }
   });
   const poly = (B.cfg.poly || []).map(q => tf(q[0], q[1])); poly.forEach(ext);
@@ -1505,7 +1572,9 @@ function drawPlan() {
   Object.values(CK).forEach(c => {
     const q = g.pts[c.code]; if (!q) return;
     const on = planMatch(c), op = any && !on ? 0.18 : 1, col = ST[c.st].c;
-    if (q.a) {
+    if (q.pl && ppm > 3.5) {
+      s += `<polygon data-c="${esc(c.code)}" points="${q.pl.map(p => p[0].toFixed(2) + ',' + (-p[1]).toFixed(2)).join(' ')}" fill="${col}" stroke="${c.flag === 'tt' ? '#E74C3C' : '#0B2545'}" stroke-width="${(c.flag === 'tt' ? 2 : 0.6) * sw}" opacity="${op}"/>`;
+    } else if (q.a) {
       const t = Math.max((c.m.t || 0.8), 3.2 / ppm);
       s += `<line data-c="${esc(c.code)}" x1="${q.a[0].toFixed(2)}" y1="${(-q.a[1]).toFixed(2)}" x2="${q.b[0].toFixed(2)}" y2="${(-q.b[1]).toFixed(2)}" stroke="${col}" stroke-width="${t.toFixed(2)}" opacity="${op}"/>`;
       if (c.flag === 'tt') s += `<line x1="${q.a[0].toFixed(2)}" y1="${(-q.a[1]).toFixed(2)}" x2="${q.b[0].toFixed(2)}" y2="${(-q.b[1]).toFixed(2)}" stroke="#E74C3C" stroke-width="${(t * 0.35).toFixed(2)}" opacity="${op}"/>`;
@@ -1556,13 +1625,82 @@ function nearestCk(e) {           // chạm gần (ngón tay to): lấy cấu ki
 }
 function peekHtml() {
   const c = CK[PV.sel];
+  if (c) setTimeout(() => peekLoad(c.code), 0);
   if (!c) return `<div class="legend"><span><i style="background:#27AE60"></i>Nghiệm thu</span><span><i style="background:#0056A4"></i>Đã đổ</span><span><i style="background:#F26522"></i>Đang làm</span><span><i style="background:#F2C230"></i>Sắp làm</span><span><i style="background:#fff;box-shadow:inset 0 0 0 1.5px #9AA8BA"></i>Chưa làm</span><span><i style="background:#fff;box-shadow:inset 0 0 0 2px #E74C3C"></i>Có tồn tại</span></div>`;
   const z = dz(c);
   const k3 = c.loai === 'tv' ? [['Dài', fmtN(z.L, 2) + ' m'], ['Đáy', fmtZ(z.toe)], ['V LT', fmtN(z.vlt, 1) + ' m³']] : [['Z mũi', fmtZ(z.toe)], ['L khoan', fmtN(z.Lk, 1) + ' m'], ['V LT', fmtN(z.vlt, 2) + ' m³']];
   return `<div class="card pad"><div class="split"><div><b style="font-size:18px;color:var(--navy)">${esc(c.code)}</b><div class="small">${esc(ckDesc(c))}${c.kv && c.kv !== 'TV' ? ' · ' + esc(c.kv) : ''}</div></div><span class="badge ${ST[c.st].b}">${ST[c.st].t}</span></div>
     <div class="small mt8" style="color:var(--text2)">${esc(stepLabel(c))}${c.flag === 'tt' ? ' · <b class="c-rd">có NCR đang mở</b>' : ''}</div>
-    <div class="mini3">${k3.map(x => `<div>${x[0]}<b>${x[1]}</b></div>`).join('')}</div>
+    <div id="pk-ht" class="mt8">${CKREC[c.code] ? htHtml(c) : `<div class="mini3">${k3.map(x => `<div>${x[0]}<b>${x[1]}</b></div>`).join('')}</div><div class="small mt8"><span class="spin" style="display:inline-block;width:12px;height:12px;vertical-align:-2px"></span> Đang tải mặt cắt & hiện trạng…</div>`}</div>
     <div style="display:flex;gap:8px;margin-top:12px"><button class="btn ghost sm" onclick="PV.sel='';$('#peek').innerHTML=peekHtml();drawPlan()">Đóng</button>${c.loai !== 'tv' && c.truc ? `<button class="btn ghost sm" onclick="go('sec',{code:'${esc(c.code)}'})">📐 Mặt cắt</button>` : ''}<button class="btn sm" onclick="go('ck',{code:'${esc(c.code)}'})">Hồ sơ ›</button></div></div>`;
+}
+async function peekLoad(code) {
+  if (CKREC[code] && !CKREC[code].stale) return;
+  await loadCk(code, true);
+  const el = $('#pk-ht'); if (el && PV.sel === code && CK[code]) el.innerHTML = htHtml(CK[code]);
+}
+// ---------- Mặt cắt 1 cấu kiện + hiện trạng (bấm vào cọc / panel) ----------
+function htData(c) {
+  const z = dz(c), m = c.m || {}, g = k => lastOf(c.code, k);
+  const dv = g('dv'), kh = g('khoan'), hh = g('hh'), tr = g('truoc'), lt = g('lt'), bt = g('bt'), dds = recsOf(c.code, 'dd'), dd = dds[dds.length - 1];
+  const dep = depthNow(c.code), xe = vXe(c.code);
+  const zDay = dep ? z.gl - dep : NaN;
+  const zCuoi = bt && isFinite(num(bt.d.zCuoi)) ? num(bt.d.zCuoi) : (bt && bt.d.rows && bt.d.rows.length ? num(bt.d.rows[bt.d.rows.length - 1].zMat) : NaN);
+  const vtt = bt && isFinite(num(bt.d.luyKe)) && num(bt.d.luyKe) > 0 ? num(bt.d.luyKe) : xe.v;
+  let e = NaN; if (dv && c.loai !== 'tv') { const a = dmmN(dv.d.xTt, dv.d.xTk), b = dmmN(dv.d.yTt, dv.d.yTk); if (isFinite(a) && isFinite(b)) e = Math.round(Math.hypot(a, b)); } else if (dv) e = num(dv.d.sai);
+  return { z, m, dv, kh, hh, tr, lt, bt, dd, dep, xe, zDay, zCuoi, vtt, e, done:!!(bt && bt.d.ketThuc) };
+}
+function elevSvg(c, H) {
+  const D = htData(c), z = D.z, m = D.m, tv = c.loai === 'tv';
+  H = H || 250; const W = 132;
+  const top = Math.max(z.gl, isFinite(m.matDat) ? m.matDat : -99, m.kp && isFinite(m.kp.top) ? m.kp.top : -99) + 0.6;
+  const bot = Math.min(isFinite(z.toe) ? z.toe : 0, isFinite(D.zDay) ? D.zDay : 0) - 1.5;
+  // 2 đoạn tỉ lệ: phần trên (tới cắt đầu cọc / gioăng) phóng to
+  const brk = tv ? (isFinite(z.gBot) ? z.gBot - 1 : -10) : Math.min(isFinite(m.cut) ? m.cut : z.col, m.kp && isFinite(m.kp.top) && isFinite(m.kp.L) ? m.kp.top - m.kp.L : 0) - 1.5;
+  const hTop = H * 0.42;
+  const Y = v => v >= brk ? 6 + (top - v) / (top - brk) * hTop : 6 + hTop + (brk - v) / (brk - bot) * (H - 12 - hTop);
+  const x0 = 46, w = tv ? 40 : 22, cx = x0 + w / 2;
+  const st = ST[c.st], fill = D.done ? (c.st === 'nt' ? '#27AE60' : '#0056A4') : '#F26522';
+  let s = `<rect x="${x0 - 14}" y="${Y(z.gl)}" width="${w + 28}" height="${H - 6 - Y(z.gl)}" fill="#FFF6E5"/>`;
+  s += `<line x1="0" x2="${W}" y1="${Y(z.gl)}" y2="${Y(z.gl)}" stroke="#7A5C3A" stroke-width="1.4"/>`;
+  // hố khoan (thiết kế) + đáy thực tế
+  s += `<rect x="${x0}" y="${Y(z.gl)}" width="${w}" height="${Y(z.toe) - Y(z.gl)}" fill="#fff" stroke="#9AA8BA" stroke-dasharray="3 2"/>`;
+  if (isFinite(D.zDay)) s += `<rect x="${x0}" y="${Y(z.gl)}" width="${w}" height="${Y(D.zDay) - Y(z.gl)}" fill="#EEF4FF" stroke="#5A6A7A"/>`;
+  // bê tông
+  const zbt = D.done ? (isFinite(D.zCuoi) ? D.zCuoi : (tv ? z.top : z.col)) : D.zCuoi;
+  const zb = isFinite(D.zDay) ? D.zDay : z.toe;
+  if (isFinite(zbt)) s += `<rect x="${x0 + 1}" y="${Y(zbt)}" width="${w - 2}" height="${Y(zb) - Y(zbt)}" fill="${fill}" opacity=".9"/>`;
+  if (tv && isFinite(z.gTop)) s += `<rect x="${x0 - 3}" y="${Y(z.gTop)}" width="3" height="${Y(z.gBot) - Y(z.gTop)}" fill="#0B2545"/><rect x="${x0 + w}" y="${Y(z.gTop)}" width="3" height="${Y(z.gBot) - Y(z.gTop)}" fill="#0B2545"/>`;
+  if (m.kp && isFinite(m.kp.top) && isFinite(m.kp.L)) { const kt = isFinite(m.kp.topTT) ? m.kp.topTT : m.kp.top; s += `<rect x="${cx - 2.5}" y="${Y(kt)}" width="5" height="${Y(kt - m.kp.L) - Y(kt)}" fill="#1A2332"/>`; }
+  // nhãn cao độ (tránh chồng)
+  const lab = [[z.gl, tv ? 'Đỉnh tường dẫn' : 'Đỉnh casing', '#7A5C3A'], [tv ? z.top : z.col, 'Dừng đổ TK', '#1E7A45'], [D.zCuoi, 'Dừng đổ TT', '#0056A4'], [m.cut, 'Cắt đầu cọc', '#5A6A7A'], [m.kp && m.kp.top, 'Đỉnh KP', '#1A2332'], [z.toe, tv ? 'Đáy TK' : 'Mũi TK', '#5A6A7A'], [D.zDay, 'Đáy TT', '#B42318']]
+    .filter(l => isFinite(l[0])).sort((a, b) => b[0] - a[0]);
+  let ly = -99;
+  lab.forEach((l, i) => { const y = Y(l[0]); s += `<line x1="${x0 + w}" x2="${x0 + w + 6}" y1="${y}" y2="${y}" stroke="${l[2]}"/>`; const yy = Math.min(Math.max(y + 3, ly + 10), H - 3 - (lab.length - 1 - i) * 10); s += `<text x="${x0 + w + 8}" y="${yy}" font-size="8.5" font-weight="800" fill="${l[2]}">${fmtZ(l[0])}</text>`; ly = yy; });
+  const lab2 = lab.map(l => l[1]);
+  return { svg:`<svg viewBox="0 0 ${W} ${H}" width="${W}" height="${H}" style="flex-shrink:0">${s}</svg>`, D, lab2 };
+}
+function htHtml(c, H) {
+  const E = elevSvg(c, H), D = E.D, z = D.z, m = D.m, tv = c.loai === 'tv';
+  const kv = [];
+  const P1 = (k, v, cl) => kv.push(`<div class="htk"><span>${k}</span><b ${cl ? `class="${cl}"` : ''}>${v}</b></div>`);
+  P1('Trạng thái', `<span class="badge ${ST[c.st].b}" style="padding:2px 7px;font-size:10.5px">${ST[c.st].t}</span>`);
+  if (D.dep) P1(tv ? 'Sâu cạp TT / TK' : 'Sâu khoan TT / TK', fmtN(D.dep, 2) + ' / ' + fmtN(D.kh && isFinite(num(D.kh.d.sauTK)) ? D.kh.d.sauTK : z.Lk, 2) + ' m');
+  if (isFinite(D.zDay)) P1('Z đáy TT', fmtZ(D.zDay) + (isFinite(z.toe) ? ' <small class="c-mut">(' + (D.zDay - z.toe >= 0 ? '+' : '−') + fmtN(Math.abs(D.zDay - z.toe) * 100, 0) + ' cm)</small>' : ''));
+  if (D.vtt) P1('Bê tông TT / LT', fmtN(D.vtt, 1) + ' / ' + fmtN(z.vlt, 2) + ' m³ <small class="' + (D.vtt / z.vlt - 1 > 0.15 ? 'c-rd' : 'c-mut') + '">(' + (D.vtt >= z.vlt ? '+' : '') + fmtN((D.vtt / z.vlt - 1) * 100, 1) + '%)</small>');
+  if (isFinite(D.zCuoi)) P1('Dừng đổ TT / TK', fmtZ(D.zCuoi) + ' / ' + fmtZ(tv ? z.top : z.col));
+  if (D.bt && D.bt.d.batDau) P1('Đổ bê tông', dmy(D.bt.ngay) + ' ' + esc(D.bt.d.batDau) + (D.bt.d.ketThuc && D.bt.d.ketThuc !== 'xong' ? '–' + esc(D.bt.d.ketThuc) : ''));
+  if (D.xe.n) P1('Xe bê tông', D.xe.n + ' xe' + (D.bt && D.bt.d.ncc ? ' · ' + esc(D.bt.d.ncc) : ''));
+  if (!tv && D.dv && isFinite(dmmN(D.dv.d.xTt, D.dv.d.xTk))) { const a = dmmN(D.dv.d.xTt, D.dv.d.xTk), b = dmmN(D.dv.d.yTt, D.dv.d.yTk), L = LIM().exy; P1('Sai lệch tim ΔX / ΔY', Math.round(a) + ' / ' + Math.round(b) + ' mm', Math.abs(a) > L || Math.abs(b) > L ? 'c-rd' : ''); }
+  else if (isFinite(D.e)) P1('Sai lệch định vị', fmtN(D.e) + ' mm', D.e > LIM().e ? 'c-rd' : '');
+  if (D.hh && isFinite(num(D.hh.d.ng))) P1('Koden · nghiêng', fmtN(D.hh.d.ng, 2) + '%', num(D.hh.d.ng) > (tv ? LIM().ngTV : LIM().nghieng) ? 'c-rd' : '');
+  if (D.dd) { const e = ddEval(c, D.dd.d); P1('Dung dịch cuối', fmtN(D.dd.d.kl, 2) + ' · ' + fmtN(D.dd.d.nhot, 1) + ' s · cát ' + fmtN(D.dd.d.cat, 1) + '%' + (e.s && e.s !== 'ok' ? ` <small class="${e.s === 'bad' ? 'c-rd' : 'c-am'}">(${DDB[e.s][0]})</small>` : ''), ''); }
+  if (D.tr && isFinite(num(D.tr.d.can1))) P1('Lắng đáy (khoan − trước đổ)', fmtN(D.tr.d.can1) + ' mm');
+  if (m.kp) P1('Kingpost', esc(m.kp.ten) + ' · ' + esc(m.kp.td || '') + (isFinite(m.kp.topTT) ? ' · đỉnh ' + fmtZ(m.kp.topTT) : ''));
+  if (D.kh && Array.isArray(D.kh.d.diem)) P1('Sâu 3 điểm', D.kh.d.diem.map(v => fmtN(v, 2)).join(' / ') + ' m');
+  if (!kv.length || (!D.dep && !D.vtt)) P1('Hồ sơ', 'Chưa có nhật ký thi công');
+  return `<div style="display:flex;gap:10px;align-items:flex-start"><div style="background:#FBFCFD;border:1px solid #E8ECF0;border-radius:10px;padding:2px">${E.svg}</div><div class="htl">${kv.join('')}</div></div>
+    <div class="legend mt8" style="font-size:10px"><span><i style="background:${D.done ? '#0056A4' : '#F26522'}"></i>Bê tông</span><span><i style="background:#EEF4FF;box-shadow:inset 0 0 0 1px #5A6A7A"></i>Hố đã khoan</span><span>┆ thiết kế</span>${m.kp ? '<span><i style="background:#1A2332;border-radius:1px"></i>Kingpost</span>' : ''}${tv ? '<span><i style="background:#0B2545;border-radius:1px"></i>Gioăng</span>' : ''}</div>`;
 }
 function planList() {
   const q = PV.q.toUpperCase();
@@ -1642,9 +1780,9 @@ const MODSUM = {
   khoan:(r, c) => { let s = 0; (r.d.rows || []).forEach(x => s = Math.max(s, +x.sau || 0)); return `Sâu ${fmtN(s, 2)} m · Z đáy ${fmtZ(dz(c).gl - s)}${+r.d.xong === 1 ? ' · đạt' : ''}`; },
   hh:r => r.d.thuoc == 0 ? 'Không thuộc danh sách kiểm tra' : `Nghiêng ${fmtN(isFinite(num(r.d.ng)) ? r.d.ng : ngMax(r.d.rows), 2)}%${r.d.kl ? ' · ' + (r.d.kl === 'dat' ? 'Đạt' : 'Không đạt') : ''}`,
   dd:r => `${esc(r.d.gd || '')} · ${fmtN(r.d.kl, 2)} · ${fmtN(r.d.nhot)} s · cát ${fmtN(r.d.cat, 1)}%`,
-  moinoi:r => `${esc(r.d.moi || '')} · ${esc(r.d.loai || '')}`,
-  truoc:r => `Cặn ${['can1', 'can2', 'can3'].map(k => r.d[k]).filter(v => v !== undefined && v !== '').map(v => fmtN(v)).join(' · ')} mm · ${fmtN(r.d.nOng)} ống tremie`,
-  lt:r => `${fmtN(r.d.n)} lồng · ${fmtN(r.d.kl, 2)} t · ${fmtN(r.d.ongSA)} ống siêu âm`,
+  truoc:r => r.d.nguon ? `Làm sạch ${r.d.lan || 1} lần · sâu trước đổ ${fmtN(r.d.sauCuoi, 2)} m · lắng ${fmtN(r.d.can1)} mm` : `Cặn ${['can1', 'can2', 'can3'].map(k => r.d[k]).filter(v => v !== undefined && v !== '').map(v => fmtN(v)).join(' · ')} mm · ${fmtN(r.d.nOng)} ống tremie`,
+  lt:r => r.d.haTu ? `Hạ lồng ${esc(r.d.haTu)}${r.d.haDen ? '–' + esc(r.d.haDen) : ''}${isFinite(num(r.d.thepTreo)) ? ' · thép treo ' + fmtN(r.d.thepTreo, 2) + ' m' : ''}` : `${fmtN(r.d.n)} lồng · ${fmtN(r.d.kl, 2)} t · ${fmtN(r.d.ongSA)} ống siêu âm`,
+  moinoi:r => `${esc(r.d.moi || '')} · ${esc(r.d.loai || '')}${r.d.kiemTra ? ' · KT ' + esc(r.d.kiemTra) : ''}`,
   bt:(r, c) => `${r.d.ketThuc ? 'Xong ' + esc(r.d.ketThuc) : 'Đang đổ'} · ${fmtN(r.d.luyKe, 1)} / ${fmtN(dz(c).vlt, 2)} m³`,
   kl:r => `V LT ${fmtN(r.d.vltN, 2)} · thực tế ${fmtN(r.d.vttN, 2)} m³`,
   nt:r => `${esc(r.d.ketLuan || '')}${r.d.bienBan ? ' · BB ' + esc(r.d.bienBan) : ''}`,
@@ -1655,16 +1793,18 @@ VIEWS.ck = {
   render(a) {
     const c = CK[a.code]; if (!c) return shell({ back:1, title:'Không tìm thấy', body:'<div class="empty">Không có cấu kiện ' + esc(a.code) + '</div>' });
     if (!CKREC[c.code] || CKREC[c.code].stale) loadCk(c.code, true).then(() => { if (cur.v === 'ck' && cur.a.code === c.code) rerender(); });
-    const tab = a.tab || 'tc', z = dz(c);
+    const tab = a.tab || 'ht', z = dz(c);
     const itp = itpOf(c);
     let inner = '';
-    if (tab === 'tc') {
+    if (tab === 'ht') {
+      inner = `<div class="card pad">${CKREC[c.code] ? htHtml(c, 330) : '<div class="empty"><span class="spin" style="display:inline-block"></span><br>Đang tải hồ sơ…</div>'}</div>${c.loai !== 'tv' && c.truc ? `<button class="btn ghost" onclick="go('sec',{code:'${esc(c.code)}'})">📐 Mặt cắt cả trục ${esc(c.truc.split('-')[0])}</button>` : ''}<button class="btn ghost mt8" onclick="go('bb',{code:'${esc(c.code)}'})">📑 Bộ biên bản theo ITP (${c.loai === 'tv' ? '12' : '13'} biểu)</button>`;
+    } else if (tab === 'tc') {
       const xe = vXe(c.code), dd = recsOf(c.code, 'dd'), sk = recsOf(c.code, 'sk');
       inner = `<div class="card steps">${itp.map((p, i) => {
         const s = itpState(c, p[0]); const r = s.r;
         const cls = s.s === 'done' ? 'done' : s.s === 'wait' && (p[0] === 'truoc' || p[0] === 'lt') ? 'hold' : s.s === 'now' || s.s === 'wait' || s.s === 'draft' || s.s === 'bad' ? 'now' : '';
         const sub = r && MODSUM[p[0]] ? MODSUM[p[0]](r, c) + ' · ' + dmy(r.ngay) : p[0] === 'xe' ? '' : 'Chưa có';
-        return `<div class="st tap ${cls}" onclick="openForm('${p[0]}','${esc(c.code)}')"><div class="st-n">${s.s === 'done' ? '✓' : i + 1}</div><div class="rmain"><div class="st-t">${esc(p[2])} <span class="tag ${p[1] === 'H' ? 'b-rd' : p[1] === 'W' ? 'b-am' : 'b-bl'}" style="font-size:9.5px;padding:1px 5px">${p[1]}</div><div class="st-s">${sub}</div></div>${s.s !== 'none' && s.s !== 'done' ? `<span class="badge ${{ wait:'b-am', bad:'b-rd', now:'b-or', draft:'b-gy' }[s.s]}">${s.t}</span>` : ''}<span class="chev">›</span></div>`;
+        return `<div class="st tap ${cls}" onclick="openForm('${p[0]}','${esc(c.code)}')"><div class="st-n">${s.s === 'done' ? '✓' : i + 1}</div><div class="rmain"><div class="st-t">${esc(p[2])} <span class="tag ${p[1] === 'H' ? 'b-rd' : p[1] === 'W' ? 'b-am' : 'b-bl'}" style="font-size:9.5px;padding:1px 5px">${p[1]}</div><div class="st-s">${sub}${p[3] ? '<br><span style="font-size:10.5px">ITP: ' + esc(p[3]) + '</span>' : ''}</div></div>${s.s !== 'none' && s.s !== 'done' ? `<span class="badge ${{ wait:'b-am', bad:'b-rd', now:'b-or', draft:'b-gy' }[s.s]}">${s.t}</span>` : ''}<span class="chev">›</span></div>`;
       }).join('')}</div>
       <div class="card"><div class="row tap" onclick="go('mlist',{mod:'xe',code:'${esc(c.code)}'})"><div class="ico">🚚</div><div class="rmain"><div class="rname">Xe bê tông</div><div class="rsub">${xe.n} xe · ${fmtN(xe.v, 1)} m³ nhận</div></div><span class="chev">›</span></div>
         <div class="row tap" onclick="go('mlist',{mod:'dd',code:'${esc(c.code)}'})"><div class="ico">💧</div><div class="rmain"><div class="rname">Mẫu dung dịch</div><div class="rsub">${dd.length} mẫu</div></div><span class="chev">›</span></div>
@@ -1677,7 +1817,7 @@ VIEWS.ck = {
         : [['Đường kính D', fmtN(z.d * 1000, 0) + ' mm'], ['Loại thiết kế', c.type], ['Trục · khu vực', (c.truc || '—') + ' · ' + (c.kv || '—')], ['X thiết kế (VN2000)', fmtN(c.x, 3)], ['Y thiết kế (VN2000)', fmtN(c.y, 3)], ['GL (mặt đất thi công)', fmtZ(z.gl) + ' m'], ['Z cắt đầu cọc (COL)', fmtZ(z.col) + ' m'], ['Z mũi thiết kế', fmtZ(z.toe) + ' m'], ['L khoan / L bê tông', fmtN(z.Lk, 2) + ' / ' + fmtN(z.Lbt, 2) + ' m'], ['V lý thuyết', fmtN(z.vlt, 2) + ' m³'], ['Thép lồng', z.thep ? fmtN(z.thep, 2) + ' t · ' + fmtN(z.nLong) + ' lồng' : '—'], ['Bản vẽ', z.bv || '—']];
       inner = `<div class="kv-box w card" style="padding:2px 16px">${kv.map(x => `<div class="kv"><span>${esc(x[0])}</span><b>${esc(x[1])}</b></div>`).join('')}</div>${c.loai !== 'tv' && c.truc ? `<button class="btn ghost mt12" onclick="go('sec',{code:'${esc(c.code)}'})">📐 Xem mặt cắt trục ${esc(c.truc.split('-')[0])}</button>` : ''}`;
     } else if (tab === 'cl') {
-      inner = liveITP({ c }) + `<button class="btn mt12" onclick="openForm('nt','${esc(c.code)}')">🏁 ${lastOf(c.code, 'nt') ? 'Mở hồ sơ nghiệm thu' : 'Lập hồ sơ nghiệm thu'}</button>`;
+      inner = liveITP({ c }) + `<button class="btn ghost mt12" onclick="go('bb',{code:'${esc(c.code)}'})">📑 Bộ biên bản ${c.loai === 'tv' ? '12' : '13'} biểu theo ITP · in / Excel</button><button class="btn mt8" onclick="openForm('nt','${esc(c.code)}')">🏁 ${lastOf(c.code, 'nt') ? 'Mở hồ sơ nghiệm thu' : 'Lập hồ sơ nghiệm thu'}</button>`;
     } else if (tab === 'ls') {
       const ev = [];
       recsOf(c.code).forEach(r => (r.sign || []).forEach(s => ev.push([s.at, r, s])));
@@ -1691,7 +1831,7 @@ VIEWS.ck = {
     const body = `<div class="dbody">
       <div class="card pad"><div class="split"><div><b style="font-size:20px;color:var(--navy)">${esc(c.code)}</b><div class="small">${esc(ckDesc(c))}${c.kv && c.kv !== 'TV' ? ' · ' + esc(c.kv) : ''}</div></div><span class="badge ${ST[c.st].b}">${ST[c.st].t}</span></div>
         <div class="small mt8" style="color:var(--text2)">${esc(stepLabel(c))}${c.flag === 'tt' ? ' · <b class="c-rd">có NCR đang mở</b>' : ''}${!CKREC[c.code] ? ' · <span class="c-mut">đang tải hồ sơ…</span>' : ''}</div></div>
-      <div class="tabs">${[['tc', 'Thi công'], ['tk', 'Thiết kế'], ['cl', 'Chất lượng'], ['ls', 'Ảnh & lịch sử']].map(t => `<button class="${tab === t[0] ? 'on' : ''}" onclick="cur.a.tab='${t[0]}';render(false)">${t[1]}</button>`).join('')}</div>
+      <div class="tabs">${[['ht', 'Hiện trạng'], ['tc', 'Thi công'], ['tk', 'Thiết kế'], ['cl', 'Chất lượng'], ['ls', 'Lịch sử']].map(t => `<button class="${tab === t[0] ? 'on' : ''}" onclick="cur.a.tab='${t[0]}';render(false)">${t[1]}</button>`).join('')}</div>
       ${inner}</div>`;
     return shell({ back:1, title:'Hồ sơ cấu kiện', sub:esc(projName()), body, act:hp('t_ghi') && next ? `<button class="btn ghost" onclick="go('plan',{code:'${esc(c.code)}'})">🗺️ Mặt bằng</button><button class="btn" onclick="openForm('${next[0]}','${esc(c.code)}')">＋ ${esc(next[2])}</button>` : '' });
   }
@@ -1804,7 +1944,7 @@ VIEWS.bc = {
       const l = Object.values(REC).filter(r => (r.mod === 'bg' || r.mod === 'bc') && r.st !== 'huy').sort((x, y) => (y.ngay + y.at).localeCompare(x.ngay + x.at));
       inner = `<div class="section"><div class="card">${l.map(r => recRow(r, (r.mod === 'bc' ? '📊 Báo cáo ngày ' : '🤝 Bàn giao ') + dmy(r.ngay), esc(r.byName || ''), null)).join('') || '<div class="empty">Chưa có</div>'}</div></div>`;
     }
-    const act = tab === 'bg' ? (hp('t_ghi') ? `<button class="btn" onclick="openForm('bg',null,null,{newRec:1})">🤝 Lập bàn giao ca</button>` : '') : tab === 'ngay' ? `<button class="btn ghost" onclick="window.print()">🖨 In / PDF</button><button class="btn" onclick="dayExcel('${d}')">⬇ Excel</button>` : '';
+    const act = tab === 'bg' ? (hp('t_ghi') ? `<button class="btn" onclick="openForm('bg',null,null,{newRec:1})">🤝 Lập bàn giao ca</button>` : '') : tab === 'ngay' ? `<button class="btn ghost" onclick="window.print()">🖨 In / PDF</button><button class="btn" onclick="dayExcel('${d}')">⬇ Excel</button><button class="btn ghost" onclick="bbBatch('in','${d}')">📑 In biên bản cấu kiện đổ trong ngày</button><button class="btn ghost" onclick="bbBatch('xl','${d}')">📑 Excel biên bản trong ngày</button>` : '';
     return shell({ body:`<div class="ptitle"><b>Báo cáo</b><span>${esc(projName())}</span></div><div class="chip-row">${[['bg', 'Bàn giao ca'], ['ngay', 'Báo cáo ngày'], ['ls', 'Lịch sử']].map(t => `<span class="chip ${tab === t[0] ? 'on' : ''}" onclick="cur.a.tab='${t[0]}';render(false)">${t[1]}</span>`).join('')}</div>${inner}`, tab:'bc', act });
   }
 };
@@ -1812,13 +1952,13 @@ function dayReport(d, R) {
   const by = m => R.filter(r => r.mod === m);
   const khX = by('khoan').filter(r => +r.d.xong === 1), btX = by('bt').filter(r => r.d.ketThuc), xe = by('xe');
   const m3 = xe.reduce((a, r) => a + (+r.d.luong || 0) - (+r.d.traLai || 0), 0), tra = xe.reduce((a, r) => a + (+r.d.traLai || 0), 0);
-  const L = LIM(), ddBad = by('dd').filter(r => ['kl', 'nhot', 'cat', 'ph'].some(k => isFinite(num(r.d[k])) && Array.isArray(L[k]) && (num(r.d[k]) < L[k][0] || num(r.d[k]) > L[k][1])));
+  const L = LIM(), ddE = by('dd').map(r => ddEval(CK[r.ck], r.d)), ddBad = ddE.filter(e => e.s === 'bad'), ddBm = ddE.filter(e => e.s === 'bm');
   const sk = by('sk'), nt = by('nt').filter(r => r.st === 'duyet' || r.st === 'xn'), qt = by('qt'), dt = by('dt'), hse = by('hse');
   const qtW = qt.filter(r => r.d.loai === 'nghieng' && Math.abs(+r.d.gt) >= L.qtCanh);
   const all = Object.values(CK), cnt = s => all.filter(c => c.st === s).length;
   const rows = [
     ['Khoan / cạp xong', khX.length, khX.map(r => r.ck).join(', ')], ['Đổ bê tông xong', btX.length, btX.map(r => r.ck + ' (' + fmtN(r.d.luyKe, 1) + ' m³)').join(', ')],
-    ['Xe bê tông nhận', xe.length, fmtN(m3, 1) + ' m³' + (tra ? ' · trả lại ' + fmtN(tra, 1) + ' m³' : '')], ['Mẫu dung dịch', by('dd').length, ddBad.length ? ddBad.length + ' mẫu vượt giới hạn' : 'đạt'],
+    ['Xe bê tông nhận', xe.length, fmtN(m3, 1) + ' m³' + (tra ? ' · trả lại ' + fmtN(tra, 1) + ' m³' : '')], ['Mẫu dung dịch', by('dd').length, (ddBad.length ? ddBad.length + ' mẫu vượt ITP và biểu mẫu' : '') + (ddBm.length ? (ddBad.length ? ' · ' : '') + ddBm.length + ' mẫu chỉ đạt biểu mẫu' : '') || 'đạt ITP'],
     ['Nghiệm thu', nt.length, nt.map(r => r.ck).join(', ')], ['Sự kiện · NCR · RFI mới', sk.length, sk.map(r => (r.d.so || r.d.loai) + ' ' + (r.d.tieuDe || '')).join('; ')],
     ['Quan trắc', qt.length, qtW.length ? qtW.map(r => r.d.diem + ' ' + fmtN(r.d.gt, 1) + ' mm').join(', ') + ' vượt ngưỡng cảnh báo' : 'bình thường'],
     ['HSE', hse.length, hse.map(r => r.d.loai).join(', ')], ['Đất / bùn thải', dt.length, fmtN(dt.filter(r => r.d.cach !== 'can').reduce((a, r) => a + (+r.d.luong || 0), 0), 1) + ' m³ · ' + fmtN(dt.filter(r => r.d.cach === 'can').reduce((a, r) => a + (+r.d.luong || 0), 0), 1) + ' tấn']
@@ -2094,10 +2234,10 @@ VIEWS.qtri = {
     const cfg = B ? B.cfg || {} : {};
     if (tab === 'ch') {
       const info = cfg.info || {}, L = LIM(), lv = cfg.levels || [];
-      inner = `<div class="fsec"><div class="fsec-t">🏢 Thông tin dự án</div>${[['ten', 'Tên hiển thị'], ['goi', 'Gói thầu'], ['cdt', 'Chủ đầu tư'], ['tvgs', 'Tư vấn giám sát'], ['ntc', 'Nhà thầu chính'], ['tienDo', 'Tiến độ hợp đồng']].map(f => `<div class="fg"><label>${f[1]}</label><input id="in-${f[0]}" value="${esc(info[f[0]] || '')}"></div>`).join('')}<button class="btn sm" onclick="saveInfo()">Lưu thông tin</button></div>
+      inner = `${itpBox(cfg)}<div class="fsec"><div class="fsec-t">🏢 Thông tin dự án<small>in lên biên bản</small></div>${INFO_F.map(f => `<div class="fg"><label>${f[1]}</label><input id="in-${f[0]}" value="${esc(info[f[0]] || '')}"></div>`).join('')}<button class="btn sm" onclick="saveInfo()">Lưu thông tin</button></div>
         <div class="fsec"><div class="fsec-t">📏 Ngưỡng kiểm tra<small>theo BPTC / chỉ dẫn kỹ thuật</small></div>
-          <div class="fg-row">${[['e', 'Sai lệch tim tối đa (mm)'], ['nghieng', 'Nghiêng tối đa (%)'], ['can', 'Cặn đáy tối đa (mm)'], ['hMin', 'Độ ngập ống tremie tối thiểu (m)'], ['sauTre', 'Thời gian sau trộn tối đa (phút)'], ['ongDoan', 'Chiều dài 1 đoạn ống tremie (m)'], ['qtCanh', 'Quan trắc nghiêng · cảnh báo (mm)'], ['qtDung', 'Quan trắc nghiêng · dừng (mm)']].map(f => `<div class="fg"><label>${f[1]}</label><input inputmode="decimal" id="lm-${f[0]}" value="${esc(L[f[0]])}"></div>`).join('')}</div>
-          <div class="fg-row">${[['kl', 'Khối lượng riêng (g/cm³)'], ['nhot', 'Độ nhớt Marsh (s)'], ['cat', 'Hàm lượng cát (%)'], ['ph', 'pH'], ['sut', 'Độ sụt (cm)']].map(f => `<div class="fg"><label>${f[1]} · từ – đến</label><input id="lm-${f[0]}" value="${esc((L[f[0]] || []).join(' – '))}"></div>`).join('')}</div>
+          <div class="fg-row">${[['e', 'Sai lệch tim tối đa (mm)'], ['exy', 'Sai lệch tim mỗi trục X/Y (mm)'], ['nghieng', 'Nghiêng cọc tối đa (%)'], ['ngTV', 'Nghiêng tường vây (%)'], ['gianDoan', 'Gián đoạn đổ BT tối đa (phút)'], ['can', 'Cặn đáy tối đa (mm)'], ['hMin', 'Độ ngập ống tremie tối thiểu (m)'], ['sauTre', 'Thời gian sau trộn tối đa (phút)'], ['ongDoan', 'Chiều dài 1 đoạn ống tremie (m)'], ['qtCanh', 'Quan trắc nghiêng · cảnh báo (mm)'], ['qtDung', 'Quan trắc nghiêng · dừng (mm)']].map(f => `<div class="fg"><label>${f[1]}</label><input inputmode="decimal" id="lm-${f[0]}" value="${esc(L[f[0]])}"></div>`).join('')}</div>
+          <div class="fg-row">${[['kl', 'Khối lượng riêng (g/cm³)'], ['nhot', 'Độ nhớt Marsh (s)'], ['nhotTruoc', 'Độ nhớt trước đổ (s)'], ['cat', 'Hàm lượng cát (%)'], ['ph', 'pH'], ['sut', 'Độ sụt (cm)']].map(f => `<div class="fg"><label>${f[1]} · từ – đến</label><input id="lm-${f[0]}" value="${esc((L[f[0]] || []).join(' – '))}"></div>`).join('')}</div>
           <div class="fg"><label>Điểm Hold trước đổ</label><div class="ynrow"><button class="yn ${!cfg.hold || cfg.hold.batBuoc !== 0 ? 'on' : ''}" onclick="cfgSave('hold',{batBuoc:1});render(false)">Bắt buộc giải phóng mới mở Đổ bê tông</button><button class="yn ${cfg.hold && cfg.hold.batBuoc === 0 ? 'on o' : ''}" onclick="cfgSave('hold',{batBuoc:0});render(false)">Chỉ nhắc</button></div></div>
           <button class="btn sm" onclick="saveLim()">Lưu ngưỡng</button></div>
         <div class="fsec"><div class="fsec-t">📐 Cao độ dùng cho mặt cắt<small>tên | cao độ (m)</small></div><div class="fg"><textarea id="lv-t" style="min-height:180px;font-family:monospace;font-size:12px">${esc(lv.map(l => l[0] + ' | ' + l[1]).join('\n'))}</textarea></div>
@@ -2105,6 +2245,12 @@ VIEWS.qtri = {
     } else if (tab === 'ck') {
       const all = Object.values(CK), n = l => all.filter(c => c.loai === l).length;
       inner = `<div class="card pad"><div class="sec-title">Cấu kiện hiện có · ${esc(P)}</div><div class="kv-box mt8"><div class="kv"><span>Cọc</span><b>${n('coc')}</b></div><div class="kv"><span>Cọc thử</span><b>${n('tp')}</b></div><div class="kv"><span>Panel tường vây</span><b>${n('tv')}</b></div></div></div>
+        <div class="fsec"><div class="fsec-t">📚 Nạp sổ hồ sơ thi công<small>mẫu sổ FECON</small></div>
+          <div class="small" style="line-height:1.5">Đọc trang <b>TK Nhap</b> (+ KP) của sổ cọc khoan nhồi và trang <b>TK Nhập</b> của sổ tường vây: tọa độ VN2000 thiết kế + thực tế, casing, dung dịch, khoan / cạp, Koden, làm sạch, lồng thép, ống đổ, bê tông, kingpost, từng xe bê tông. Nạp lại lần sau chỉ cập nhật, không nhân đôi; bản ghi đã sửa trong app được giữ.</div>
+          <div class="fg mt12"><label>Sổ cọc khoan nhồi (.xlsm / .xlsx)</label><input type="file" id="so-ckn" accept=".xlsx,.xlsm"></div>
+          <div class="fg"><label>Sổ tường vây (.xlsx)</label><input type="file" id="so-tv" accept=".xlsx,.xlsm"></div>
+          ${cfg.demo && cfg.demo.on && me.role === 'ADM' ? '<label class="small" style="display:flex;gap:8px;align-items:center;margin:4px 0 10px"><input type="checkbox" id="so-clear" checked> Xóa dữ liệu MẪU trước khi nạp (máy chủ tự sao lưu)</label>' : ''}
+          <button class="btn" onclick="soRead()">📖 Đọc sổ</button><div id="so-res" class="mt8"></div></div>
         <div class="fsec"><div class="fsec-t">📥 Nạp từ Excel / CSV</div>
           <div class="small" style="line-height:1.5">Mỗi dòng 1 cấu kiện. Cột bắt buộc: <b>Mã</b>, <b>Loại</b> (Cọc / Panel / Cọc thử), <b>X</b>, <b>Y</b> (VN2000 — X hướng Bắc, Y hướng Đông). Panel nhập 2 đầu A, B. Các cột khác (D, GL, Z cắt, Z mũi, bản vẽ, khu vực, trục…) không bắt buộc. Tải file mẫu để xem đủ cột.</div>
           <button class="btn ghost sm mt8" onclick="ckTemplate()">⬇ Tải file mẫu</button>
@@ -2138,11 +2284,28 @@ VIEWS.qtri = {
     return shell({ back:1, title:'Quản trị Thi công', sub:'M30 · ' + esc(P), body:`<div class="dbody"><div class="tabs">${tabs.map(t => `<button class="${tab === t[0] ? 'on' : ''}" onclick="cur.a.tab='${t[0]}';render(false)">${t[1]}</button>`).join('')}</div>${inner}</div>` });
   }
 };
-function saveInfo() { const o = Object.assign({}, B.cfg.info || {}); ['ten', 'goi', 'cdt', 'tvgs', 'ntc', 'tienDo'].forEach(k => o[k] = $('#in-' + k).value.trim()); cfgSave('info', o); toast('Đã lưu'); }
+const INFO_F = [['ten', 'Tên hiển thị'], ['duAn', 'Dự án (đầy đủ)'], ['goi', 'Gói thầu'], ['diaDiem', 'Địa điểm'], ['cdt', 'Chủ đầu tư'], ['tvgs', 'Tư vấn giám sát'], ['ntc', 'Nhà thầu chính'], ['ntp', 'Nhà thầu phụ'], ['tienDo', 'Tiến độ hợp đồng'],
+  ['soBB', 'Tiền tố số biên bản'], ['bvCoc', 'Căn cứ bản vẽ · cọc'], ['bvKp', 'Căn cứ bản vẽ · kingpost'], ['bvTv', 'Căn cứ bản vẽ · tường vây'], ['tcCoc', 'Tiêu chuẩn · cọc'], ['tcTv', 'Tiêu chuẩn · tường vây'], ['macCoc', 'Mác BT cọc'], ['macTv', 'Mác BT tường vây']];
+function itpBox(cfg) {
+  const on = cfg.limits && cfg.limits.nguon && cfg.itp && cfg.itp.coc && cfg.itp.coc[0] && cfg.itp.coc[0][3];
+  return `<div class="fsec"><div class="fsec-t">📋 ITP đã duyệt<small>${on ? 'đang áp dụng · ' + esc(cfg.limits.nguon) : 'chưa áp dụng'}</small></div>
+    <div class="small" style="line-height:1.5">ITP-0001-C (cọc + kingpost) · ITP-0003-A (tường vây) · ITP-0002-A (tường dẫn): TVGS SunPMC, căn cứ bản vẽ SHO-0002-A / 0003 / 0004-A, sai số tim ±50 mm mỗi trục, nghiêng cọc 1/100, tường vây 0,5 %, ngập ống ≥ 1,5 m, gián đoạn &lt; 60 phút, dung dịch theo bảng ITP (ngoài bảng ITP nhưng còn trong biểu mẫu → cảnh báo vàng), điểm H/W/R ghi rõ vai từng bên.</div>
+    ${hp('t_qt') ? `<button class="btn sm mt8" onclick="applyItp()">${on ? 'Áp dụng lại' : 'Áp dụng'} thông tin & ngưỡng theo ITP</button>` : ''}</div>`;
+}
+async function applyItp() {
+  if (!(await ask('Áp dụng ITP đã duyệt?', { msg:'Ghi đè thông tin dự án, ngưỡng kiểm tra và danh sách điểm H/W/R của ' + esc(P) + '. Tài liệu ITP / shop drawing được thêm vào danh mục tài liệu.', ok:'Áp dụng' }))) return;
+  const c = B.cfg;
+  cfgSave('info', Object.assign({}, c.info || {}, ITP_TTHC.info, { ten:(c.info && c.info.ten) || ITP_TTHC.info.ten, mau:c.info && c.info.mau ? 1 : 0 }));
+  cfgSave('limits', Object.assign({}, c.limits || {}, ITP_TTHC.limits));
+  cfgSave('itp', ITP_TTHC.itp);
+  const docs = (c.docs || []).slice(); ITP_TTHC.docs.forEach(d => { if (!docs.some(x => x.so === d.so)) docs.unshift(d); }); cfgSave('docs', docs);
+  toast('Đã áp dụng ITP'); render(false);
+}
+function saveInfo() { const o = Object.assign({}, B.cfg.info || {}); INFO_F.forEach(([k]) => o[k] = $('#in-' + k).value.trim()); cfgSave('info', o); toast('Đã lưu'); }
 function saveLim() {
   const o = Object.assign({}, B.cfg.limits || {});
-  ['e', 'nghieng', 'can', 'hMin', 'sauTre', 'ongDoan', 'qtCanh', 'qtDung'].forEach(k => { const v = num($('#lm-' + k).value); if (isFinite(v)) o[k] = v; });
-  ['kl', 'nhot', 'cat', 'ph', 'sut'].forEach(k => { const p = $('#lm-' + k).value.split(/[–\-~]/).map(num).filter(isFinite); if (p.length === 2) o[k] = p; });
+  ['e', 'exy', 'nghieng', 'ngTV', 'gianDoan', 'can', 'hMin', 'sauTre', 'ongDoan', 'qtCanh', 'qtDung'].forEach(k => { const v = num($('#lm-' + k).value); if (isFinite(v)) o[k] = v; });
+  ['kl', 'nhot', 'nhotTruoc', 'cat', 'ph', 'sut'].forEach(k => { const p = $('#lm-' + k).value.split(/[–\-~]/).map(num).filter(isFinite); if (p.length === 2) o[k] = p; });
   cfgSave('limits', o); toast('Đã lưu ngưỡng');
 }
 function saveLv() {
@@ -2234,6 +2397,62 @@ async function ckImport(inp) {
   };
 }
 
+// ---------- Nạp sổ hồ sơ ----------
+let SO = null;
+async function soRead() {
+  const f1 = $('#so-ckn').files[0], f2 = $('#so-tv').files[0];
+  if (!f1 && !f2) { toast('Chọn ít nhất 1 file sổ'); return; }
+  showLoader('Đang đọc sổ hồ sơ (10–40 giây)…');
+  try { SO = await importSoHoSo(f1, f2); } catch (e) { hideLoader(); $('#so-res').innerHTML = `<div class="note n-err">❌<span>${esc(e.message)}</span></div>`; return; }
+  hideLoader();
+  autoTruc(SO.cks);
+  const n = l => SO.cks.filter(c => c.loai === l).length, cnt = {};
+  SO.recs.forEach(r => cnt[r.mod] = (cnt[r.mod] || 0) + 1);
+  const done = new Set(SO.recs.filter(r => r.mod === 'bt' && r.d.ketThuc).map(r => r.ck));
+  const notDone = SO.cks.filter(c => !done.has(c.code)).map(c => c.code);
+  const cur0 = Object.keys(CK), lost = cur0.filter(k => !SO.cks.some(c => c.code === k));
+  $('#so-res').innerHTML = `<div class="note n-info">📋<span>Đọc được <b>${n('coc')}</b> cọc · <b>${n('tp')}</b> cọc T · <b>${n('tv')}</b> panel · <b>${SO.recs.length}</b> bản ghi
+      (${Object.keys(cnt).map(k => (MODS[k] || {}).t + ' ' + cnt[k]).join(' · ')}).<br>Đã đổ bê tông: ${done.size} · chưa đổ: ${notDone.length}${notDone.length ? ' (' + notDone.slice(0, 20).join(', ') + (notDone.length > 20 ? '…' : '') + ')' : ''}.
+      ${lost.length ? `<br>⚠️ ${lost.length} cấu kiện đang có trong app nhưng không có trong sổ: ${lost.slice(0, 12).join(', ')}${lost.length > 12 ? '…' : ''} → sẽ bị bỏ nếu chưa có nhật ký ghi thật.` : ''}
+      ${SO.warn.length ? '<br>' + SO.warn.slice(0, 6).map(esc).join('<br>') : ''}</span></div><button class="btn mt8" onclick="soPush()">⬆ Nạp vào ${esc(P)}</button>`;
+}
+// trục tự động khi sổ không có trục: gom cọc theo hàng / cột lưới trong hệ mặt bằng đã xoay
+function autoTruc(cks) {
+  const r = (+((B && B.cfg && B.cfg.rot) || 0)) * Math.PI / 180, cs = Math.cos(r), sn = Math.sin(r);
+  const piles = cks.filter(c => c.loai !== 'tv' && !c.truc);
+  if (piles.length < 4) return;
+  let E0 = 0, N0 = 0; piles.forEach(c => { E0 += c.y; N0 += c.x; }); E0 /= piles.length; N0 /= piles.length;
+  piles.forEach(c => { const dx = c.y - E0, dy = c.x - N0; c._u = dx * cs - dy * sn; c._v = dx * sn + dy * cs; });
+  const group = (key, gap) => { const s = piles.slice().sort((a, b) => a[key] - b[key]); let g = 0, last = null; const m = new Map(); s.forEach(c => { if (last !== null && c[key] - last > gap) g++; m.set(c, g); last = c[key]; }); return m; };
+  const rowG = group('_v', 3), colG = group('_u', 3);
+  const nRow = Math.max(...rowG.values()) + 1, L = 'ABCDEFGHJKLMNPQRSTUVWXYZ';
+  piles.forEach(c => { const ri = nRow - 1 - rowG.get(c); c.truc = (ri < L.length ? L[ri] : 'R' + ri) + '-' + (colG.get(c) + 1); delete c._u; delete c._v; });
+}
+async function soPush() {
+  if (!SO) return;
+  const clear = $('#so-clear') && $('#so-clear').checked;
+  if (clear) {
+    showLoader('Đang sao lưu và xóa dữ liệu mẫu…');
+    const r0 = await api('tcReset', { project:P, confirm:P, onlyTest:1 }, 300000);
+    if (!r0.success) { hideLoader(); toast(r0.error || 'Không xóa được dữ liệu mẫu', 6000); return; }
+  }
+  showLoader('Đang nạp cấu kiện…');
+  const r1 = await api('tcImportCk', { project:P, rows:SO.cks, mode:clear ? 'thay' : 'them' }, 300000);
+  if (!r1.success) { hideLoader(); $('#so-res').innerHTML += `<div class="note n-err mt8">❌<span>${esc(r1.error)}</span></div>`; return; }
+  const N = 600, tot = SO.recs.length; let add = 0, upd = 0, keep = 0, bad = 0;
+  for (let i = 0; i < tot; i += N) {
+    $('#loader div').innerHTML = `<span class="spin"></span>Đang nạp bản ghi ${Math.min(i + N, tot)} / ${tot}…`;
+    let r = null;
+    for (let k = 0; k < 3 && !(r && r.success); k++) r = await api('tcImportRecs', { project:P, recs:SO.recs.slice(i, i + N), last:i + N >= tot ? 1 : 0, total:tot }, 300000);
+    if (!r.success) { hideLoader(); toast('Dừng ở bản ghi ' + i + ': ' + (r.error || 'lỗi'), 8000); return; }
+    add += r.add; upd += r.upd; keep += r.keep; bad += r.bad;
+  }
+  if (clear) await api('tcCfgSave', { project:P, key:'demo', value:null });
+  hideLoader();
+  toast(`Đã nạp ${r1.n} cấu kiện · ${add} bản ghi mới · ${upd} cập nhật${keep ? ' · giữ ' + keep + ' bản đã sửa trong app' : ''}`, 7000);
+  SO = null; B.ckRev = ''; REC = {}; CKREC = {}; GEO = null; await sync(true); go('plan');
+}
+
 // ---------- Hướng dẫn ----------
 VIEWS.hd = {
   render() {
@@ -2276,6 +2495,565 @@ async function bootTc() {
 }
 window.addEventListener('error', e => { try { if (navigator.onLine !== false) api('logError', { msg:String(e.message || '').slice(0, 300), src:e.filename || 'thicong.html', line:e.lineno, col:e.colno, stack:String(e.error && e.error.stack || '').slice(0, 700), tab:'TC ' + cur.v, ver:'TC ' + TC_APP_VERSION, proj:P, ua:navigator.userAgent, online:navigator.onLine }); } catch (x) {} });
 bootTc();
+
+// ===== Nạp SỔ HỒ SƠ Excel (mẫu FECON South): cọc khoan nhồi (trang "TK Nhap") + tường vây (trang "TK Nhập") =====
+// Đọc trong trình duyệt bằng ExcelJS → danh sách cấu kiện thật (tọa độ VN2000) + bản ghi nhật ký thật theo từng công đoạn.
+const XL0 = Date.UTC(1899, 11, 30);
+function xv(v) {
+  if (v && typeof v === 'object' && !(v instanceof Date)) {
+    if ('result' in v) v = v.result; else if (v.richText) v = v.richText.map(t => t.text).join(''); else if ('text' in v) v = v.text; else if ('error' in v) v = null;
+  }
+  return v;
+}
+function xNum(v) {
+  v = xv(v);
+  if (v instanceof Date) { const s = (v.getTime() - XL0) / 864e5; return v.getUTCFullYear() < 1901 ? Math.round(s * 1e6) / 1e6 : NaN; }
+  if (typeof v === 'number') return v;
+  if (typeof v === 'string' && v.trim() !== '' && isFinite(+v.trim().replace(',', '.'))) return +v.trim().replace(',', '.');
+  return NaN;
+}
+const xStr = v => { v = xv(v); return v === null || v === undefined ? '' : String(v).trim(); };
+// ngày giờ → {d:'yyyy-mm-dd', t:'HH:MM'} · chỉ có giờ → {t} (ghép ngày ở ngoài)
+function xDT(v) {
+  v = xv(v);
+  let ms = null;
+  if (v instanceof Date) ms = v.getTime();
+  else if (typeof v === 'number' && v > 30000 && v < 70000) ms = XL0 + v * 864e5;
+  else if (typeof v === 'number' && v >= 0 && v < 1) ms = XL0 + v * 864e5;
+  if (ms === null || !isFinite(ms)) return null;
+  ms = Math.round(ms / 60000) * 60000;
+  const d = new Date(ms), t = pad2(d.getUTCHours()) + ':' + pad2(d.getUTCMinutes());
+  if (d.getUTCFullYear() < 1901) return (ms - XL0) / 864e5 < 1 && t !== '00:00' ? { t } : null;
+  return { d:d.getUTCFullYear() + '-' + pad2(d.getUTCMonth() + 1) + '-' + pad2(d.getUTCDate()), t };
+}
+const caDay = x => x && x.d ? (x.t < '07:00' ? dayAdd(x.d, -1) : x.d) : '';
+const tOf = x => x ? x.t : '';
+function idOf(s) { let h = 2166136261; for (let i = 0; i < s.length; i++) { h ^= s.charCodeAt(i); h = Math.imul(h, 16777619); } return 'H' + (h >>> 0).toString(36) + s.length.toString(36); }
+function rowsOf_unused(ws) {            // mảng dòng, mỗi dòng là mảng 0-based như Excel cột A = 0
+  const out = [];
+  ws.eachRow({ includeEmpty:false }, (r, i) => { const a = []; (r.values || []).forEach((v, j) => { if (j >= 1) a[j - 1] = v; }); out[i - 1] = a; });
+  return out;
+}
+const PILE_DEF = { P1:{ toe:-65.5, stop:-6.25, cut:-7.25 }, P2:{ toe:-65.5, stop:-7.25, cut:-8.25 }, P3:{ toe:-60.5, stop:-6.25, cut:-7.25 }, P4:{ toe:-60.5, stop:-7.25, cut:-8.25 }, T1:{ toe:-39.75, stop:2.65, cut:2.25 }, T2:{ toe:-39.75, stop:2.65, cut:2.25 }, T3:{ toe:-39.75, stop:2.65, cut:2.25 }, T4:{ toe:-39.75, stop:2.65, cut:2.25 } };
+
+// ---------- Cọc khoan nhồi ----------
+function parseCKN(R, kpRows) {
+  const kpT = {}, warn = [];
+  if (kpRows) kpRows.forEach(r => { if (r && xStr(r[10])) kpT[xStr(r[10])] = { td:xStr(r[11]), top:xNum(r[14]), chan:xNum(r[15]), mui:xNum(r[16]), L:xNum(r[17]) }; });
+  const best = {}, cks = [], recs = [];
+  R.forEach((r, i) => {                                             // trùng tên: giữ dòng có bê tông thực tế, đổ muộn hơn
+    if (!r || i < 5) return;
+    const code = xStr(r[3]);
+    if (!/^[A-Z]+\d*\.\d+[a-z]?$/i.test(code)) return;
+    const o = best[code], v = xNum(r[99]) > 0, dt = xDT(r[94]);
+    if (!o || (v && !(xNum(o[99]) > 0)) || (v && dt && xDT(o[94]) && dt.d + dt.t > xDT(o[94]).d + xDT(o[94]).t)) best[code] = r;
+  });
+  Object.keys(best).forEach(code => {
+    const r = best[code];
+    const X = xNum(r[32]), Y = xNum(r[33]);
+    if (!isFinite(X) || !isFinite(Y) || X < 1e5) { warn.push(code + ': thiếu tọa độ'); return; }
+    const vtt = xNum(r[99]);
+    const type = xStr(r[5]) || code.split('.')[0];
+    const def = PILE_DEF[type] || PILE_DEF[code.split('.')[0]] || PILE_DEF.P3;
+    const toe = isFinite(xNum(r[8])) ? xNum(r[8]) : (isFinite(xNum(r[48])) ? xNum(r[48]) : def.toe);
+    const stop = isFinite(xNum(r[9])) ? xNum(r[9]) : def.stop, cut = isFinite(xNum(r[10])) ? xNum(r[10]) : def.cut;
+    const casing = xNum(r[36]), ground = xNum(r[37]);
+    const gl = isFinite(casing) && casing ? casing : 2.75;
+    const vlt = isFinite(xNum(r[19])) && xNum(r[19]) > 0 ? r2(xNum(r[19])) : r2(Math.PI / 4 * (stop - toe));
+    const kpn = xStr(r[103]) || xStr(r[22]), kpi = kpT[kpn] || {};
+    const meta = { d:1, gl, matDat:isFinite(ground) ? ground : undefined, col:stop, cut, toe, v:vlt, bv:'', thepTreo:isFinite(xNum(r[11])) ? xNum(r[11]) : undefined, ongSA:isFinite(xNum(r[24])) ? xNum(r[24]) : undefined, id:xStr(r[2]) };
+    if (kpn) meta.kp = { ten:kpn, td:xStr(r[104]) || kpi.td || '', L:isFinite(xNum(r[105])) ? xNum(r[105]) : kpi.L, top:isFinite(xNum(r[106])) ? xNum(r[106]) : kpi.top, topTT:isFinite(xNum(r[107])) ? xNum(r[107]) : undefined, tang:xStr(r[23]) };
+    cks.push({ code, loai:/^T\d/.test(code) ? 'tp' : 'coc', type, x:X, y:Y, kv:'', truc:'', meta });
+    const add = (mod, at, d, k) => { if (!at || !at.d) return; recs.push({ id:idOf(code + '|' + mod + '|' + (k || 0)), ck:code, mod, ngay:caDay(at), at:at.d + ' ' + at.t, d }); };
+    const t = k => xDT(r[k]);
+    // 1. chuẩn bị + 2. casing + định vị
+    const xt = xNum(r[34]), yt = xNum(r[35]);
+    add('dv', t(30) || t(27), { xTk:X, yTk:Y, xTt:isFinite(xt) ? xt : '', yTt:isFinite(yt) ? yt : '', ovZ:isFinite(casing) ? casing : '', matDat:isFinite(ground) ? ground : '', tu:tOf(t(30)), den:tOf(t(31)), nguon:'Sổ hồ sơ' });
+    // 3. dung dịch lần 1, (5) lần 2, (9) lần 2b, (11) lần 3
+    let nDD = 0;
+    [[39, 41, 'Dung dịch mới', 'Trong khi khoan', 1], [51, 53, 'Trong hố', 'Trong khi khoan', 2], [76, 78, 'Trong hố', 'Trước làm sạch', 3], [87, 89, 'Trong hố', 'Sau làm sạch', 4]].forEach(q => {
+      const kl = xNum(r[q[1]]); if (!(kl > 0)) return;
+      add('dd', t(q[0]), { mau:'Lần ' + (++nDD), loai:q[2], gd:q[3], kl, nhot:xNum(r[q[1] + 1]), ph:xNum(r[q[1] + 2]), cat:xNum(r[q[1] + 3]), gio:tOf(t(q[0])) }, q[4]);
+    });
+    // 4. khoan
+    const dep = xNum(r[49]), depTk = xNum(r[12]);
+    if (t(46)) add('khoan', t(46), { batDau:tOf(t(46)), ketThuc:tOf(t(47)), sauTK:isFinite(depTk) ? depTk : '', rows:[{ gio:tOf(t(46)), loai:'do', sau:0, lop:'' }].concat(isFinite(dep) && dep > 0 ? [{ gio:tOf(t(47)), loai:'do', sau:dep, lop:'Kết thúc khoan' }] : []), xong:isFinite(dep) && dep > 0 ? 1 : 0, nguon:'Sổ hồ sơ' });
+    // 5. Koden
+    const kd = xNum(r[58]);
+    if (t(59) || kd > 0) add('hh', t(59) || t(47), { thuoc:1, ng:isFinite(kd) ? kd : '', tu:tOf(t(59)), den:tOf(t(60)), kl:'', nguon:'Sổ hồ sơ' });
+    // 6 + 10. làm sạch, 8. hạ ống đổ
+    const s1 = xNum(r[64]), s2 = xNum(r[65]), s3 = xNum(r[85]);
+    const canMm = isFinite(dep) && isFinite(s3) ? Math.max(0, Math.round((dep - s3) * 1000)) : '';
+    if (t(62) || t(83)) add('truoc', t(83) || t(62), { lan:t(83) ? 2 : 1, cach:'Thay dung dịch', tu:tOf(t(62)), den:tOf(t(84) || t(63)), sauKhoan:isFinite(s1) ? s1 : '', sauVet:isFinite(s2) ? s2 : '', sauCuoi:isFinite(s3) ? s3 : '', can1:canMm, nOng:1, dkOng:273, lOng:xNum(r[74]), haOng:tOf(t(72)) + (t(73) ? '–' + tOf(t(73)) : ''), nguon:'Sổ hồ sơ' });
+    // 7. lồng thép
+    if (t(69)) add('lt', t(69), { giaCong:tOf(t(67)) + (t(68) ? '–' + tOf(t(68)) : ''), haTu:tOf(t(69)), haDen:tOf(t(70)), thepTreo:meta.thepTreo, ongSA:meta.ongSA, rows:[], nguon:'Sổ hồ sơ' });
+    // 12. đổ bê tông + 13 kingpost + 14 rút casing
+    const zTT = xNum(r[97]);
+    if (t(94) || vtt > 0) add('bt', t(94) || t(95), { batDau:tOf(t(94)), ketThuc:vtt > 0 ? tOf(t(95)) || 'xong' : '', capPhoi:/^T/.test(code) ? 'Bê tông cọc T' : 'B30 · sụt 19±1', zDungTK:stop, zCuoi:isFinite(zTT) ? zTT : '', vlt, luyKe:vtt > 0 ? vtt : '', ncc:xStr(r[114]), thoiTiet:xStr(r[157]),
+      kp:kpn ? { ten:kpn, tu:tOf(t(101)), den:tOf(t(102)), topTT:isFinite(xNum(r[107])) ? xNum(r[107]) : '' } : null, rutCasing:tOf(t(109)), lapDau:tOf(t(111)), rows:[], nguon:'Sổ hồ sơ' });
+    // xe bê tông (6 xe)
+    for (let k = 0; k < 6; k++) {
+      const b = 115 + k * 7, bien = xStr(r[b]), v = xNum(r[b + 6]);
+      if (!bien || bien === '0' || !(v > 0)) continue;
+      const bd = t(b + 3), at = bd && bd.d ? bd : t(95) || t(94);
+      add('xe', at, { so:k + 1, bien, gioDi:tOf(t(b + 1)), gioDen:tOf(t(b + 2)), batDau:tOf(bd), ketThuc:tOf(t(b + 4)), sut:xNum(r[b + 5]), luong:v, qd:'nhan', pb:[{ ck:code, m3:v }], tram:xStr(r[114]), nguon:'Sổ hồ sơ' }, k + 1);
+    }
+  });
+  return { cks, recs, warn };
+}
+
+// ---------- Tường vây ----------
+function parseTV(R) {
+  const warn = [], seen = {}, cks = [], recs = [];
+  const KIND = s => /GÓC/i.test(s) ? 'GÓC' : /MỞ/i.test(s) ? 'MỞ' : /ĐÓNG/i.test(s) ? 'ĐÓNG' : 'TIẾP';
+  const rows = [];
+  R.forEach((r, i) => { if (r && i >= 5 && /^P\d+[a-z]?$/i.test(xStr(r[3]))) rows.push(r); });
+  rows.forEach(r => { const code = xStr(r[3]), v = xNum(r[112]); if (!seen[code] || (v > 0 && !(xNum(seen[code][112]) > 0)) || (v > 0 && xDT(r[108]) && xDT(seen[code][108]) && xDT(r[108]).d > xDT(seen[code][108]).d)) seen[code] = r; });
+  Object.keys(seen).forEach(code => {
+    const r = seen[code];
+    const pts = k => { const p = []; for (let j = 0; j < 6; j++) { const X = xNum(r[k + j * 2]), Y = xNum(r[k + j * 2 + 1]); if (X > 1e5 && Y > 1e5) p.push([X, Y]); } return p; };
+    const pk = pts(34), pt = pts(46);
+    if (pk.length < 4) { warn.push(code + ': thiếu tọa độ góc tấm'); return; }
+    // 2 đầu tim tường: trung điểm 2 cạnh ngắn của tấm chữ nhật (điểm 1-4 và 2-3)
+    const mid = (a, b) => [(a[0] + b[0]) / 2, (a[1] + b[1]) / 2];
+    const A = mid(pk[0], pk[3]), Bp = mid(pk[1], pk[2]);
+    const len = xNum(r[24]) || Math.hypot(A[0] - Bp[0], A[1] - Bp[1]);
+    const toe = isFinite(xNum(r[8])) ? xNum(r[8]) : -26.35, stop = isFinite(xNum(r[9])) ? xNum(r[9]) : 1.65, gw = isFinite(xNum(r[58])) && xNum(r[58]) ? xNum(r[58]) : (isFinite(xNum(r[12])) ? xNum(r[12]) : 2.25);
+    const vlt = isFinite(xNum(r[22])) && xNum(r[22]) > 0 ? xNum(r[22]) : r2(len * 0.8 * (stop - toe));
+    const meta = { a:[r3(A[0]), r3(A[1])], b:[r3(Bp[0]), r3(Bp[1])], poly:pk.map(p => [r3(p[0]), r3(p[1])]), k:KIND(xStr(r[5])), kt:xStr(r[6]), t:xNum(r[25]) || 0.8, L:r3(len), gl:gw, top:stop, vetBan:xNum(r[10]), toe, v:vlt, gTop:1.05, gBot:-8.8, bv:'DW Rev05', ongSA:xNum(r[26]), id:xStr(r[2]) };
+    cks.push({ code, loai:'tv', type:meta.k, x:r3((A[0] + Bp[0]) / 2), y:r3((A[1] + Bp[1]) / 2), kv:'TV', truc:'', meta });
+    const add = (mod, at, d, k) => { if (!at || !at.d) return; recs.push({ id:idOf(code + '|' + mod + '|' + (k || 0)), ck:code, mod, ngay:caDay(at), at:at.d + ' ' + at.t, d }); };
+    const t = k => xDT(r[k]);
+    let sai = '';
+    if (pt.length >= 4) sai = Math.round(Math.max(...pk.slice(0, Math.min(pk.length, pt.length)).map((p, j) => Math.hypot(p[0] - pt[j][0], p[1] - pt[j][1]))) * 1000);
+    add('dv', t(32) || t(29), { sai, zDinh:gw, tu:tOf(t(32)), den:tOf(t(33)), polyTT:pt.map(p => [r3(p[0]), r3(p[1])]), nguon:'Sổ hồ sơ' });
+    const d1 = xNum(r[14]), d2 = xNum(r[15]), d3 = xNum(r[16]), dTT = xNum(r[66]);
+    const dep = isFinite(dTT) ? dTT : Math.max(...[d1, d2, d3].filter(isFinite), 0);
+    if (t(63)) add('khoan', t(63), { batDau:tOf(t(63)), ketThuc:tOf(t(64)), sauTK:xNum(r[65]), diem:[d1, d2, d3].map(v => isFinite(v) ? v : ''), rows:[{ gio:tOf(t(63)), loai:'do', sau:0, lop:'' }].concat(dep > 0 ? [{ gio:tOf(t(64)), loai:'do', sau:r2(dep), lop:'Kết thúc cạp · 3 điểm ' + [d1, d2, d3].map(v => isFinite(v) ? fmtN(v, 2) : '—').join(' / ') }] : []), xong:dep > 0 ? 1 : 0, nguon:'Sổ hồ sơ' });
+    const k1 = xNum(r[71]), k2 = xNum(r[72]);
+    if (k1 > 0 || k2 > 0) add('hh', t(73) || t(64), { thuoc:1, ng:Math.max(k1 || 0, k2 || 0), ngX:k1, ngY:k2, tu:tOf(t(73)), den:tOf(t(74)), kl:'', nguon:'Sổ hồ sơ' });
+    const kl3 = xNum(r[102]);
+    if (kl3 > 0) add('dd', t(100), { mau:'Lần 3', loai:'Trong hố', gd:'Sau làm sạch', kl:kl3, nhot:xNum(r[103]), ph:xNum(r[104]), cat:xNum(r[105]), gio:tOf(t(100)) }, 3);
+    if (t(86)) add('moinoi', t(86), { moi:jName({ code }), loai:'Tấm ngăn nước + băng cản nước', kiemTra:tOf(t(86)) + (t(87) ? '–' + tOf(t(87)) : ''), thanhGiu:tOf(t(89)) + (t(90) ? '–' + tOf(t(90)) : ''), zTop:1.05, zBot:-8.8, bang:'Nguyên vẹn', nguon:'Sổ hồ sơ' });
+    const s1 = xNum(r[78]), s2 = xNum(r[79]), s3 = xNum(r[98]);
+    if (t(76) || t(96)) add('truoc', t(96) || t(76), { lan:t(96) ? 2 : 1, cach:'Thay dung dịch', tu:tOf(t(76)), den:tOf(t(97) || t(77)), sauKhoan:isFinite(s1) ? s1 : '', sauVet:isFinite(s2) ? s2 : '', sauCuoi:isFinite(s3) ? s3 : '', can1:isFinite(dep) && isFinite(s3) ? Math.max(0, Math.round((dep - s3) * 1000)) : '', nOng:2, dkOng:273, lOng:xNum(r[94]), haOng:tOf(t(92)) + (t(93) ? '–' + tOf(t(93)) : ''), nguon:'Sổ hồ sơ' });
+    if (t(83)) add('lt', t(83), { giaCong:tOf(t(81)) + (t(82) ? '–' + tOf(t(82)) : ''), haTu:tOf(t(83)), haDen:tOf(t(84)), thepTreo:xNum(r[11]), ongSA:meta.ongSA, rows:[], nguon:'Sổ hồ sơ' });
+    const vtt = xNum(r[112]), zTT = xNum(r[110]);
+    if (t(107) || vtt > 0) add('bt', t(107) || t(108), { batDau:tOf(t(107)), ketThuc:vtt > 0 ? tOf(t(108)) || 'xong' : '', capPhoi:'B35-W8 · sụt 19±1', zDungTK:stop, zCuoi:isFinite(zTT) ? zTT : '', vlt, luyKe:vtt > 0 ? vtt : '', ncc:xStr(r[114]), thoiTiet:xStr(r[176]), rows:[], nguon:'Sổ hồ sơ' });
+    for (let k = 0; k < 15; k++) {
+      const b = k === 0 ? 115 : 120 + (k - 1) * 4, bien = xStr(r[b]), v = xNum(r[k === 0 ? 119 : b + 3]);
+      if (!bien || bien === '0' || !(v > 0)) continue;
+      const at = t(k === 0 ? 118 : b + 2);
+      const at2 = at && at.d ? at : t(107) || t(108);
+      add('xe', at2, { so:k + 1, bien:bien.toUpperCase().replace(/^'/, ''), gioDi:tOf(t(b + 1)), gioDen:tOf(t(b + 2)), luong:v, qd:'nhan', pb:[{ ck:code, m3:v }], tram:xStr(r[114]), nguon:'Sổ hồ sơ' }, k + 1);
+    }
+  });
+  return { cks, recs, warn };
+}
+const r3 = v => Math.round(v * 1000) / 1000;
+let SJ = null;
+function loadSJ() {
+  if (window.XLSX) return Promise.resolve(window.XLSX);
+  if (SJ) return SJ;
+  SJ = new Promise((res, rej) => { const urls = ['https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js', 'https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js']; let i = 0; const nx = () => { if (i >= urls.length) { SJ = null; rej(new Error('Không tải được thư viện đọc Excel')); return; } const sc = document.createElement('script'); sc.src = urls[i++]; sc.onload = () => res(window.XLSX); sc.onerror = nx; document.head.appendChild(sc); }; nx(); });
+  return SJ;
+}
+function sheetRows(X, buf, names) {               // chỉ đọc các trang cần (file sổ hồ sơ rất nặng)
+  const wb = X.read(buf, { type:'array', sheets:names, cellDates:false, cellStyles:false, cellNF:false, cellHTML:false });
+  return names.map(n => { const k = Object.keys(wb.Sheets).find(x => x.normalize('NFC') === n.normalize('NFC')); return k ? X.utils.sheet_to_json(wb.Sheets[k], { header:1, raw:true, defval:null, blankrows:true }) : null; });
+}
+async function importSoHoSo(fCkn, fTv) {
+  const X = await loadSJ();
+  const out = { cks:[], recs:[], warn:[], files:[] };
+  if (fCkn) {
+    const buf = new Uint8Array(await fCkn.arrayBuffer());
+    let [R, K] = sheetRows(X, buf, ['TK Nhap', 'KP']);
+    if (!R) throw new Error('File cọc: không thấy trang "TK Nhap"');
+    const r = parseCKN(R, K); out.cks.push(...r.cks); out.recs.push(...r.recs); out.warn.push(...r.warn); out.files.push(fCkn.name);
+  }
+  if (fTv) {
+    const buf = new Uint8Array(await fTv.arrayBuffer());
+    const [R] = sheetRows(X, buf, ['TK Nhập']);
+    if (!R) throw new Error('File tường vây: không thấy trang "TK Nhập"');
+    const r = parseTV(R); out.cks.push(...r.cks); out.recs.push(...r.recs); out.warn.push(...r.warn); out.files.push(fTv.name);
+  }
+  return out;
+}
+if (typeof module !== 'undefined') module.exports = { parseCKN, parseTV, xDT, xNum };
+
+// ===== Bộ biên bản theo mẫu ITP đã duyệt (TTHC): cọc 13 biểu · tường vây 12 biểu → xem / in PDF / Excel =====
+const BB_COC = [[1, 'LÝ LỊCH CỌC'], [2, 'KẾT QUẢ KIỂM TRA HỐ KHOAN'], [3, 'BIÊN BẢN KIỂM TRA CHẤT LƯỢNG DUNG DỊCH KHOAN'], [4, 'BIÊN BẢN THEO DÕI LỖ KHOAN'],
+  [5, 'KIỂM TRA CHIỀU DÀI CỌC KHOAN', '(Sau khi khoan, làm sạch sau cùng)'], [6, 'BÁO CÁO KIỂM TRA CÁC ĐOẠN LỒNG THÉP'], [7, 'KIỂM TRA LẮP ĐẶT CÁC ỐNG CHO THÍ NGHIỆM CỌC'], [8, 'BIÊN BẢN LẤY MẪU THÍ NGHIỆM'],
+  [9, 'BIÊN BẢN GHI NHẬN CÔNG TÁC ĐỔ BÊ TÔNG'], [10, 'BIỂU ĐỒ ĐỔ BÊ TÔNG'], [11, 'KIỂM TRA LẮP ĐẶT KINGPOST'], [12, 'BIÊN BẢN KIỂM TRA LẤP ĐẦU CỌC'], [13, 'BÁO CÁO TỔNG HỢP THI CÔNG CỌC KHOAN NHỒI']];
+const BB_TV = [[1, 'LÝ LỊCH TƯỜNG VÂY'], [2, 'BIÊN BẢN KIỂM TRA HỐ ĐÀO, CẠP'], [3, 'BIÊN BẢN KIỂM TRA CHẤT LƯỢNG DUNG DỊCH KHOAN'], [4, 'PHIẾU THEO DÕI HỐ ĐÀO, CẠP'],
+  [5, 'KIỂM TRA CHIỀU DÀI TẤM TƯỜNG', '(Sau khi đào, làm sạch sau cùng)'], [6, 'KIỂM TRA TẤM NGĂN NƯỚC'], [7, 'BÁO CÁO KIỂM TRA LỒNG THÉP'], [8, 'KIỂM TRA LẮP ĐẶT CÁC ỐNG CHO THÍ NGHIỆM TƯỜNG VÂY'],
+  [9, 'BIÊN BẢN LẤY MẪU THÍ NGHIỆM'], [10, 'GHI NHẬN CÔNG TÁC ĐỔ BÊ TÔNG'], [11, 'KIỂM TRA VÉT BÊ TÔNG BẨN ĐỈNH TƯỜNG VÀ LẤP ĐẤT ĐẦU TƯỜNG'], [12, 'BÁO CÁO THEO DÕI TƯỜNG VÂY']];
+const TV_SOIL = ['Cát san lấp, xám đen', 'Sét pha, xám đen, trạng thái dẻo mềm', 'Cát mịn kẹp sét, xám đen, kết cấu xốp đến chặt vừa', 'Sét pha, nâu vàng, trạng thái nửa cứng', 'Cát mịn kẹp sét, xám nâu, kết cấu chặt',
+  'Sét pha, nâu đỏ, trạng thái nửa cứng', 'Cát mịn kẹp sét, xám đen, kết cấu chặt vừa', 'Sét pha, xám đen, trạng thái nửa cứng', 'Cát mịn kẹp sét, xám đỏ, kết cấu chặt vừa đến chặt'];
+const BOX = ok => (ok ? '☑' : '☐');
+const nv = v => { const n = num(v); return isFinite(n) ? n : NaN; };
+const f2 = (v, dp) => isFinite(nv(v)) ? fmtN(nv(v), dp === undefined ? 2 : dp) : '';
+const f3 = v => f2(v, 3);
+const fz = v => isFinite(nv(v)) ? (nv(v) < 0 ? '-' : '+') + fmtN(Math.abs(nv(v)), 2) : '';
+const dFull = s => s && /^\d{4}-\d\d-\d\d/.test(s) ? s.slice(8, 10) + '/' + s.slice(5, 7) + '/' + s.slice(0, 4) : '';
+function bbInfo() {
+  const i = Object.assign({}, (B && B.cfg && B.cfg.info) || {});
+  if (!i.duAn && /tthc|hầm|công viên/i.test((P || '') + ' ' + (i.ten || ''))) Object.keys(ITP_TTHC.info).forEach(k => { if (!i[k]) i[k] = ITP_TTHC.info[k]; });
+  return i;
+}
+// ngày thực của 1 bản ghi: giờ ghi trên sổ (yyyy-mm-dd HH:MM) → ngày; không có thì ngày ca
+const rDay = r => r ? (/^\d{4}-\d\d-\d\d \d/.test(r.ct || '') ? r.ct.slice(0, 10) : r.ngay) : '';
+const at2 = (r, t) => r && t ? `${t} ngày ${dFull(rDay(r))}` : '';
+function minSpan(a, b) { const m = minDiff(a, b); return isFinite(m) ? (m < 0 ? m + 1440 : m) : NaN; }
+
+// ---------- dữ liệu chung 1 cấu kiện ----------
+function bbData(c) {
+  const z = dz(c), L = LIM(), I = bbInfo(), tv = c.loai === 'tv', m = c.m || {};
+  const one = mod => lastOf(c.code, mod), all = mod => recsOf(c.code, mod);
+  const dv = one('dv'), kh = one('khoan'), hh = one('hh'), tr = one('truoc'), lt = one('lt'), bt = one('bt'), kl = one('kl'), mn = one('moinoi');
+  const dd = all('dd'), xe = all('xe').filter(r => r.d.qd !== 'tra'), tn = all('tn');
+  const D = x => x ? x.d : {};
+  const gl = isFinite(nv(D(dv).ovZ)) ? nv(D(dv).ovZ) : tv ? (isFinite(nv(D(dv).zDinh)) ? nv(D(dv).zDinh) : z.gl) : z.gl;
+  const kRows = (D(kh).rows || []).filter(x => isFinite(nv(x.sau)));
+  const dep = isFinite(nv(D(tr).sauKhoan)) ? nv(D(tr).sauKhoan) : kRows.length ? Math.max(...kRows.map(x => nv(x.sau))) : NaN;
+  const vtt = isFinite(nv(D(kl).vtt)) ? nv(D(kl).vtt) : isFinite(nv(D(bt).luyKe)) ? nv(D(bt).luyKe) : vXe(c.code).v || NaN;
+  const vlt = isFinite(nv(D(bt).vlt)) ? nv(D(bt).vlt) : z.vlt;
+  const pick3 = dd.length <= 3 ? dd : [dd[0], dd[1], dd[dd.length - 1]];
+  const no = (String(m.id || '').match(/(\d+)\s*$/) || [])[1] || c.code;
+  return { c, z, L, I, tv, m, dv, kh, hh, tr, lt, bt, kl, mn, dd, dd3:pick3, xe, tn, D, gl, dep, vtt, vlt, kRows, no,
+    mac:tv ? (I.macTv || 'B35') : (I.macCoc || 'B30'), bv:tv ? (I.bvTv || z.bv || '') : (I.bvCoc || z.bv || ''), tc:tv ? (I.tcTv || 'TCVN 14213-2:2024; TCVN 9395-2012') : (I.tcCoc || 'TCVN 9395-2012: Cọc khoan nhồi - Thi công và nghiệm thu'),
+    hm:tv ? 'THI CÔNG CỌC KHOAN NHỒI ĐẠI TRÀ VÀ TƯỜNG VÂY - HẦM ĐẬU XE CÔNG VIÊN' : 'THI CÔNG CỌC KHOAN NHỒI ĐẠI TRÀ' };
+}
+function bbNo(X, n) { return `${X.I.soBB || 'BB'}-${X.tv ? 'TV' : 'CKN'}-${X.no}/${String(n).padStart(3, '0')}`; }
+// header chung: Ngày · Hạng mục · Tiêu chuẩn · Tên · Căn cứ bản vẽ
+function bbHead(X, ngay, extra) {
+  const c = X.c, z = X.z;
+  const name = X.tv ? [['Tên tấm', c.code], ['Kích thước', `${f2(z.L)} × ${f2(z.t)} m`], ['Loại tấm', X.m.k || c.type || ''], ['Lần đào, cạp', '01']]
+    : [['Tên cọc', c.code], ['Đường kính', 'D' + Math.round((z.d || 1) * 1000)], ['Loại cọc', c.type || ''], ['Lần khoan', '01']];
+  return [['Ngày', dFull(ngay)], ['Hạng mục', X.hm], ['Tiêu chuẩn tham chiếu', X.tc], { q:name }].concat(extra || [], [['Căn cứ bản vẽ', X.bv]]);
+}
+const TB = (head, rows, w, o) => Object.assign({ k:'tbl', head, rows, w }, o || {});
+const ckL = (ok, has) => has ? BOX(ok) + ' Đạt' : '☐ Đạt';
+
+// ---------- 13 biểu cọc ----------
+function bbCoc(X) {
+  const { c, z, L, D, dv, kh, hh, tr, lt, bt, xe, gl, dep } = X, d = D(dv), b = D(bt), t = D(tr), l = D(lt), kp = Object.assign({}, X.m.kp || {}, b.kp || {});
+  const dX = isFinite(nv(d.xTt)) ? nv(d.xTt) - nv(d.xTk || c.x) : NaN, dY = isFinite(nv(d.yTt)) ? nv(d.yTt) - nv(d.yTk || c.y) : NaN, lim = (L.exy || 50) / 1000;
+  const zDay = isFinite(dep) ? gl - dep : NaN, matDat = isFinite(nv(d.matDat)) ? nv(d.matDat) : X.m.matDat;
+  const ddRow = r => r ? [r, ...['kl', 'nhot', 'ph', 'cat'].map(k => f2(r.d[k], k === 'kl' ? 3 : k === 'ph' ? 1 : 0))] : null;
+  const ddMini = (r, req) => TB(['Chỉ tiêu dung dịch', 'Yêu cầu', 'Kết quả kiểm tra'], [['Tỷ trọng (g/ml)', req[0], r ? f2(r.d.kl, 3) : ''], ['Độ nhớt (giây)', req[1], r ? f2(r.d.nhot, 0) : ''], ['pH', req[2], r ? f2(r.d.ph, 1) : ''], ['Hàm lượng cát (%)', req[3], r ? f2(r.d.cat, 1) : '']], [5, 3, 4]);
+  const RQ = ['1,05 ÷ 1,15', '18 ÷ 45', '7 ÷ 9', '< 5 %'], RQ3 = ['< 1,25', '< 28', '7 ÷ 9', '< 8'];
+  const sec = (n, title, lines, sub) => ({ n, title, lines, sub });
+  const dd1 = X.dd3[0], dd2 = X.dd3[1], dd3 = X.dd3[2];
+  const docs = [];
+  // 001 Lý lịch
+  docs.push({ n:1, ngay:rDay(dv) || rDay(bt), land:0, ll:1, head:[['Dự án', X.I.duAn || ''], ['Gói thầu', X.I.goi || ''], ['Hạng mục', X.hm], ['Địa điểm', X.I.diaDiem || ''],
+    { q:[['Tên cọc', c.code], ['Lần khoan', '01'], ['Loại cọc', c.type || ''], ['Đường kính', 'D' + Math.round((z.d || 1) * 1000)]] }],
+    secs:[sec(1, 'Công tác chuẩn bị', [['Bắt đầu', at2(dv, d.cbTu)], ['Kết thúc', at2(dv, d.cbDen)]]),
+      sec(2, 'Lắp đặt Casing', [['Bắt đầu', at2(dv, d.tu)], ['Kết thúc', at2(dv, d.den)], ['X TK', f3(d.xTk || c.x), 'Y TK', f3(d.yTk || c.y)], ['X TT', f3(d.xTt), 'Y TT', f3(d.yTt)], ['ΔX', f3(dX), 'ΔY', f3(dY)],
+        ['CĐ đỉnh Casing', fz(d.ovZ) + ' m', 'Chiều dài casing', f2(d.ovL) + ' m'], ['CĐ mặt đất tự nhiên', fz(matDat) + ' m', 'Đường kính casing', (d.ovD || '') + ' m']]),
+      sec(3, 'Kiểm tra dung dịch khoan lần 1', [['Bắt đầu', at2(dd1, dd1 && dd1.d.gio)]], ddMini(dd1, RQ)),
+      sec(4, 'Quá trình khoan', [['Bắt đầu', at2(kh, D(kh).batDau)], ['Kết thúc', at2(kh, D(kh).ketThuc)], ['Chiều sâu kết thúc khoan thiết kế', f2(D(kh).sauTK || z.Lk) + ' m', 'Cao độ', fz(z.toe) + ' m'], ['Chiều sâu kết thúc khoan thực tế', f2(dep) + ' m', 'Cao độ', fz(zDay) + ' m'], ['CĐ đỉnh Casing', fz(gl) + ' m']]),
+      sec(5, 'Kiểm tra dung dịch khoan lần 2', [['Bắt đầu', at2(dd2, dd2 && dd2.d.gio)]], ddMini(dd2, RQ)),
+      sec(6, 'Kiểm tra Koden: ' + (hh ? f2(D(hh).ng) + ' %' : '……… %'), [['Bắt đầu', at2(hh, D(hh).tu)], ['Kết thúc', at2(hh, D(hh).den)]]),
+      sec(7, 'Làm sạch hố khoan lần 1', [['Bắt đầu', at2(tr, t.tu)], ['Chiều sâu sau khi khoan', f2(t.sauKhoan) + ' m', 'Cao độ', fz(gl - nv(t.sauKhoan)) + ' m'], ['Chiều sâu sau khi vét lắng', f2(t.sauVet) + ' m', 'Cao độ', fz(gl - nv(t.sauVet)) + ' m']]),
+      sec(8, 'Kiểm tra lồng thép', [['Gia công lồng thép', l.giaCong || ''], ['Hạ lồng thép · bắt đầu', at2(lt, l.haTu)], ['Hạ lồng thép · kết thúc', at2(lt, l.haDen)]]),
+      sec(9, 'Hạ ống đổ bê tông', [['Thời gian', tr ? (t.haOng || '') + ' ngày ' + dFull(rDay(tr)) : ''], ['Chiều dài ống đổ', f2(t.lOng) + ' m']]),
+      sec(10, 'Làm sạch hố khoan lần 2', [['Kết thúc', at2(tr, t.den)], ['Chiều sâu', f2(t.sauCuoi) + ' m', 'Cao độ', fz(gl - nv(t.sauCuoi)) + ' m']]),
+      sec(11, 'Kiểm tra dung dịch khoan lần 3', [['Bắt đầu', at2(dd3, dd3 && dd3.d.gio)]], ddMini(dd3, RQ3)),
+      sec(12, 'Đổ bê tông · Mác ' + X.mac, [['Bắt đầu', at2(bt, b.batDau)], ['Kết thúc', at2(bt, b.ketThuc)], ['Cao độ dừng đổ bê tông thiết kế', fz(b.zDungTK !== undefined ? b.zDungTK : z.col) + ' m'], ['Cao độ dừng đổ bê tông thực tế', fz(b.zCuoi) + ' m'],
+        ['Khối lượng bê tông lý thuyết', f2(X.vlt) + ' m³'], ['Khối lượng bê tông thực tế', f2(X.vtt) + ' m³'], ['Hao hụt', isFinite(X.vtt) && X.vlt ? f2((X.vtt - X.vlt) / X.vlt * 100, 1) + ' %' : '']]),
+      sec(13, 'Hạ kingpost (nếu có)', kp.ten ? [['Bắt đầu', at2(bt, kp.tu)], ['Kết thúc', at2(bt, kp.den)], ['Loại Kingpost', kp.ten, 'Tiết diện', kp.td || ''], ['Chiều dài Kingpost', f2(kp.L) + ' m'], ['Cao độ đỉnh Kingpost thiết kế', fz(kp.top) + ' m'], ['Cao độ đỉnh Kingpost thực tế', fz(kp.topTT) + ' m']] : [['', 'Không có kingpost']]),
+      sec(14, 'Rút Casing và lấp đầu cọc', [['Rút casing', at2(bt, b.rutCasing)], ['Lấp đầu cọc', at2(bt, b.lapDau)]])] });
+  // 002 Hố khoan
+  docs.push({ n:2, ngay:rDay(dv), blocks:[TB(['Tọa độ cọc', 'Thiết kế (m)', 'Thực tế (m)', 'Sai số (m)', 'Dung sai (m)', 'Kết luận', 'Ghi nhận'],
+      [['X', f3(d.xTk || c.x), f3(d.xTt), f3(dX), '±' + f3(lim), ckL(Math.abs(dX) <= lim + 1e-9, isFinite(dX)), ''], ['Y', f3(d.yTk || c.y), f3(d.yTt), f3(dY), '±' + f3(lim), ckL(Math.abs(dY) <= lim + 1e-9, isFinite(dY)), '']], [2, 2, 2, 2, 1, 1, 2]),
+    TB(['Đường kính', 'Thiết kế (mm)', 'Thực tế (mm)', 'Sai số (mm)', 'Dung sai (mm)', 'Kết luận', 'Ghi nhận'], [['X', Math.round(z.d * 1000), '', '', '≥0', '☐ Đạt', ''], ['Y', Math.round(z.d * 1000), '', '', '≥0', '☐ Đạt', '']], [2, 2, 2, 2, 1, 1, 2]),
+    { k:'kv', rows:[['CĐ đỉnh Casing', fz(d.ovZ) + ' m', 'Đường kính trong casing', ''], ['CĐ mặt đất tự nhiên', fz(matDat) + ' m', 'Đường kính ngoài casing', d.ovD || ''], ['Chiều dài casing', f2(d.ovL) + ' m', '', '']] }] });
+  // 003 Dung dịch
+  docs.push(bbDD(X, 3));
+  // 004 Theo dõi lỗ khoan
+  docs.push(bbLog(X, 4, 15));
+  // 005 Chiều dài
+  const lenT = (lab, depth) => TB(['Điểm', 'Cao độ thiết kế (m)', 'Cao độ thực tế (m)', 'Chiều dài (m)', 'Sai số (m)', 'Dung sai (m)', 'Kết luận', 'Ghi chú'],
+    [1, 2, 3].map(i => { const zt = i === 1 && isFinite(depth) ? gl - depth : NaN, ss = zt - z.toe; return [i, fz(z.toe), fz(zt), i === 1 ? f2(depth) : '', i === 1 ? f3(ss) : '', '±' + f3((L.sauCoc || 50) / 1000), i === 1 && isFinite(ss) ? ckL(Math.abs(ss) <= (L.sauCoc || 50) / 1000 + 1e-9, 1) : '☐ Đạt', '']; }), [1, 2, 2, 2, 1, 1, 1, 2], { cap:lab });
+  docs.push({ n:5, ngay:rDay(tr) || rDay(kh), blocks:[{ k:'kv', rows:[['Cao độ ống vách', fz(gl) + ' m', 'Cao độ MĐTN', fz(matDat) + ' m'], ['Cao độ đáy hố', fz(zDay) + ' m', 'Chiều sâu yêu cầu', f2(gl - z.toe) + ' m']] },
+    lenT('Kết thúc khoan', dep), { k:'kv', rows:[['Cao độ đáy lỗ khoan', fz(zDay) + ' m', '', '']] },
+    lenT('Vét lắng hố khoan', nv(t.sauVet)), { k:'kv', rows:[['Độ lắng', isFinite(nv(t.sauKhoan)) && isFinite(nv(t.sauVet)) ? f2(nv(t.sauKhoan) - nv(t.sauVet)) + ' m' : '', '', ''], ['Bắt đầu vét lắng', at2(tr, t.tu), 'Kết thúc vét lắng', ''], ['Bắt đầu thổi rửa', '', 'Kết thúc thổi rửa', at2(tr, t.den)]] },
+    lenT('Thổi rửa lỗ khoan', nv(t.sauCuoi)), { k:'kv', rows:[['Cao độ lỗ khoan sau khi thổi rửa', fz(gl - nv(t.sauCuoi)) + ' m', 'Cặn lắng', isFinite(nv(t.can1)) ? t.can1 + ' mm' : '']] }] });
+  // 006 Lồng thép
+  const lr = l.rows || [];
+  docs.push({ n:6, ngay:rDay(lt), extraHead:[['Tiêu chuẩn thép', 'TCVN 1651-2018: Thép cốt bê tông']], blocks:[TB(['Kiểm tra', 'Thép chủ · SL', 'Thép chủ · ĐK (mm)', 'ĐK lồng TK', 'ĐK lồng TT', 'Sai số', 'Chiều dài lồng (mm)', 'Đai TC · SL', 'Bước đai', 'Đai xoắn'],
+      [['Thép râu cọc'].concat(Array(9).fill(''))].concat(Array.from({ length:Math.max(7, lr.length) }, (_, i) => { const x = lr[i] || {}; return ['Lồng số ' + (i + 1), '', x.thep || '', '', '', '', isFinite(nv(x.dai)) ? Math.round(nv(x.dai) * 1000) : '', '', '', '']; })), [2, 1, 1, 1, 1, 1, 2, 1, 1, 1], { cap:'Kiểm tra lồng thép' }),
+    { k:'kv', rows:[['Thép treo lồng', isFinite(nv(l.thepTreo)) ? fz(l.thepTreo) + ' m' : '', 'Số ống siêu âm', l.ongSA || ''], ['Tổng chiều dài lồng thép theo lý thuyết', '', 'Tổng chiều dài lồng thép thực tế', lr.length ? f2(lr.reduce((s, x) => s + (nv(x.dai) || 0), 0)) + ' m' : ''], ['Sai số cho phép', '≤ ' + (L.longL || 50) + ' mm', '', '']] }] });
+  // 007 Ống thí nghiệm
+  const nSA = nv(l.ongSA || X.m.ongSA);
+  docs.push({ n:7, ngay:rDay(lt), extraHead:[['Cao độ đỉnh lồng', fz(l.zTreo) + ' m'], ['Cao độ mũi cọc', fz(z.toe) + ' m'], ['Chiều dài cọc', f2(z.col - z.toe) + ' m']],
+    blocks:[TB(['Các chi tiết ống được kiểm tra', 'Đơn vị', 'Kiểm tra thực tế', 'Đạt', 'Không đạt'], [['1. Loại ống: Siêu âm', '-', '-', '', ''], ['Đường kính Ø59,9 mm', 'mm', '59,90', '☐', '☐'], ['Chiều dày 1,8 mm', 'mm', '1,80', '☐', '☐'], ['Số lượng', 'ống', isFinite(nSA) ? nSA : '', '☐', '☐'],
+      ['Cao độ đỉnh ống', 'm', '', '☐', '☐'], ['Cao độ đáy ống', 'm', '', '☐', '☐'], ['Tổng chiều dài ống D59,9', 'm', '', '☐', '☐'], ['Măng sông', 'cái', '', '☐', '☐'], ['Nắp bịt', 'cái', '', '☐', '☐'],
+      ['2. Loại ống: Khoan lõi', '-', '-', '', ''], ['Đường kính Ø113,5 mm', 'mm', '113,50', '☐', '☐'], ['Chiều dày 2 mm', 'mm', '2,00', '☐', '☐'], ['Số lượng', 'ống', '', '☐', '☐'], ['Cao độ đỉnh ống', 'm', '', '☐', '☐'], ['Cao độ đáy ống', 'm', '', '☐', '☐'], ['Tổng chiều dài ống D113,5', 'm', '', '☐', '☐'], ['Măng sông', 'cái', '', '☐', '☐'], ['Nắp bịt', 'cái', '', '☐', '☐']], [5, 1, 4, 1, 1])] });
+  docs.push(bbMau(X, 8));
+  docs.push(bbXe(X, 9));
+  docs.push(bbChart(X, 10));
+  // 011 Kingpost
+  docs.push({ n:11, ngay:rDay(bt), extraHead:[{ q:[['Loại Kingpost', kp.ten || ''], ['Tiết diện', kp.td || ''], ['Chiều dài', isFinite(nv(kp.L)) ? f2(kp.L) + ' m' : '']] }], bv2:X.I.bvKp,
+    blocks:[TB(['Tọa độ', 'Thiết kế (m)', 'Thực tế (m)', 'Sai số (m)', 'Dung sai (m)', 'Kết luận', 'Ghi nhận'], ['X1', 'Y1', 'X2', 'Y2'].map(k => [k, '', '', '', '', '', '']), [2, 2, 2, 2, 1, 1, 2]),
+      TB(['', 'Thiết kế (m)', 'Thực tế (m)', 'Sai số (m)', 'Dung sai', 'Kết luận', 'Ghi nhận'], [['Cao độ đỉnh Kingpost', fz(kp.top), fz(kp.topTT), isFinite(nv(kp.topTT)) && isFinite(nv(kp.top)) ? f3(nv(kp.topTT) - nv(kp.top)) : '', '', '', kp.ten ? '' : 'Cọc không có kingpost']], [2, 2, 2, 2, 1, 1, 2])], ket:'Đồng ý nghiệm thu' });
+  // 012 Lấp đầu cọc
+  docs.push({ n:12, ngay:rDay(bt), blocks:[TB(['Biện pháp lấp đầu cọc', 'Thời gian, ghi chú', 'Đạt', 'Không đạt', 'Nhà thầu phụ', 'Nhà thầu chính', 'TVGS'],
+    [['Rút ống casing', b.rutCasing ? at2(bt, b.rutCasing) : 'Ngày', '☐', '☐', '', '', ''], ['Lấp đầu cọc bằng vật liệu: ……………', b.lapDau ? at2(bt, b.lapDau) : 'Ngày', '☐', '☐', '', '', ''], ['', 'Từ mặt bê tông tới mặt đất tự nhiên: ' + (isFinite(nv(b.zCuoi)) && isFinite(nv(matDat)) ? f2(nv(matDat) - nv(b.zCuoi)) + ' m' : '……'), '', '', '', '', '']], [3, 4, 1, 1, 1, 1, 1]),
+    { k:'txt', v:'* Cao độ được tính so với cao độ cốt quốc gia\n* Vừa lấp đầu cọc vừa hút dung dịch khoan ra khỏi hố cọc' }], ket:'Đồng ý nghiệm thu' });
+  // 013 Tổng hợp
+  const tK = minSpan(D(kh).batDau, D(kh).ketThuc), tB = minSpan(b.batDau, b.ketThuc);
+  const rowsTH = [['Cao độ tự nhiên (m)', '', fz(matDat)], ['Cao độ kết thúc đổ bê tông (m)', fz(b.zDungTK !== undefined ? b.zDungTK : z.col), fz(b.zCuoi)], ['Cao độ đáy cọc (m)', fz(z.toe), fz(zDay)], ['Cao độ cắt cọc (m)', fz(X.m.cut), ''],
+    ['Cao độ đỉnh ống chống (m)', '', fz(d.ovZ)], ['Cao độ đỉnh cốt thép (m)', '', ''], ['Chiều dài cọc (m)', f2(z.col - z.toe), isFinite(zDay) ? f2(nv(b.zCuoi !== '' && b.zCuoi !== undefined ? b.zCuoi : z.col) - zDay) : ''], ['Đường kính cọc (mm)', Math.round(z.d * 1000), Math.round(z.d * 1000)],
+    ['Chiều sâu khoan tính từ mặt đất tự nhiên (m)', isFinite(nv(matDat)) ? f2(nv(matDat) - z.toe) : '', isFinite(zDay) && isFinite(nv(matDat)) ? f2(nv(matDat) - zDay) : ''], ['Chiều dài ống chống (m)', '', f2(d.ovL)], ['Tổng chiều dài lồng thép (m)', '', ''],
+    ['Thể tích bê tông (m³)', f2(X.vlt), f2(X.vtt)], ['Chênh lệch bê tông (m³) (so với thiết kế)', '', isFinite(X.vtt) ? f2(X.vtt - X.vlt) : ''], ['Thời gian khoan tạo lỗ (h.s)', '', isFinite(tK) ? hm(tK) : ''], ['Thời gian đổ bê tông (h.s)', '', isFinite(tB) ? hm(tB) : ''], ['Tổng thời gian thi công (h.s)', '', '']];
+  docs.push({ n:13, land:1, ngay:rDay(bt), head:[['Dự án', X.I.duAn || ''], ['Gói thầu', X.I.goi || ''], ['Hạng mục', X.hm]], blocks:[
+    { k:'kv', rows:[['1. Tên cọc', c.code, '2. Vị trí cọc', `Xtk = ${f3(d.xTk || c.x)} · Ytk = ${f3(d.yTk || c.y)}`], ['3. Theo bản vẽ số', X.bv, '4. Ngày bắt đầu', dFull(rDay(dv) || rDay(kh))], ['5. Ngày hoàn thành', dFull(rDay(bt))], ['6. Thời tiết', b.thoiTiet || ''], ['Độ lệch tâm', `ΔX = ${f3(dX)} m · ΔY = ${f3(dY)} m`, 'Tọa độ thực tế', `Xtt = ${f3(d.xTt)} · Ytt = ${f3(d.yTt)}`]] },
+    TB(['TT', 'Đặc điểm cọc', 'Thiết kế', 'Thực tế'], rowsTH.map((r, i) => [i + 1].concat(r)), [1, 7, 2, 2], { cap:'TỔNG HỢP SỐ LIỆU CỌC' })], ket:'' });
+  return docs;
+}
+const hm = m => Math.floor(m / 60) + 'h' + pad2(Math.round(m % 60));
+function bbDD(X, n) {
+  const l = X.tv ? X.dd.slice(-3) : X.dd3, col = i => l[i] || null;
+  const r = (lab, f, mt) => [lab].concat([0, 1, 2].map(i => col(i) ? f(col(i)) : '')).concat([mt]);
+  return { n, ngay:rDay(col(0)), blocks:[TB(['Các chỉ tiêu kiểm tra', 'Lần 1', 'Lần 2', 'Lần 3', 'Phương pháp kiểm tra'], [r('Ngày tháng', x => dFull(rDay(x)), ''), r('Thời gian', x => x.d.gio || '', ''), r('Tỷ trọng (g/ml)', x => f2(x.d.kl, 3), 'Cân tỉ trọng'),
+    r('Độ nhớt (giây)', x => f2(x.d.nhot, 0), 'Phễu hình côn'), r('pH', x => f2(x.d.ph, 1), 'Quỳ tím'), r('Hàm lượng cát (%)', x => f2(x.d.cat, 1), 'Dụng cụ lọc Bentonite và ống đo %'), r('Đánh giá theo ITP', x => DDB[ddEval(X.c, x.d).s][0], '')], [3, 2, 2, 2, 3])] };
+}
+function bbLog(X, n, min) {
+  const R = X.kRows, rows = [];
+  for (let i = 1; i < R.length; i++) { const a = R[i - 1], b = R[i]; rows.push([i, a.gio || '', b.gio || '', f2(a.sau), f2(b.sau), fz(X.gl - nv(a.sau)), fz(X.gl - nv(b.sau)), b.lop || '', '']); }
+  const N = Math.max(min, rows.length);
+  for (let i = rows.length; i < N; i++) rows.push([i + 1, '', '', '', '', '', '', X.tv ? (TV_SOIL[i] || '') : '', '']);
+  return { n, ngay:rDay(X.kh), blocks:[TB(['STT', 'Thời gian · Từ', 'Đến', (X.tv ? 'Chiều sâu từ đỉnh tường dẫn' : 'Chiều sâu từ đỉnh casing') + ' (m) · Từ', 'Đến', 'Cao độ (m) · Từ', 'Đến', 'Các lớp địa chất', 'Ghi chú'], rows, [1, 1, 1, 1, 1, 1, 1, 3, 2])] };
+}
+function bbMau(X, n) {
+  const l = X.tn.filter(r => /mẫu|bê tông/i.test(r.d.loai || '')), xm = X.xe.filter(r => r.d.mau);
+  const rows = l.map((r, i) => [i + 1, X.c.code, r.d.ma || '', r.d.soMau || '', '15×15×15 cm', dFull(r.d.ngayLay || rDay(r)), r.d.phong || '']).concat(xm.map((r, i) => [l.length + i + 1, X.c.code, r.d.mau, '', '15×15×15 cm', dFull(rDay(r)), 'Xe ' + (r.d.bien || r.d.so || '')]));
+  while (rows.length < 6) rows.push([rows.length + 1, '', '', '', '', '', '']);
+  return { n, ngay:rDay(X.bt), blocks:[{ k:'kv', rows:[['Dự án', X.I.duAn || ''], ['Hạng mục', X.hm], ['Địa điểm', X.I.diaDiem || '']] },
+    { k:'txt', v:'I. THÀNH PHẦN\n1. Đại diện TVGS: ' + (X.I.tvgs || '') + '\n   Ông: ………………………… Chức vụ: …………………\n2. Đại diện Nhà thầu chính: ' + (X.I.ntc || '') + '\n   Ông: ………………………… Chức vụ: …………………\n3. Đại diện Nhà thầu phụ: ' + (X.I.ntp || '') + '\n   Ông: ………………………… Chức vụ: …………………\nII. THỜI GIAN, ĐỊA ĐIỂM: ' + dFull(rDay(X.bt)) + ' · hiện trường ' + X.c.code + '\nIII. NỘI DUNG' },
+    TB(['TT', 'Tên cấu kiện', 'Ký hiệu mẫu', 'Số lượng', 'Kích thước mẫu', 'Ngày lấy', 'Ghi chú'], rows, [1, 2, 2, 1, 2, 2, 2]), { k:'txt', v:'IV. KẾT LUẬN: Đồng ý mẫu thí nghiệm.' }], ket:'' };
+}
+function bbXe(X, n) {
+  const b = X.D(X.bt), A = Math.PI * Math.pow(X.z.d || 1, 2) / 4, tv = X.tv;
+  let cum = 0;
+  const rows = X.xe.map((r, i) => {
+    const v = (r.d.pb || []).filter(p => p && p.ck === X.c.code).reduce((s, p) => s + (nv(p.m3) || 0), 0) || nv(r.d.luong) || 0; cum += v;
+    const hLT = tv ? cum / ((X.z.L || 1) * (X.z.t || 0.8)) : cum / A, zLT = X.z.toe + hLT;
+    return [i + 1, r.d.bien || '', r.d.gioDi || '', r.d.gioDen || '', r.d.batDau || '', r.d.ketThuc || '', isFinite(nv(r.d.sut)) ? Math.round(nv(r.d.sut) * (nv(r.d.sut) < 40 ? 10 : 1)) : '', f2(v), f2(cum), '', '', f2(X.gl - zLT), '', '', r.d.mau ? '✓' : ''];
+  });
+  while (rows.length < 6) rows.push([rows.length + 1].concat(Array(14).fill('')));
+  return { n, land:1, ngay:rDay(X.bt), extraHead:[{ q:[['Khối lượng BT (thiết kế)', f2(X.vlt) + ' m³'], ['Mác bê tông', X.mac], ['Khối lượng BT (thực tế)', f2(X.vtt) + ' m³'], ['Độ sụt yêu cầu', '19±1 cm']] }, { q:[['Hao hụt (%)', isFinite(X.vtt) && X.vlt ? f2((X.vtt - X.vlt) / X.vlt * 100, 1) : ''], ['Đơn vị cấp', b.ncc || (X.xe[0] && X.xe[0].d.tram) || '']] }],
+    blocks:[TB(['STT', 'Biển số xe', 'Khởi hành', 'Đến nơi', 'Bắt đầu đổ', 'Kết thúc đổ', 'Độ sụt (mm)', 'Thể tích (m³)', 'Thể tích lũy tích (m³)', 'Ống đổ toàn bộ (m)', 'Ngập trong BT (m)', 'Chiều sâu BT · lý thuyết (m)', 'Thực tế', 'Chênh lệch (m)', 'Lấy mẫu'], rows, [1, 2, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1], { fs:9 })] };
+}
+function bbChart(X, n) {
+  const A = X.tv ? (X.z.L || 1) * (X.z.t || 0.8) : Math.PI * Math.pow(X.z.d || 1, 2) / 4, b = X.D(X.bt);
+  let cum = 0; const pts = [[0, X.gl - X.z.toe]];
+  X.xe.forEach(r => { cum += (r.d.pb || []).filter(p => p && p.ck === X.c.code).reduce((s, p) => s + (nv(p.m3) || 0), 0) || nv(r.d.luong) || 0; pts.push([cum, X.gl - (X.z.toe + cum / A)]); });
+  const act = (b.rows || []).filter(r => isFinite(nv(r.v)) && isFinite(nv(r.zMat))).map(r => [nv(r.v), X.gl - nv(r.zMat)]);
+  const rows = pts.slice(1).map((p, i) => [i + 1, f2(p[0]), f2(p[1]), act[i] ? f2(act[i][1]) : '']);
+  return { n, ngay:rDay(X.bt), blocks:[{ k:'svg', html:bbSvg(pts, act, X.vlt, X.gl - X.z.toe) }, TB(['Xe', 'Khối lượng lũy tích (m³)', 'Chiều sâu mặt BT · lý thuyết (m)', 'Chiều sâu mặt BT · thực đo (m)'], rows.length ? rows : [['', '', '', '']], [2, 3, 4, 3], { cap:'Chiều sâu tính từ ' + (X.tv ? 'đỉnh tường dẫn' : 'đỉnh casing') })] };
+}
+function bbSvg(pts, act, vlt, H) {
+  const W = 520, Hh = 380, ml = 50, mt = 20, mb = 36, mr = 16, vx = Math.max(vlt || 0, ...pts.map(p => p[0]), 1) * 1.08, hy = Math.max(H || 0, 1);
+  const X = v => ml + v / vx * (W - ml - mr), Y = h => mt + h / hy * (Hh - mt - mb);
+  const ln = (p, cl, dash) => p.length > 1 ? `<polyline fill="none" stroke="${cl}" stroke-width="1.8" ${dash ? 'stroke-dasharray="5 4"' : ''} points="${p.map(q => X(q[0]).toFixed(1) + ',' + Y(q[1]).toFixed(1)).join(' ')}"/>` : '';
+  let g = '';
+  for (let i = 0; i <= 5; i++) { const v = vx / 5 * i, h = hy / 5 * i; g += `<line x1="${X(v)}" y1="${mt}" x2="${X(v)}" y2="${Hh - mb}" stroke="#ddd"/><text x="${X(v)}" y="${Hh - mb + 14}" font-size="10" text-anchor="middle">${fmtN(v, 0)}</text><line x1="${ml}" y1="${Y(h)}" x2="${W - mr}" y2="${Y(h)}" stroke="#ddd"/><text x="${ml - 4}" y="${Y(h) + 3}" font-size="10" text-anchor="end">${fmtN(h, 0)}</text>`; }
+  return `<svg viewBox="0 0 ${W} ${Hh}" width="100%" style="max-width:560px;display:block;margin:6px auto" font-family="Arial">${g}<rect x="${ml}" y="${mt}" width="${W - ml - mr}" height="${Hh - mt - mb}" fill="none" stroke="#333"/>${ln(pts, '#0056A4', 1)}${ln(act, '#C0392B')}
+    <text x="${(W + ml) / 2}" y="${Hh - 4}" font-size="11" text-anchor="middle">Khối lượng bê tông lũy tích (m³)</text><text x="12" y="${(Hh) / 2}" font-size="11" transform="rotate(-90 12 ${Hh / 2})" text-anchor="middle">Chiều sâu (m)</text>
+    <g font-size="10"><line x1="${W - 170}" y1="${mt + 12}" x2="${W - 146}" y2="${mt + 12}" stroke="#0056A4" stroke-dasharray="5 4" stroke-width="1.8"/><text x="${W - 142}" y="${mt + 15}">Lý thuyết (theo xe)</text>${act.length ? `<line x1="${W - 170}" y1="${mt + 28}" x2="${W - 146}" y2="${mt + 28}" stroke="#C0392B" stroke-width="1.8"/><text x="${W - 142}" y="${mt + 31}">Thực đo</text>` : ''}</g></svg>`;
+}
+
+// ---------- 12 biểu tường vây ----------
+function bbTv(X) {
+  const { c, z, L, D, dv, kh, hh, tr, lt, bt, mn, gl } = X, d = D(dv), k = D(kh), t = D(tr), l = D(lt), b = D(bt), mo = D(mn);
+  const pk = X.m.poly || [], pt = d.polyTT || [];
+  const dd = X.dd.slice(-3), RQ = ['1,01 ÷ 1,15', '18 ÷ 45', '8 ÷ 12', '< 5 %'], RQ3 = ['1,01 ÷ 1,15', '18 ÷ 28', '8 ÷ 12', '< 5 %'];
+  const ddMini = (r, req) => TB(['Chỉ tiêu dung dịch', 'Yêu cầu', 'Kết quả kiểm tra'], [['Tỷ trọng (g/ml)', req[0], r ? f2(r.d.kl, 3) : ''], ['Độ nhớt (giây)', req[1], r ? f2(r.d.nhot, 0) : ''], ['pH', req[2], r ? f2(r.d.ph, 1) : ''], ['Hàm lượng cát (%)', req[3], r ? f2(r.d.cat, 1) : '']], [5, 3, 4]);
+  const sec = (n, title, lines, sub) => ({ n, title, lines, sub });
+  const lim = (L.tvViTri || 10) / 1000, pl = [];
+  for (let i = 0; i < 6; i++) { const a = pk[i], q = pt[i]; pl.push([a, q, a && q ? q[0] - a[0] : NaN, a && q ? q[1] - a[1] : NaN]); }
+  const diem = k.diem || [], dep = X.dep, zDay = gl - dep, docs = [];
+  docs.push({ n:1, ngay:rDay(kh) || rDay(dv), ll:1, head:[['Dự án', X.I.duAn || ''], ['Hạng mục', X.hm], ['Địa điểm', X.I.diaDiem || ''], { q:[['Tấm tường', c.code], ['Lần đào, cạp', '01'], ['Loại tấm', X.m.k || c.type || ''], ['Kích thước', `${f2(z.L)} × ${f2(z.t)} m`]] }],
+    secs:[sec(1, 'Biên bản kiểm tra hố đào, cạp', [['Bắt đầu', at2(kh, k.batDau)], ['Kết thúc', at2(kh, k.ketThuc)]]),
+      sec(2, 'Kiểm tra tọa độ, cao độ đỉnh tường dẫn', [['Bắt đầu', at2(dv, d.tu)], ['Kết thúc', at2(dv, d.den)]].concat(pl.filter(p => p[0]).flatMap((p, i) => [[`X${i + 1} TK`, f3(p[0][0]), `Y${i + 1} TK`, f3(p[0][1])], [`X${i + 1} TT`, p[1] ? f3(p[1][0]) : '', `Y${i + 1} TT`, p[1] ? f3(p[1][1]) : ''], [`ΔX${i + 1}`, f3(p[2]), `ΔY${i + 1}`, f3(p[3])]]), [['CĐ đỉnh tường dẫn trung bình', fz(d.zDinh || gl) + ' m'], ['CĐ mặt đất trung bình', '']])),
+      sec(3, 'Kiểm tra dung dịch khoan lần 1', [['Bắt đầu', at2(dd[0], dd[0] && dd[0].d.gio)]], ddMini(dd.length >= 3 ? dd[0] : null, RQ)),
+      sec(4, 'Quá trình đào, cạp', [['Bắt đầu', at2(kh, k.batDau)], ['Kết thúc', at2(kh, k.ketThuc)], ['Chiều sâu tường vây từ đỉnh tường dẫn · thiết kế', f2(k.sauTK || (gl - z.toe)) + ' m'], ['Thực tế', f2(dep) + ' m']]),
+      sec(5, 'Kiểm tra dung dịch khoan lần 2', [], ddMini(dd.length >= 2 ? dd[dd.length - 2] : null, RQ)),
+      sec(6, 'Làm sạch hố đào, cạp lần 1', [['Bắt đầu', at2(tr, t.tu)], ['Chiều sâu sau khi đào, cạp', f2(t.sauKhoan) + ' m'], ['Chiều sâu sau khi vét lắng', f2(t.sauVet) + ' m'], ['Độ lắng sau khi vét lắng', isFinite(nv(t.sauKhoan)) && isFinite(nv(t.sauVet)) ? Math.round((nv(t.sauKhoan) - nv(t.sauVet)) * 1000) + ' mm' : '']]),
+      sec(7, 'Kiểm tra lồng thép · gia công', [['Gia công', l.giaCong || '']]),
+      sec(8, 'Kiểm tra hạ lồng thép', [['Bắt đầu', at2(lt, l.haTu)], ['Kết thúc', at2(lt, l.haDen)]]),
+      sec(9, 'Kiểm tra tấm ngăn nước', [['Kiểm tra lắp đặt gioăng chống thấm', mo.kiemTra ? mo.kiemTra + ' ngày ' + dFull(rDay(mn)) : '']]),
+      sec(10, 'Kiểm tra hạ thanh giữ tấm ngăn nước', [['Thời gian', mo.thanhGiu ? mo.thanhGiu + ' ngày ' + dFull(rDay(mn)) : '']]),
+      sec(11, 'Hạ ống đổ bê tông', [['Thời gian', tr ? (t.haOng || '') + ' ngày ' + dFull(rDay(tr)) : ''], ['Chiều dài ống đổ', f2(t.lOng) + ' m']]),
+      sec(12, 'Làm sạch hố đào, lần cạp lần 2', [['Kết thúc', at2(tr, t.den)], ['Chiều sâu sau khi làm sạch hố khoan lần 2', f2(t.sauCuoi) + ' m']]),
+      sec(13, 'Kiểm tra dung dịch khoan lần 3', [['Thời gian', at2(dd[dd.length - 1], dd.length && dd[dd.length - 1].d.gio)]], ddMini(dd[dd.length - 1], RQ3)),
+      sec(14, 'Đổ bê tông tường vây · Mác ' + X.mac, [['Bắt đầu', at2(bt, b.batDau)], ['Kết thúc', at2(bt, b.ketThuc)], ['Cao độ dừng đổ bê tông', fz(b.zCuoi) + ' m'], ['Khối lượng bê tông lý thuyết', f2(X.vlt) + ' m³'], ['Khối lượng bê tông thực tế', f2(X.vtt) + ' m³']]),
+      sec(15, 'Vét bê tông bẩn đỉnh tường', [['Cao độ trước khi vét bẩn', fz(b.zCuoi) + ' m'], ['Cao độ sau khi vét bẩn', isFinite(nv(X.m.vetBan)) ? fz(X.m.vetBan) + ' m' : '']])] });
+  docs.push({ n:2, ngay:rDay(dv) || rDay(kh), blocks:[TB(['Tọa độ tường', 'Thiết kế (m)', 'Thực tế (m)', 'Sai số (m)', 'Dung sai (m)', 'Kết luận', 'Ghi nhận'],
+    pl.flatMap((p, i) => [0, 1].map(j => [(j ? 'Y' : 'X') + (i + 1), p[0] ? f3(p[0][j]) : '', p[1] ? f3(p[1][j]) : '', f3(p[2 + j]), '±' + f3(lim), isFinite(p[2 + j]) ? ckL(Math.abs(p[2 + j]) <= lim + 1e-9, 1) : '', ''])), [2, 2, 2, 2, 1, 1, 2]),
+    TB(['Kích thước', 'Thiết kế (m)', 'Thực tế (m)', 'Sai số (m)', 'Dung sai', 'Kết luận', 'Ghi nhận'], [['Chiều rộng', f2(z.t), '', '', '', '', ''], ['Chiều dài · tấm trong', f3(z.L), '', '', '', '', ''], ['Chiều dài · tấm ngoài', f3(z.L), '', '', '', '', '']], [2, 2, 2, 2, 1, 1, 2])], ket:'Đồng ý nghiệm thu' });
+  docs.push(Object.assign(bbDD(X, 3), { ket:'Đồng ý nghiệm thu' }));
+  docs.push(Object.assign(bbLog(X, 4, 9), { ket:'Đồng ý nghiệm thu' }));
+  const tol = (L.tvLen || 100) / 1000;
+  const lenT = (lab, vals) => TB(['Điểm', 'Cao độ yêu cầu (m)', 'Cao độ thực tế (m)', 'Chiều dài (m)', 'Sai số (m)', 'Dung sai (m)', 'Kết luận', 'Ghi chú'],
+    [0, 1, 2, 3].map(i => { const dp = nv(vals[i]), zt = gl - dp, ss = zt - z.toe; return [i + 1, fz(z.toe), fz(zt), f2(dp), f3(ss), '±' + fmtN(tol, 1), isFinite(ss) ? ckL(Math.abs(ss) <= tol + 1e-9, 1) : '', '']; }), [1, 2, 2, 2, 1, 1, 1, 2], { cap:lab });
+  docs.push({ n:5, ngay:rDay(tr) || rDay(kh), blocks:[{ k:'kv', rows:[['Cao độ đỉnh tường dẫn', fz(gl) + ' m', 'Cao độ MĐTN', ''], ['Cao độ đáy hố', fz(zDay) + ' m', 'Chiều sâu yêu cầu', f2(gl - z.toe) + ' m']] },
+    lenT('Sau khi đào, cạp', diem.length ? diem : [dep]), { k:'kv', rows:[['Cao độ đáy lỗ đào, cạp', fz(zDay) + ' m', '', '']] }, lenT('Vét lắng hố đào, cạp', [t.sauVet]),
+    { k:'kv', rows:[['Độ lắng', isFinite(nv(t.sauKhoan)) && isFinite(nv(t.sauVet)) ? Math.round((nv(t.sauKhoan) - nv(t.sauVet)) * 1000) + ' mm' : '', 'Bắt đầu vét lắng', at2(tr, t.tu)], ['Kết thúc thổi rửa', at2(tr, t.den), '', '']] }, lenT('Thổi rửa hố đào, cạp', [t.sauCuoi]),
+    { k:'kv', rows:[['Cao độ lỗ đào, cạp sau khi thổi rửa', fz(gl - nv(t.sauCuoi)) + ' m', '', '']] }], ket:'Đồng ý nghiệm thu' });
+  const it = ['Chiều dài thanh cừ giữ gioăng|Thước thép', 'Vị trí thanh cừ giữ gioăng|Quan sát + Thước thép', 'Vệ sinh thanh cừ giữ gioăng|Quan sát', 'Kích thước - độ võng thanh cừ giữ gioăng|Quan sát + Thước nivo', 'Kích thước gioăng chống thấm|Thước thép',
+    'Số lượng, vị trí gioăng chống thấm|Quan sát', 'Tình trạng gioăng (tốt, không rách)|Quan sát', 'Độ ổn định của gioăng chống thấm|Quan sát', 'Cao độ đỉnh, cao độ đáy gioăng|Thước thép'];
+  docs.push({ n:6, ngay:rDay(mn), blocks:[TB(['STT', 'Nội dung kiểm tra', 'Yêu cầu', 'Thực tế', 'Phương pháp kiểm tra', 'Đạt', 'Ko đạt'], it.map((s, i) => { const [a, m] = s.split('|'); return [i + 1, a, i === 8 ? `${fz(z.gTop)} → ${fz(z.gBot)}` : '', i === 8 && mo.zTop !== undefined ? `${fz(mo.zTop)} → ${fz(mo.zBot)}` : i === 6 ? (mo.bang || '') : '', m, '☐', '☐']; }), [1, 4, 2, 2, 1, 1, 1])], ket:'Đồng ý nghiệm thu' });
+  const lr = l.rows || [];
+  docs.push({ n:7, ngay:rDay(lt), blocks:[TB(['Số hiệu', 'Thép chủ / đai', 'Dài (m)', 'Giờ hạ', 'Ghi chú'], (lr.length ? lr : Array.from({ length:3 }, () => ({}))).map((x, i) => [x.ten || 'L' + (i + 1), x.thep || '', f2(x.dai), x.ha || '', '']), [2, 4, 2, 2, 2], { cap:'Kiểm tra lồng thép' }),
+    { k:'kv', rows:[['Gia công', l.giaCong || '', 'Hạ lồng', (l.haTu || '') + (l.haDen ? '–' + l.haDen : '')], ['Thép treo lồng', isFinite(nv(l.thepTreo)) ? fz(l.thepTreo) + ' m' : '', 'Lớp bê tông bảo vệ', (L.baoVeTV || 75) + ' mm'], ['Tổng chiều dài lồng thép lý thuyết', '', 'Sai số cho phép', '≤ ' + (L.longL || 50) + ' mm']] }], ket:'Đồng ý nghiệm thu' });
+  const nSA = nv(l.ongSA || X.m.ongSA);
+  docs.push({ n:8, ngay:rDay(lt), extraHead:[['Cao độ đỉnh lồng', ''], ['Cao độ mũi tường', fz(z.toe) + ' m'], ['Chiều dài tấm', f2(z.top - z.toe) + ' m']], blocks:[TB(['Các chi tiết ống được kiểm tra', 'Đơn vị', 'Kiểm tra thực tế', 'Đạt', 'Không đạt'],
+    [['1. Loại ống: Siêu âm', '-', '-', '', ''], ['Đường kính Ø59,9 mm', 'mm', '59,90', '☐', '☐'], ['Chiều dày 1,8 mm', 'mm', '1,80', '☐', '☐'], ['Số lượng', 'ống', isFinite(nSA) ? nSA : '', '☐', '☐'], ['Cao độ đỉnh ống', 'm', '', '☐', '☐'], ['Cao độ đáy ống', 'm', '', '☐', '☐'], ['Tổng chiều dài ống D59,9', 'm', '', '☐', '☐'], ['Măng sông', 'cái', '', '☐', '☐'], ['Nắp bịt', 'cái', '', '☐', '☐'],
+      ['2. Loại ống: Quan trắc', '-', '-', '', ''], ['Đường kính', 'mm', '', '☐', '☐'], ['Số lượng', 'ống', '', '☐', '☐'], ['Cao độ đỉnh ống', 'm', '', '☐', '☐'], ['Cao độ đáy ống', 'm', '', '☐', '☐']], [5, 1, 4, 1, 1])], ket:'Đồng ý nghiệm thu' });
+  docs.push(bbMau(X, 9));
+  docs.push(Object.assign(bbXe(X, 10), { ket:'Đồng ý nghiệm thu' }));
+  docs.push({ n:11, ngay:rDay(bt), blocks:[TB(['STT', 'Nội dung kiểm tra', 'Thời gian bắt đầu', 'Thời gian kết thúc', 'Phương pháp kiểm tra', 'Đạt', 'Ko đạt'], [[1, 'Vét bê tông bẩn đỉnh tường', '', '', 'Quan sát + Thước thép', '☐', '☐'], [2, 'Vận chuyển đất, vật liệu thừa ra khỏi công trường', '', '', 'Quan sát', '☐', '☐']], [1, 4, 2, 2, 1, 1, 1])], ket:'Đồng ý nghiệm thu' });
+  docs.push({ n:12, ngay:rDay(bt), extraHead:[['Bắt đầu', at2(kh, k.batDau)], ['Kết thúc', at2(bt, b.ketThuc)]], blocks:[TB(['Số liệu', 'Thiết kế', 'Thực tế', 'Dung sai'], [
+    ['1 - Cao độ đỉnh tường dẫn (m)', fz(gl), fz(d.zDinh), ''], ['2 - Cao độ mặt đất (m)', '', '', ''], ['3 - Chiều cao tường dẫn (m)', '', '', ''], ['4 - Chiều sâu đào, cạp (m)', f2(gl - z.toe), f2(dep), ''], ['5 - Cao độ mũi tường (m)', fz(z.toe), fz(zDay), '+' + fmtN((L.tvMui || 200) / 1000, 2) + ' m'],
+    ['6 - Cao độ cắt tường (m)', '', '', ''], ['7 - Cao độ dừng đổ bê tông (m)', fz(z.top), fz(b.zCuoi), ''], ['8 - Cao độ đỉnh lồng thép (m)', '', '', ''], ['9 - Chiều dài tấm tường (m)', f2(z.top - z.toe), isFinite(nv(b.zCuoi)) ? f2(nv(b.zCuoi) - zDay) : '', '±' + fmtN(tol, 1)], ['10 - Kích thước tường vây (mm)', `${Math.round(z.L * 1000)} × ${Math.round(z.t * 1000)}`, '', ''],
+    ['12 - Bê tông · cấp ' + X.mac + ' · độ sụt 19±1 cm', '', '', ''], ['Khối lượng bê tông (m³)', f2(X.vlt), f2(X.vtt), ''], ['Phần dư (m³)', '', isFinite(X.vtt) ? f2(X.vtt - X.vlt) : '', '']], [6, 2, 2, 2])], ket:'Đồng ý nghiệm thu' });
+  return docs;
+}
+function bbDocs(c) { const X = bbData(c); const list = X.tv ? BB_TV : BB_COC; return (X.tv ? bbTv(X) : bbCoc(X)).map(d => { const t = list.find(x => x[0] === d.n); return Object.assign({ title:t[1], sub:t[2] || '', no:bbNo(X, d.n), head:d.head || bbHead(X, d.ngay, d.extraHead), X }, d, d.bv2 ? { head:bbHead(X, d.ngay, d.extraHead).concat([['', d.bv2]]) } : {}); }); }
+
+// ---------- HTML (xem + in PDF) ----------
+function bbCell(v) { return esc(v === undefined || v === null ? '' : v).replace(/\n/g, '<br>'); }
+function bbHeadHtml(h) {
+  return `<table class="bb-h">${h.map(r => r.q ? `<tr><td colspan="2"><div class="bb-q">${r.q.map(x => `<span><b>${esc(x[0])}:</b> ${bbCell(x[1]) || '…………'}</span>`).join('')}</div></td></tr>` : `<tr><th>${esc(r[0])}${r[0] ? ':' : ''}</th><td>${bbCell(r[1]) || '…………………'}</td></tr>`).join('')}</table>`;
+}
+function bbTbl(b) {
+  const tot = b.w.reduce((s, x) => s + x, 0);
+  return `${b.cap ? `<div class="bb-cap">${esc(b.cap)}</div>` : ''}<table class="bb-t" style="${b.fs ? 'font-size:' + b.fs + 'px' : ''}"><colgroup>${b.w.map(w => `<col style="width:${(w / tot * 100).toFixed(1)}%">`).join('')}</colgroup><tr>${b.head.map(h => `<th>${bbCell(h)}</th>`).join('')}</tr>${b.rows.map(r => `<tr>${r.map(v => `<td>${bbCell(v)}</td>`).join('')}</tr>`).join('')}</table>`;
+}
+function bbKv(b) { return `<table class="bb-kv">${b.rows.map(r => `<tr>${[0, 2].map(i => r[i] !== undefined ? `<th>${esc(r[i])}${r[i] ? ':' : ''}</th><td>${bbCell(r[i + 1])}</td>` : '<th></th><td></td>').join('')}</tr>`).join('')}</table>`; }
+function bbLL(d) {
+  return `<table class="bb-t bb-ll"><colgroup><col style="width:5%"><col style="width:53%"><col style="width:15%"><col style="width:9%"><col style="width:9%"><col style="width:9%"></colgroup>
+    <tr><th>STT</th><th>Nội dung công việc</th><th>Ghi chú & kết luận</th><th>Nhà thầu phụ</th><th>Nhà thầu chính</th><th>TVGS</th></tr>
+    ${d.secs.map(s => `<tr><td style="text-align:center">${s.n}</td><td><b>${esc(s.title)}</b>${s.lines.length ? `<table class="bb-kv in">${s.lines.map(r => `<tr><th>${esc(r[0])}${r[0] ? ':' : ''}</th><td>${bbCell(r[1])}</td>${r[2] !== undefined ? `<th>${esc(r[2])}:</th><td>${bbCell(r[3])}</td>` : '<th></th><td></td>'}</tr>`).join('')}</table>` : ''}${s.sub ? bbTbl(s.sub) : ''}</td><td>☐ Đạt yêu cầu<br>☐ Khác</td><td></td><td></td><td></td></tr>`).join('')}</table>`;
+}
+function bbSign(d) {
+  const tv = d.X.tv;
+  return `${d.ket === '' ? '' : `<div class="bb-ket"><b><u>Kết luận:</u></b><span>☐ ${esc(d.ket || 'Nghiệm thu')}</span><span>☐ Không nghiệm thu</span></div>`}
+    <div class="bb-sig"><div>TƯ VẤN GIÁM SÁT</div><div>${tv ? 'ĐẠI DIỆN ' : ''}NHÀ THẦU CHÍNH</div><div>${tv ? 'ĐẠI DIỆN ' : ''}NHÀ THẦU PHỤ</div></div>`;
+}
+function bbPageHtml(d) {
+  return `<section class="bb-pg ${d.land ? 'land' : ''}"><div class="bb-top"><div class="bb-lg l">${esc((d.X.I.tvgs || 'TVGS').replace(/^.*\(([^)]+)\).*$/, '$1'))}</div><div class="bb-tt"><div>${esc(d.title)}</div>${d.sub ? `<small>${esc(d.sub)}</small>` : ''}</div><div class="bb-lg r">FECON<br><small>South</small></div></div>
+    <div class="bb-no">${esc(d.no)}</div>${bbHeadHtml(d.head)}${d.ll ? bbLL(d) : (d.blocks || []).map(b => b.k === 'tbl' ? bbTbl(b) : b.k === 'kv' ? bbKv(b) : b.k === 'svg' ? b.html : `<div class="bb-txt">${bbCell(b.v)}</div>`).join('')}${bbSign(d)}</section>`;
+}
+const BB_CSS = `.bb-pg{background:#fff;color:#000;font-family:'Times New Roman',Times,serif;font-size:12px;width:190mm;min-height:270mm;margin:0 auto 14px;padding:8mm 8mm 10mm;box-shadow:0 1px 6px rgba(0,0,0,.15);box-sizing:border-box}
+.bb-pg.land{width:277mm;min-height:180mm}.bb-top{display:grid;grid-template-columns:22% 1fr 22%;border:1px solid #000;align-items:center}.bb-top>div{padding:6px;text-align:center}.bb-tt{border-left:1px solid #000;border-right:1px solid #000;font-weight:700;font-size:15px}.bb-tt small{display:block;font-weight:700;font-size:12px}
+.bb-lg{font-weight:700;font-size:13px}.bb-lg.r{color:#4a4a4a;font-family:Arial;font-size:17px;line-height:1}.bb-lg.r small{font-size:11px;color:#0056A4}.bb-no{text-align:right;font-style:italic;margin:3px 0 6px}
+.bb-h,.bb-kv{width:100%;border-collapse:collapse;margin:2px 0 6px}.bb-h th,.bb-kv th{text-align:left;font-weight:700;padding:2px 6px 2px 0;vertical-align:top;white-space:nowrap;width:1%}.bb-h td,.bb-kv td{padding:2px 8px 2px 0;vertical-align:top}.bb-kv th{font-weight:400}.bb-kv.in{margin:2px 0 0}.bb-kv.in th{font-weight:400;font-size:11.5px}.bb-kv.in td{white-space:nowrap}
+.bb-q{display:flex;flex-wrap:wrap;gap:4px 22px}.bb-cap{font-weight:700;margin:8px 0 2px}.bb-t{width:100%;border-collapse:collapse;margin:4px 0 8px;table-layout:fixed}.bb-t th,.bb-t td{border:1px solid #000;padding:3px 4px;vertical-align:middle;word-wrap:break-word}.bb-t th{font-weight:700;text-align:center;background:#f3f3f3}.bb-t td{text-align:center}.bb-t td:first-child+td{text-align:left}
+.bb-ll td{vertical-align:top;text-align:left!important}.bb-t .bb-kv th,.bb-t .bb-kv td{border:none;background:none;padding:1px 6px 1px 0;text-align:left!important;font-weight:400}.bb-ll .bb-t{margin:4px 0}.bb-ll .bb-t td{text-align:center!important}.bb-txt{white-space:normal;margin:6px 0}.bb-ket{margin:14px 0 6px;display:flex;gap:40px}.bb-sig{display:grid;grid-template-columns:1fr 1fr 1fr;text-align:center;font-weight:700;margin-top:10px;min-height:90px}
+@media print{body *{visibility:hidden}#bb-print,#bb-print *{visibility:visible}#bb-print{position:absolute;left:0;top:0;width:100%}.bb-pg{box-shadow:none;margin:0;page-break-after:always;break-after:page;min-height:0}.bb-pg.land{page:land}@page{size:A4;margin:8mm}@page land{size:A4 landscape;margin:8mm}}`;
+function bbStyle() { if (!document.getElementById('bb-css')) { const s = document.createElement('style'); s.id = 'bb-css'; s.textContent = BB_CSS; document.head.appendChild(s); } }
+
+// màn xem bộ biên bản
+VIEWS.bb = {
+  render(a) {
+    const c = CK[a.code]; if (!c) return shell({ back:1, title:'Không tìm thấy', body:'<div class="empty">—</div>' });
+    if (!CKREC[c.code]) { loadCk(c.code, true).then(() => { if (cur.v === 'bb') rerender(); }); return shell({ back:1, title:'Bộ biên bản ' + esc(c.code), body:'<div class="empty"><span class="spin" style="display:inline-block"></span><br>Đang tải hồ sơ…</div>' }); }
+    bbStyle(); setTimeout(bbFit, 30);
+    const docs = bbDocs(c), sel = a.n ? docs.filter(d => d.n === +a.n) : docs;
+    return shell({ back:1, title:'Bộ biên bản ' + esc(c.code), sub:(c.loai === 'tv' ? '12' : '13') + ' biểu theo ITP đã duyệt', body:`<div class="dbody">
+      <div class="chip-row" style="padding:0 0 10px;flex-wrap:wrap"><span class="chip ${!a.n ? 'on' : ''}" onclick="cur.a.n=0;render(false)">Tất cả</span>${docs.map(d => `<span class="chip ${+a.n === d.n ? 'on' : ''}" onclick="cur.a.n=${d.n};render(false)">${String(d.n).padStart(3, '0')}</span>`).join('')}</div>
+      <div class="split" style="gap:8px"><button class="btn sm" onclick="bbPrint('${esc(c.code)}',${+a.n || 0})">🖨 In / lưu PDF</button><button class="btn ghost sm" onclick="bbExcel(['${esc(c.code)}'])">⬇ Excel</button></div>
+      <div class="note n-info mt8">📄<span>Tự điền từ nhật ký đã ghi. Ô trống = chưa có số liệu (ghi tay hoặc bổ sung trong app). Ô "Kết luận Nghiệm thu" để TVGS đánh dấu khi ký.</span></div>
+      <div id="bb-wrap" style="overflow:hidden;background:#e9edf2;padding:10px 0;margin:0 -16px">${sel.map(bbPageHtml).join('')}</div></div>` });
+  }
+};
+function bbFit() { const w = document.getElementById('bb-wrap'); if (!w) return; w.querySelectorAll('.bb-pg').forEach(p => { p.style.zoom = ''; const z = Math.min(1, (w.clientWidth - 12) / p.offsetWidth); p.style.zoom = z < 1 ? z.toFixed(3) : ''; }); }
+window.addEventListener('resize', () => setTimeout(bbFit, 50));
+function bbPrint(code, n) {
+  bbStyle();
+  const c = CK[code]; if (!c) return;
+  const docs = bbDocs(c).filter(d => !n || d.n === n);
+  bbPrintDocs(docs);
+}
+function bbPrintDocs(docs) {
+  let el = document.getElementById('bb-print'); if (!el) { el = document.createElement('div'); el.id = 'bb-print'; el.style.cssText = 'position:fixed;left:-99999px;top:0'; document.body.appendChild(el); }
+  el.innerHTML = docs.map(bbPageHtml).join('');
+  setTimeout(() => { window.print(); setTimeout(() => { el.innerHTML = ''; }, 1500); }, 200);
+}
+
+// ---------- Excel: 1 trang tính / biểu ----------
+function bbSheet(wb, d, name) {
+  const ws = wb.addWorksheet(name, { pageSetup:{ paperSize:9, orientation:d.land ? 'landscape' : 'portrait', fitToPage:true, fitToWidth:1, fitToHeight:0, margins:{ left:0.3, right:0.3, top:0.4, bottom:0.4, header:0.2, footer:0.2 } } });
+  const NC = 12; ws.columns = Array.from({ length:NC }, () => ({ width:d.land ? 13 : 8.6 }));
+  const font = { name:'Times New Roman', size:11 }, B1 = { style:'thin' }, BOR = { top:B1, left:B1, bottom:B1, right:B1 };
+  let R = 1;
+  const put = (r, c1, c2, v, o) => { if (c2 > c1) ws.mergeCells(r, c1, r, c2); const cell = ws.getCell(r, c1); cell.value = v === undefined || v === null ? '' : v; cell.font = Object.assign({}, font, o && o.font); cell.alignment = Object.assign({ vertical:'middle', wrapText:true }, o && o.al); if (o && o.bor) for (let c = c1; c <= c2; c++) ws.getCell(r, c).border = BOR; if (o && o.fill) cell.fill = { type:'pattern', pattern:'solid', fgColor:{ argb:'FFF3F3F3' } }; return cell; };
+  const hgt = (r, txtLen, cols) => { const lines = Math.max(1, Math.ceil(txtLen / Math.max(6, cols * (d.land ? 13 : 8.6) * 1.1))); ws.getRow(r).height = Math.max(ws.getRow(r).height || 15, Math.min(160, 15 * lines)); };
+  put(R, 1, 3, (d.X.I.tvgs || 'TVGS').replace(/^.*\(([^)]+)\).*$/, '$1'), { bor:1, al:{ horizontal:'center' }, font:{ bold:true } });
+  put(R, 4, 9, d.title + (d.sub ? '\n' + d.sub : ''), { bor:1, al:{ horizontal:'center' }, font:{ bold:true, size:14 } });
+  put(R, 10, 12, 'FECON South', { bor:1, al:{ horizontal:'center' }, font:{ bold:true, size:14, color:{ argb:'FF4A4A4A' } } }); ws.getRow(R).height = d.sub ? 44 : 34; R++;
+  put(R, 1, 12, d.no, { al:{ horizontal:'right' }, font:{ italic:true } }); R++;
+  d.head.forEach(h => {
+    if (h.q) { const per = Math.floor(12 / h.q.length); h.q.forEach((x, i) => put(R, 1 + i * per, i === h.q.length - 1 ? 12 : (i + 1) * per, x[0] + ': ' + (x[1] === '' || x[1] === undefined ? '…………' : x[1]), { font:{ bold:false } })); R++; return; }
+    put(R, 1, 3, h[0] ? h[0] + ':' : '', { font:{ bold:true } }); put(R, 4, 12, h[1] === '' || h[1] === undefined ? '…………………' : h[1]); hgt(R, String(h[1] || '').length, 9); R++;
+  });
+  R++;
+  const tbl = b => {
+    if (b.cap) { put(R, 1, 12, b.cap, { font:{ bold:true } }); R++; }
+    const tot = b.w.reduce((s, x) => s + x, 0), sp = []; let acc = 0;
+    b.w.forEach((w, i) => { const s = Math.round(acc / tot * 12) + 1; acc += w; const e = Math.round(acc / tot * 12); sp.push([s, Math.max(s, e)]); });
+    const line = (cells, hd) => { let mx = 0; cells.forEach((v, i) => { if (!sp[i]) return; put(R, sp[i][0], sp[i][1], v, { bor:1, fill:hd, font:{ bold:!!hd, size:b.fs ? 9 : 11 }, al:{ horizontal:i === 1 && !hd ? 'left' : 'center' } }); mx = Math.max(mx, String(v || '').length / (sp[i][1] - sp[i][0] + 1)); }); ws.getRow(R).height = Math.min(120, Math.max(16, 15 * Math.ceil(mx / (d.land ? 12 : 8)))); R++; };
+    line(b.head, 1); b.rows.forEach(r => line(r, 0)); R++;
+  };
+  const kv = b => { b.rows.forEach(r => { put(R, 1, 3, r[0] ? r[0] + ':' : ''); put(R, 4, 6, r[1]); if (r[2] !== undefined) { put(R, 7, 9, r[2] ? r[2] + ':' : ''); put(R, 10, 12, r[3]); } hgt(R, Math.max(String(r[0] || '').length, String(r[1] || '').length * 1.6), 3); R++; }); R++; };
+  if (d.ll) {
+    const h = ['STT', 'Nội dung công việc', 'Ghi chú & kết luận', 'Nhà thầu phụ', 'Nhà thầu chính', 'TVGS'], sp = [[1, 1], [2, 7], [8, 9], [10, 10], [11, 11], [12, 12]];
+    h.forEach((v, i) => put(R, sp[i][0], sp[i][1], v, { bor:1, fill:1, font:{ bold:true }, al:{ horizontal:'center' } })); ws.getRow(R).height = 30; R++;
+    d.secs.forEach(s => {
+      const lines = s.lines.map(r => (r[0] ? r[0] + ': ' : '') + (r[1] || '…………') + (r[2] !== undefined ? '     ' + r[2] + ': ' + (r[3] || '…………') : ''));
+      if (s.sub) { lines.push(s.sub.head.join(' | ')); s.sub.rows.forEach(r => lines.push(r.join(' | '))); }
+      const r0 = R, txt = s.title + (lines.length ? '\n' + lines.join('\n') : '');
+      put(R, 1, 1, s.n, { bor:1, al:{ horizontal:'center', vertical:'top' } });
+      const cc = put(R, 2, 7, txt, { bor:1, al:{ vertical:'top' } }); cc.value = { richText:[{ text:s.title, font:Object.assign({}, font, { bold:true }) }].concat(lines.length ? [{ text:'\n' + lines.join('\n'), font }] : []) };
+      put(R, 8, 9, '☐ Đạt yêu cầu\n☐ Khác', { bor:1, al:{ vertical:'top' } }); [10, 11, 12].forEach(c => put(R, c, c, '', { bor:1 }));
+      ws.getRow(r0).height = Math.min(400, 15 * (1 + lines.length) + 6); R++;
+    });
+    R++;
+  } else (d.blocks || []).forEach(b => b.k === 'tbl' ? tbl(b) : b.k === 'kv' ? kv(b) : b.k === 'txt' ? (put(R, 1, 12, b.v), ws.getRow(R).height = 15 * (String(b.v).split('\n').length), R += 2) : null);
+  if (d.ket !== '') { put(R, 1, 2, 'Kết luận:', { font:{ bold:true, underline:true } }); put(R, 3, 6, '☐ ' + (d.ket || 'Nghiệm thu')); put(R, 8, 11, '☐ Không nghiệm thu'); R += 2; }
+  put(R, 1, 4, 'TƯ VẤN GIÁM SÁT', { font:{ bold:true }, al:{ horizontal:'center' } }); put(R, 5, 8, (d.X.tv ? 'ĐẠI DIỆN ' : '') + 'NHÀ THẦU CHÍNH', { font:{ bold:true }, al:{ horizontal:'center' } }); put(R, 9, 12, (d.X.tv ? 'ĐẠI DIỆN ' : '') + 'NHÀ THẦU PHỤ', { font:{ bold:true }, al:{ horizontal:'center' } });
+  ws.pageSetup.printArea = 'A1:L' + (R + 5);
+  return ws;
+}
+async function bbExcel(codes) {
+  showLoader('Đang tạo Excel bộ biên bản…');
+  try {
+    const X = await loadXL(); const one = codes.length === 1;
+    const wb = new X.Workbook();
+    for (const code of codes) {
+      if (!CKREC[code]) await loadCk(code, true);
+      const c = CK[code]; if (!c) continue;
+      bbDocs(c).forEach(d => bbSheet(wb, d, (one ? '' : code.replace(/[^\w.]/g, '') + '-') + String(d.n).padStart(3, '0')));
+    }
+    await saveXL(wb, one ? `Bo bien ban ${codes[0]} - ${P}.xlsx` : `Bo bien ban ${codes.length} cau kien - ${P}.xlsx`);
+  } catch (e) { toast(e.message); }
+  hideLoader();
+}
+// in / Excel nhiều cấu kiện (đổ bê tông trong 1 ngày)
+async function bbBatch(kind, day) {
+  const codes = [...new Set(Object.values(REC).filter(r => r.mod === 'bt' && r.ngay === day && r.st !== 'huy').map(r => r.ck))].filter(k => CK[k]);
+  if (!codes.length) { toast('Ngày ' + dmy(day) + ' chưa có cấu kiện đổ bê tông'); return; }
+  if (codes.length > 30 && !(await ask('In ' + codes.length + ' cấu kiện?', { msg:'Khoảng ' + codes.length * 13 + ' trang. Có thể mất vài phút.', ok:'Tiếp tục' }))) return;
+  if (kind === 'xl') return bbExcel(codes);
+  showLoader('Đang tải hồ sơ…'); for (const k of codes) if (!CKREC[k]) await loadCk(k, true); hideLoader();
+  bbStyle(); bbPrintDocs(codes.flatMap(k => bbDocs(CK[k])));
+}
 
 if ('serviceWorker' in navigator) { try { navigator.serviceWorker.register('sw.js').catch(() => {}); } catch (e) {} }
 </script>
