@@ -1,4 +1,5 @@
-// FECON Kho + Thi công - Service Worker v5.31.5
+// FECON Kho + Thi công - Service Worker v5.31.6
+// 5.31.6: menu Thi công giống Kho · màn chọn Kho / Thi công dùng nền đăng nhập
 // 5.31.5: Thi công 1.3.1 — sửa kẹt khi đổi dự án lúc đang đồng bộ
 // 5.31.4: Thi công 1.3 — tự cập nhật phiên bản ngay trong Thi công · tải nền bản ghi để chạm cọc hiện ngay
 // 5.31.3: Thi công 1.2.1 — bấm cọc / panel: thẻ mặt cắt + hiện trạng nổi ngay trên mặt bằng
@@ -9,7 +10,7 @@
 //  - Mở app: lấy file từ bộ nhớ của bản đang dùng; thiếu file nào mới lấy từ mạng.
 //  - Có sw.js mới trên GitHub: tải sẵn bản mới vào bộ nhớ riêng nhưng KHÔNG đổi bản đang dùng.
 //  - Địa chỉ có ?fresh=... luôn lấy thẳng từ mạng (app dùng để kiểm tra / tải bản mới).
-const VERSION = '5.31.5';
+const VERSION = '5.31.6';
 const APP = 'fecon-app-', META = 'fecon-meta';
 const CORE = ['./', './index.html', './thicong.html', './manifest.json', './icon-192.png', './icon-512.png', './icon-maskable-192.png', './icon-maskable-512.png', './bg-login.jpg'];
 
