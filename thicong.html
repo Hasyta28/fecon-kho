@@ -355,15 +355,28 @@ body.pk-open .main{padding-bottom:48vh}
 .sb-grp{font-size:10px;font-weight:700;letter-spacing:1px;padding:12px 20px 4px}
 .sb-div{height:1px;background:var(--border);margin:8px 0}
 
+/* Phân quyền Thi công */
+.qtb{border-collapse:collapse;width:100%;min-width:330px;font-size:13px}
+.qtb th{font-size:11px;font-weight:800;color:var(--text3);padding:6px 2px;text-align:center;border-bottom:1px solid var(--border)}
+.qtb td{padding:5px 2px;border-bottom:1px solid #F0F2F5;text-align:center;vertical-align:middle}
+.qtb td:first-child{text-align:left;padding-left:4px;min-width:96px}
+.qtb td:first-child small{display:block;font-size:10.5px;color:var(--text3);font-weight:600;line-height:1.25;max-width:130px}
+.qtb tr.dirty td{background:#FFF7ED}
+.qbx{width:30px;height:30px;border-radius:8px;border:1.5px solid #C9D2DE;background:#fff;color:#fff;font-weight:900;font-size:15px;cursor:pointer;font-family:inherit}
+.qbx.on{background:var(--orange);border-color:var(--orange)}
+.qbx.lk{opacity:.55;cursor:default}
+.qleg{font-size:11.5px;color:var(--text2);line-height:1.5;margin-top:10px;display:grid;gap:2px}
+.qleg b{display:inline-block;min-width:34px;color:var(--navy)}
+
 </style>
 </head>
 <body>
 <div id="app"></div>
 <script>
-// FECON South · THI CÔNG 1.3.2 — chạy cùng app Kho (đăng nhập ở index.html, dùng chung máy chủ Apps Script)
-const KHO_VERSION = '5.31.6';
+// FECON South · THI CÔNG 1.4.0 — chạy cùng app Kho (đăng nhập ở index.html, dùng chung máy chủ Apps Script)
+const KHO_VERSION = '5.31.7';
 // ===== FECON Thi công 1.0 — lõi: máy chủ, lưu trên máy, hàng đợi gửi, điều hướng =====
-const TC_APP_VERSION = '1.3.2';
+const TC_APP_VERSION = '1.4.0';
 const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbw6Rmi80I7RI3ij2U7RdRF5pYuQTnPrwEmGmUZS5xpxzLwwVynfoFUujZe1lm6HS1ymxw/exec';
 const LS_TOKEN = 'fecon_token_v5', LS_USER = 'fecon_user_v5';           // dùng chung phiên đăng nhập với Kho
 const LS_P = 'tc_proj', LS_BOOT = 'tc_boot2|', LS_OUT = 'tc_out_v1', LS_CA = 'tc_ca', LS_PART = 'fecon_part';
@@ -2486,12 +2499,9 @@ VIEWS.qtri = {
       inner = `<div class="chip-row" style="padding:0 0 10px"><span class="chip ${!a.only ? 'on' : ''}" onclick="cur.a.only=0;cur.a.audit=null;render(false)">Mọi thao tác</span><span class="chip ${a.only ? 'on' : ''}" onclick="cur.a.only=1;cur.a.audit=null;render(false)">Chỉ sửa & xung đột</span></div>
         <div class="card">${a.audit ? l.map(x => `<div class="row tap" onclick="openForm('${x.mod}','${esc(x.ck)}','${esc(x.id)}')"><div class="ico ${x.s.act === 'xungdot' ? 'rd' : x.s.act === 'sua' ? 'am' : 'gy'}">${(MODS[x.mod] || {}).i || '•'}</div><div class="rmain"><div class="rname">${ACTN[x.s.act] || x.s.act} · ${esc((MODS[x.mod] || {}).t || x.mod)}${x.ck ? ' ' + esc(x.ck) : ''}</div><div class="rsub">${esc(x.s.byName || '')} · ${esc(x.s.at || '')}${x.s.note ? ' · ' + esc(x.s.note) : ''}</div>${x.s.diff && x.s.diff.length ? `<div class="rsub">${x.s.diff.slice(0, 4).map(d => esc(d[0] + ': ' + d[1] + ' → ' + d[2])).join(' · ')}</div>` : ''}</div></div>`).join('') || '<div class="empty">Chưa có</div>' : '<div class="empty">Đang tải…</div>'}</div>`;
     } else if (tab === 'q') {
-      const u = B.users || [];
-      inner = `<div class="note n-info">🔑<span>Quyền Thi công sửa ở <b>app Kho → Menu → Phân quyền chức danh → mục ⑦ Thi công</b> (dùng chung bảng chức danh với Kho). Giao dự án cho người dùng cũng ở app Kho.</span></div>
-        <div class="card mt12">${u.map(x => `<div class="row"><div class="ico gy">${esc(initials(x.name))}</div><div class="rmain"><div class="rname">${esc(x.name)}</div><div class="rsub">${esc(x.role)}</div></div>${x.cht ? '<span class="tag b-nv">CHT</span>' : ''}${x.qa ? '<span class="tag b-gr">QA/QC</span>' : ''}</div>`).join('') || '<div class="empty">Chưa có ai</div>'}</div>
-        <div class="kv-box mt12">${[['t_xem', 'Xem Thi công'], ['t_ghi', 'Ghi nhật ký hiện trường'], ['t_qa', 'Xác nhận QA/QC · giải phóng Hold'], ['t_cht', 'Duyệt nội bộ (CHT) · sửa bản đã xác nhận'], ['t_kh', 'Lập kế hoạch · đăng ký bê tông'], ['t_qs', 'QS · BOQ'], ['t_qt', 'Quản trị Thi công (cấu hình, nạp cấu kiện)']].map(p => `<div class="kv"><span>${p[1]}</span><b>${hp(p[0]) ? '✓ bạn có' : '—'}</b></div>`).join('')}</div>`;
+      inner = qHtml(a);
     }
-    const tabs = [['ch', 'Cấu hình'], ['ck', 'Cấu kiện'], ['dm', 'Danh mục'], ['q', 'Quyền'], ['ls', 'Lịch sử sửa'], ['mau', 'Dữ liệu mẫu']];
+    const tabs = [['ch', 'Cấu hình'], ['ck', 'Cấu kiện'], ['dm', 'Danh mục'], ['q', 'Phân quyền'], ['ls', 'Lịch sử sửa'], ['mau', 'Dữ liệu mẫu']];
     return shell({ back:1, title:'Quản trị Thi công', sub:'M30 · ' + esc(P), body:`<div class="dbody"><div class="tabs">${tabs.map(t => `<button class="${tab === t[0] ? 'on' : ''}" onclick="cur.a.tab='${t[0]}';render(false)">${t[1]}</button>`).join('')}</div>${inner}</div>` });
   }
 };
@@ -2708,6 +2718,71 @@ async function bootTc() {
 }
 window.addEventListener('error', e => { try { if (navigator.onLine !== false) api('logError', { msg:String(e.message || '').slice(0, 300), src:e.filename || 'thicong.html', line:e.lineno, col:e.colno, stack:String(e.error && e.error.stack || '').slice(0, 700), tab:'TC ' + cur.v, ver:'TC ' + TC_APP_VERSION, proj:P, ua:navigator.userAgent, online:navigator.onLine }); } catch (x) {} });
 bootTc();
+
+// ===== Phân quyền Thi công ngay trong Thi công (Admin) · dùng chung bảng chức danh với Kho =====
+const TPERM = [['t_xem', 'Xem', 'Xem Thi công: mặt bằng, hồ sơ cấu kiện, báo cáo'], ['t_ghi', 'Ghi', 'Ghi nhật ký hiện trường · gửi kiểm tra'], ['t_qa', 'QA', 'Xác nhận QA/QC · trả về · giải phóng điểm Hold · đóng NCR'],
+  ['t_cht', 'CHT', 'Duyệt nội bộ (CHT) · sửa bản đã xác nhận (ghi lý do)'], ['t_kh', 'KH', 'Lập kế hoạch · phân công · đăng ký bê tông'], ['t_qs', 'QS', 'QS · BOQ & khối lượng'], ['t_qt', 'QT', 'Quản trị Thi công: cấu hình, ngưỡng, nạp cấu kiện']];
+let QR = null, QD = {};                             // dữ liệu chức danh / người dùng · bản nháp quyền
+async function qLoad() {
+  const r = await api('tcRoles', { project:P }, 30000);
+  QR = r && r.success ? r : { err:(r && r.error) || 'Không tải được' };
+  if (cur.v === 'qtri' && cur.a.tab === 'q') render(false);
+}
+function qHtml(a) {
+  const isAdm = me && me.role === 'ADM';
+  const mine = `<div class="kv-box mt12">${TPERM.map(p => `<div class="kv"><span>${p[2]}</span><b>${hp(p[0]) ? '✓ bạn có' : '—'}</b></div>`).join('')}</div>`;
+  if (!isAdm) return `<div class="note n-info">🔑<span>Chỉ <b>Admin</b> sửa được quyền. Quyền của bạn:</span></div>${mine}`;
+  if (!QR) { qLoad(); return '<div class="empty"><span class="spin" style="display:inline-block"></span><br>Đang tải chức danh…</div>'; }
+  if (QR.err) return `<div class="note n-err">⚠️<span>${esc(QR.err)}</span></div><button class="btn ghost" onclick="QR=null;render(false)">Thử lại</button>`;
+  const codes = Object.keys(QR.roles).sort((x, y) => (x === 'ADM') - (y === 'ADM') || x.localeCompare(y));
+  const cnt = {}; QR.users.forEach(u => { if (u.status === 'active') cnt[u.role] = (cnt[u.role] || 0) + 1; });
+  const val = (c, k) => c === 'ADM' ? 1 : (QD[c] && QD[c][k] !== undefined ? QD[c][k] : (QR.roles[c].perm || {})[k] ? 1 : 0);
+  const dirty = Object.keys(QD).filter(c => TPERM.some(p => QD[c][p[0]] !== undefined && QD[c][p[0]] !== ((QR.roles[c].perm || {})[p[0]] ? 1 : 0)));
+  const ut = a.uq || '';
+  const users = QR.users.filter(u => u.status === 'active' && (!ut || (u.name + ' ' + u.username + ' ' + u.role).toLowerCase().includes(ut.toLowerCase())));
+  return `<div class="note n-info">🔑<span>Bảng chức danh dùng <b>chung với Kho</b>: sửa ở đây hay ở Kho (Menu → Phân quyền chức danh → mục ⑦ Thi công) đều như nhau. Lưu xong áp dụng ngay cho mọi tài khoản cùng chức danh.</span></div>
+    <div class="fsec"><div class="fsec-t">🛡 Quyền Thi công theo chức danh<small>chạm ô để bật / tắt</small></div>
+      <div style="overflow-x:auto;margin:0 -4px"><table class="qtb"><tr><th style="text-align:left">Chức danh</th>${TPERM.map(p => `<th title="${esc(p[2])}">${p[1]}</th>`).join('')}</tr>
+      ${codes.map(c => { const r = QR.roles[c]; return `<tr class="${dirty.includes(c) ? 'dirty' : ''}"><td><b>${esc(r.abbr || c)}</b><small>${esc(r.name || '')}${cnt[c] ? ' · ' + cnt[c] + ' người' : ''}</small></td>${TPERM.map(p => { const on = val(c, p[0]); return `<td><button class="qbx ${on ? 'on' : ''} ${c === 'ADM' ? 'lk' : ''}" ${c === 'ADM' ? 'disabled' : ''} onclick="qTog('${esc(c)}','${p[0]}')">${on ? '✓' : ''}</button></td>`; }).join('')}</tr>`; }).join('')}</table></div>
+      <div class="qleg">${TPERM.map(p => `<div><b>${p[1]}</b> ${esc(p[2])}</div>`).join('')}<div><b>ADM</b> Quản trị hệ thống luôn có toàn quyền</div></div>
+      <div style="display:flex;gap:8px;margin-top:12px"><button class="btn sm" ${dirty.length ? '' : 'disabled'} onclick="qSave()">💾 Lưu ${dirty.length ? dirty.length + ' chức danh' : ''}</button>${dirty.length ? '<button class="btn ghost sm" onclick="QD={};render(false)">Bỏ thay đổi</button>' : ''}</div></div>
+    <div class="fsec"><div class="fsec-t">👷 Người dùng · dự án được giao<small>chạm để giao dự án</small></div>
+      <div class="fg"><input placeholder="Tìm tên / chức danh…" value="${esc(ut)}" oninput="cur.a.uq=this.value;clearTimeout(window._uqT);window._uqT=setTimeout(()=>{render(false);const i=document.querySelector('.fsec input');if(i){i.focus();i.setSelectionRange(i.value.length,i.value.length)}},350)"></div>
+      <div class="card">${users.map(u => { const tc = u.role === 'ADM' || ((QR.roles[u.role] || {}).perm || {}).t_xem; const pj = u.projects || [];
+        return `<div class="row tap" onclick="qUser('${esc(u.id)}')"><div class="ico ${tc ? 'or' : 'gy'}">${esc(initials(u.name))}</div><div class="rmain"><div class="rname">${esc(u.name)} <span class="small">· ${esc(u.role)}</span></div><div class="rsub">${tc ? TPERM.filter(p => val(u.role, p[0])).map(p => p[1]).join(' · ') : '<span class="c-mut">không vào Thi công</span>'} · ${pj.length ? esc(pj.join(', ')) : '<b class="c-rd">chưa giao dự án</b>'}</div></div><span class="chev">›</span></div>`; }).join('') || '<div class="empty">Không có ai</div>'}</div>
+      <div class="small mt8">Đổi chức danh, khóa tài khoản, duyệt người xin tham gia: làm ở app Kho → Menu → Thành viên.</div></div>
+    <div class="small" style="margin:6px 2px">Quyền của bạn (Admin): toàn quyền.</div>`;
+}
+function qTog(c, k) { const cur0 = (QR.roles[c].perm || {})[k] ? 1 : 0; QD[c] = QD[c] || {}; const now = QD[c][k] !== undefined ? QD[c][k] : cur0; QD[c][k] = now ? 0 : 1; render(false); }
+async function qSave() {
+  const list = Object.keys(QD).filter(c => TPERM.some(p => QD[c][p[0]] !== undefined && QD[c][p[0]] !== ((QR.roles[c].perm || {})[p[0]] ? 1 : 0)));
+  if (!list.length) return;
+  showLoader('Đang lưu quyền…');
+  let ok = 0, err = '';
+  for (const c of list) {
+    const r0 = QR.roles[c], perm = {}; TPERM.forEach(p => perm[p[0]] = QD[c][p[0]] !== undefined ? QD[c][p[0]] : ((r0.perm || {})[p[0]] ? 1 : 0));
+    const r = await api('saveRole', { code:c, abbr:r0.abbr || c, name:r0.name, group:r0.group, perm }, 30000);   // chỉ gửi quyền Thi công — quyền Kho máy chủ giữ nguyên
+    if (r && r.success) { ok++; if (r.roles) QR.roles = r.roles; } else err = (r && (r.error || r.reason)) || 'Không lưu được';
+  }
+  hideLoader(); QD = {};
+  toast(err ? '⚠️ ' + err : '✅ Đã lưu quyền ' + ok + ' chức danh — áp dụng ngay');
+  render(false); sync(true);
+}
+function qUser(id) {
+  const u = QR.users.find(x => x.id === id); if (!u) return;
+  const pj = new Set(u.projects || []);
+  sheet(`<div class="fsec-t" style="border:none;padding:0;margin-bottom:6px">${esc(u.name)}</div><div class="small" style="margin-bottom:12px">@${esc(u.username)} · ${esc(u.role)} – ${esc((QR.roles[u.role] || {}).name || '')}</div>
+    <div class="sec-title" style="margin-bottom:6px">Dự án được giao</div>
+    ${(QR.projects || []).map(p => `<label class="row" style="gap:10px;cursor:pointer"><input type="checkbox" class="qpj" value="${esc(p)}" ${pj.has(p) ? 'checked' : ''} style="width:20px;height:20px"><span class="rname">${esc(p)}</span></label>`).join('') || '<div class="empty">Chưa có dự án</div>'}
+    <div style="display:flex;gap:8px;margin-top:14px"><button class="btn ghost" onclick="closeSheet()">Thôi</button><button class="btn" onclick="qUserSave('${esc(id)}')">Lưu</button></div>`);
+}
+async function qUserSave(id) {
+  const list = [...document.querySelectorAll('.qpj')].filter(x => x.checked).map(x => x.value);
+  showLoader('Đang lưu…'); const r = await api('setUserProjects', { id, projects:list }, 30000); hideLoader();
+  if (!r || !r.success) { toast('⚠️ ' + ((r && (r.error || r.reason)) || 'Không lưu được')); return; }
+  const u = QR.users.find(x => x.id === id); if (u) u.projects = list;
+  closeSheet(); toast('✅ Đã giao dự án'); render(false); sync(true);
+}
 
 // ===== Nạp SỔ HỒ SƠ Excel (mẫu FECON South): cọc khoan nhồi (trang "TK Nhap") + tường vây (trang "TK Nhập") =====
 // Đọc trong trình duyệt bằng ExcelJS → danh sách cấu kiện thật (tọa độ VN2000) + bản ghi nhật ký thật theo từng công đoạn.
