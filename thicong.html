@@ -338,10 +338,10 @@ body.pk-open .main{padding-bottom:48vh}
 <body>
 <div id="app"></div>
 <script>
-// FECON South · THI CÔNG 1.2.1 — chạy cùng app Kho (đăng nhập ở index.html, dùng chung máy chủ Apps Script)
-const KHO_VERSION = '5.31.3';
+// FECON South · THI CÔNG 1.3.0 — chạy cùng app Kho (đăng nhập ở index.html, dùng chung máy chủ Apps Script)
+const KHO_VERSION = '5.31.4';
 // ===== FECON Thi công 1.0 — lõi: máy chủ, lưu trên máy, hàng đợi gửi, điều hướng =====
-const TC_APP_VERSION = '1.2.1';
+const TC_APP_VERSION = '1.3.0';
 const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbw6Rmi80I7RI3ij2U7RdRF5pYuQTnPrwEmGmUZS5xpxzLwwVynfoFUujZe1lm6HS1ymxw/exec';
 const LS_TOKEN = 'fecon_token_v5', LS_USER = 'fecon_user_v5';           // dùng chung phiên đăng nhập với Kho
 const LS_P = 'tc_proj', LS_BOOT = 'tc_boot2|', LS_OUT = 'tc_out_v1', LS_CA = 'tc_ca', LS_PART = 'fecon_part';
@@ -440,6 +440,7 @@ async function sync(force) {
       if (r.project !== P) { P = r.project; lsSet(LS_P, P); }
       if (r.me) { me = r.me; lsSet(LS_USER, JSON.stringify(me)); }
       setBoot(r); saveBoot(); lastSync = Date.now(); syncErr = '';
+      setTimeout(() => bulkInit(), 1500);
       Object.keys(CKREC).forEach(k => { if (CKREC[k].tv !== r.tv) CKREC[k].stale = 1; });
       if (!force) rerender();
     } else if (r.forbidden) { syncErr = r.error; }
@@ -463,8 +464,9 @@ async function loadCk(code, quiet) {
 }
 // bản ghi của 1 cấu kiện (đã tải + gần đây + chờ gửi)
 function recsOf(code, mod) {
-  return Object.values(REC).filter(r => (r.ck === code || (r.mod === 'xe' && (r.d.pb || []).some(x => x && x.ck === code))) && (!mod || r.mod === mod) && r.st !== 'huy')
-    .sort((a, b) => (a.ngay + (a.at || '')).localeCompare(b.ngay + (b.at || '')) );
+  const l = Object.values(REC).filter(r => (r.ck === code || (r.mod === 'xe' && (r.d.pb || []).some(x => x && x.ck === code))) && (!mod || r.mod === mod) && r.st !== 'huy');
+  if (bulkOk() && BULK.by[code]) { const seen = new Set(l.map(r => r.id)); BULK.by[code].forEach(r => { if (!seen.has(r.id) && !REC[r.id] && (!mod || r.mod === mod)) l.push(r); }); }
+  return l.sort((a, b) => (a.ngay + (a.at || '')).localeCompare(b.ngay + (b.at || '')) );
 }
 const lastOf = (code, mod) => { const l = recsOf(code, mod); return l.length ? l[l.length - 1] : null; };
 function photosOf(recId) {
@@ -632,6 +634,7 @@ function sideHtml() {
   const it = (i, t, fn, small) => `<button class="sb-item" onclick="sideOff();${fn}"><span class="i">${i}</span>${t}${small ? `<small>${small}</small>` : ''}</button>`;
   const rn = me && B && B.roles ? '' : '';
   return `<div class="side-top"><img src="${LOGO}" style="width:130px;background:#fff;border-radius:10px;padding:6px 10px"><div class="nm">${esc(me ? me.name : '')}</div><div class="rl">${esc(me ? me.role : '')} · ${esc(projName())}</div></div>
+    ${TCU.nv ? `<button class="sb-item" onclick="sideOff();go('upd')"><span class="i">🔔</span><b>Cập nhật phiên bản mới</b><small id="upd-dot" style="color:#fff;background:var(--orange);border-radius:10px;padding:1px 7px">${esc(TCU.nv)}</small></button>` : ''}
     ${it('📦', 'Chuyển sang Kho', "toKho()", 'giữ đăng nhập')}
     <div class="sb-grp">Thi công</div>
     ${it('🏢', 'Đổi dự án · khu vực · ca', "go('proj')")}
@@ -650,6 +653,7 @@ function sideHtml() {
     ${B && B.tg && B.tg.bot ? it('🔔', 'Nhận cảnh báo Telegram', "tgLink()", B.tg.linked ? 'đã bật' : '') : ''}
     ${hp('t_qt') ? it('⚙️', 'Quản trị Thi công', "go('qtri')") : ''}
     ${it('📖', 'Hướng dẫn sử dụng', "go('hd')")}
+    ${TCU.nv ? '' : it('🔄', 'Cập nhật phiên bản', "go('upd')")}
     ${it('🚪', 'Đăng xuất', "logout()")}
     <div class="small" style="padding:14px 18px">Thi công ${TC_APP_VERSION}${B && B.sv ? ' · máy chủ TC ' + esc(B.sv) : ''}</div>`;
 }
@@ -659,6 +663,7 @@ async function logout() {
   if (outbox.length && !(await ask('Còn ' + outbox.length + ' thao tác chưa gửi', { msg:'Đăng xuất bây giờ sẽ mất các thao tác này. Chờ có mạng để gửi trước?', ok:'Vẫn đăng xuất', okCls:'rd' }))) return;
   showLoader('Đang đăng xuất…'); await api('logout', {}, 8000);
   try { localStorage.removeItem(LS_TOKEN); localStorage.removeItem(LS_OUT); } catch (e) {}
+  IDB.wipe();
   location.href = 'index.html?login=1';
 }
 const projName = () => (B && B.cfg && B.cfg.info && B.cfg.info.ten) || P || '';
@@ -786,6 +791,146 @@ function depthNow(code) {                 // chiều sâu khoan / cạp hiện t
   return s;
 }
 function taskCount() { try { return tasks().filter(t => t.mine).length; } catch (e) { return 0; } }
+
+// ===== Tốc độ: tải nền toàn bộ bản ghi dự án (lưu trong máy) → chạm cọc hiện mặt cắt ngay, không chờ máy chủ =====
+// Bản ghi gần đây / chưa xong vẫn lấy qua tcBoot như cũ (REC luôn được ưu tiên); BULK chỉ bổ sung lịch sử cũ theo từng cấu kiện.
+let BULK = { P:'', at:0, tv:0, by:{}, n:0 }, bulkBusy = false;
+const BULK_TTL = 10 * 60000;
+const IDB = {
+  db:null,
+  open() { if (!this.db) this.db = new Promise((res, rej) => { try { const q = indexedDB.open('fecon-tc', 1); q.onupgradeneeded = () => q.result.createObjectStore('kv'); q.onsuccess = () => res(q.result); q.onerror = () => rej(q.error); } catch (e) { rej(e); } }); return this.db; },
+  async get(k) { try { const db = await this.open(); return await new Promise(res => { const t = db.transaction('kv').objectStore('kv').get(k); t.onsuccess = () => res(t.result || null); t.onerror = () => res(null); }); } catch (e) { return null; } },
+  async set(k, v) { try { const db = await this.open(); await new Promise(res => { const t = db.transaction('kv', 'readwrite'); t.objectStore('kv').put(v, k); t.oncomplete = res; t.onerror = res; t.onabort = res; }); } catch (e) {} },
+  wipe() { try { this.db = null; indexedDB.deleteDatabase('fecon-tc'); } catch (e) {} }
+};
+const bulkOk = () => BULK.P === P && BULK.at > 0;
+const hasRecs = code => !!CKREC[code] || bulkOk();
+function bulkSet(p, recs, at, tv) {
+  const by = {};
+  recs.forEach(r => {
+    if (!r || r.st === 'huy') return;
+    (by[r.ck] = by[r.ck] || []).push(r);
+    if (r.mod === 'xe' && r.d && Array.isArray(r.d.pb)) r.d.pb.forEach(x => { if (x && x.ck && x.ck !== r.ck) (by[x.ck] = by[x.ck] || []).push(r); });
+  });
+  BULK = { P:p, at, tv, by, n:recs.length };
+}
+async function bulkInit(noFetch) {                       // mở app: lấy bản lưu trong máy trước, rồi làm mới nền nếu cũ
+  if (!P || BULK.P === P) return noFetch ? 0 : bulkMaybe();
+  const p = P, s = await IDB.get('all|' + (me && me.id) + '|' + p);
+  if (s && s.recs && p === P && !(BULK.P === p && BULK.at >= s.at)) { bulkSet(p, s.recs, s.at, s.tv); bulkRefreshUi(); }
+  if (!noFetch) bulkMaybe();
+}
+function bulkMaybe() { if (!bulkOk() || (Date.now() - BULK.at > BULK_TTL && B && B.tv !== BULK.tv)) bulkFetch(); }
+async function bulkFetch() {
+  if (bulkBusy || !P || navigator.onLine === false) return;
+  bulkBusy = true;
+  const p = P;
+  try {
+    const r = await api('tcAll', { project:p }, 90000);
+    if (r && r.success && Array.isArray(r.recs) && p === P) {
+      const at = Date.now(); bulkSet(p, r.recs, at, r.tv);
+      IDB.set('all|' + (me && me.id) + '|' + p, { recs:r.recs, at, tv:r.tv });
+      bulkRefreshUi();
+    }
+  } finally { bulkBusy = false; }
+}
+function bulkRefreshUi() {                         // thẻ cọc đang mở đang chờ tải → vẽ lại ngay
+  const el = document.getElementById('pk-ht');
+  if (el && CK[PV.sel] && /spin/.test(el.innerHTML)) { el.innerHTML = htHtml(CK[PV.sel]); requestAnimationFrame(peekKeepVisible); }
+  if (cur.v === 'ck' || cur.v === 'bb') { const l = document.querySelector('.main .empty .spin'); if (l) rerender(); }
+}
+
+// ===== Cập nhật phiên bản ngay trong Thi công (không phải sang Kho) =====
+// Cùng cơ chế với Kho: mỗi bản lưu 1 bộ nhớ "fecon-app-<bản>", bản đang dùng ghi ở "fecon-meta"/__active.
+const TCU_CORE = ['./', './index.html', './thicong.html', './manifest.json', './icon-192.png', './icon-512.png', './icon-maskable-192.png', './icon-maskable-512.png', './bg-login.jpg'];
+let TCU = { nv:'', at:0, busy:false, log:null };
+const vCmp = (a, b) => { const x = String(a).split('.').map(Number), y = String(b).split('.').map(Number); for (let i = 0; i < 3; i++) { const d = (x[i] || 0) - (y[i] || 0); if (d) return d; } return 0; };
+async function tcCheckUpd(force) {
+  if (!force && Date.now() - TCU.at < 3 * 60000) return;
+  if (navigator.onLine === false) { if (force) toast('📴 Không có mạng'); return; }
+  TCU.at = Date.now();
+  try {
+    const t = await (await fetch('./sw.js?fresh=' + Date.now(), { cache:'no-store' })).text();
+    const m = t.match(/const VERSION = '([^']+)'/);
+    const was = TCU.nv;
+    TCU.nv = m && vCmp(m[1], KHO_VERSION) > 0 ? m[1] : '';
+    if (TCU.nv && !TCU.log) { const r = await api('verLog', {}, 15000); if (r && r.success && Array.isArray(r.log)) TCU.log = r.log; }
+    if (force) toast(TCU.nv ? '🔔 Có phiên bản mới ' + TCU.nv : '✅ Bạn đang dùng bản mới nhất ' + KHO_VERSION);
+    if (was !== TCU.nv) { updDot(); if (cur.v === 'home' || cur.v === 'upd') rerender(); }
+  } catch (e) { if (force) toast('⚠️ Không kiểm tra được, thử lại sau'); }
+}
+function updDot() { const d = document.getElementById('upd-dot'); if (d) d.style.display = TCU.nv ? '' : 'none'; }
+const updEntry = v => (TCU.log || []).find(x => x.v === v);
+function updCardHtml() {
+  if (!TCU.nv || lsGetS('fecon_upd_later') === TCU.nv) return '';
+  const c = updEntry(TCU.nv);
+  return `<div class="card pad" style="border:1.5px solid var(--orange);margin-bottom:12px"><div class="split"><b style="color:var(--navy)">🔔 Có phiên bản mới ${esc(TCU.nv)}</b><span class="small">đang dùng ${esc(KHO_VERSION)}</span></div>
+    ${c ? `<div class="small mt8" style="line-height:1.5"><b>${esc(c.title)}</b>${(c.sum || []).length ? '<ul style="margin:6px 0 0 18px;padding:0">' + c.sum.slice(0, 3).map(x => `<li>${esc(x)}</li>`).join('') + '</ul>' : ''}</div>` : ''}
+    <div style="display:flex;gap:8px;margin-top:12px"><button class="btn sm" onclick="tcDoUpdate()">⬇ Cập nhật ngay</button><button class="btn ghost sm" onclick="lsSetS('fecon_upd_later','${esc(TCU.nv)}');rerender()">Để sau</button></div></div>`;
+}
+const lsGetS = k => { try { return localStorage.getItem(k) || ''; } catch (e) { return ''; } };
+const lsSetS = (k, v) => { try { localStorage.setItem(k, v); } catch (e) {} };
+async function tcStage(ver) {                      // tải đủ bản mới vào bộ nhớ riêng · đúng bản cả Kho lẫn Thi công → true
+  const c = await caches.open('fecon-app-' + ver);
+  let okK = false, okT = false;
+  for (const u of TCU_CORE) {
+    try {
+      const r = await fetch(u + '?fresh=' + Date.now(), { cache:'no-store' });
+      if (!r.ok) continue;
+      if (u === './' || u === './index.html') { if (!(await r.clone().text()).includes(`const APP_VERSION = '${ver}'`)) continue; if (u === './index.html') okK = true; }
+      if (u === './thicong.html') { if (!(await r.clone().text()).includes(`const KHO_VERSION = '${ver}'`)) continue; okT = true; }
+      await c.put(u, r);
+    } catch (e) {}
+  }
+  return okK && okT;
+}
+async function tcDoUpdate() {
+  if (TCU.busy || !TCU.nv) return;
+  if (outbox.length) { await flushOut(); if (outbox.length && !(await ask('Còn ' + outbox.length + ' thao tác chưa gửi', { msg:'Các thao tác vẫn được giữ trong máy và gửi sau khi cập nhật. Tiếp tục?', ok:'Cập nhật' }))) return; }
+  TCU.busy = true; const target = TCU.nv;
+  showLoader('Đang cập nhật lên ' + target + '…');
+  const go = fresh => location.replace('thicong.html' + (fresh ? '?fresh=' + Date.now() : ''));
+  const safety = setTimeout(() => go(true), 25000);
+  try {
+    if (!('caches' in window)) throw 0;
+    if (!(await tcStage(target))) { clearTimeout(safety); hideLoader(); TCU.busy = false; toast('⚠️ Bản ' + target + ' trên máy chủ chưa đầy đủ — thử lại sau ít phút'); return; }
+    const m = await caches.open('fecon-meta'); await m.put('./__active', new Response(target));
+    const keys = await caches.keys();
+    await Promise.all(keys.filter(k => (k.startsWith('fecon-app-') && k !== 'fecon-app-' + target) || k.startsWith('fecon-kho-')).map(k => caches.delete(k)));
+    try { const reg = await navigator.serviceWorker.getRegistration(); reg && reg.update().catch(() => {}); } catch (e) {}
+    lsSetS('fecon_tc_upd_from', KHO_VERSION);
+    clearTimeout(safety); go(false);
+  } catch (e) { clearTimeout(safety); go(true); }
+}
+async function tcVerBoot() {                       // mở trang: bản đang chạy phải là bản đang dùng đã lưu
+  if (/[?&]fresh=/.test(location.search)) { try { history.replaceState(history.state, '', location.pathname); } catch (e) {} }
+  const from = lsGetS('fecon_tc_upd_from');
+  if (from && from !== KHO_VERSION) { lsSetS('fecon_tc_upd_from', ''); setTimeout(() => toast('✅ Đã cập nhật lên ' + KHO_VERSION + ' · Thi công ' + TC_APP_VERSION), 1200); }
+  if (!('caches' in window)) return;
+  try {
+    const m = await caches.open('fecon-meta'), r = await m.match('./__active'), act = r ? await r.text() : '';
+    const has = await (await caches.open('fecon-app-' + KHO_VERSION)).match('./thicong.html');
+    if (act !== KHO_VERSION || !has) {
+      if (act && vCmp(act, KHO_VERSION) > 0) return;   // máy đã chọn bản mới hơn (trang này mở thẳng từ mạng) → không lùi
+      if (!has) await tcStage(KHO_VERSION);
+      await m.put('./__active', new Response(KHO_VERSION));
+    }
+  } catch (e) {}
+}
+VIEWS.upd = {
+  render() {
+    const c = TCU.nv ? updEntry(TCU.nv) : null;
+    return shell({ back:1, title:'Cập nhật phiên bản', body:`<div class="dbody">
+      <div class="kv-box w card" style="padding:2px 16px"><div class="kv"><span>Bản đang dùng</span><b>${esc(KHO_VERSION)} · Thi công ${esc(TC_APP_VERSION)}</b></div><div class="kv"><span>Máy chủ Thi công</span><b>${esc((B && B.sv) || '—')}</b></div></div>
+      ${TCU.nv ? `<div class="card pad mt12" style="border:1.5px solid var(--orange)"><b style="color:var(--navy)">🔔 Có bản mới ${esc(TCU.nv)}</b>${c ? `<div class="small mt8" style="line-height:1.5"><b>${esc(c.title)}</b><ul style="margin:6px 0 0 18px;padding:0">${(c.sum || []).map(x => `<li>${esc(x)}</li>`).join('')}</ul></div>` : ''}
+        <button class="btn mt12" onclick="tcDoUpdate()">⬇ Cập nhật ngay</button></div>` : '<div class="note n-ok mt12">✅<span>Bạn đang dùng bản mới nhất</span></div>'}
+      <button class="btn ghost mt12" onclick="tcCheckUpd(true)">🔄 Kiểm tra bản mới</button>
+      <div class="note n-info mt12">ℹ️<span>Cập nhật ở đây là cập nhật cả app (Kho + Thi công dùng chung 1 bản). Thao tác chưa gửi vẫn được giữ.</span></div></div>` });
+  }
+};
+document.addEventListener('visibilitychange', () => { if (!document.hidden) { tcCheckUpd(); if (B) bulkMaybe(); } });
+tcVerBoot();
+setTimeout(() => tcCheckUpd(), 5000);
 
 // ===== Biểu mẫu nhập số liệu (M05–M26) — khai báo + bộ dựng chung =====
 // Kiểu ô: num text area time date sel yn calc rows · {row:[...]} = 2 ô cạnh nhau, {row3:[...]} = 3 ô
@@ -1456,6 +1601,7 @@ VIEWS.home = {
     const vals = days.map(d => { const x = sd[d] || {}; return (x.coc || 0) + (x.tv || 0); }), mx = Math.max(1, ...vals, ...days.map(plan));
     const lastBg = recs.filter(r => r.mod === 'bg').sort((a, b) => (b.ngay + b.at).localeCompare(a.ngay + a.at))[0];
     const body = `
+      ${updCardHtml() ? `<div class="section" style="padding-top:10px">${updCardHtml()}</div>` : ''}
       <div class="ptitle" style="padding-bottom:6px"><b>${lead ? 'Tổng quan công trường' : 'Xin chào, ' + esc((me.name || '').split(' ').pop())}</b><span class="tap" onclick="go('proj')">${ca.dem ? '🌙 Ca đêm' : '☀️ Ca ngày'} · ${dmy(td)}${ca.kv ? ' · ' + esc(ca.kv) : ''} ›</span></div>
       <div class="section"><div class="small" style="margin:-4px 0 10px">${esc(projName())}</div>${hp('t_ghi') ? `<button class="bigadd" onclick="quickPick()">＋ Ghi nhật ký thi công</button>` : ''}</div>
       <div class="stat-grid" style="padding-top:0">
@@ -1656,11 +1802,11 @@ function peekHtml() {
   const k3 = c.loai === 'tv' ? [['Dài', fmtN(z.L, 2) + ' m'], ['Đáy', fmtZ(z.toe)], ['V LT', fmtN(z.vlt, 1) + ' m³']] : [['Z mũi', fmtZ(z.toe)], ['L khoan', fmtN(z.Lk, 1) + ' m'], ['V LT', fmtN(z.vlt, 2) + ' m³']];
   return `<div class="card pad"><div class="pk-grab" onclick="peekBig()"><i></i></div><div class="split"><div><b style="font-size:18px;color:var(--navy)">${esc(c.code)}</b><div class="small">${esc(ckDesc(c))}${c.kv && c.kv !== 'TV' ? ' · ' + esc(c.kv) : ''}</div></div><span class="badge ${ST[c.st].b}">${ST[c.st].t}</span></div>
     <div class="small mt8" style="color:var(--text2)">${esc(stepLabel(c))}${c.flag === 'tt' ? ' · <b class="c-rd">có NCR đang mở</b>' : ''}</div>
-    <div id="pk-ht" class="mt8">${CKREC[c.code] ? htHtml(c) : `<div class="mini3">${k3.map(x => `<div>${x[0]}<b>${x[1]}</b></div>`).join('')}</div><div class="small mt8"><span class="spin" style="display:inline-block;width:12px;height:12px;vertical-align:-2px"></span> Đang tải mặt cắt & hiện trạng…</div>`}</div>
+    <div id="pk-ht" class="mt8">${hasRecs(c.code) ? htHtml(c) : `<div class="mini3">${k3.map(x => `<div>${x[0]}<b>${x[1]}</b></div>`).join('')}</div><div class="small mt8"><span class="spin" style="display:inline-block;width:12px;height:12px;vertical-align:-2px"></span> Đang tải mặt cắt & hiện trạng…</div>`}</div>
     <div style="display:flex;gap:8px;margin-top:12px;position:sticky;bottom:0;background:#fff;padding:8px 0 2px"><button class="btn ghost sm" onclick="PV.sel='';setPeek();drawPlan()">✕ Đóng</button>${c.loai !== 'tv' && c.truc ? `<button class="btn ghost sm" onclick="go('sec',{code:'${esc(c.code)}'})">📐 Mặt cắt</button>` : ''}<button class="btn sm" onclick="go('ck',{code:'${esc(c.code)}'})">Hồ sơ ›</button></div></div>`;
 }
 async function peekLoad(code) {
-  if (CKREC[code] && !CKREC[code].stale) { requestAnimationFrame(peekKeepVisible); return; }
+  if ((CKREC[code] && !CKREC[code].stale) || bulkOk()) { requestAnimationFrame(peekKeepVisible); return; }
   await loadCk(code, true);
   const el = $('#pk-ht'); if (el && PV.sel === code && CK[code]) { el.innerHTML = htHtml(CK[code]); requestAnimationFrame(peekKeepVisible); }
 }
@@ -1822,7 +1968,7 @@ VIEWS.ck = {
     const itp = itpOf(c);
     let inner = '';
     if (tab === 'ht') {
-      inner = `<div class="card pad">${CKREC[c.code] ? htHtml(c, 330) : '<div class="empty"><span class="spin" style="display:inline-block"></span><br>Đang tải hồ sơ…</div>'}</div>${c.loai !== 'tv' && c.truc ? `<button class="btn ghost" onclick="go('sec',{code:'${esc(c.code)}'})">📐 Mặt cắt cả trục ${esc(c.truc.split('-')[0])}</button>` : ''}<button class="btn ghost mt8" onclick="go('bb',{code:'${esc(c.code)}'})">📑 Bộ biên bản theo ITP (${c.loai === 'tv' ? '12' : '13'} biểu)</button>`;
+      inner = `<div class="card pad">${hasRecs(c.code) ? htHtml(c, 330) : '<div class="empty"><span class="spin" style="display:inline-block"></span><br>Đang tải hồ sơ…</div>'}</div>${c.loai !== 'tv' && c.truc ? `<button class="btn ghost" onclick="go('sec',{code:'${esc(c.code)}'})">📐 Mặt cắt cả trục ${esc(c.truc.split('-')[0])}</button>` : ''}<button class="btn ghost mt8" onclick="go('bb',{code:'${esc(c.code)}'})">📑 Bộ biên bản theo ITP (${c.loai === 'tv' ? '12' : '13'} biểu)</button>`;
     } else if (tab === 'tc') {
       const xe = vXe(c.code), dd = recsOf(c.code, 'dd'), sk = recsOf(c.code, 'sk');
       inner = `<div class="card steps">${itp.map((p, i) => {
@@ -2514,9 +2660,11 @@ async function bootTc() {
   const had = loadCachedBoot();
   render(true);
   if (navigator.onLine === false && had) return;
+  bulkInit(1);
   await sync(true);
   if (!B) { $('#app').innerHTML = shell({ body:`<div class="dbody"><div class="note n-err">⚠️<span>${esc(syncErr || 'Không tải được dữ liệu')}</span></div><button class="btn" onclick="location.reload()">Thử lại</button><button class="btn ghost" onclick="toKho()">📦 Về Kho</button></div>`, tab:'home' }); setSync(); return; }
   render(true);
+  bulkInit();
 }
 window.addEventListener('error', e => { try { if (navigator.onLine !== false) api('logError', { msg:String(e.message || '').slice(0, 300), src:e.filename || 'thicong.html', line:e.lineno, col:e.colno, stack:String(e.error && e.error.stack || '').slice(0, 700), tab:'TC ' + cur.v, ver:'TC ' + TC_APP_VERSION, proj:P, ua:navigator.userAgent, online:navigator.onLine }); } catch (x) {} });
 bootTc();
@@ -2988,7 +3136,8 @@ function bbStyle() { if (!document.getElementById('bb-css')) { const s = documen
 VIEWS.bb = {
   render(a) {
     const c = CK[a.code]; if (!c) return shell({ back:1, title:'Không tìm thấy', body:'<div class="empty">—</div>' });
-    if (!CKREC[c.code]) { loadCk(c.code, true).then(() => { if (cur.v === 'bb') rerender(); }); return shell({ back:1, title:'Bộ biên bản ' + esc(c.code), body:'<div class="empty"><span class="spin" style="display:inline-block"></span><br>Đang tải hồ sơ…</div>' }); }
+    if (!CKREC[c.code]) loadCk(c.code, true).then(() => { if (cur.v === 'bb') rerender(); });
+    if (!hasRecs(c.code)) { return shell({ back:1, title:'Bộ biên bản ' + esc(c.code), body:'<div class="empty"><span class="spin" style="display:inline-block"></span><br>Đang tải hồ sơ…</div>' }); }
     bbStyle(); setTimeout(bbFit, 30);
     const docs = bbDocs(c), sel = a.n ? docs.filter(d => d.n === +a.n) : docs;
     return shell({ back:1, title:'Bộ biên bản ' + esc(c.code), sub:(c.loai === 'tv' ? '12' : '13') + ' biểu theo ITP đã duyệt', body:`<div class="dbody">
