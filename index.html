@@ -1759,7 +1759,7 @@ button .pi,.btn .pi,a .pi,.chip .pi,.tag .pi,.badge .pi,.yn .pi,.bnav .pi,.bnav-
 // ============================================================
 // CONFIG
 // ============================================================
-const APP_VERSION = '5.33.1';
+const APP_VERSION = '5.33.2';
 const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbw6Rmi80I7RI3ij2U7RdRF5pYuQTnPrwEmGmUZS5xpxzLwwVynfoFUujZe1lm6HS1ymxw/exec';
 // ============================================================
 
@@ -8797,6 +8797,8 @@ comboInput = function (p) {
   const q = normVN(document.getElementById(p + '-item-txt')?.value || ''), toks = q.split(/\s+/).filter(Boolean);
   const lst = document.getElementById(p + '-list');
   if (p === 'fx') { fxModeUpdate(); if (lst) { lst.innerHTML = fxSuggestHtml(q); lst.style.display = 'block'; } }
+  if (p === 'fx') { const it = db.items.find(i => i.id === +document.getElementById('fx-item').value), hn = document.getElementById('fx-hint');
+    if (isPT(it) && it.stock <= 0 && hn) hn.innerHTML = '<span style="color:var(--orange)">Chưa ghi tồn — có sẵn ở công trường thì cứ xuất, app tự ghi tồn đầu</span>'; }
   if (p === 'fn') {
     if (fnGD && normVN(fnGD.name) !== q) fnGdSet(null);
     let pre = '';
@@ -8810,6 +8812,13 @@ comboInput = function (p) {
     if (q) {                                                   // đang cho mượn → nhận trả ngay trong phiếu nhập
       const L = projLoans().filter(l => l.status === 'open' && l.kind === 'cho' && toks.every(t => normVN(l.itemName + ' ' + l.party).includes(t))).slice(0, 6);
       if (L.length) pre += `<div class="combo-grp">↩ Đang cho mượn — nhận trả</div>` + L.map(l => `<div class="combo-opt" onmousedown="event.preventDefault()" onclick="fnPickLoan(${l.id})"><span>${escHtml(l.itemName)}</span><small>${escHtml(l.party)} · ${l.itemType === 'tb' ? 'máy' : 'còn ' + fmtNum(loanRemain(l)) + ' ' + escHtml(l.unit)}</small></div>`).join('');
+    }
+    if (lst) {
+      const pt = ptFind(q, new Set(db.items.map(i => normVN(i.name)))), N = 6;
+      if (pt.length) lst.insertAdjacentHTML('beforeend', `<div class="combo-head">🧰 Thiết bị &amp; vật tư phụ trợ (${pt.length})</div>` + (fnMore.pt ? pt : pt.slice(0, N)).map(x => ptOpt('fn', x)).join('')
+        + (pt.length > N && !fnMore.pt ? `<div class="combo-opt combo-more" onmousedown="event.preventDefault()" onclick="fnMore.pt=1;comboInput('fn')">Xem thêm ${fmtNum(pt.length - N)} tên…</div>` : ''));
+      lst.querySelectorAll('.combo-opt.new').forEach(n => lst.appendChild(n));
+      lst.querySelectorAll('.combo-opt.empty').forEach(n => { if (pt.length || pre) n.remove(); });
     }
     if (pre && lst) { lst.innerHTML = pre + lst.innerHTML; lst.style.display = 'block'; }
     fnModeBar();
@@ -8828,6 +8837,8 @@ function fxSuggestHtml(q) {
   if (gd.length) h += `<div class="combo-head">🚚 Danh sách giải động (${gd.length})</div>` + cut('gd', gd).map(r => `<div class="combo-opt" onmousedown="event.preventDefault()" onclick="gdPickFx('${r.id}')"><span>${escHtml(r.name)}</span><small>Giải động · còn ${fmtNum(gdLeft(r))} ${escHtml(r.unit)}${r.dueDate ? ' · hạn ' + gdDmy(r.dueDate) : ''}</small></div>`).join('') + more('gd', gd.length);
   if (kho.length) h += `<div class="combo-head">📦 Trong kho dự án (${kho.length})</div>` + cut('kho', kho).map(i => `<div class="combo-opt" onmousedown="event.preventDefault()" onclick="comboPick('fx',${i.id})"><span>${escHtml(i.name)}</span><small>Tồn: ${fmtNum(i.stock)} ${escHtml(i.unit)}</small></div>`).join('') + more('kho', kho.length);
   if (dv.length) h += `<div class="combo-head">🏗 Máy móc đang ở công trình (${dv.length})</div>` + cut('dv', dv).map(d => `<div class="combo-opt" onmousedown="event.preventDefault()" onclick="fxPickDev(${d.id})"><span>${escHtml(d.name)}</span><small>${d.maQL ? 'Mã ' + escHtml(d.maQL) : 'Máy'}${devLoan(d.id) ? ' · đang cho mượn' : ''}</small></div>`).join('') + more('dv', dv.length);
+  const have = new Set(db.items.map(i => normVN(i.name)).concat(gd.map(r => normVN(r.name)))), pt = ptFind(q, have);
+  if (pt.length) h += `<div class="combo-head">🧰 Thiết bị &amp; vật tư phụ trợ (${pt.length})</div>` + cut('pt', pt).map(x => ptOpt('fx', x)).join('') + more('pt', pt.length);
   return h || `<div class="combo-opt empty">${q ? 'Không tìm thấy trong kho, danh sách giải động hay máy móc' : 'Kho dự án chưa có vật tư'}</div>`;
 }
 async function gdPickFx(id) {                                   // mục giải động chưa có trong kho → tự thêm vào danh mục + tồn đầu, rồi chọn
@@ -8872,6 +8883,7 @@ doXuat = async function () {
     return fxAfter('🏗 Đã ghi máy rời công trình: ' + d.name + (h ? ' → ' + gdDestLbl(h, dest) : ''));
   }
   const it = db.items.find(i => i.id === +document.getElementById('fx-item').value), qty = r3(+val('fx-qty'));
+  if (it && qty > 0 && fxMode !== 'tra') ptEnsureStock(it, qty);
   if (fxMode === 'cho' || fxMode === 'tra') {
     if (!it) { toast('⚠️ Chọn vật tư có trong kho'); return; }
     if (!(qty > 0)) { toast('⚠️ Nhập số lượng hợp lệ'); return; }
@@ -9074,6 +9086,51 @@ async function gdExport() {
   toast('✅ Đã xuất file ' + a.download);
 }
 if (typeof fnSetDev === 'function') { const _gdFnSetDev = fnSetDev; fnSetDev = function (x) { const r = _gdFnSetDev(x); try { fnModeBar(true); } catch (e) {} return r; }; }
+
+// ---------- v5.33.2: DANH MỤC CHUNG thiết bị & vật tư phụ trợ — luôn có trong gợi ý Nhập / Xuất (không cần tải BM05) ----------
+const PT_CAT = (() => {
+  const L = [], add = (names, unit) => names.forEach(n => L.push([n, unit]));
+  const D = ['D600','D800','D1000','D1200','D1500'];
+  add(D.map(d => `Ống vách ${d} x 6m`), 'Ống');
+  add(D.flatMap(d => [`Gàu khoan ${d} cổ 200`, `Gàu vét ${d} cổ 200`, `Gàu cắt vành ${d} cổ 200`]), 'Cái');
+  add(['Gàu vét D1000 cổ 130','Gàu cạp D600','Gàu cạp D800','Gàu cạp D1000','Đầu truyền 130 - 200','Đầu tôm','Bắp chuối cạp sống','Bắp chuối cạp cố định',
+       'Tank chứa đất','Tank chứa bent','Silo chứa bent','Cối trộn bent','Máy sàng cát','Tủ điện','Máy hàn điện tử 400A','Máy hàn điện tử 500A','Máy phát điện','Máy nén khí',
+       'Bơm chìm 2Hp','Bơm chìm 15 Kw','Bơm chìm 22 Kw','Bơm chìm 37 Kw','Bơm hút đáy 30 Kw','Bơm hút đáy 37 Kw','Bơm hút đáy 45 Kw','Bơm ngang 22 Kw','Bơm ngang 30 Kw','Bơm ngang 37 Kw',
+       'Bơm xăng','Bơm rửa xe 5,5Kw','Chữ thập cẩu lồng','Khung hạ Kingpost','Thanh giữ cừ tường vây 800','Thanh giữ cừ tường vây 1000','Bàn đổ bê tông tường vây','Bàn đổ bê tông cọc nhồi',
+       'Phễu cắt cầu 2m3','Phễu đổ 0,5m3','Phễu đổ 0,9m3','Máy cắt sắt','Máy uốn sắt','Máy cắt cầm tay','Đầm dùi','Đèn pha','Bộ cắt hơi','Máy khoan bê tông','Pa lăng xích 5T','Kích thủy lực'], 'Cái');
+  add(['Bộ ống đổ 273','Bộ ống đổ 219','Bộ đồ nghề sửa chữa'], 'Bộ');
+  add(['Dolly 400 x 2m','Dolly 400 x 2,5m','Thanh cẩu lồng tường vây 4m','Thanh cẩu lồng 6m','Cừ tường vây D800','Cừ tường vây D1000','Cừ larsen IV x 6m','Cừ larsen IV x 12m','Ống đổ 273 x 3,15m','Ống đổ 219 x 3m'], 'Cây');
+  add(['Tole lót 2mx6mx15ly','Tole lót 2mx6mx20ly','Tole lót 2mx6mx25ly','Tole lót 1,5mx6mx20ly'], 'Tấm');
+  add(['Cont VP 20 feet','Cont VP 40 feet','Cont kho 20 feet','Cont bơm vữa 20 feet'], 'Cont');
+  add(['Ống D114','Ống D90','Ống D168','Dây điện 4 x 35','Dây điện 4 x 25','Dây điện 3 x 16','Ống bơm bent D100'], 'Mét');
+  return L.map(([name, unit]) => ({ name, unit, grp:gdGuessGrp(name) }));
+})();
+function ptFind(q, have) {
+  const toks = q.split(/\s+/).filter(Boolean);
+  const gdN = GD.P === curProj ? GD.rows.map(r => ({ name:r.name, unit:r.unit, grp:r.grp })).filter(r => r.grp !== 'may') : [];
+  const seen = new Set(), out = [];
+  gdN.concat(PT_CAT).forEach(x => { const k = normVN(x.name); if (seen.has(k) || have.has(k)) return; seen.add(k); if (!toks.length || toks.every(t => k.includes(t))) out.push(x); });
+  return out;
+}
+const ptOpt = (p, x) => `<div class="combo-opt" onmousedown="event.preventDefault()" onclick="ptPick('${p}',${JSON.stringify(x.name).replace(/"/g, '&quot;')},'${escHtml(x.unit)}','${x.grp}')"><span>${x.grp === 'vt' ? '🧱' : '🧰'} ${escHtml(x.name)}</span><small>${x.grp === 'vt' ? 'Vật tư phụ trợ' : 'Thiết bị phụ trợ'} · ${escHtml(x.unit)}</small></div>`;
+async function ptPick(p, name, unit, grp) {
+  if (p === 'fn') {                                            // phiếu nhập: điền tên + nhóm + đơn vị, thủ kho chỉ còn nhập số lượng
+    const cat = document.getElementById('fn-cat'); if (cat) cat.value = GD_CAT[grp] || 'tbPhuTro';
+    document.getElementById('fn-item-txt').value = name; _gdComboInput('fn'); comboHide('fn');
+    const us = document.getElementById('fn-unit-sel');
+    if (us && unit) { if (![...us.options].some(o => o.value === unit)) us.insertAdjacentHTML('beforeend', `<option>${escHtml(unit)}</option>`); us.value = unit; }
+    fnModeBar(true); document.getElementById('fn-qty')?.focus(); return;
+  }
+  let it = db.items.find(i => normVN(i.name) === normVN(name));   // phiếu xuất: thêm vào danh mục kho (tồn 0) rồi chọn — khi xuất app tự ghi tồn đầu
+  if (!it) { it = { id:newId(), name, cat:GD_CAT[grp] || 'tbPhuTro', unit:unit || 'Cái', stock:0, minStock:0, project:curProj, maQL:'', ngoaiDM:2 }; db.items.push(it); push('upsert', { table:'items', rows:[it] }); }
+  comboPick('fx', it.id);
+}
+const isPT = it => it && (it.cat === 'tbPhuTro' || it.cat === 'vtPhuTro');
+function ptEnsureStock(it, qty) {                               // thiết bị / vật tư phụ trợ có sẵn ở công trường nhưng chưa ghi kho → ghi tồn đầu phần thiếu
+  if (!isPT(it) || !(qty > it.stock + 1e-9)) return;
+  const q = r3(qty - it.stock), t = { id:newId(), type:'nhap', itemId:it.id, itemName:it.name, qty:q, unit:it.unit, project:curProj, supplierOrReceiver:'Tồn đầu', note:'Tồn đầu (có sẵn ở công trường, ghi khi xuất)', datetime:nowStr(), createdByName:me?.name || '' };
+  it.stock = r3(it.stock + q); db.transactions.push(t); push('addTransaction', t);
+}
 </script>
 <script>// ===== Bộ biểu tượng Phosphor Duotone (MIT) thay emoji — v5.31.9 =====
 (function () {

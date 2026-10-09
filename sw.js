@@ -1,4 +1,5 @@
-// FECON Kho + Thi công - Service Worker v5.33.1
+// FECON Kho + Thi công - Service Worker v5.33.2
+// 5.33.2: Danh mục chung thiết bị & vật tư phụ trợ trong gợi ý Nhập/Xuất
 // 5.33.1: Phiếu xuất gợi ý như phiếu nhập (mọi nhóm, DS giải động, máy móc)
 // 5.33.0: Mượn/trả + máy rời công trình trong Nhập/Xuất, nhắc giải động Telegram, xuất BM05
 // 5.32.0: Giải động (DS BM05, xuất giải động 3 hướng, nhận từ công trình khác, cảnh báo đến hạn)
@@ -18,7 +19,7 @@
 //  - Mở app: lấy file từ bộ nhớ của bản đang dùng; thiếu file nào mới lấy từ mạng.
 //  - Có sw.js mới trên GitHub: tải sẵn bản mới vào bộ nhớ riêng nhưng KHÔNG đổi bản đang dùng.
 //  - Địa chỉ có ?fresh=... luôn lấy thẳng từ mạng (app dùng để kiểm tra / tải bản mới).
-const VERSION = '5.33.1';
+const VERSION = '5.33.2';
 const APP = 'fecon-app-', META = 'fecon-meta';
 const CORE = ['./', './index.html', './thicong.html', './manifest.json', './icon-192.png', './icon-512.png', './icon-maskable-192.png', './icon-maskable-512.png', './bg-login.jpg'];
 
