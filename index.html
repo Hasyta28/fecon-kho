@@ -1759,7 +1759,7 @@ button .pi,.btn .pi,a .pi,.chip .pi,.tag .pi,.badge .pi,.yn .pi,.bnav .pi,.bnav-
 // ============================================================
 // CONFIG
 // ============================================================
-const APP_VERSION = '5.33.0';
+const APP_VERSION = '5.33.1';
 const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbw6Rmi80I7RI3ij2U7RdRF5pYuQTnPrwEmGmUZS5xpxzLwwVynfoFUujZe1lm6HS1ymxw/exec';
 // ============================================================
 
@@ -8526,6 +8526,7 @@ function gdRefresh() {
   if (document.getElementById('dp-gd')?.classList.contains('show')) gdRender();
   if (curTab === 'home') { const b = document.getElementById('gd-home'); if (b) b.outerHTML = gdHomeHtml(); }
   if (curTab === 'nhap') gdIncBox();
+  ['fx','fn'].forEach(p => { const t = document.getElementById(p + '-item-txt'); if (t && document.activeElement === t) comboInput(p); });
 }
 function gdBadge() { const a = gdAlerts(), n = a.late.length + a.soon.length, b = document.getElementById('sb-gz-n'); if (b) { b.textContent = n; b.style.display = n ? '' : 'none'; } }
 function gdHomeHtml() {
@@ -8777,7 +8778,7 @@ function fxSetMode(m) {
 }
 const _gdRenderXuat = renderXuat;
 renderXuat = function (c) {
-  _gdRenderXuat(c); fxGD = null; fxDev = null; fxMode = 'use';
+  _gdRenderXuat(c); fxGD = null; fxDev = null; fxMode = 'use'; fxMore = {};
   const h = document.getElementById('fx-hint'); if (h) h.insertAdjacentHTML('afterend', '<div id="fx-gd"></div>');
   const t = document.getElementById('fx-item-txt'); if (t) t.placeholder = 'Gõ tên vật tư, thiết bị hoặc máy…';
   gdLoad();
@@ -8795,20 +8796,7 @@ comboInput = function (p) {
   _gdComboInput(p);
   const q = normVN(document.getElementById(p + '-item-txt')?.value || ''), toks = q.split(/\s+/).filter(Boolean);
   const lst = document.getElementById(p + '-list');
-  if (p === 'fx') {
-    fxModeUpdate();
-    if (q) {
-      let pre = '';
-      if (GD.P === curProj) {                                  // gợi ý: tên trong danh sách giải động (gõ gần đúng vẫn ra)
-        const L = GD.rows.filter(r => r.grp !== 'may' && gdLeft(r) > 0 && toks.every(t => normVN(r.name).includes(t))).slice(0, 8);
-        const o = L.map(r => { const it = db.items.find(i => i.project === curProj && normVN(i.name) === normVN(r.name)); return it ? `<div class="combo-opt" onmousedown="event.preventDefault()" onclick="comboPick('fx',${it.id});fxSetMode('gd')"><span>🚚 ${escHtml(r.name)}</span><small>Giải động · còn ${fmtNum(gdLeft(r))} ${escHtml(r.unit)}</small></div>` : ''; }).join('');
-        if (o) pre += `<div class="combo-grp">Danh sách giải động</div>${o}`;
-      }
-      const D = db.devices.filter(d => devActive(d) && !d.outDate && toks.every(t => normVN(d.name + ' ' + (d.maQL || '')).includes(t))).slice(0, 6);
-      if (D.length) pre += `<div class="combo-grp">🏗 Máy móc đang ở công trình</div>` + D.map(d => `<div class="combo-opt" onmousedown="event.preventDefault()" onclick="fxPickDev(${d.id})"><span>${escHtml(d.name)}</span><small>${d.maQL ? 'Mã ' + escHtml(d.maQL) : 'Máy'}${devLoan(d.id) ? ' · đang cho mượn' : ''}</small></div>`).join('');
-      if (pre) { lst.innerHTML = pre + lst.innerHTML.replace(/<div class="combo-opt empty">[^<]*<\/div>/, ''); lst.style.display = 'block'; }
-    }
-  }
+  if (p === 'fx') { fxModeUpdate(); if (lst) { lst.innerHTML = fxSuggestHtml(q); lst.style.display = 'block'; } }
   if (p === 'fn') {
     if (fnGD && normVN(fnGD.name) !== q) fnGdSet(null);
     let pre = '';
@@ -8827,6 +8815,32 @@ comboInput = function (p) {
     fnModeBar();
   }
 };
+// v5.33.1: gợi ý phiếu xuất giống phiếu nhập — gõ nhiều chữ không cần đúng thứ tự, mọi nhóm, kèm DS giải động + máy móc
+let fxMore = {};
+function fxSuggestHtml(q) {
+  const N = 6, toks = q.split(/\s+/).filter(Boolean), hit = n => toks.every(t => normVN(n).includes(t));
+  const more = (k, n) => n > N && !fxMore[k] ? `<div class="combo-opt combo-more" onmousedown="event.preventDefault()" onclick="fxMore['${k}']=1;comboInput('fx')">Xem thêm ${fmtNum(n - N)} tên…</div>` : '';
+  const cut = (k, a) => fxMore[k] ? a : a.slice(0, N);
+  const kho = db.items.filter(i => !q || hit(i.name + ' ' + (i.maQL || ''))).sort((a, b) => (b.stock > 0) - (a.stock > 0) || a.name.localeCompare(b.name, 'vi'));
+  const gd = GD.P === curProj ? GD.rows.filter(r => r.grp !== 'may' && gdLeft(r) > 0 && (!q || hit(r.name))) : [];
+  const dv = db.devices.filter(d => !d.outDate && (!q || hit(d.name + ' ' + (d.maQL || ''))));
+  let h = '';
+  if (gd.length) h += `<div class="combo-head">🚚 Danh sách giải động (${gd.length})</div>` + cut('gd', gd).map(r => `<div class="combo-opt" onmousedown="event.preventDefault()" onclick="gdPickFx('${r.id}')"><span>${escHtml(r.name)}</span><small>Giải động · còn ${fmtNum(gdLeft(r))} ${escHtml(r.unit)}${r.dueDate ? ' · hạn ' + gdDmy(r.dueDate) : ''}</small></div>`).join('') + more('gd', gd.length);
+  if (kho.length) h += `<div class="combo-head">📦 Trong kho dự án (${kho.length})</div>` + cut('kho', kho).map(i => `<div class="combo-opt" onmousedown="event.preventDefault()" onclick="comboPick('fx',${i.id})"><span>${escHtml(i.name)}</span><small>Tồn: ${fmtNum(i.stock)} ${escHtml(i.unit)}</small></div>`).join('') + more('kho', kho.length);
+  if (dv.length) h += `<div class="combo-head">🏗 Máy móc đang ở công trình (${dv.length})</div>` + cut('dv', dv).map(d => `<div class="combo-opt" onmousedown="event.preventDefault()" onclick="fxPickDev(${d.id})"><span>${escHtml(d.name)}</span><small>${d.maQL ? 'Mã ' + escHtml(d.maQL) : 'Máy'}${devLoan(d.id) ? ' · đang cho mượn' : ''}</small></div>`).join('') + more('dv', dv.length);
+  return h || `<div class="combo-opt empty">${q ? 'Không tìm thấy trong kho, danh sách giải động hay máy móc' : 'Kho dự án chưa có vật tư'}</div>`;
+}
+async function gdPickFx(id) {                                   // mục giải động chưa có trong kho → tự thêm vào danh mục + tồn đầu, rồi chọn
+  const r = GD.rows.find(x => String(x.id) === String(id)); if (!r) return;
+  let it = db.items.find(i => normVN(i.name) === normVN(r.name));
+  if (!it) {
+    it = { id:newId(), name:r.name, cat:GD_CAT[r.grp] || 'tbPhuTro', unit:r.unit || 'Cái', stock:0, minStock:0, project:curProj, maQL:'', ngoaiDM:2 };
+    db.items.push(it); showLoader('Đang thêm vào kho...'); await push('upsert', { table:'items', rows:[it] }); hideLoader();
+    const q = gdLeft(r), t = { id:newId(), type:'nhap', itemId:it.id, itemName:it.name, qty:q, unit:it.unit, project:curProj, supplierOrReceiver:'Tồn đầu', note:'Tồn đầu từ DS giải động', datetime:nowStr(), createdByName:me?.name || '' };
+    it.stock = q; db.transactions.push(t); push('addTransaction', t);
+  }
+  comboPick('fx', it.id); fxSetMode('gd');
+}
 async function fxAfter(msg) { toast(msg); fxDev = null; fxGD = null; closeKeyboard(); goTab('home'); }
 const _gdDoXuat = doXuat;
 doXuat = async function () {
