@@ -8,7 +8,8 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <link rel="manifest" href="manifest.json">
 <link rel="apple-touch-icon" href="icon-192.png">
-<title>FECON Thi công</title>
+<meta name="apple-mobile-web-app-title" content="FECON">
+<title>FECON</title>
 <style>
 /* FECON South · Thi công — lấy nguyên hệ màu, chữ, thẻ của app Kho 5.30 */
 :root{
@@ -20,7 +21,7 @@
   --r:16px;--r-sm:10px;
 }
 *{box-sizing:border-box}
-body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"SF Pro Display","Segoe UI",sans-serif;color:var(--text);font-size:14px;-webkit-font-smoothing:antialiased;background:var(--bg)}
+body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"SF Pro Display","Segoe UI",sans-serif;color:var(--text);font-size:15.5px;-webkit-font-smoothing:antialiased;background:var(--bg)}
 a{color:inherit;text-decoration:none}
 button{font-family:inherit}
 .scr{width:100%;max-width:640px;margin:0 auto;background:var(--bg);display:flex;flex-direction:column;overflow:hidden;position:relative;color:var(--text);height:100%}
@@ -32,96 +33,96 @@ button{font-family:inherit}
 .hdr-menu span{display:block;width:16px;height:2px;background:var(--navy);border-radius:1px}
 .hdr-logo{width:168px;height:auto;display:block}
 .hdr-mid{display:flex;flex-direction:column;align-items:center;gap:4px}
-.hdr-mod{font-size:10px;font-weight:800;letter-spacing:1.4px;color:var(--orange);text-transform:uppercase}
+.hdr-mod{font-size:11px;font-weight:800;letter-spacing:1.4px;color:var(--orange);text-transform:uppercase}
 .hdr-right{display:flex;flex-direction:column;align-items:center;gap:8px;margin-top:4px}
-.hdr-ava{width:44px;height:44px;border-radius:50%;background:#FFF1E8;border:2px solid #E1E6ED;display:flex;align-items:center;justify-content:center;color:var(--navy);font-weight:800;font-size:13px}
-.hdr-help{width:28px;height:28px;border-radius:50%;border:1.5px solid var(--navy);color:var(--navy);background:#fff;font-weight:800;font-size:13px;display:flex;align-items:center;justify-content:center}
+.hdr-ava{width:44px;height:44px;border-radius:50%;background:#FFF1E8;border:2px solid #E1E6ED;display:flex;align-items:center;justify-content:center;color:var(--navy);font-weight:800;font-size:14.5px}
+.hdr-help{width:28px;height:28px;border-radius:50%;border:1.5px solid var(--navy);color:var(--navy);background:#fff;font-weight:800;font-size:14.5px;display:flex;align-items:center;justify-content:center}
 
 /* thanh đồng bộ (5.24.1: chữ đậm 12,5px, không nền) */
-.sync{background:#fff;padding:6px 16px 7px;font-size:12.5px;font-weight:700;display:flex;align-items:center;gap:6px;border-bottom:1px solid var(--border);flex-shrink:0}
+.sync{background:#fff;padding:6px 16px 7px;font-size:14px;font-weight:700;display:flex;align-items:center;gap:6px;border-bottom:1px solid var(--border);flex-shrink:0}
 .sync.ok{color:#1E7A45}.sync.wait{color:#9A6700}.sync.err{color:#B42318}
 .dot{width:8px;height:8px;border-radius:50%;background:currentColor;display:inline-block;flex-shrink:0}
 
 /* ── Trang chi tiết (giống detail-page của Kho) ── */
 .dhdr{background:#fff;border-bottom:1px solid var(--border);padding:14px 14px 12px;display:flex;align-items:center;gap:12px;flex-shrink:0}
-.back{width:38px;height:38px;border-radius:50%;background:var(--bg);border:none;font-size:22px;line-height:1;color:var(--navy);display:flex;align-items:center;justify-content:center;flex-shrink:0;font-weight:700}
-.dtitle{font-size:17px;font-weight:800;flex:1;min-width:0}
-.dsub{font-size:11.5px;color:var(--text3);font-weight:600;margin-top:2px}
+.back{width:38px;height:38px;border-radius:50%;background:var(--bg);border:none;font-size:24px;line-height:1;color:var(--navy);display:flex;align-items:center;justify-content:center;flex-shrink:0;font-weight:700}
+.dtitle{font-size:18.5px;font-weight:800;flex:1;min-width:0}
+.dsub{font-size:12.5px;color:var(--text3);font-weight:600;margin-top:2px}
 .dbody{padding:14px;display:flex;flex-direction:column;gap:12px}
 
 /* tiêu đề trang danh sách */
 .ptitle{display:flex;align-items:baseline;justify-content:space-between;padding:14px 16px 10px}
-.ptitle b{font-size:19px;font-weight:800}
-.ptitle span{font-size:12px;color:var(--text3);font-weight:600}
+.ptitle b{font-size:21px;font-weight:800}
+.ptitle span{font-size:13px;color:var(--text3);font-weight:600}
 
 .chip-row{display:flex;gap:6px;overflow-x:auto;padding:0 14px 10px;flex-wrap:nowrap;scrollbar-width:none}.chip-row::-webkit-scrollbar{display:none}
-.chip{padding:7px 14px;border-radius:20px;font-size:12px;font-weight:700;border:1.5px solid var(--border);color:var(--text2);background:#fff;white-space:nowrap;flex-shrink:0}
+.chip{padding:7px 14px;border-radius:20px;font-size:13px;font-weight:700;border:1.5px solid var(--border);color:var(--text2);background:#fff;white-space:nowrap;flex-shrink:0}
 .chip.on{background:var(--orange);color:#fff;border-color:var(--orange)}
 .chip.navy.on{background:var(--navy);border-color:var(--navy)}
 
 .section{padding:0 14px 12px}
 .sec-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:9px}
-.sec-title{font-size:14px;font-weight:800}
-.sec-link{font-size:12px;color:var(--orange);font-weight:700}
+.sec-title{font-size:15.5px;font-weight:800}
+.sec-link{font-size:13px;color:var(--orange);font-weight:700}
 
 .card{background:#fff;border-radius:var(--r);box-shadow:var(--shadow);overflow:hidden}
 .pad{padding:14px 16px}
 
 .stat-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;padding:12px 14px}
 .stat{background:#fff;border-radius:var(--r);padding:14px 14px 12px;box-shadow:var(--shadow);position:relative}
-.stat-l{font-size:12px;font-weight:800;margin-bottom:6px}
-.stat-v{font-size:28px;font-weight:900;line-height:1}
-.stat-s{font-size:11.5px;color:var(--text3);margin-top:4px;font-weight:600}
+.stat-l{font-size:13px;font-weight:800;margin-bottom:6px}
+.stat-v{font-size:31px;font-weight:900;line-height:1}
+.stat-s{font-size:12.5px;color:var(--text3);margin-top:4px;font-weight:600}
 .c-or{color:var(--orange)}.c-gr{color:#1E7A45}.c-rd{color:#C0392B}.c-bl{color:var(--primary)}.c-am{color:#9A6700}.c-mut{color:var(--text3)}
 
 /* dòng danh sách (txn-row của Kho) */
 .row{display:flex;align-items:center;gap:12px;padding:12px 16px;border-bottom:1px solid var(--border)}
 .row:last-child{border-bottom:none}
-.ico{width:40px;height:40px;border-radius:11px;display:flex;align-items:center;justify-content:center;font-size:19px;flex-shrink:0;background:#EEF4FF}
+.ico{width:40px;height:40px;border-radius:11px;display:flex;align-items:center;justify-content:center;font-size:21px;flex-shrink:0;background:#EEF4FF}
 .ico.or{background:#FFF1E8}.ico.gr{background:#E9F7EF}.ico.rd{background:#FDECEC}.ico.am{background:#FFF7E0}.ico.gy{background:var(--bg)}
 .rmain{flex:1;min-width:0}
-.rname{font-size:14px;font-weight:700}
-.rsub{font-size:11.5px;color:var(--text3);margin-top:2px;font-weight:500}
+.rname{font-size:15.5px;font-weight:700}
+.rsub{font-size:12.5px;color:var(--text3);margin-top:2px;font-weight:500}
 .rmeta{display:flex;gap:6px;flex-wrap:wrap;margin-top:6px}
-.chev{color:#C5CED9;font-size:20px;font-weight:700}
-.badge{font-size:12px;font-weight:800;padding:5px 10px;border-radius:9px;white-space:nowrap}
+.chev{color:#C5CED9;font-size:22px;font-weight:700}
+.badge{font-size:13px;font-weight:800;padding:5px 10px;border-radius:9px;white-space:nowrap}
 .b-bl{background:#E3EEFA;color:#1A5FA8}.b-gr{background:#E9F7EF;color:#1E7A45}.b-rd{background:#FDECEC;color:#B42318}.b-or{background:#FFF1E8;color:#C2410C}.b-am{background:#FFF7E0;color:#8A5A00}.b-gy{background:var(--bg);color:var(--text2)}.b-nv{background:#E8EDF5;color:var(--navy)}
-.tag{font-size:11px;font-weight:800;padding:3px 8px;border-radius:7px;white-space:nowrap}
+.tag{font-size:12px;font-weight:800;padding:3px 8px;border-radius:7px;white-space:nowrap}
 
 /* form (form-section / fg của Kho) */
 .fsec{background:#fff;border-radius:var(--r);padding:16px;box-shadow:var(--shadow)}
-.fsec-t{font-size:15px;font-weight:800;padding-bottom:10px;border-bottom:2px solid var(--orange);margin-bottom:14px;display:flex;align-items:center;gap:8px}
-.fsec-t small{margin-left:auto;font-size:11px;color:var(--text3);font-weight:700}
+.fsec-t{font-size:16.5px;font-weight:800;padding-bottom:10px;border-bottom:2px solid var(--orange);margin-bottom:14px;display:flex;align-items:center;gap:8px}
+.fsec-t small{margin-left:auto;font-size:12px;color:var(--text3);font-weight:700}
 .fg{margin-bottom:12px}
 .fg:last-child{margin-bottom:0}
-.fg label{display:block;font-size:10px;font-weight:800;color:var(--text2);margin-bottom:5px;text-transform:uppercase;letter-spacing:.5px}
-.fg input,.fg select,.fg textarea{width:100%;border:1.5px solid var(--border);border-radius:var(--r-sm);padding:11px 12px;font-size:14px;color:var(--text);background:#fff;font-family:inherit;outline:none}
+.fg label{display:block;font-size:11px;font-weight:800;color:var(--text2);margin-bottom:5px;text-transform:uppercase;letter-spacing:.5px}
+.fg input,.fg select,.fg textarea{width:100%;border:1.5px solid var(--border);border-radius:var(--r-sm);padding:11px 12px;font-size:15.5px;color:var(--text);background:#fff;font-family:inherit;outline:none}
 .fg input.calc{background:#F6F8FB;color:var(--primary);font-weight:800}
 .fg input.warn{border-color:#E9A10C;background:#FFFBF0}
-.fg .unit{font-size:11px;color:var(--text3);font-weight:700;margin-top:4px}
+.fg .unit{font-size:12px;color:var(--text3);font-weight:700;margin-top:4px}
 .fg-row{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
 .fg-row3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
 
 /* kv-box (chi tiết phiếu của Kho) */
 .kv-box{background:var(--bg);border-radius:12px;padding:2px 14px}
 .kv-box.w{background:#fff}
-.kv{display:flex;justify-content:space-between;gap:14px;padding:9px 0;border-bottom:1px solid var(--border);font-size:13px}
+.kv{display:flex;justify-content:space-between;gap:14px;padding:9px 0;border-bottom:1px solid var(--border);font-size:14.5px}
 .kv:last-child{border-bottom:none}
 .kv span{color:var(--text3)}
 .kv b{font-weight:700;text-align:right}
 .kv a{color:var(--primary);text-decoration:underline;font-weight:700}
 
 /* nút */
-.btn{border:none;border-radius:var(--r-sm);padding:14px;font-size:15px;font-weight:800;color:#fff;background:var(--orange);display:flex;align-items:center;justify-content:center;gap:8px;width:100%;text-align:center}
+.btn{border:none;border-radius:var(--r-sm);padding:14px;font-size:16.5px;font-weight:800;color:#fff;background:var(--orange);display:flex;align-items:center;justify-content:center;gap:8px;width:100%;text-align:center}
 .btn.pri{background:var(--primary)}.btn.gr{background:var(--green)}.btn.zalo{background:#0068FF}
 .btn.ghost{background:var(--bg);color:var(--text2);font-weight:700}
 .btn.line{background:#fff;color:var(--orange);border:1.5px solid var(--orange)}
-.btn.sm{padding:10px 12px;font-size:13px}
+.btn.sm{padding:10px 12px;font-size:14.5px}
 .actbar{background:#fff;border-top:1px solid var(--border);padding:10px 14px 14px;display:flex;gap:8px;flex-shrink:0;box-shadow:0 -4px 14px rgba(16,24,40,.06)}
 .actbar .btn.ghost{flex:1}.actbar .btn:not(.ghost){flex:2}
 
 /* hộp thông báo */
-.note{border-radius:12px;padding:11px 13px;font-size:12.5px;font-weight:600;display:flex;gap:9px;align-items:flex-start;line-height:1.45}
+.note{border-radius:12px;padding:11px 13px;font-size:14px;font-weight:600;display:flex;gap:9px;align-items:flex-start;line-height:1.45}
 .n-warn{background:#FFF7E0;color:#7A4E00}.n-err{background:#FDECEC;color:#9B1C1C}.n-info{background:#EEF4FF;color:#1A4C8A}.n-ok{background:#E9F7EF;color:#17663A}.n-gy{background:var(--bg);color:var(--text2)}
 .note b{font-weight:800}
 
@@ -133,65 +134,65 @@ button{font-family:inherit}
 .steps{display:flex;flex-direction:column}
 .st{display:flex;gap:12px;padding:11px 16px;align-items:center;border-bottom:1px solid var(--border);position:relative}
 .st:last-child{border-bottom:none}
-.st-n{width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:900;flex-shrink:0;background:var(--bg);color:var(--text3);border:2px solid var(--border)}
+.st-n{width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:900;flex-shrink:0;background:var(--bg);color:var(--text3);border:2px solid var(--border)}
 .st.done .st-n{background:var(--green);border-color:var(--green);color:#fff}
 .st.now{background:#FFF8F3}
 .st.now .st-n{background:var(--orange);border-color:var(--orange);color:#fff}
 .st.hold .st-n{background:#fff;border-color:#B42318;color:#B42318}
-.st-t{font-size:13.5px;font-weight:700}
-.st-s{font-size:11.5px;color:var(--text3);margin-top:1px;font-weight:500}
+.st-t{font-size:15px;font-weight:700}
+.st-s{font-size:12.5px;color:var(--text3);margin-top:1px;font-weight:500}
 
 /* số lớn (nhập lúc đổ bê tông) */
 .big{background:#fff;border:1.5px solid var(--border);border-radius:14px;padding:10px 12px}
-.big label{display:block;font-size:10px;font-weight:800;color:var(--text2);text-transform:uppercase;letter-spacing:.5px}
-.big .v{font-size:30px;font-weight:900;line-height:1.1;margin-top:3px}
-.big .v small{font-size:13px;color:var(--text3);font-weight:700;margin-left:3px}
+.big label{display:block;font-size:11px;font-weight:800;color:var(--text2);text-transform:uppercase;letter-spacing:.5px}
+.big .v{font-size:33px;font-weight:900;line-height:1.1;margin-top:3px}
+.big .v small{font-size:14.5px;color:var(--text3);font-weight:700;margin-left:3px}
 .big.calc{background:#F6F8FB}
 .big.ok{border-color:#9ED8B4;background:#F3FBF6}
 .big.on{border-color:var(--orange);box-shadow:0 0 0 3px rgba(242,101,34,.12)}
 
 /* bảng nhỏ */
-.tbl{width:100%;border-collapse:collapse;font-size:12px}
-.tbl th{text-align:left;font-size:10px;font-weight:800;color:var(--text2);text-transform:uppercase;letter-spacing:.4px;padding:8px 10px;background:#F6F8FB;border-bottom:1px solid var(--border)}
+.tbl{width:100%;border-collapse:collapse;font-size:13px}
+.tbl th{text-align:left;font-size:11px;font-weight:800;color:var(--text2);text-transform:uppercase;letter-spacing:.4px;padding:8px 10px;background:#F6F8FB;border-bottom:1px solid var(--border)}
 .tbl td{padding:9px 10px;border-bottom:1px solid var(--border);font-weight:600}
 .tbl tr:last-child td{border-bottom:none}
 .tbl .r{text-align:right}
 
 /* thanh điều hướng dưới (bottom-nav của Kho) */
 .bnav{background:#fff;border-top:1px solid var(--border);display:flex;flex-shrink:0;box-shadow:0 -4px 14px rgba(16,24,40,.06);padding:6px 0 10px}
-.bn{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;font-size:10.5px;font-weight:700;color:var(--text3);position:relative;padding-top:2px}
-.bn .bi{font-size:24px;line-height:1.1;position:relative}
+.bn{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;font-size:11.5px;font-weight:700;color:var(--text3);position:relative;padding-top:2px}
+.bn .bi{font-size:26.5px;line-height:1.1;position:relative}
 .bn.on{color:var(--orange)}
 .bn.on::after{content:"";width:22px;height:3px;border-radius:2px;background:var(--orange);margin-top:1px}
-.bn .bb{position:absolute;top:-4px;right:-10px;background:var(--red);color:#fff;font-size:10px;font-weight:800;border-radius:9px;padding:1px 5px;line-height:1.3;border:2px solid #fff}
+.bn .bb{position:absolute;top:-4px;right:-10px;background:var(--red);color:#fff;font-size:11px;font-weight:800;border-radius:9px;padding:1px 5px;line-height:1.3;border:2px solid #fff}
 
 /* màn chào / đăng nhập (giống splash Kho #0B1B33) */
 .splash{background:var(--splash);color:#fff}
 .sp-box{background:#fff;border-radius:22px;padding:18px 22px;display:flex;justify-content:center;box-shadow:0 10px 30px rgba(0,0,0,.35)}
 .glass{background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.16);border-radius:20px}
 .mod{background:#fff;color:var(--text);border-radius:20px;padding:18px;display:flex;gap:14px;align-items:center;box-shadow:0 10px 30px rgba(0,0,0,.25)}
-.mod-ico{width:58px;height:58px;border-radius:16px;display:flex;align-items:center;justify-content:center;font-size:30px;flex-shrink:0}
-.mod-t{font-size:18px;font-weight:900}
-.mod-s{font-size:12px;color:var(--text2);margin-top:3px;font-weight:600;line-height:1.4}
+.mod-ico{width:58px;height:58px;border-radius:16px;display:flex;align-items:center;justify-content:center;font-size:33px;flex-shrink:0}
+.mod-t{font-size:20px;font-weight:900}
+.mod-s{font-size:13px;color:var(--text2);margin-top:3px;font-weight:600;line-height:1.4}
 .mod-tags{display:flex;gap:5px;flex-wrap:wrap;margin-top:8px}
 
 /* sidebar menu */
-.sb-item{display:flex;align-items:center;gap:12px;padding:12px 18px;font-size:14px;font-weight:700}
-.sb-item .i{width:34px;height:34px;border-radius:10px;background:var(--bg);display:flex;align-items:center;justify-content:center;font-size:17px}
-.sb-grp{font-size:10.5px;font-weight:800;color:var(--text3);letter-spacing:.8px;text-transform:uppercase;padding:14px 18px 4px}
+.sb-item{display:flex;align-items:center;gap:12px;padding:12px 18px;font-size:15.5px;font-weight:700}
+.sb-item .i{width:34px;height:34px;border-radius:10px;background:var(--bg);display:flex;align-items:center;justify-content:center;font-size:18.5px}
+.sb-grp{font-size:11.5px;font-weight:800;color:var(--text3);letter-spacing:.8px;text-transform:uppercase;padding:14px 18px 4px}
 
 /* sheet (modal-sheet của Kho) */
 .dim{position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:50}
 .sheet{position:fixed;left:50%;transform:translateX(-50%);width:100%;max-width:640px;bottom:0;background:#fff;border-radius:20px 20px 0 0;padding:8px 18px calc(18px + env(safe-area-inset-bottom));z-index:51;max-height:88vh;overflow:auto}
 .handle{width:36px;height:4px;background:var(--border);border-radius:2px;margin:0 auto 14px}
 
-.legend{display:flex;flex-wrap:wrap;gap:6px 12px;font-size:11px;font-weight:700;color:var(--text2)}
+.legend{display:flex;flex-wrap:wrap;gap:6px 12px;font-size:12px;font-weight:700;color:var(--text2)}
 .legend i{display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:5px;vertical-align:-1px}
 .split{display:flex;justify-content:space-between;align-items:center;gap:10px}
 .mono{font-variant-numeric:tabular-nums}
 .hr{height:1px;background:var(--border)}
-.small{font-size:11.5px;color:var(--text3);font-weight:600}
-.photo{width:76px;height:76px;border-radius:12px;background:#DDE3EA;display:flex;align-items:center;justify-content:center;font-size:10px;color:var(--text2);font-weight:700;text-align:center;flex-shrink:0}
+.small{font-size:12.5px;color:var(--text3);font-weight:600}
+.photo{width:76px;height:76px;border-radius:12px;background:#DDE3EA;display:flex;align-items:center;justify-content:center;font-size:11px;color:var(--text2);font-weight:700;text-align:center;flex-shrink:0}
 .photo.add{background:#fff;border:1.5px dashed #C5CED9;flex-direction:column;gap:4px}
 
 /* ── Thi công 1.0: bổ sung cho app thật ── */
@@ -214,67 +215,67 @@ button{cursor:pointer;-webkit-tap-highlight-color:transparent}
 .hide{display:none!important}
 .mt8{margin-top:8px}.mt12{margin-top:12px}
 .center{text-align:center}
-.empty{padding:28px 16px;text-align:center;color:var(--text3);font-weight:600;font-size:13px}
+.empty{padding:28px 16px;text-align:center;color:var(--text3);font-weight:600;font-size:14.5px}
 .btn:disabled{opacity:.45}
 .btn.rd{background:#C0392B}
 .btn.nv{background:var(--navy)}
-.btn.auto{width:auto;padding:9px 14px;font-size:13px}
+.btn.auto{width:auto;padding:9px 14px;font-size:14.5px}
 .fg input:disabled,.fg select:disabled,.fg textarea:disabled{background:#F6F8FB;color:var(--text2)}
 .fg input.bad{border-color:#E74C3C;background:#FFF5F5}
-.fg .hint{font-size:11px;font-weight:700;margin-top:4px}
+.fg .hint{font-size:12px;font-weight:700;margin-top:4px}
 .fg .hint.w{color:#9A6700}.fg .hint.e{color:#B42318}.fg .hint.o{color:#1E7A45}
 .fg textarea{min-height:76px;resize:vertical}
 .fg-row>.fg,.fg-row3>.fg{margin-bottom:12px}
 .ynrow{display:flex;gap:6px;flex-wrap:wrap}
-.yn{padding:9px 13px;border-radius:10px;border:1.5px solid var(--border);background:#fff;font-weight:700;font-size:13px;color:var(--text2)}
+.yn{padding:9px 13px;border-radius:10px;border:1.5px solid var(--border);background:#fff;font-weight:700;font-size:14.5px;color:var(--text2)}
 .yn.on{background:var(--navy);border-color:var(--navy);color:#fff}
 .yn.on.g{background:#1E7A45;border-color:#1E7A45}.yn.on.r{background:#B42318;border-color:#B42318}.yn.on.o{background:var(--orange);border-color:var(--orange)}
 /* bảng nhập nhiều dòng */
-.rt{width:100%;border-collapse:collapse;font-size:12.5px;table-layout:fixed}
-.rt th{font-size:9.5px;font-weight:800;color:var(--text2);text-transform:uppercase;letter-spacing:.3px;text-align:left;padding:6px 4px;border-bottom:1px solid var(--border)}
+.rt{width:100%;border-collapse:collapse;font-size:14px;table-layout:fixed}
+.rt th{font-size:10.5px;font-weight:800;color:var(--text2);text-transform:uppercase;letter-spacing:.3px;text-align:left;padding:6px 4px;border-bottom:1px solid var(--border)}
 .rt td{padding:4px 3px;border-bottom:1px solid var(--border);vertical-align:middle}
-.rt input,.rt select{width:100%;border:1.5px solid var(--border);border-radius:8px;padding:8px 6px;font-size:13px;font-family:inherit;min-width:0;background:#fff}
+.rt input,.rt select{width:100%;border:1.5px solid var(--border);border-radius:8px;padding:8px 6px;font-size:14.5px;font-family:inherit;min-width:0;background:#fff}
 .rt input.calc{background:#F6F8FB;color:var(--primary);font-weight:800}
 .rt input.warn{border-color:#E9A10C;background:#FFFBF0}
-.rt input[type=time]{padding:8px 2px;font-size:12px}
+.rt input[type=time]{padding:8px 2px;font-size:13px}
 .rt select{padding:8px 2px}
-.rt .del{border:none;background:none;color:#B42318;font-size:18px;padding:4px}
+.rt .del{border:none;background:none;color:#B42318;font-size:20px;padding:4px}
 .rt-wrap{overflow-x:auto;margin:0 -4px}
-.addrow{margin-top:8px;border:1.5px dashed #C5CED9;background:#fff;color:var(--primary);font-weight:800;border-radius:10px;padding:10px;width:100%;font-size:13px}
+.addrow{margin-top:8px;border:1.5px dashed #C5CED9;background:#fff;color:var(--primary);font-weight:800;border-radius:10px;padding:10px;width:100%;font-size:14.5px}
 /* ảnh */
 .photos{display:flex;gap:8px;flex-wrap:wrap}
 .photo{position:relative;overflow:hidden;cursor:pointer;border:none}
 .photo img{width:100%;height:100%;object-fit:cover}
-.photo .pend{position:absolute;left:4px;bottom:4px;background:rgba(0,0,0,.6);color:#fff;font-size:9px;border-radius:6px;padding:1px 5px}
+.photo .pend{position:absolute;left:4px;bottom:4px;background:rgba(0,0,0,.6);color:#fff;font-size:10px;border-radius:6px;padding:1px 5px}
 .viewer{position:fixed;inset:0;background:rgba(0,0,0,.92);z-index:80;display:flex;align-items:center;justify-content:center}
 .viewer img{max-width:100%;max-height:100%}
-.viewer button{position:absolute;top:calc(14px + env(safe-area-inset-top));right:14px;width:42px;height:42px;border-radius:50%;border:none;background:#fff;font-size:20px;font-weight:800}
+.viewer button{position:absolute;top:calc(14px + env(safe-area-inset-top));right:14px;width:42px;height:42px;border-radius:50%;border:none;background:#fff;font-size:22px;font-weight:800}
 /* menu bên */
 .side{position:fixed;top:0;bottom:0;left:0;width:86%;max-width:340px;background:#fff;z-index:61;overflow-y:auto;transform:translateX(-102%);transition:transform .22s;padding-bottom:30px;box-shadow:var(--shadow-lg)}
 .side.on{transform:none}
 .side-dim{position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:60;display:none}
 .side-dim.on{display:block}
 .side-top{background:var(--splash);color:#fff;padding:calc(22px + env(safe-area-inset-top)) 18px 18px}
-.side-top .nm{font-size:17px;font-weight:800;margin-top:10px}
-.side-top .rl{font-size:12px;opacity:.75;margin-top:3px;font-weight:600}
+.side-top .nm{font-size:18.5px;font-weight:800;margin-top:10px}
+.side-top .rl{font-size:13px;opacity:.75;margin-top:3px;font-weight:600}
 .sb-item{width:100%;border:none;background:none;text-align:left;color:var(--text)}
 .sb-item:active{background:var(--bg)}
-.sb-item small{margin-left:auto;color:var(--text3);font-size:11px;font-weight:700}
+.sb-item small{margin-left:auto;color:var(--text3);font-size:12px;font-weight:700}
 /* toast, loader */
-.toast{position:fixed;left:50%;bottom:calc(90px + env(safe-area-inset-bottom));transform:translateX(-50%);background:#1A2332;color:#fff;padding:11px 16px;border-radius:12px;font-size:13.5px;font-weight:700;z-index:90;max-width:90%;box-shadow:var(--shadow-lg);text-align:center}
+.toast{position:fixed;left:50%;bottom:calc(90px + env(safe-area-inset-bottom));transform:translateX(-50%);background:#1A2332;color:#fff;padding:11px 16px;border-radius:12px;font-size:15px;font-weight:700;z-index:90;max-width:90%;box-shadow:var(--shadow-lg);text-align:center}
 .loader{position:fixed;inset:0;background:rgba(11,27,51,.55);z-index:85;display:flex;align-items:center;justify-content:center}
-.loader div{background:#fff;border-radius:14px;padding:16px 20px;font-weight:700;font-size:14px;display:flex;gap:10px;align-items:center}
+.loader div{background:#fff;border-radius:14px;padding:16px 20px;font-weight:700;font-size:15.5px;display:flex;gap:10px;align-items:center}
 .spin{width:20px;height:20px;border:3px solid #E8ECF0;border-top-color:var(--orange);border-radius:50%;animation:sp 0.8s linear infinite}
 @keyframes sp{to{transform:rotate(360deg)}}
 /* mặt bằng */
 .planbox{position:relative;background:#FBFCFD;border-radius:12px;overflow:hidden;border:1px solid #E8ECF0;touch-action:none;user-select:none;-webkit-user-select:none}
 .planbox svg{display:block;width:100%}
 .zbtns{position:absolute;right:8px;top:8px;display:flex;flex-direction:column;gap:6px}
-.zbtns button{width:38px;height:38px;border-radius:10px;border:1px solid var(--border);background:#fff;font-size:18px;font-weight:800;color:var(--navy);box-shadow:var(--shadow)}
-.zlab{position:absolute;left:8px;bottom:8px;background:rgba(255,255,255,.9);border-radius:8px;padding:3px 8px;font-size:11px;font-weight:800;color:var(--text2)}
+.zbtns button{width:38px;height:38px;border-radius:10px;border:1px solid var(--border);background:#fff;font-size:20px;font-weight:800;color:var(--navy);box-shadow:var(--shadow)}
+.zlab{position:absolute;left:8px;bottom:8px;background:rgba(255,255,255,.9);border-radius:8px;padding:3px 8px;font-size:12px;font-weight:800;color:var(--text2)}
 .cnt{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px}
-.cnt button{border:1.5px solid var(--border);background:#fff;border-radius:10px;padding:7px 8px;text-align:left;font-size:10.5px;font-weight:800;color:var(--text2)}
-.cnt button b{display:block;font-size:17px;color:var(--text);margin-top:1px}
+.cnt button{border:1.5px solid var(--border);background:#fff;border-radius:10px;padding:7px 8px;text-align:left;font-size:11.5px;font-weight:800;color:var(--text2)}
+.cnt button b{display:block;font-size:18.5px;color:var(--text);margin-top:1px}
 .cnt button.on{border-color:var(--navy);box-shadow:0 0 0 2px rgba(11,37,69,.15)}
 .cnt i{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:4px}
 /* biểu đồ cột */
@@ -282,41 +283,41 @@ button{cursor:pointer;-webkit-tap-highlight-color:transparent}
 .bars>div{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;height:100%;justify-content:flex-end}
 .bars i{display:block;width:70%;border-radius:4px 4px 0 0;background:var(--orange);min-height:2px}
 .bars i.p{background:#C5CED9}
-.bars span{font-size:10px;font-weight:700;color:var(--text3)}
-.bars b{font-size:10px;font-weight:800}
+.bars span{font-size:11px;font-weight:700;color:var(--text3)}
+.bars b{font-size:11px;font-weight:800}
 /* ô ghi nhanh */
 .qgrid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
-.q{background:#fff;border:none;border-radius:14px;box-shadow:var(--shadow);padding:12px 6px;display:flex;flex-direction:column;align-items:center;gap:5px;font-size:11.5px;font-weight:800;color:var(--text)}
-.q span{font-size:24px}
-.bigadd{background:var(--orange);color:#fff;border:none;border-radius:14px;padding:15px;font-size:15.5px;font-weight:900;width:100%;box-shadow:0 6px 18px rgba(242,101,34,.3)}
+.q{background:#fff;border:none;border-radius:14px;box-shadow:var(--shadow);padding:12px 6px;display:flex;flex-direction:column;align-items:center;gap:5px;font-size:12.5px;font-weight:800;color:var(--text)}
+.q span{font-size:26.5px}
+.bigadd{background:var(--orange);color:#fff;border:none;border-radius:14px;padding:15px;font-size:17px;font-weight:900;width:100%;box-shadow:0 6px 18px rgba(242,101,34,.3)}
 /* tab */
 .tabs{display:flex;gap:4px;background:#fff;padding:6px;border-radius:12px;box-shadow:var(--shadow);overflow-x:auto;scrollbar-width:none}
 .tabs::-webkit-scrollbar{display:none}
-.tabs button{flex:1;border:none;background:none;padding:8px 10px;border-radius:9px;font-weight:800;font-size:12.5px;color:var(--text2);white-space:nowrap}
+.tabs button{flex:1;border:none;background:none;padding:8px 10px;border-radius:9px;font-weight:800;font-size:14px;color:var(--text2);white-space:nowrap}
 .tabs button.on{background:var(--navy);color:#fff}
 /* dải trạng thái */
-.stbar{display:flex;gap:8px;align-items:center;padding:10px 12px;border-radius:12px;font-size:12.5px;font-weight:700}
-.signs{font-size:11.5px;color:var(--text2)}
+.stbar{display:flex;gap:8px;align-items:center;padding:10px 12px;border-radius:12px;font-size:14px;font-weight:700}
+.signs{font-size:12.5px;color:var(--text2)}
 .signs div{padding:6px 0;border-bottom:1px dashed var(--border);display:flex;gap:8px}
 .signs div:last-child{border-bottom:none}
 .signs b{color:var(--text)}
-.demo{background:#FFF1E8;color:#9A3412;font-size:11.5px;font-weight:800;padding:6px 14px;text-align:center;border-bottom:1px solid #FCD9C2}
-.pill{display:inline-block;padding:2px 8px;border-radius:7px;font-size:10.5px;font-weight:800}
-.search{width:100%;border:1.5px solid var(--border);border-radius:12px;padding:11px 12px;font-size:14px;font-family:inherit;outline:none;background:#fff}
+.demo{background:#FFF1E8;color:#9A3412;font-size:12.5px;font-weight:800;padding:6px 14px;text-align:center;border-bottom:1px solid #FCD9C2}
+.pill{display:inline-block;padding:2px 8px;border-radius:7px;font-size:11.5px;font-weight:800}
+.search{width:100%;border:1.5px solid var(--border);border-radius:12px;padding:11px 12px;font-size:15.5px;font-family:inherit;outline:none;background:#fff}
 .htl{flex:1;min-width:0;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:5px}
 .htk{background:#F6F8FB;border-radius:8px;padding:5px 7px;min-width:0}
-.htk span{display:block;font-size:9.5px;font-weight:800;color:var(--text3);text-transform:uppercase;letter-spacing:.2px;line-height:1.25}
-.htk b{display:block;font-size:12px;font-weight:800;color:var(--text);margin-top:1px;line-height:1.3;overflow-wrap:anywhere}
-.htk b small{font-size:10.5px;font-weight:700}
+.htk span{display:block;font-size:10.5px;font-weight:800;color:var(--text3);text-transform:uppercase;letter-spacing:.2px;line-height:1.25}
+.htk b{display:block;font-size:13px;font-weight:800;color:var(--text);margin-top:1px;line-height:1.3;overflow-wrap:anywhere}
+.htk b small{font-size:11.5px;font-weight:700}
 .lvgrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:4px}
-.lvgrid div{background:#F6F8FB;border-radius:8px;padding:5px 8px;font-size:10.5px;font-weight:700;color:#5A6A7A;display:flex;justify-content:space-between;gap:6px}
+.lvgrid div{background:#F6F8FB;border-radius:8px;padding:5px 8px;font-size:11.5px;font-weight:700;color:#5A6A7A;display:flex;justify-content:space-between;gap:6px}
 .lvgrid b{color:#1A2332;white-space:nowrap}
 .mini3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px;margin-top:10px}
-.mini3 div{background:#F6F8FB;border-radius:10px;padding:7px 9px;font-size:10px;font-weight:800;color:#5A6A7A;text-transform:uppercase;letter-spacing:.3px}
-.mini3 b{display:block;font-size:13.5px;color:#1A2332;margin-top:2px;text-transform:none;letter-spacing:0}
+.mini3 div{background:#F6F8FB;border-radius:10px;padding:7px 9px;font-size:11px;font-weight:800;color:#5A6A7A;text-transform:uppercase;letter-spacing:.3px}
+.mini3 b{display:block;font-size:15px;color:#1A2332;margin-top:2px;text-transform:none;letter-spacing:0}
 .wk{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:4px}
-.wk button{border:1.5px solid var(--border);background:#fff;border-radius:10px;padding:6px 0;font-size:10px;font-weight:800;color:var(--text3)}
-.wk button b{display:block;font-size:15px;color:var(--text)}
+.wk button{border:1.5px solid var(--border);background:#fff;border-radius:10px;padding:6px 0;font-size:11px;font-weight:800;color:var(--text3)}
+.wk button b{display:block;font-size:16.5px;color:var(--text)}
 .wk button.on{background:var(--navy);border-color:var(--navy);color:#cfd8e3}
 .wk button.on b{color:#fff}
 .wk button.td{border-color:var(--orange)}
@@ -334,49 +335,78 @@ button{cursor:pointer;-webkit-tap-highlight-color:transparent}
 body.pk-open .main{padding-bottom:48vh}
 
 /* Menu bên giống app Kho (v1.3.2) */
-.side{width:280px;max-width:86%;padding-bottom:calc(20px + env(safe-area-inset-bottom))}
+.side{width:300px;max-width:86%;padding-bottom:calc(20px + env(safe-area-inset-bottom))}
 .side-top{background:#fff;color:var(--text);padding:calc(14px + env(safe-area-inset-top)) 20px 14px;border-bottom:3px solid #F26522;border-image:linear-gradient(90deg,#F26522,#F7A35C) 1}
 .side-top .side-logo{width:150px;height:auto;display:block;margin-bottom:12px}
-.side-top .nm{font-size:15px;font-weight:800;color:#0B2545;margin-top:0}
-.side-top .rl{font-size:12px;color:var(--text2);opacity:1;margin-top:2px;font-weight:600}
+.side-top .nm{font-size:16.5px;font-weight:800;color:#0B2545;margin-top:0}
+.side-top .rl{font-size:13px;color:var(--text2);opacity:1;margin-top:2px;font-weight:600}
 .sb-proj{padding:14px 16px 12px;border-bottom:1px solid var(--border);background:#F7F9FC}
-.sb-proj-lbl{font-size:10.5px;font-weight:800;letter-spacing:.6px;color:var(--text3);margin-bottom:8px}
+.sb-proj-lbl{font-size:11.5px;font-weight:800;letter-spacing:.6px;color:var(--text3);margin-bottom:8px}
 .sb-pj{display:flex;align-items:center;gap:10px;background:#fff;border:1.5px solid var(--border);border-radius:12px;padding:8px 12px;position:relative}
-.sb-pj .pj-ico{font-size:22px}.sb-pj .pj-txt{flex:1;display:flex;flex-direction:column;min-width:0}
-.sb-pj small{font-size:11px;color:var(--text3);font-weight:600}
-.sb-pj b,.sb-pj select{font-size:16px;font-weight:900;color:#0056A4;border:none;background:none;padding:0;font-family:inherit;-webkit-appearance:none;appearance:none;outline:none;width:100%}
+.sb-pj .pj-ico{font-size:24px}.sb-pj .pj-txt{flex:1;display:flex;flex-direction:column;min-width:0}
+.sb-pj small{font-size:12px;color:var(--text3);font-weight:600}
+.sb-pj b,.sb-pj select{font-size:17.5px;font-weight:900;color:#0056A4;border:none;background:none;padding:0;font-family:inherit;-webkit-appearance:none;appearance:none;outline:none;width:100%}
 .sb-pj select{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%}
-.sb-pj .pj-arr{color:var(--text3);font-size:18px}
-.sb-item{padding:13px 20px;font-size:14px;font-weight:500;gap:14px}
-.sb-item .i{width:28px;height:auto;border-radius:0;background:none;font-size:20px}
+.sb-pj .pj-arr{color:var(--text3);font-size:20px}
+.sb-item{padding:13px 20px;font-size:15.5px;font-weight:500;gap:14px}
+.sb-item .i{width:28px;height:auto;border-radius:0;background:none;font-size:22px}
 .sb-item:active{background:var(--bg);color:var(--orange)}
-.sb-sw{background:#FFF1E8;margin:0}
-.sb-sw small{color:#7B8BA1}
-.sb-grp{font-size:10px;font-weight:700;letter-spacing:1px;padding:12px 20px 4px}
+.sb-sw{background:linear-gradient(135deg,#F26522,#E0531A);color:#fff!important;font-weight:800;margin:10px 14px;width:calc(100% - 28px);border-radius:14px;box-shadow:0 6px 16px rgba(242,101,34,.35);padding:14px 16px}
+.sb-sw .i{filter:drop-shadow(0 1px 2px rgba(0,0,0,.25))}
+.sb-sw .sw-arr{font-size:24px;font-weight:900;opacity:.9}
+.sb-sw:active{background:#D94E14;color:#fff}
+.sb-grp{font-size:11px;font-weight:700;letter-spacing:1px;padding:12px 20px 4px}
 .sb-div{height:1px;background:var(--border);margin:8px 0}
 
 /* Phân quyền Thi công */
-.qtb{border-collapse:collapse;width:100%;min-width:330px;font-size:13px}
-.qtb th{font-size:11px;font-weight:800;color:var(--text3);padding:6px 2px;text-align:center;border-bottom:1px solid var(--border)}
+.qtb{border-collapse:collapse;width:100%;min-width:330px;font-size:14.5px}
+.qtb th{font-size:12px;font-weight:800;color:var(--text3);padding:6px 2px;text-align:center;border-bottom:1px solid var(--border)}
 .qtb td{padding:5px 2px;border-bottom:1px solid #F0F2F5;text-align:center;vertical-align:middle}
 .qtb td:first-child{text-align:left;padding-left:4px;min-width:96px}
-.qtb td:first-child small{display:block;font-size:10.5px;color:var(--text3);font-weight:600;line-height:1.25;max-width:130px}
+.qtb td:first-child small{display:block;font-size:11.5px;color:var(--text3);font-weight:600;line-height:1.25;max-width:130px}
 .qtb tr.dirty td{background:#FFF7ED}
-.qbx{width:30px;height:30px;border-radius:8px;border:1.5px solid #C9D2DE;background:#fff;color:#fff;font-weight:900;font-size:15px;cursor:pointer;font-family:inherit}
+.qbx{width:30px;height:30px;border-radius:8px;border:1.5px solid #C9D2DE;background:#fff;color:#fff;font-weight:900;font-size:16.5px;cursor:pointer;font-family:inherit}
 .qbx.on{background:var(--orange);border-color:var(--orange)}
 .qbx.lk{opacity:.55;cursor:default}
-.qleg{font-size:11.5px;color:var(--text2);line-height:1.5;margin-top:10px;display:grid;gap:2px}
+.qleg{font-size:12.5px;color:var(--text2);line-height:1.5;margin-top:10px;display:grid;gap:2px}
 .qleg b{display:inline-block;min-width:34px;color:var(--navy)}
+
+.ptitle{flex-wrap:wrap;gap:2px 10px}.ptitle span{white-space:nowrap}
+
+/* v5.31.10 · Máy tính: dùng hết chiều ngang màn hình như app Kho */
+@media (min-width:900px){
+  .scr{max-width:none}
+  .main{padding-left:max(0px,calc((100% - 1280px) / 2));padding-right:max(0px,calc((100% - 1280px) / 2))}
+  .hdr,.dhdr,.sync,.demo{padding-left:max(16px,calc((100% - 1280px) / 2 + 16px));padding-right:max(16px,calc((100% - 1280px) / 2 + 16px))}
+  .stat-grid{grid-template-columns:repeat(4,minmax(0,1fr))}
+  .cnt{grid-template-columns:repeat(6,minmax(0,1fr))}
+  .actbar{padding-left:max(14px,calc((100% - 1280px) / 2 + 14px));padding-right:max(14px,calc((100% - 1280px) / 2 + 14px))}
+  .actbar .btn{max-width:420px}
+  .actbar{justify-content:flex-end}
+  .planbox svg{max-height:68vh}
+}
+
+/* Biểu tượng Phosphor Duotone (v5.31.9) */
+.pi{width:1.15em;height:1.15em;display:inline-block;vertical-align:-.2em;color:#F26522;fill:currentColor;flex-shrink:0;overflow:visible}
+.pi-g{color:#1E9E5A}.pi-r{color:#D93A2B}.pi-a{color:#E08A00}.pi-b{color:#0056A4}
+button .pi,.btn .pi,a .pi,.chip .pi,.tag .pi,.badge .pi,.yn .pi,.bnav .pi,.bnav-btn .pi,.bottom-nav .pi{color:currentColor}
+.ico .pi{color:#0056A4}.ico.or .pi{color:#F26522}.ico.gr .pi{color:#1E9E5A}.ico.rd .pi{color:#D93A2B}.ico.am .pi{color:#E08A00}.ico.gy .pi{color:#5A6A7A}
+.sb-item .i{width:34px;height:34px;border-radius:10px;background:#FFF1E8}.sb-item .i .pi{color:#F26522;width:20px;height:20px}
+.sb-sw .i{background:rgba(255,255,255,.22)}.sb-sw .i .pi,.sb-sw .pi{color:#fff}
+.sidebar-item-ico{width:34px;height:34px;border-radius:10px;background:#FFF1E8;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0}
+.sidebar-item-ico .pi{color:#F26522;width:20px;height:20px}.sb-sw .sidebar-item-ico{background:rgba(255,255,255,.22)}.sb-sw .sidebar-item-ico .pi{color:#fff}
+.demo .pi,.note .pi{vertical-align:-.25em}
+#pg-part .ic .pi{color:#F26522;width:32px;height:32px}
 
 </style>
 </head>
 <body>
 <div id="app"></div>
 <script>
-// FECON South · THI CÔNG 1.4.0 — chạy cùng app Kho (đăng nhập ở index.html, dùng chung máy chủ Apps Script)
-const KHO_VERSION = '5.31.7';
+// FECON South · THI CÔNG 1.4.3 — chạy cùng app Kho (đăng nhập ở index.html, dùng chung máy chủ Apps Script)
+const KHO_VERSION = '5.31.10';
 // ===== FECON Thi công 1.0 — lõi: máy chủ, lưu trên máy, hàng đợi gửi, điều hướng =====
-const TC_APP_VERSION = '1.4.0';
+const TC_APP_VERSION = '1.4.3';
 const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbw6Rmi80I7RI3ij2U7RdRF5pYuQTnPrwEmGmUZS5xpxzLwwVynfoFUujZe1lm6HS1ymxw/exec';
 const LS_TOKEN = 'fecon_token_v5', LS_USER = 'fecon_user_v5';           // dùng chung phiên đăng nhập với Kho
 const LS_P = 'tc_proj', LS_BOOT = 'tc_boot2|', LS_OUT = 'tc_out_v1', LS_CA = 'tc_ca', LS_PART = 'fecon_part';
@@ -624,7 +654,7 @@ function shell(o) {        // o: {title, sub, back, body, act, tab, noSync}
     ${o.act ? `<div class="actbar">${o.act}</div>` : ''}
     ${o.back && !o.tabs ? '' : `<div class="bnav">${tabs.map(t => `<button class="bn ${o.tab === t[0] ? 'on' : ''}" onclick="go('${t[0]}')"><span class="bi">${t[1]}${t[0] === 'viec' && nv ? `<span class="bb">${nv}</span>` : ''}</span>${t[2]}</button>`).join('')}</div>`}</div>`;
 }
-function demoBar() { return B && B.cfg && B.cfg.demo && B.cfg.demo.on ? '<div class="demo">🧪 Dữ liệu mẫu để tập — ghi thoải mái</div>' : ''; }
+function demoBar() { return B && B.cfg && B.cfg.demo && B.cfg.demo.on ? '<div class="demo">🧪 Bản demo · Trải nghiệm và kiểm tra tính năng</div>' : ''; }
 const initials = n => String(n || '?').trim().split(/\s+/).slice(-2).map(x => x[0]).join('').toUpperCase();
 function setSync() {
   const el = $('#syncbar'); if (!el) return;
@@ -655,7 +685,7 @@ function sheet(html, onClose) {
 function closeSheet() { const s = $('#sheet'); if (s) { if (s._onClose) s._onClose(); s.remove(); } }
 function ask(title, opts) {             // hộp hỏi: opts {msg, input, ok, okCls, cancel, def}
   return new Promise(res => {
-    sheet(`<div class="fsec-t" style="border:none;padding:0;margin-bottom:8px">${esc(title)}</div>${opts.msg ? `<div class="small" style="font-size:13px;color:var(--text2);margin-bottom:12px">${opts.msg}</div>` : ''}
+    sheet(`<div class="fsec-t" style="border:none;padding:0;margin-bottom:8px">${esc(title)}</div>${opts.msg ? `<div class="small" style="font-size:14.5px;color:var(--text2);margin-bottom:12px">${opts.msg}</div>` : ''}
       ${opts.input ? `<div class="fg"><textarea id="ask-in" placeholder="${esc(opts.input)}">${esc(opts.def || '')}</textarea></div>` : ''}
       <div style="display:flex;gap:8px;margin-top:8px"><button class="btn ghost" id="ask-no">${esc(opts.cancel || 'Thôi')}</button><button class="btn ${opts.okCls || ''}" id="ask-ok">${esc(opts.ok || 'Đồng ý')}</button></div>`, () => res(null));
     $('#ask-no').onclick = () => { $('#sheet')._onClose = null; closeSheet(); res(null); };
@@ -681,7 +711,7 @@ function sideHtml() {
       ${pl.length > 1 ? `<label class="sb-pj"><span class="pj-ico">🏗️</span><span class="pj-txt"><small>Dự án</small><b>${esc(P)}</b><select onchange="sideOff();setProj(this.value)">${pl.map(p => `<option value="${esc(p)}" ${p === P ? 'selected' : ''}>${esc(p)}</option>`).join('')}</select></span><span class="pj-arr">⌄</span></label>`
         : `<div class="sb-pj"><span class="pj-ico">🏗️</span><span class="pj-txt"><small>Dự án</small><b>${esc(P || '—')}</b></span></div>`}</div>
     ${TCU.nv ? `<button class="sb-item" onclick="sideOff();go('upd')"><span class="i">🔔</span><b>Cập nhật phiên bản mới</b><small id="upd-dot" style="color:#fff;background:var(--orange);border-radius:10px;padding:1px 7px">${esc(TCU.nv)}</small></button>` : ''}
-    <button class="sb-item sb-sw" onclick="sideOff();toKho()"><span class="i">📦</span><span style="flex:1">Chuyển sang Kho</span><small>giữ đăng nhập</small></button>
+    <button class="sb-item sb-sw" onclick="sideOff();toKho()"><span class="i">📦</span><span style="flex:1">Chuyển sang Kho</span><span class="sw-arr">›</span></button>
     <div class="sb-grp">Chức năng</div>
     ${it('🏢', 'Khu vực · ca làm việc', "go('proj')")}
     ${it('🗓️', 'Kế hoạch & phân công', "go('kh')")}
@@ -701,7 +731,7 @@ function sideHtml() {
     ${it('📖', 'Hướng dẫn sử dụng', "go('hd')")}
     ${TCU.nv ? '' : it('🔄', 'Cập nhật phiên bản', "go('upd')")}
     ${it('🚪', 'Đăng xuất', "logout()")}
-    <div class="small" style="padding:14px 18px">Thi công ${TC_APP_VERSION}${B && B.sv ? ' · máy chủ TC ' + esc(B.sv) : ''}</div>`;
+    <div class="small" style="padding:14px 20px">Phiên bản ${esc(KHO_VERSION)}</div>`;
 }
 function toKho() { lsSet(LS_PART, 'kho'); location.href = 'index.html?part=kho'; }
 function tgLink() { if (B.tg.linked) { toast('Telegram đã liên kết — tin Thi công gửi chung bot với Kho'); return; } if (B.tg.link) window.open(B.tg.link, '_blank'); }
@@ -967,11 +997,10 @@ VIEWS.upd = {
   render() {
     const c = TCU.nv ? updEntry(TCU.nv) : null;
     return shell({ back:1, title:'Cập nhật phiên bản', body:`<div class="dbody">
-      <div class="kv-box w card" style="padding:2px 16px"><div class="kv"><span>Bản đang dùng</span><b>${esc(KHO_VERSION)} · Thi công ${esc(TC_APP_VERSION)}</b></div><div class="kv"><span>Máy chủ Thi công</span><b>${esc((B && B.sv) || '—')}</b></div></div>
+      <div class="kv-box w card" style="padding:2px 16px"><div class="kv"><span>Phiên bản đang dùng</span><b>${esc(KHO_VERSION)}</b></div></div>
       ${TCU.nv ? `<div class="card pad mt12" style="border:1.5px solid var(--orange)"><b style="color:var(--navy)">🔔 Có bản mới ${esc(TCU.nv)}</b>${c ? `<div class="small mt8" style="line-height:1.5"><b>${esc(c.title)}</b><ul style="margin:6px 0 0 18px;padding:0">${(c.sum || []).map(x => `<li>${esc(x)}</li>`).join('')}</ul></div>` : ''}
         <button class="btn mt12" onclick="tcDoUpdate()">⬇ Cập nhật ngay</button></div>` : '<div class="note n-ok mt12">✅<span>Bạn đang dùng bản mới nhất</span></div>'}
-      <button class="btn ghost mt12" onclick="tcCheckUpd(true)">🔄 Kiểm tra bản mới</button>
-      <div class="note n-info mt12">ℹ️<span>Cập nhật ở đây là cập nhật cả app (Kho + Thi công dùng chung 1 bản). Thao tác chưa gửi vẫn được giữ.</span></div></div>` });
+      <button class="btn ghost mt12" onclick="tcCheckUpd(true)">🔄 Kiểm tra bản mới</button></div>` });
   }
 };
 document.addEventListener('visibilitychange', () => { if (!document.hidden) { tcCheckUpd(); if (B) bulkMaybe(); } });
@@ -1196,8 +1225,8 @@ function liveKhoan(ctx) {
   const pct = L > 0 ? Math.min(100, dep / L * 100) : 0;
   let prev = 0; const lay = [];
   rows.forEach(r => { if (r.lop && (!lay.length || lay[lay.length - 1][2] !== r.lop)) { lay.push([prev, num(r.sau), r.lop]); } else if (lay.length) lay[lay.length - 1][1] = num(r.sau); prev = num(r.sau); });
-  return `<div class="card pad"><div class="split"><div><div class="small">Chiều sâu từ mốc</div><div style="font-size:30px;font-weight:900">${fmtN(dep, 2)} <small style="font-size:14px;color:var(--text3)">m</small></div></div>
-    <div style="text-align:right"><div class="small">Z đáy hiện tại</div><div style="font-size:20px;font-weight:900;color:var(--primary)">${dep ? fmtZ(z.gl - dep) : '—'}</div></div></div>
+  return `<div class="card pad"><div class="split"><div><div class="small">Chiều sâu từ mốc</div><div style="font-size:33px;font-weight:900">${fmtN(dep, 2)} <small style="font-size:15.5px;color:var(--text3)">m</small></div></div>
+    <div style="text-align:right"><div class="small">Z đáy hiện tại</div><div style="font-size:22px;font-weight:900;color:var(--primary)">${dep ? fmtZ(z.gl - dep) : '—'}</div></div></div>
     <div class="prog mt8"><i style="width:${pct.toFixed(1)}%"></i></div>
     <div class="small mt8">Thiết kế ${isFinite(L) ? fmtN(L, 2) + ' m (Z mũi ' + fmtZ(z.toe) + ')' : '— chưa có Z mũi'}${isFinite(L) && dep < L ? ' · còn ' + fmtN(L - dep, 2) + ' m' : isFinite(L) && dep >= L ? ' · <b class="c-gr">đã tới chiều sâu thiết kế</b>' : ''} · ${pct.toFixed(0)}%</div>
     ${lay.length ? `<div class="kv-box mt12">${lay.map(l => `<div class="kv"><span>${fmtN(l[0], 1)} – ${fmtN(l[1], 1)} m</span><b>${esc(l[2])}</b></div>`).join('')}</div>` : ''}</div>`;
@@ -1222,8 +1251,8 @@ function liveDD(ctx) {
 function liveNb(ctx) {
   const m = String(ctx.c.code).match(/^(\D*)(\d+)$/); if (!m) return '';
   const ks = [-2, -1, 0, 1].map(k => m[1] + (+m[2] + k)).filter(k => CK[k]);
-  return `<div class="card pad"><div style="display:flex;gap:4px;height:58px">${ks.map(k => { const c = CK[k], s = ST[c.st]; return `<div class="tap" onclick="go('ck',{code:'${esc(k)}'})" style="flex:1;border-radius:6px;background:${k === ctx.c.code ? '#F2C230' : s.c};color:${c.st === 'cl' || c.st === 'sl' || k === ctx.c.code ? '#1A2332' : '#fff'};display:flex;flex-direction:column;align-items:center;justify-content:center;font-weight:900;font-size:12px">${esc(k)}<small style="font-size:9.5px;font-weight:700">${esc(c.type || '')}</small></div>`; }).join('<div style="width:6px;display:flex;align-items:center"><i style="width:4px;height:100%;background:#C5CED9;border-radius:2px"></i></div>')}</div>
-    <div class="small mt8 center">Panel liền kề và trạng thái · bấm để mở hồ sơ</div></div>`;
+  return `<div class="card pad"><div style="display:flex;gap:4px;height:58px">${ks.map(k => { const c = CK[k], s = ST[c.st]; return `<div class="tap" onclick="go('ck',{code:'${esc(k)}'})" style="flex:1;border-radius:6px;background:${k === ctx.c.code ? '#F2C230' : s.c};color:${c.st === 'cl' || c.st === 'sl' || k === ctx.c.code ? '#1A2332' : '#fff'};display:flex;flex-direction:column;align-items:center;justify-content:center;font-weight:900;font-size:13px">${esc(k)}<small style="font-size:10.5px;font-weight:700">${esc(c.type || '')}</small></div>`; }).join('<div style="width:6px;display:flex;align-items:center"><i style="width:4px;height:100%;background:#C5CED9;border-radius:2px"></i></div>')}</div>
+    </div>`;
 }
 function liveTruoc(ctx) {
   const c = ctx.c, L = LIM(), z = dz(c), d = ctx.d;
@@ -1274,8 +1303,8 @@ function liveBT(ctx) {
   return `${blocked ? `<div class="note n-err">✋<span><b>Chưa giải phóng điểm Hold</b> trước đổ. Mở <a class="tap" style="text-decoration:underline" onclick="openForm('truoc','${esc(c.code)}')">Kiểm tra trước đổ</a> và chờ QA/QC xác nhận.</span></div>` : ''}
   <div class="fg-row mt8"><div class="big ${v ? 'on' : ''}"><label>Lũy kế đã đổ</label><div class="v">${fmtN(v, 1)}<small>/ ${fmtN(z.vlt, 2)} m³</small></div></div>
     <div class="big calc"><label>Xe đã nhận</label><div class="v">${vx.n}<small>xe · ${fmtN(vx.v, 1)} m³</small></div></div>
-    <div class="big"><label>Z mặt bê tông</label><div class="v" style="font-size:24px">${fmtZ(last.zMat)}</div></div>
-    <div class="big ${isFinite(h) ? (h >= L.hMin ? 'ok' : '') : ''}" ${isFinite(h) && h < L.hMin ? 'style="border-color:#E74C3C;background:#FFF5F5"' : ''}><label>Độ ngập h</label><div class="v" style="font-size:24px">${isFinite(h) ? fmtN(h, 2) : '—'}<small>m</small></div></div></div>
+    <div class="big"><label>Z mặt bê tông</label><div class="v" style="font-size:26.5px">${fmtZ(last.zMat)}</div></div>
+    <div class="big ${isFinite(h) ? (h >= L.hMin ? 'ok' : '') : ''}" ${isFinite(h) && h < L.hMin ? 'style="border-color:#E74C3C;background:#FFF5F5"' : ''}><label>Độ ngập h</label><div class="v" style="font-size:26.5px">${isFinite(h) ? fmtN(h, 2) : '—'}<small>m</small></div></div></div>
   ${hint ? `<div class="note n-info mt8">✂️<span>${hint} · h tối thiểu ${fmtN(L.hMin, 1)} m theo BPTC</span></div>` : ''}
   ${chart ? `<div class="card pad mt8">${chart}</div>` : ''}`;
 }
@@ -1299,7 +1328,7 @@ function bgSnap() {
 function liveBG(ctx) {
   const l = ctx.d.snap && ctx.rec && ctx.rec.rev ? ctx.d.snap : bgSnap();
   const n = ctx.rec && ctx.d.nhan;
-  return `<div class="card"><div class="pad" style="padding-bottom:4px"><span class="sec-title">Cấu kiện đang dở · ${l.length}</span> <span class="small">· số liệu tự lấy từ nhật ký</span></div>
+  return `<div class="card"><div class="pad" style="padding-bottom:4px"><span class="sec-title">Cấu kiện đang dở · ${l.length}</span></div>
     ${l.length ? l.map(x => `<div class="row tap" onclick="go('ck',{code:'${esc(x.ck)}'})"><div class="ico or">🏗️</div><div class="rmain"><div class="rname">${esc(x.ck)}</div><div class="rsub">${esc(x.s)}</div></div><span class="chev">›</span></div>`).join('') : '<div class="empty">Không có cấu kiện đang dở</div>'}</div>
     ${n ? `<div class="note n-ok mt8">✅<span>${esc(n.byName)} đã nhận ca lúc ${esc(n.at)}</span></div>` : ''}`;
 }
@@ -1376,7 +1405,7 @@ function formBody(ctx, ed) {
   return secs(ctx).map(s => {
     const fs = (s.f || []).map(f => fieldHtml(f, ctx, ed)).join('');
     if (!fs.trim()) return '';
-    return `<div class="fsec">${s.t ? `<div class="fsec-t">${s.t}${s.sub ? `<small>${esc(s.sub)}</small>` : ''}</div>` : ''}${fs}${s.note ? `<div class="small" style="margin-top:8px;line-height:1.45">${esc(s.note)}</div>` : ''}</div>`;
+    return `<div class="fsec">${s.t ? `<div class="fsec-t">${s.t}${s.sub ? `<small>${esc(s.sub)}</small>` : ''}</div>` : ''}${fs}</div>`;
   }).join('');
 }
 function optList(f, ctx) { let o = typeof f.opt === 'function' ? f.opt(ctx) : f.opt; return (o || []).map(x => Array.isArray(x) ? x : [x, x]); }
@@ -1591,11 +1620,10 @@ function render(top) {
   if (top) { const m = $('.main'); if (m) m.scrollTop = 0; }
 }
 function noCkHtml() {
-  return `<div class="dbody">${updCardHtml()}<div class="card pad center"><div style="font-size:40px">🏗️</div><div class="rname mt8">${esc(P || 'Chưa có dự án')}</div>
+  return `<div class="dbody">${updCardHtml()}<div class="card pad center"><div style="font-size:44px">🏗️</div><div class="rname mt8">${esc(P || 'Chưa có dự án')}</div>
     <div class="small mt8" style="line-height:1.5">Dự án chưa có danh sách cọc / panel trong phần Thi công.${hp('t_qt') ? '' : '<br>Nhờ Admin nạp danh sách cấu kiện.'}</div>
     ${hp('t_qt') ? `<button class="btn mt12" onclick="go('qtri',{tab:'ck'})">📥 Nạp danh sách cấu kiện</button>${me.role === 'ADM' && /tthc|hầm|công viên/i.test(P) ? `<button class="btn ghost mt8" onclick="go('qtri',{tab:'mau'})">🧪 Nạp dữ liệu mẫu TTHC để tập</button>` : ''}` : ''}
-    ${(B.projects || []).filter(x => x !== P).map(x => `<button class="btn ghost mt8" onclick="setProj('${esc(x)}')">↩ Chuyển sang dự án ${esc(x)}</button>`).join('')}</div>
-    <div class="note n-info mt12">ℹ️<span>Dự án đang chọn là <b>${esc(P)}</b>. Các mục Tổng quan, Cấu kiện, Việc… sẽ hiện khi dự án có danh sách cọc / panel. Muốn quay lại dự án khác: bấm nút "Chuyển sang dự án…" ở trên.</span></div></div>`;
+    ${(B.projects || []).filter(x => x !== P).map(x => `<button class="btn ghost mt8" onclick="setProj('${esc(x)}')">↩ Chuyển sang dự án ${esc(x)}</button>`).join('')}</div></div>`;
 }
 
 // ---------- Việc cần làm ----------
@@ -1655,12 +1683,12 @@ VIEWS.home = {
         <div class="stat tap" onclick="go('plan',{f:'dl'})"><div class="stat-l c-or">🏗️ Đang thi công</div><div class="stat-v">${dl.length}</div><div class="stat-s">${dl.filter(c => c.loai !== 'tv').length} cọc · ${dl.filter(c => c.loai === 'tv').length} panel</div></div>
         <div class="stat tap" onclick="go('viec')"><div class="stat-l c-am">⏳ Chờ kiểm tra</div><div class="stat-v">${gui}</div><div class="stat-s">${hold} điểm Hold</div></div>
         <div class="stat tap" onclick="go('viec')"><div class="stat-l c-rd">${lead ? '🚩 NCR đang mở' : '↩️ Hồ sơ trả về'}</div><div class="stat-v">${lead ? ncr.length : tra}</div><div class="stat-s">${lead ? ncr.filter(r => r.d.han && r.d.han < td).length + ' quá hạn' : 'cần sửa và gửi lại'}</div></div>
-        <div class="stat tap" onclick="go('khbt')"><div class="stat-l c-bl">🚚 Bê tông hôm nay</div><div class="stat-v">${fmtN(xeT, 0)}<small style="font-size:14px;color:var(--text3)"> m³</small></div><div class="stat-s">đã nhận / ${fmtN(dk, 0)} đăng ký</div></div>
+        <div class="stat tap" onclick="go('khbt')"><div class="stat-l c-bl">🚚 Bê tông hôm nay</div><div class="stat-v">${fmtN(xeT, 0)}<small style="font-size:15.5px;color:var(--text3)"> m³</small></div><div class="stat-s">đã nhận / ${fmtN(dk, 0)} đăng ký</div></div>
       </div>
       ${T.length ? `<div class="section"><div class="sec-head"><span class="sec-title">${lead ? 'Cần bạn xử lý' : 'Việc của bạn'}</span><span class="sec-link tap" onclick="go('viec')">Tất cả ›</span></div><div class="card">${T.slice(0, 4).map(taskRow).join('')}</div></div>` : ''}
       <div class="section"><div class="card pad">
-        ${coc.length ? `<div class="split"><span class="rname">Cọc khoan nhồi</span><span class="small"><b style="color:var(--text);font-size:14px">${done(coc)}</b> / ${coc.length} · ${Math.round(done(coc) / coc.length * 100)}%</span></div><div class="prog mt8"><i style="width:${(done(coc) / coc.length * 100).toFixed(1)}%"></i></div><div class="small mt8">Nghiệm thu ${by(coc, 'nt')} · đã đổ ${by(coc, 'dd')} · đang làm ${by(coc, 'dl')}</div>` : ''}
-        ${tv.length ? `<div class="split mt12"><span class="rname">Tường vây</span><span class="small"><b style="color:var(--text);font-size:14px">${done(tv)}</b> / ${tv.length} panel · ${Math.round(done(tv) / tv.length * 100)}%</span></div><div class="prog mt8"><i style="width:${(done(tv) / tv.length * 100).toFixed(1)}%;background:var(--primary)"></i></div><div class="small mt8">Nghiệm thu ${by(tv, 'nt')} · đã đổ ${by(tv, 'dd')} · đang làm ${by(tv, 'dl')}</div>` : ''}
+        ${coc.length ? `<div class="split"><span class="rname">Cọc khoan nhồi</span><span class="small"><b style="color:var(--text);font-size:15.5px">${done(coc)}</b> / ${coc.length} · ${Math.round(done(coc) / coc.length * 100)}%</span></div><div class="prog mt8"><i style="width:${(done(coc) / coc.length * 100).toFixed(1)}%"></i></div><div class="small mt8">Nghiệm thu ${by(coc, 'nt')} · đã đổ ${by(coc, 'dd')} · đang làm ${by(coc, 'dl')}</div>` : ''}
+        ${tv.length ? `<div class="split mt12"><span class="rname">Tường vây</span><span class="small"><b style="color:var(--text);font-size:15.5px">${done(tv)}</b> / ${tv.length} panel · ${Math.round(done(tv) / tv.length * 100)}%</span></div><div class="prog mt8"><i style="width:${(done(tv) / tv.length * 100).toFixed(1)}%;background:var(--primary)"></i></div><div class="small mt8">Nghiệm thu ${by(tv, 'nt')} · đã đổ ${by(tv, 'dd')} · đang làm ${by(tv, 'dl')}</div>` : ''}
       </div></div>
       <div class="section"><div class="card pad"><div class="split"><span class="rname">Cấu kiện đổ xong · 7 ngày</span><span class="legend"><span><i style="background:var(--orange)"></i>Thực tế</span><span><i style="background:#C5CED9"></i>Đăng ký BT</span></span></div>
         <div class="bars">${days.map((d, i) => `<div><b>${vals[i] || ''}</b><div style="display:flex;gap:2px;align-items:flex-end;width:100%;justify-content:center;height:80px"><i style="height:${(vals[i] / mx * 80).toFixed(0)}px;width:38%"></i><i class="p" style="height:${(plan(d) / mx * 80).toFixed(0)}px;width:30%"></i></div><span>${WD[new Date(d + 'T00:00:00').getDay()]}</span></div>`).join('')}</div>
@@ -1694,8 +1722,7 @@ VIEWS.proj = {
       <div class="fsec"><div class="fsec-t">🏢 Dự án được giao<small>${(B.projects || []).length} dự án</small></div>
         ${(B.projects || []).map(p => `<div class="row tap" style="padding:12px 4px" onclick="setProj('${esc(p)}')"><div class="ico ${p === P ? 'or' : 'gy'}">🏗️</div><div class="rmain"><div class="rname">${esc(p === P ? projName() : p)}</div><div class="rsub">${p === P ? Object.values(CK).filter(c => c.loai !== 'tv').length + ' cọc · ' + Object.values(CK).filter(c => c.loai === 'tv').length + ' panel' : 'Bấm để chuyển'}</div></div>${p === P ? '<span class="badge b-or">Đang chọn</span>' : '<span class="chev">›</span>'}</div>`).join('') || '<div class="empty">Chưa được giao dự án nào — nhờ Admin giao dự án trong app Kho</div>'}</div>
       ${kvs.length ? `<div class="fsec"><div class="fsec-t">📍 Khu vực làm việc</div><div class="ynrow"><button class="yn ${!ca.kv ? 'on' : ''}" onclick="setCa({kv:''})">Tất cả</button>${kvs.map(k => `<button class="yn ${ca.kv === k ? 'on' : ''}" onclick="setCa({kv:'${esc(k)}'})">${esc(k)}</button>`).join('')}</div><div class="small mt8">Lọc danh sách "đang làm" ở Tổng quan. Mặt bằng vẫn hiện toàn bộ.</div></div>` : ''}
-      <div class="fsec"><div class="fsec-t">🕖 Ca làm việc</div><div class="ynrow"><button class="yn ${ca.auto !== false ? 'on' : ''}" onclick="setCa({auto:true})">Tự theo giờ</button><button class="yn ${ca.auto === false && !ca.dem ? 'on' : ''}" onclick="setCa({auto:false,dem:false})">☀️ Ca ngày 07–19</button><button class="yn ${ca.auto === false && ca.dem ? 'on' : ''}" onclick="setCa({auto:false,dem:true})">🌙 Ca đêm 19–07</button></div>
-        <div class="note n-info mt12">ℹ️<span>Ca đêm qua 0:00 vẫn tính về ngày bắt đầu ca trong nhật ký và báo cáo ngày.</span></div></div></div>`;
+      <div class="fsec"><div class="fsec-t">🕖 Ca làm việc</div><div class="ynrow"><button class="yn ${ca.auto !== false ? 'on' : ''}" onclick="setCa({auto:true})">Tự theo giờ</button><button class="yn ${ca.auto === false && !ca.dem ? 'on' : ''}" onclick="setCa({auto:false,dem:false})">☀️ Ca ngày 07–19</button><button class="yn ${ca.auto === false && ca.dem ? 'on' : ''}" onclick="setCa({auto:false,dem:true})">🌙 Ca đêm 19–07</button></div></div></div>`;
     return shell({ back:1, title:'Dự án · khu vực · ca', sub:'M01 · Thi công', body, act:`<button class="btn" onclick="go('home')">Vào ${esc(projName())}</button>` });
   }
 };
@@ -1751,8 +1778,7 @@ VIEWS.plan = {
     const body = `<div class="ptitle" style="padding-bottom:8px"><b>Mặt bằng</b><span>${esc(projName())}</span></div>
       <div class="chip-row"><span class="chip navy ${PV.mode === 'map' ? 'on' : ''}" onclick="PV.mode='map';render(false)">🗺️ Bản vẽ</span><span class="chip navy ${PV.mode === 'list' ? 'on' : ''}" onclick="PV.mode='list';render(false)">☰ Danh sách</span>${chips.map(x => `<span class="chip ${PV.f === x[0] ? 'on' : ''}" onclick="PV.f='${esc(x[0])}';render(false)">${esc(x[1])}</span>`).join('')}</div>
       <div class="section"><div class="cnt">${['nt', 'dd', 'dl', 'sl', 'cl', 'tt'].map(s => `<button class="${PV.st === s ? 'on' : ''}" onclick="PV.st=PV.st==='${s}'?'':'${s}';render(false)"><i style="background:${s === 'tt' ? '#E74C3C' : ST[s].c}"></i>${s === 'tt' ? 'Có tồn tại' : ST[s].t}<b>${cnt[s]}</b></button>`).join('')}</div></div>
-      ${PV.mode === 'map' ? `<div class="section"><div class="planbox" id="pbox"><svg id="psvg"></svg><div class="zbtns"><button onclick="pz(1.6)">＋</button><button onclick="pz(1/1.6)">－</button><button onclick="PV.z=1;PV.cx=null;drawPlan()" title="Toàn bộ">⌖</button></div><div class="zlab" id="zlab"></div></div>
-        <div class="small mt8">Chạm cọc / panel để xem · ＋ / － hoặc 2 ngón để phóng · kéo để di chuyển · mã hiện khi phóng ≥ 3×</div></div>
+      ${PV.mode === 'map' ? `<div class="section"><div class="planbox" id="pbox"><svg id="psvg"></svg><div class="zbtns"><button onclick="pz(1.6)">＋</button><button onclick="pz(1/1.6)">－</button><button onclick="PV.z=1;PV.cx=null;drawPlan()" title="Toàn bộ">⌖</button></div><div class="zlab" id="zlab"></div></div></div>
         <div class="section ${CK[PV.sel] ? 'pkf' : ''}" id="peek">${peekHtml()}</div>` : planList()}`;
     return shell({ body, tab:'plan' });
   },
@@ -1853,7 +1879,7 @@ function peekHtml() {
   if (!c) return `<div class="legend"><span><i style="background:#27AE60"></i>Nghiệm thu</span><span><i style="background:#0056A4"></i>Đã đổ</span><span><i style="background:#F26522"></i>Đang làm</span><span><i style="background:#F2C230"></i>Sắp làm</span><span><i style="background:#fff;box-shadow:inset 0 0 0 1.5px #9AA8BA"></i>Chưa làm</span><span><i style="background:#fff;box-shadow:inset 0 0 0 2px #E74C3C"></i>Có tồn tại</span></div>`;
   const z = dz(c);
   const k3 = c.loai === 'tv' ? [['Dài', fmtN(z.L, 2) + ' m'], ['Đáy', fmtZ(z.toe)], ['V LT', fmtN(z.vlt, 1) + ' m³']] : [['Z mũi', fmtZ(z.toe)], ['L khoan', fmtN(z.Lk, 1) + ' m'], ['V LT', fmtN(z.vlt, 2) + ' m³']];
-  return `<div class="card pad"><div class="pk-grab" onclick="peekBig()"><i></i></div><div class="split"><div><b style="font-size:18px;color:var(--navy)">${esc(c.code)}</b><div class="small">${esc(ckDesc(c))}${c.kv && c.kv !== 'TV' ? ' · ' + esc(c.kv) : ''}</div></div><span class="badge ${ST[c.st].b}">${ST[c.st].t}</span></div>
+  return `<div class="card pad"><div class="pk-grab" onclick="peekBig()"><i></i></div><div class="split"><div><b style="font-size:20px;color:var(--navy)">${esc(c.code)}</b><div class="small">${esc(ckDesc(c))}${c.kv && c.kv !== 'TV' ? ' · ' + esc(c.kv) : ''}</div></div><span class="badge ${ST[c.st].b}">${ST[c.st].t}</span></div>
     <div class="small mt8" style="color:var(--text2)">${esc(stepLabel(c))}${c.flag === 'tt' ? ' · <b class="c-rd">có NCR đang mở</b>' : ''}</div>
     <div id="pk-ht" class="mt8">${hasRecs(c.code) ? htHtml(c) : `<div class="mini3">${k3.map(x => `<div>${x[0]}<b>${x[1]}</b></div>`).join('')}</div><div class="small mt8"><span class="spin" style="display:inline-block;width:12px;height:12px;vertical-align:-2px"></span> Đang tải mặt cắt & hiện trạng…</div>`}</div>
     <div style="display:flex;gap:8px;margin-top:12px;position:sticky;bottom:0;background:#fff;padding:8px 0 2px"><button class="btn ghost sm" onclick="PV.sel='';setPeek();drawPlan()">✕ Đóng</button>${c.loai !== 'tv' && c.truc ? `<button class="btn ghost sm" onclick="go('sec',{code:'${esc(c.code)}'})">📐 Mặt cắt</button>` : ''}<button class="btn sm" onclick="go('ck',{code:'${esc(c.code)}'})">Hồ sơ ›</button></div></div>`;
@@ -1908,7 +1934,7 @@ function htHtml(c, H) {
   const E = elevSvg(c, H), D = E.D, z = D.z, m = D.m, tv = c.loai === 'tv';
   const kv = [];
   const P1 = (k, v, cl) => kv.push(`<div class="htk"><span>${k}</span><b ${cl ? `class="${cl}"` : ''}>${v}</b></div>`);
-  P1('Trạng thái', `<span class="badge ${ST[c.st].b}" style="padding:2px 7px;font-size:10.5px">${ST[c.st].t}</span>`);
+  P1('Trạng thái', `<span class="badge ${ST[c.st].b}" style="padding:2px 7px;font-size:11.5px">${ST[c.st].t}</span>`);
   if (D.dep) P1(tv ? 'Sâu cạp TT / TK' : 'Sâu khoan TT / TK', fmtN(D.dep, 2) + ' / ' + fmtN(D.kh && isFinite(num(D.kh.d.sauTK)) ? D.kh.d.sauTK : z.Lk, 2) + ' m');
   if (isFinite(D.zDay)) P1('Z đáy TT', fmtZ(D.zDay) + (isFinite(z.toe) ? ' <small class="c-mut">(' + (D.zDay - z.toe >= 0 ? '+' : '−') + fmtN(Math.abs(D.zDay - z.toe) * 100, 0) + ' cm)</small>' : ''));
   if (D.vtt) P1('Bê tông TT / LT', fmtN(D.vtt, 1) + ' / ' + fmtN(z.vlt, 2) + ' m³ <small class="' + (D.vtt / z.vlt - 1 > 0.15 ? 'c-rd' : 'c-mut') + '">(' + (D.vtt >= z.vlt ? '+' : '') + fmtN((D.vtt / z.vlt - 1) * 100, 1) + '%)</small>');
@@ -1924,7 +1950,7 @@ function htHtml(c, H) {
   if (D.kh && Array.isArray(D.kh.d.diem)) P1('Sâu 3 điểm', D.kh.d.diem.map(v => fmtN(v, 2)).join(' / ') + ' m');
   if (!kv.length || (!D.dep && !D.vtt)) P1('Hồ sơ', 'Chưa có nhật ký thi công');
   return `<div style="display:flex;gap:10px;align-items:flex-start"><div style="background:#FBFCFD;border:1px solid #E8ECF0;border-radius:10px;padding:2px">${E.svg}</div><div class="htl">${kv.join('')}</div></div>
-    <div class="legend mt8" style="font-size:10px"><span><i style="background:${D.done ? '#0056A4' : '#F26522'}"></i>Bê tông</span><span><i style="background:#EEF4FF;box-shadow:inset 0 0 0 1px #5A6A7A"></i>Hố đã khoan</span><span>┆ thiết kế</span>${m.kp ? '<span><i style="background:#1A2332;border-radius:1px"></i>Kingpost</span>' : ''}${tv ? '<span><i style="background:#0B2545;border-radius:1px"></i>Gioăng</span>' : ''}</div>`;
+    <div class="legend mt8" style="font-size:11px"><span><i style="background:${D.done ? '#0056A4' : '#F26522'}"></i>Bê tông</span><span><i style="background:#EEF4FF;box-shadow:inset 0 0 0 1px #5A6A7A"></i>Hố đã khoan</span><span>┆ thiết kế</span>${m.kp ? '<span><i style="background:#1A2332;border-radius:1px"></i>Kingpost</span>' : ''}${tv ? '<span><i style="background:#0B2545;border-radius:1px"></i>Gioăng</span>' : ''}</div>`;
 }
 function planList() {
   const q = PV.q.toUpperCase();
@@ -1991,7 +2017,7 @@ VIEWS.sec = {
       <div class="card" style="padding:10px"><div style="background:#FBFCFD;border-radius:12px;border:1px solid #E8ECF0;overflow:hidden"><svg viewBox="0 0 ${W} ${H}" width="100%">${s}</svg></div>
         <div class="legend mt8"><span><i style="background:#27AE60"></i>Nghiệm thu</span><span><i style="background:#0056A4"></i>Đã đổ</span><span><i style="background:#F26522"></i>Đang đổ</span><span><i style="background:#F2C230"></i>Đang khoan</span><span><i style="background:#fff;box-shadow:inset 0 0 0 1.5px #9AA8BA"></i>Chưa làm</span><span>┆ khoan rỗng</span></div>
         <div class="small mt8">${piles.length} cọc trục ${esc(axis)}${wl || wr ? ' · hai đầu: tường vây ' + [wl, wr].filter(Boolean).map(w => w.code).join(' · ') + ' (vạch đậm = gioăng)' : ''} · phần trên phóng to để thấy tầng hầm</div></div>
-      <div class="card pad"><div class="split"><div><b style="font-size:18px;color:var(--navy)">${esc(sel.code)}</b><div class="small">${esc(ckDesc(sel))} · <span class="badge ${ST[sel.st].b}" style="padding:2px 7px;font-size:10.5px">${ST[sel.st].t}</span></div></div><button class="btn sm auto" onclick="go('ck',{code:'${esc(sel.code)}'})">Hồ sơ ›</button></div>
+      <div class="card pad"><div class="split"><div><b style="font-size:20px;color:var(--navy)">${esc(sel.code)}</b><div class="small">${esc(ckDesc(sel))} · <span class="badge ${ST[sel.st].b}" style="padding:2px 7px;font-size:11.5px">${ST[sel.st].t}</span></div></div><button class="btn sm auto" onclick="go('ck',{code:'${esc(sel.code)}'})">Hồ sơ ›</button></div>
         <div class="mini3"><div>GL → COL<b>${fmtZ(zS.gl)} → ${fmtZ(zS.col)}</b></div><div>Mũi cọc<b>${fmtZ(zS.toe)} · L ${fmtN(zS.Lk, 1)} m</b></div><div>${bS && !bS.d.ketThuc ? 'Mặt BT hiện tại' : 'V lý thuyết'}<b>${bS && !bS.d.ketThuc ? fmtZ(((bS.d.rows || []).slice(-1)[0] || {}).zMat) : fmtN(zS.vlt, 2) + ' m³'}</b></div></div></div>
       <div class="lvgrid">${lv.map(l => `<div>${esc(l[0])}<b>${fmtZ(l[1])}</b></div>`).join('')}</div></div>`;
     return shell({ back:1, title:'Mặt cắt · trục ' + esc(axis), sub:'Cao độ · kết cấu · trạng thái', body });
@@ -2028,7 +2054,7 @@ VIEWS.ck = {
         const s = itpState(c, p[0]); const r = s.r;
         const cls = s.s === 'done' ? 'done' : s.s === 'wait' && (p[0] === 'truoc' || p[0] === 'lt') ? 'hold' : s.s === 'now' || s.s === 'wait' || s.s === 'draft' || s.s === 'bad' ? 'now' : '';
         const sub = r && MODSUM[p[0]] ? MODSUM[p[0]](r, c) + ' · ' + dmy(r.ngay) : p[0] === 'xe' ? '' : 'Chưa có';
-        return `<div class="st tap ${cls}" onclick="openForm('${p[0]}','${esc(c.code)}')"><div class="st-n">${s.s === 'done' ? '✓' : i + 1}</div><div class="rmain"><div class="st-t">${esc(p[2])} <span class="tag ${p[1] === 'H' ? 'b-rd' : p[1] === 'W' ? 'b-am' : 'b-bl'}" style="font-size:9.5px;padding:1px 5px">${p[1]}</div><div class="st-s">${sub}${p[3] ? '<br><span style="font-size:10.5px">ITP: ' + esc(p[3]) + '</span>' : ''}</div></div>${s.s !== 'none' && s.s !== 'done' ? `<span class="badge ${{ wait:'b-am', bad:'b-rd', now:'b-or', draft:'b-gy' }[s.s]}">${s.t}</span>` : ''}<span class="chev">›</span></div>`;
+        return `<div class="st tap ${cls}" onclick="openForm('${p[0]}','${esc(c.code)}')"><div class="st-n">${s.s === 'done' ? '✓' : i + 1}</div><div class="rmain"><div class="st-t">${esc(p[2])} <span class="tag ${p[1] === 'H' ? 'b-rd' : p[1] === 'W' ? 'b-am' : 'b-bl'}" style="font-size:10.5px;padding:1px 5px">${p[1]}</div><div class="st-s">${sub}${p[3] ? '<br><span style="font-size:11.5px">ITP: ' + esc(p[3]) + '</span>' : ''}</div></div>${s.s !== 'none' && s.s !== 'done' ? `<span class="badge ${{ wait:'b-am', bad:'b-rd', now:'b-or', draft:'b-gy' }[s.s]}">${s.t}</span>` : ''}<span class="chev">›</span></div>`;
       }).join('')}</div>
       <div class="card"><div class="row tap" onclick="go('mlist',{mod:'xe',code:'${esc(c.code)}'})"><div class="ico">🚚</div><div class="rmain"><div class="rname">Xe bê tông</div><div class="rsub">${xe.n} xe · ${fmtN(xe.v, 1)} m³ nhận</div></div><span class="chev">›</span></div>
         <div class="row tap" onclick="go('mlist',{mod:'dd',code:'${esc(c.code)}'})"><div class="ico">💧</div><div class="rmain"><div class="rname">Mẫu dung dịch</div><div class="rsub">${dd.length} mẫu</div></div><span class="chev">›</span></div>
@@ -2053,7 +2079,7 @@ VIEWS.ck = {
     }
     const next = itp.find(p => p[0] !== 'tn' && itpState(c, p[0]).s !== 'done');
     const body = `<div class="dbody">
-      <div class="card pad"><div class="split"><div><b style="font-size:20px;color:var(--navy)">${esc(c.code)}</b><div class="small">${esc(ckDesc(c))}${c.kv && c.kv !== 'TV' ? ' · ' + esc(c.kv) : ''}</div></div><span class="badge ${ST[c.st].b}">${ST[c.st].t}</span></div>
+      <div class="card pad"><div class="split"><div><b style="font-size:22px;color:var(--navy)">${esc(c.code)}</b><div class="small">${esc(ckDesc(c))}${c.kv && c.kv !== 'TV' ? ' · ' + esc(c.kv) : ''}</div></div><span class="badge ${ST[c.st].b}">${ST[c.st].t}</span></div>
         <div class="small mt8" style="color:var(--text2)">${esc(stepLabel(c))}${c.flag === 'tt' ? ' · <b class="c-rd">có NCR đang mở</b>' : ''}${!CKREC[c.code] ? ' · <span class="c-mut">đang tải hồ sơ…</span>' : ''}</div></div>
       <div class="tabs">${[['ht', 'Hiện trạng'], ['tc', 'Thi công'], ['tk', 'Thiết kế'], ['cl', 'Chất lượng'], ['ls', 'Lịch sử']].map(t => `<button class="${tab === t[0] ? 'on' : ''}" onclick="cur.a.tab='${t[0]}';render(false)">${t[1]}</button>`).join('')}</div>
       ${inner}</div>`;
@@ -2080,7 +2106,7 @@ VIEWS.viec = {
     let body;
     if (tab === 'tim') {
       body = `<div class="section"><input class="search" id="vq" placeholder="Mã cấu kiện, số NCR, nội dung…" value="${esc(a.q || '')}" onkeydown="if(event.key==='Enter')findRec(this.value)"><button class="btn sm mt8" onclick="findRec($('#vq').value)">🔍 Tìm</button></div><div class="section" id="vres">${a.res || ''}</div>`;
-    } else body = `<div class="section"><div class="card">${l.length ? l.map(taskRow).join('') : '<div class="empty">🎉 Không có việc tồn</div>'}</div><div class="note n-gy mt12">🔔<span>Nhắc việc chỉ để nhớ — không thay cho xác nhận của người có thẩm quyền. Bật Telegram ở Menu để nhận nhắc trên điện thoại.</span></div></div>`;
+    } else body = `<div class="section"><div class="card">${l.length ? l.map(taskRow).join('') : '<div class="empty">🎉 Không có việc tồn</div>'}</div></div>`;
     return shell({ body:`<div class="ptitle"><b>${all.filter(t => t.mine).length} việc của bạn</b><span>${lastSync ? 'Cập nhật ' + new Date(lastSync).toTimeString().slice(0, 5) : ''}</span></div>
       <div class="chip-row">${[['toi', 'Việc của tôi'], ['tat', 'Tất cả'], ['tim', 'Tìm hồ sơ']].map(t => `<span class="chip ${tab === t[0] ? 'on' : ''}" onclick="cur.a.tab='${t[0]}';render(false)">${t[1]}</span>`).join('')}</div>${body}`, tab:'viec' });
   }
@@ -2113,7 +2139,7 @@ VIEWS.vt = {
     const q = (a.q || '').toUpperCase();
     const l = ((KHO && KHO.reqs) || []).filter(r => !q || String(r.ck || '').toUpperCase().indexOf(q) >= 0 || String(r.title || '').toUpperCase().indexOf(q) >= 0).sort((x, y) => String(y.id).localeCompare(String(x.id), 'vi', { numeric:true }));
     const body = `<div class="ptitle"><b>Vật tư được cấp</b><span>${KHO ? 'Dữ liệu Kho · ' + new Date(KHO.at).toTimeString().slice(0, 5) : 'Đang tải…'}</span></div>
-      <div class="section"><div class="note n-gy">🔗<span>Chứng từ do app Kho quản lý — ở đây chỉ xem. Lập phiếu yêu cầu ở app Kho (giữ nguyên đăng nhập).</span></div></div>
+      
       <div class="section"><input class="search" placeholder="Lọc theo cấu kiện: P3.143…" value="${esc(a.q || '')}" onchange="cur.a.q=this.value;render(false)"></div>
       <div class="section"><div class="card">${l.slice(0, 120).map(pycRow).join('') || `<div class="empty">${KHO ? 'Chưa có phiếu YC' + (q ? ' cho ' + esc(a.q) : '') : 'Đang tải dữ liệu Kho…'}</div>`}</div></div>`;
     return shell({ body, tab:'vt', act:`<button class="btn ghost" onclick="KHO=null;render(false)">↻ Tải lại</button><button class="btn" onclick="toKho()">📦 Mở Kho · lập phiếu YC</button>` });
@@ -2162,13 +2188,14 @@ VIEWS.bc = {
       const ok = needList('day|' + d, { from:d, to:d, limit:3000 }, 30000);
       const R = Object.values(REC).filter(r => r.ngay === d && r.st !== 'huy');
       const rep = dayReport(d, R);
-      inner = `<div class="section">${dateChips(d, 'setDay')}${!ok && navigator.onLine !== false ? '<div class="small">Đang tải số liệu ngày…</div>' : ''}</div><div class="section" id="rep">${rep.html}</div>`;
+      inner = `<div class="section">${dateChips(d, 'setDay')}${!ok && navigator.onLine !== false ? '<div class="small">Đang tải số liệu ngày…</div>' : ''}</div><div class="section" id="rep">${rep.html}</div>
+        <div class="section"><div class="card pad"><div class="sec-title">📑 Bộ biên bản theo ITP · cấu kiện đổ trong ngày</div><div style="display:flex;gap:8px;margin-top:10px"><button class="btn ghost sm" onclick="bbBatch('in','${d}')">🖨 In / PDF</button><button class="btn ghost sm" onclick="bbBatch('xl','${d}')">⬇ Excel</button></div></div></div>`;
     } else {
       needList('bgall', { mod:'bg,bc', limit:200 }, 120000);
       const l = Object.values(REC).filter(r => (r.mod === 'bg' || r.mod === 'bc') && r.st !== 'huy').sort((x, y) => (y.ngay + y.at).localeCompare(x.ngay + x.at));
       inner = `<div class="section"><div class="card">${l.map(r => recRow(r, (r.mod === 'bc' ? '📊 Báo cáo ngày ' : '🤝 Bàn giao ') + dmy(r.ngay), esc(r.byName || ''), null)).join('') || '<div class="empty">Chưa có</div>'}</div></div>`;
     }
-    const act = tab === 'bg' ? (hp('t_ghi') ? `<button class="btn" onclick="openForm('bg',null,null,{newRec:1})">🤝 Lập bàn giao ca</button>` : '') : tab === 'ngay' ? `<button class="btn ghost" onclick="window.print()">🖨 In / PDF</button><button class="btn" onclick="dayExcel('${d}')">⬇ Excel</button><button class="btn ghost" onclick="bbBatch('in','${d}')">📑 In biên bản cấu kiện đổ trong ngày</button><button class="btn ghost" onclick="bbBatch('xl','${d}')">📑 Excel biên bản trong ngày</button>` : '';
+    const act = tab === 'bg' ? (hp('t_ghi') ? `<button class="btn" onclick="openForm('bg',null,null,{newRec:1})">🤝 Lập bàn giao ca</button>` : '') : tab === 'ngay' ? `<button class="btn ghost" onclick="window.print()">🖨 In / PDF</button><button class="btn" onclick="dayExcel('${d}')">⬇ Excel</button>` : '';
     return shell({ body:`<div class="ptitle"><b>Báo cáo</b><span>${esc(projName())}</span></div><div class="chip-row">${[['bg', 'Bàn giao ca'], ['ngay', 'Báo cáo ngày'], ['ls', 'Lịch sử']].map(t => `<span class="chip ${tab === t[0] ? 'on' : ''}" onclick="cur.a.tab='${t[0]}';render(false)">${t[1]}</span>`).join('')}</div>${inner}`, tab:'bc', act });
   }
 };
@@ -2241,11 +2268,11 @@ VIEWS.kh = {
     const nOf = dd => Object.values(REC).filter(r => (r.mod === 'kh' || r.mod === 'khbt') && r.ngay === dd && r.st !== 'huy').length;
     const res = RES();
     const body = `<div class="dbody">
-      <div class="wk">${days.map(x => `<button class="${x === d ? 'on' : ''} ${x === today() ? 'td' : ''}" onclick="setDay('${x}')">${WD[new Date(x + 'T00:00:00').getDay()]}<b>${+x.slice(8)}</b>${nOf(x) ? `<span style="font-size:9px">${nOf(x)} việc</span>` : ''}</button>`).join('')}</div>
+      <div class="wk">${days.map(x => `<button class="${x === d ? 'on' : ''} ${x === today() ? 'td' : ''}" onclick="setDay('${x}')">${WD[new Date(x + 'T00:00:00').getDay()]}<b>${+x.slice(8)}</b>${nOf(x) ? `<span style="font-size:10px">${nOf(x)} việc</span>` : ''}</button>`).join('')}</div>
       <div class="split"><button class="btn ghost sm auto" onclick="setDay('${dayAdd(mon, -7)}')">‹ Tuần trước</button><span class="small">${dmy(mon)} – ${dmy(days[6])}</span><button class="btn ghost sm auto" onclick="setDay('${dayAdd(mon, 7)}')">Tuần sau ›</button></div>
       ${conf.map(t => `<div class="note n-warn">⚠️<span>Trùng lịch: ${esc(t)}</span></div>`).join('')}
       <div class="card">${l.map(r => { const c = CK[r.ck]; const act = c ? (r.mod === 'khbt' ? `${ST[c.st].t} · ${fmtN(vXe(c.code).v, 1)} / ${fmtN(r.d.m3)} m³` : stepLabel(c) + (c.step === 'khoan' ? ' · ' + fmtN(depthNow(c.code), 1) + ' / ' + fmtN(dz(c).Lk, 1) + ' m' : '')) : '';
-        return `<div class="row tap" onclick="openForm('${r.mod}','${esc(r.ck)}','${r.id}')"><div style="width:44px;font-weight:900;font-size:13px">${esc(r.d.gio || '')}</div><div class="rmain"><div class="rname">${esc(r.ck || '')} · ${esc(r.mod === 'khbt' ? 'Đổ bê tông ' + (r.d.capPhoi || '') : r.d.viec || '')}</div><div class="rsub">${[r.d.may, r.d.to, r.mod === 'khbt' ? fmtN(r.d.m3) + ' m³ / ' + fmtN(r.d.nXe) + ' xe' : ''].filter(Boolean).map(esc).join(' · ')}</div>${act ? `<div class="rsub" style="color:var(--primary)">Thực tế: ${esc(act)}</div>` : ''}</div>${c ? `<span class="badge ${ST[c.st].b}">${ST[c.st].t}</span>` : ''}</div>`; }).join('') || '<div class="empty">Chưa có việc trong ngày</div>'}</div>
+        return `<div class="row tap" onclick="openForm('${r.mod}','${esc(r.ck)}','${r.id}')"><div style="width:44px;font-weight:900;font-size:14.5px">${esc(r.d.gio || '')}</div><div class="rmain"><div class="rname">${esc(r.ck || '')} · ${esc(r.mod === 'khbt' ? 'Đổ bê tông ' + (r.d.capPhoi || '') : r.d.viec || '')}</div><div class="rsub">${[r.d.may, r.d.to, r.mod === 'khbt' ? fmtN(r.d.m3) + ' m³ / ' + fmtN(r.d.nXe) + ' xe' : ''].filter(Boolean).map(esc).join(' · ')}</div>${act ? `<div class="rsub" style="color:var(--primary)">Thực tế: ${esc(act)}</div>` : ''}</div>${c ? `<span class="badge ${ST[c.st].b}">${ST[c.st].t}</span>` : ''}</div>`; }).join('') || '<div class="empty">Chưa có việc trong ngày</div>'}</div>
       ${res.may.length ? `<div class="fsec"><div class="fsec-t">🏗️ Nguồn lực</div><div class="kv-box">${res.may.map(m => `<div class="kv"><span>${esc(m[0])}</span><b>${esc(m[1])}</b></div>`).join('')}</div></div>` : ''}
       ${B.cfg.info && B.cfg.info.tienDo ? `<div class="note n-gy">📅<span>Tiến độ hợp đồng: <b>${esc(B.cfg.info.tienDo)}</b>. Tiến độ thực lấy từ nhật ký, không nhập lại ở đây.</span></div>` : ''}</div>`;
     return shell({ back:1, title:'Kế hoạch & phân công', sub:'M22 · ' + esc(projName()), body, act:hp('t_kh') || hp('t_ghi') ? `<button class="btn ghost" onclick="openForm('khbt',null,null,{ngay:'${d}',d0:{_ngay:'${d}'}})">🚚 Đăng ký BT</button><button class="btn" onclick="openForm('kh','',null,{ngay:'${d}',d0:{_ngay:'${d}'}})">＋ Thêm việc</button>` : '' });
@@ -2262,10 +2289,10 @@ VIEWS.khbt = {
     const xe = Object.values(REC).filter(r => r.mod === 'xe' && r.ngay === d && r.st !== 'huy');
     const dk = l.reduce((s, r) => s + (+r.d.m3 || 0), 0), nx = l.reduce((s, r) => s + (+r.d.nXe || 0), 0), got = xe.reduce((s, r) => s + (+r.d.luong || 0) - (+r.d.traLai || 0), 0);
     const body = `<div class="dbody">${dateChips(d, 'setDay')}
-      <div class="stat-grid" style="padding:0;grid-template-columns:repeat(3,minmax(0,1fr))"><div class="stat"><div class="stat-l">Đăng ký</div><div class="stat-v" style="font-size:22px">${fmtN(dk, 0)}</div><div class="stat-s">m³ · ${nx} xe</div></div><div class="stat"><div class="stat-l c-gr">Đã nhận</div><div class="stat-v" style="font-size:22px">${fmtN(got, 0)}</div><div class="stat-s">m³ · ${xe.length} xe</div></div><div class="stat"><div class="stat-l c-or">Còn cần</div><div class="stat-v" style="font-size:22px">${fmtN(Math.max(0, dk - got), 0)}</div><div class="stat-s">m³</div></div></div>
+      <div class="stat-grid" style="padding:0;grid-template-columns:repeat(3,minmax(0,1fr))"><div class="stat"><div class="stat-l">Đăng ký</div><div class="stat-v" style="font-size:24px">${fmtN(dk, 0)}</div><div class="stat-s">m³ · ${nx} xe</div></div><div class="stat"><div class="stat-l c-gr">Đã nhận</div><div class="stat-v" style="font-size:24px">${fmtN(got, 0)}</div><div class="stat-s">m³ · ${xe.length} xe</div></div><div class="stat"><div class="stat-l c-or">Còn cần</div><div class="stat-v" style="font-size:24px">${fmtN(Math.max(0, dk - got), 0)}</div><div class="stat-s">m³</div></div></div>
       <div class="card">${l.map(r => { const c = CK[r.ck]; if (!c) return ''; const xv = xe.filter(x => (x.d.pb || []).some(p => p.ck === c.code) || x.ck === c.code); const v = xv.reduce((s, x) => s + ((x.d.pb || []).filter(p => p.ck === c.code).reduce((q, p) => q + (+p.m3 || 0), 0) || (+x.d.luong || 0)), 0); const hold = !holdOk(c) && c.st !== 'dd' && c.st !== 'nt';
         return `<div class="row tap" onclick="go('ck',{code:'${esc(c.code)}'})"><div class="ico ${hold ? 'rd' : 'or'}">${hold ? '✋' : '🚚'}</div><div class="rmain"><div class="rname">${esc(c.code)} · ${esc(ckDesc(c))}</div><div class="rsub">${esc(r.d.gio || '')} · ${esc(r.d.capPhoi || '')} · ${fmtN(r.d.m3)} m³ / ${fmtN(r.d.nXe)} xe · V LT ${fmtN(dz(c).vlt, 2)}</div><div class="rsub" style="color:${hold ? '#B42318' : 'var(--primary)'}">${hold ? '⚠️ Chưa giải phóng Hold' : xv.length + ' xe đã nhận · ' + fmtN(v, 1) + ' m³'}</div></div><button class="btn ghost sm auto" onclick="event.stopPropagation();openForm('khbt','${esc(c.code)}','${r.id}')">✏️</button></div>`; }).join('') || '<div class="empty">Chưa có đăng ký bê tông ngày này</div>'}</div>
-      <div class="note n-gy">🏭<span>Trạm và cấp phối chọn từ danh mục được giao. Mua bê tông và nhà cung cấp không quản lý ở đây.</span></div></div>`;
+      </div>`;
     return shell({ back:1, title:'Kế hoạch bê tông', sub:'M12 · điều phối tại công trường', body, act:hp('t_kh') || hp('t_ghi') ? `<button class="btn ghost" onclick="openForm('xe')">🚚 Nhận xe</button><button class="btn" onclick="openForm('khbt',null,null,{ngay:'${d}',d0:{_ngay:'${d}'}})">＋ Đăng ký đổ</button>` : '' });
   }
 };
@@ -2280,7 +2307,7 @@ VIEWS.tn = {
     const types = {}; l.forEach(r => { const k = r.d.loai || 'Khác'; types[k] = types[k] || { n:0, ok:0, cho:0 }; types[k].n++; if (r.d.kl === 'Đạt' || r.d.kl === 'Theo báo cáo') types[k].ok++; if (!r.d.kl) types[k].cho++; });
     const body = `<div class="dbody"><div class="card">${Object.keys(types).map(k => `<div class="row tap" onclick="cur.a.f=cur.a.f==='${esc(k)}'?'':'${esc(k)}';render(false)"><div class="rmain"><div class="rname">${esc(k)}</div><div class="rsub">${types[k].n} bản ghi · ${types[k].ok} có kết luận · ${types[k].cho} chờ kết quả</div></div>${f === k ? '<span class="badge b-nv">Đang lọc</span>' : ''}</div>`).join('') || '<div class="empty">Chưa có thí nghiệm</div>'}</div>
       <div class="card">${l.filter(r => !f || r.d.loai === f).slice(0, 150).map(r => recRow(r, `${esc(r.d.ma || r.d.loai || '')}${r.ck ? ' · ' + esc(r.ck) : ''}`, `${esc(r.d.loai || '')} · lấy ${dmy(r.d.ngayLay || r.ngay)}${r.d.ngay28 && !r.d.kl ? ' · nén 28 ngày ' + dmy(r.d.ngay28) : ''}`, r.d.kl ? [r.d.kl, r.d.kl === 'Không đạt' ? 'b-rd' : 'b-gr'] : ['Chờ kết quả', 'b-am'])).join('')}</div>
-      <div class="note n-gy">📑<span>Kết luận lấy từ báo cáo thí nghiệm và xác nhận, app không tự kết luận đạt / không đạt.</span></div></div>`;
+      </div>`;
     return shell({ back:1, title:'Thí nghiệm', sub:'M16 · ' + esc(projName()), body, act:hp('t_ghi') ? `<button class="btn" onclick="openForm('tn','',null,{newRec:1})">＋ Thêm thí nghiệm</button>` : '' });
   }
 };
@@ -2299,7 +2326,7 @@ VIEWS.qt = {
     if (a.p && g[a.p]) {
       const x = g[a.p], vals = x.map(r => +r.d.gt), W = 300, H = 160, mx = Math.max(...vals.map(Math.abs), tab === 'nghieng' ? L.qtDung : 1) * 1.1, mn = Math.min(0, ...vals);
       const X = i => 28 + i / Math.max(1, x.length - 1) * (W - 36), Y = v => 10 + (mx - v) / (mx - mn || 1) * (H - 28);
-      const body = `<div class="dbody"><div class="card pad"><div class="split"><b style="font-size:18px">${esc(a.p)}</b><span class="badge ${stOf(x)[1]}">${stOf(x)[0]}</span></div>
+      const body = `<div class="dbody"><div class="card pad"><div class="split"><b style="font-size:20px">${esc(a.p)}</b><span class="badge ${stOf(x)[1]}">${stOf(x)[0]}</span></div>
         <svg viewBox="0 0 ${W} ${H}" width="100%" class="mt8">${tab === 'nghieng' ? `<line x1="28" x2="${W}" y1="${Y(L.qtCanh)}" y2="${Y(L.qtCanh)}" stroke="#E9A10C" stroke-dasharray="4 3"/><line x1="28" x2="${W}" y1="${Y(L.qtDung)}" y2="${Y(L.qtDung)}" stroke="#E74C3C" stroke-dasharray="4 3"/>` : ''}<line x1="28" x2="${W}" y1="${Y(0)}" y2="${Y(0)}" stroke="#C5CED9"/><polyline points="${vals.map((v, i) => X(i) + ',' + Y(v)).join(' ')}" fill="none" stroke="#0056A4" stroke-width="2"/>${vals.map((v, i) => `<circle cx="${X(i)}" cy="${Y(v)}" r="3" fill="#0056A4"/>`).join('')}<text x="2" y="${Y(mx / 1.1) + 3}" font-size="9" fill="#7B8BA1">${fmtN(mx / 1.1, 0)}</text></svg>
         ${tab === 'nghieng' ? `<div class="small">Ngưỡng cảnh báo ${fmtN(L.qtCanh)} mm · ngưỡng dừng ${fmtN(L.qtDung)} mm · theo phương án quan trắc</div>` : ''}</div>
         <div class="card">${x.slice().reverse().map(r => recRow(r, `${fmtN(r.d.gt, 2)} ${tab === 'nuoc' ? 'm' : 'mm'}${r.d.sau !== undefined && r.d.sau !== '' ? ' @ ' + fmtN(r.d.sau, 1) + ' m' : ''}`, dmy(r.ngay) + ' ' + esc(r.d.gio || '') + ' · ' + esc(r.byName || ''), null)).join('')}</div></div>`;
@@ -2308,7 +2335,7 @@ VIEWS.qt = {
     const body = `<div class="dbody"><div class="tabs">${[['nghieng', 'Nghiêng'], ['lun', 'Lún'], ['nuoc', 'Nước ngầm']].map(t => `<button class="${tab === t[0] ? 'on' : ''}" onclick="cur.a.tab='${t[0]}';render(false)">${t[1]} · ${Object.keys(g).filter(k => (g[k][0].d.loai || 'nghieng') === t[0]).length}</button>`).join('')}</div>
       <div class="card">${pts.map(k => { const x = g[k], l2 = x[x.length - 1], p2 = x[x.length - 2]; const days = p2 ? Math.max(1, (new Date(l2.ngay) - new Date(p2.ngay)) / 864e5) : 0; const rate = p2 ? ((+l2.d.gt) - (+p2.d.gt)) / days : NaN; const s = stOf(x);
         return `<div class="row tap" onclick="cur.a.p='${esc(k)}';go('qt',{p:'${esc(k)}',tab:'${tab}'})"><div class="ico ${s[1] === 'b-rd' ? 'rd' : s[1] === 'b-am' ? 'am' : 'gy'}">📈</div><div class="rmain"><div class="rname">${esc(k)} · ${fmtN(l2.d.gt, 1)} ${tab === 'nuoc' ? 'm' : 'mm'}${l2.d.sau !== undefined && l2.d.sau !== '' ? ' @ ' + fmtN(l2.d.sau, 1) + ' m' : ''}</div><div class="rsub">${isFinite(rate) ? (rate >= 0 ? '+' : '') + fmtN(rate, 2) + ' ' + (tab === 'nuoc' ? 'm' : 'mm') + '/ngày · ' : ''}đo ${dmy(l2.ngay)} ${esc(l2.d.gio || '')}</div></div><span class="badge ${s[1]}">${s[0]}</span></div>`; }).join('') || '<div class="empty">Chưa có điểm đo</div>'}</div>
-      <div class="note n-gy">📘<span>Điểm chưa có kỳ gốc hoặc chưa cấu hình ngưỡng thì không đánh giá.</span></div></div>`;
+      </div>`;
     return shell({ back:1, title:'Quan trắc', sub:'M17 · ' + esc(projName()), body, act:hp('t_ghi') ? `<button class="btn" onclick="openForm('qt','',null,{newRec:1,d0:{loai:'${tab}'}})">＋ Nhập số đo</button>` : '' });
   }
 };
@@ -2323,7 +2350,7 @@ VIEWS.sk = {
     const types = ['Sự kiện', 'NCR', 'RFI', 'PMI', 'Địa chất khác dự kiến'];
     const body = `<div class="section"><div class="chip-row" style="padding:0 0 10px">${[['', 'Tất cả · ' + l.length]].concat(types.map(t => [t, t + ' · ' + l.filter(r => r.d.loai === t).length])).concat([['mo', 'Đang mở']]).map(t => `<span class="chip ${f === t[0] ? 'on' : ''}" onclick="cur.a.f='${t[0]}';render(false)">${esc(t[1])}</span>`).join('')}</div>
       <div class="card">${l.filter(r => !f || (f === 'mo' ? r.st !== 'dong' : r.d.loai === f)).slice(0, 200).map(r => { const late = r.st !== 'dong' && r.d.han && r.d.han < td; return recRow(r, `${esc(r.d.so || '')} · ${esc(r.d.tieuDe || '')}`, `${esc(r.d.loai || '')}${r.ck ? ' · ' + esc(r.ck) : ''} · ${dmy(r.ngay)}${r.d.han ? ' · hạn ' + dmy(r.d.han) : ''}${r.d.phuTrach ? ' · ' + esc(r.d.phuTrach) : ''}`, r.st === 'dong' ? ['Đã đóng', 'b-gy'] : late ? ['Quá hạn', 'b-rd'] : ['Đang mở', 'b-or']); }).join('') || '<div class="empty">Chưa có</div>'}</div>
-      <div class="note n-gy mt12">📘<span>Địa chất khác dự kiến dùng mẫu sự kiện riêng. NCR / RFI đóng theo đúng quy trình của từng loại — ghi căn cứ khi đóng.</span></div></div>`;
+      </div>`;
     return shell({ back:1, title:'Sự kiện · NCR · RFI', sub:'M20 · ' + esc(projName()), body, act:hp('t_ghi') ? `<button class="btn" onclick="openForm('sk','',null,{newRec:1,d0:{loai:'${['NCR', 'RFI', 'PMI'].includes(f) ? f : 'Sự kiện'}'}})">＋ Ghi mới</button>` : '' });
   }
 };
@@ -2335,7 +2362,7 @@ VIEWS.ht = {
     needList('ht', { mod:'ht', limit:2000 }, 90000);
     const l = Object.values(REC).filter(r => r.mod === 'ht' && r.st !== 'huy').sort((x, y) => (y.ngay + y.at).localeCompare(x.ngay + x.at));
     const body = `<div class="dbody"><div class="card">${l.map(r => recRow(r, `${esc(r.ck || '')} · ${esc(r.d.loai || '')}`, `${esc(r.d.viTri || '')} ${esc(r.d.z || '')} · ${esc(r.d.kt || '')} · ${dmy(r.ngay)}`, r.d.muc === 'Cần xử lý' ? ['Cần xử lý', 'b-rd'] : r.d.muc === 'Đã xử lý' ? ['Đã xử lý', 'b-gr'] : ['Theo dõi', 'b-am'])).join('') || '<div class="empty">Chưa ghi hiện trạng</div>'}</div>
-      <div class="note n-gy">📘<span>Ghi hiện trạng khi đào lộ tường vây / đầu cọc và liên kết NCR — không thay biện pháp kỹ thuật đã được phê duyệt.</span></div></div>`;
+      </div>`;
     return shell({ back:1, title:'Hiện trạng & xử lý', sub:'M18 · ' + esc(projName()), body, act:hp('t_ghi') ? `<button class="btn" onclick="openForm('ht','',null,{newRec:1})">＋ Ghi hiện trạng</button>` : '' });
   }
 };
@@ -2350,7 +2377,7 @@ VIEWS.hse = {
     const body = `<div class="dbody">${dateChips(d, 'setDay')}
       <div class="qgrid">${[['Toolbox', '🗣️'], ['Kiểm tra thiết bị', '✅'], ['Giấy phép (PTW)', '📄'], ['Sự cố / suýt sự cố', '🚑']].map(x => `<button class="q" onclick="openForm('hse','',null,{newRec:1,ngay:'${d}',d0:{loai:'${x[0]}'}})"><span>${x[1]}</span>${x[0].split(' (')[0]}</button>`).join('')}</div>
       <div class="card">${l.map(r => { const n = (r.d.ck || []).length, bad = (r.d.ck || []).filter(x => x.kq === 'loi').length; return recRow(r, `${esc(r.d.loai || '')} · ${esc(r.d.chuDe || '')}`, `${r.d.loai === 'Toolbox' ? fmtN(r.d.soKy) + ' / ' + fmtN(r.d.soNguoi) + ' người ký' : n ? (n - bad) + ' / ' + n + ' đạt' : ''}${r.d.hieuLuc ? ' · ' + esc(r.d.hieuLuc) : ''} · ${esc(r.byName || '')}`, bad ? ['Có lỗi', 'b-rd'] : (RST[r.st] ? [RST[r.st][0], RST[r.st][1]] : null)); }).join('') || '<div class="empty">Chưa có ghi nhận an toàn ngày này</div>'}</div>
-      <div class="note n-gy">📘<span>Checklist và giấy phép theo dự án. App ghi lại, không tự chứng nhận đủ điều kiện làm việc.</span></div></div>`;
+      </div>`;
     return shell({ back:1, title:'An toàn HSE', sub:'M21 · ' + dmy(d), body });
   }
 };
@@ -2364,8 +2391,7 @@ VIEWS.dt = {
     const l = Object.values(REC).filter(r => r.mod === 'dt' && r.ngay === d && r.st !== 'huy').sort((x, y) => String(y.d.gio).localeCompare(String(x.d.gio)));
     const m3 = l.filter(r => r.d.cach !== 'can'), t = l.filter(r => r.d.cach === 'can');
     const body = `<div class="dbody">${dateChips(d, 'setDay')}
-      <div class="stat-grid" style="padding:0;grid-template-columns:repeat(3,minmax(0,1fr))"><div class="stat"><div class="stat-l">Chuyến</div><div class="stat-v" style="font-size:24px">${l.length}</div></div><div class="stat"><div class="stat-l">Theo thùng</div><div class="stat-v" style="font-size:22px">${fmtN(m3.reduce((s, r) => s + (+r.d.luong || 0), 0), 1)}</div><div class="stat-s">m³ · ${m3.length} chuyến</div></div><div class="stat"><div class="stat-l">Theo cân</div><div class="stat-v" style="font-size:22px">${fmtN(t.reduce((s, r) => s + (+r.d.luong || 0), 0), 1)}</div><div class="stat-s">tấn · ${t.length} chuyến</div></div></div>
-      <div class="small">Tấn và m³ cộng riêng, không quy đổi.</div>
+      <div class="stat-grid" style="padding:0;grid-template-columns:repeat(3,minmax(0,1fr))"><div class="stat"><div class="stat-l">Chuyến</div><div class="stat-v" style="font-size:26.5px">${l.length}</div></div><div class="stat"><div class="stat-l">Theo thùng</div><div class="stat-v" style="font-size:24px">${fmtN(m3.reduce((s, r) => s + (+r.d.luong || 0), 0), 1)}</div><div class="stat-s">m³ · ${m3.length} chuyến</div></div><div class="stat"><div class="stat-l">Theo cân</div><div class="stat-v" style="font-size:24px">${fmtN(t.reduce((s, r) => s + (+r.d.luong || 0), 0), 1)}</div><div class="stat-s">tấn · ${t.length} chuyến</div></div></div>
       <div class="card">${l.map(r => recRow(r, `${esc(r.d.gio || '')} · ${esc(r.d.vl || '')}${r.ck ? ' · ' + esc(r.ck) : ''}`, `${esc(r.d.xe || '')} · ${fmtN(r.d.luong, 1)} ${r.d.cach === 'can' ? 'tấn (cân)' : 'm³ (thùng)'} · ${esc(r.d.diem || '')}`, +r.d.phieu === 1 ? ['Có phiếu', 'b-gr'] : ['Chờ xác nhận bãi', 'b-am'])).join('') || '<div class="empty">Chưa có chuyến</div>'}</div></div>`;
     return shell({ back:1, title:'Đất & bùn thải', sub:'M26 · nhật ký vận chuyển', body, act:hp('t_ghi') ? `<button class="btn" onclick="openForm('dt','',null,{newRec:1,ngay:'${d}'})">🚛 Chuyến mới</button>` : '' });
   }
@@ -2383,7 +2409,7 @@ VIEWS.nl = {
     if (tab === 'to') inner = `<div class="card">${res.to.map(t => { const n = Object.values(REC).filter(r => r.ngay === td && r.d.to === t).length; return `<div class="row"><div class="ico">👷</div><div class="rmain"><div class="rname">${esc(t)}</div><div class="rsub">${n ? n + ' bản ghi hôm nay' : 'Chưa có bản ghi hôm nay'}</div></div></div>`; }).join('') || '<div class="empty">Chưa khai báo tổ đội (Quản trị → Danh mục)</div>'}</div>`;
     else if (tab === 'may') inner = `<div class="card">${res.may.map(m => { const p = prod(m[0]); return `<div class="row"><div class="ico or">🏗️</div><div class="rmain"><div class="rname">${esc(m[0])} · ${esc(m[1])}</div><div class="rsub">${p.len ? `Hôm nay: ${fmtN(p.len, 1)} m · ${fmtN(p.h, 1)} h · ${p.h ? fmtN(p.len / p.h, 1) + ' m/h' : ''}` : esc(m[2] || '')}</div></div></div>`; }).join('') || '<div class="empty">Chưa khai báo máy (Quản trị → Danh mục)</div>'}</div>
       ${KHO && KHO.devices && KHO.devices.length ? `<div class="sec-title" style="margin:6px 2px">Máy đang ở công trường · theo Kho</div><div class="card">${KHO.devices.map(x => `<div class="row"><div class="ico gy">🚜</div><div class="rmain"><div class="rname">${esc(x.name)}</div><div class="rsub">${esc([x.plate, x.type, x.maQL, x.donVi].filter(Boolean).join(' · '))}${x.inDate ? ' · vào ' + esc(x.inDate) : ''}</div></div></div>`).join('')}</div>` : ''}
-      <div class="note n-gy">🔗<span>Danh mục máy dùng chung với Kho (P.QLTB). Giờ máy ghi ở Kho khi cấp dầu; năng suất ở đây tính từ nhật ký khoan.</span></div>`;
+      `;
     else inner = `<div class="card">${res.do.map(x => { const late = x[1] && x[1] < td, soon = x[1] && x[1] <= dayAdd(td, 30); return `<div class="row"><div class="ico ${late ? 'rd' : soon ? 'am' : 'gy'}">📐</div><div class="rmain"><div class="rname">${esc(x[0])}</div><div class="rsub">Kiểm chuẩn hết hạn ${x[1] ? dmy(x[1]) : '—'}</div></div><span class="badge ${late ? 'b-rd' : soon ? 'b-am' : 'b-gr'}">${late ? 'Hết hạn' : soon ? 'Sắp hết' : 'Còn hạn'}</span></div>`; }).join('') || '<div class="empty">Chưa khai báo thiết bị đo</div>'}</div>`;
     const body = `<div class="dbody"><div class="tabs">${[['to', 'Tổ đội · ' + res.to.length], ['may', 'Thiết bị · ' + res.may.length], ['do', 'Thiết bị đo · ' + res.do.length]].map(t => `<button class="${tab === t[0] ? 'on' : ''}" onclick="cur.a.tab='${t[0]}';render(false)">${t[1]}</button>`).join('')}</div>${inner}</div>`;
     return shell({ back:1, title:'Nhân sự & thiết bị', sub:'M23 · ' + esc(projName()), body, act:hp('t_qt') ? `<button class="btn ghost" onclick="go('qtri',{tab:'dm'})">✏️ Sửa danh mục</button>` : '' });
@@ -2394,8 +2420,8 @@ VIEWS.nl = {
 VIEWS.tl = {
   render() {
     const docs = B.cfg.docs || [];
-    const body = `<div class="dbody"><div class="card">${docs.map((x, i) => `<div class="row ${hp('t_qt') ? 'tap' : ''}" ${hp('t_qt') ? `onclick="docEdit(${i})"` : ''}><span class="ico" style="font-weight:900;font-size:14px;background:${/hiệu lực|đồng ý/i.test(x.tt || '') && !/hết/i.test(x.tt || '') ? '#E9F7EF' : '#F0F2F5'}">${esc(x.ver || '')}</span><div class="rmain"><div class="rname">${esc(x.ten || '')}</div><div class="rsub">${esc(x.so || '')}${x.ngay ? ' · ' + dmy(x.ngay) : ''}</div>${x.ghi ? `<div class="rsub">${esc(x.ghi)}</div>` : ''}</div><span class="badge ${/hết/i.test(x.tt || '') ? 'b-gy' : /kèm/i.test(x.tt || '') ? 'b-am' : 'b-gr'}">${esc(x.tt || '')}</span></div>`).join('') || '<div class="empty">Chưa có tài liệu</div>'}</div>
-      <div class="note n-gy">📘<span>Luồng ký thực tế: <b>Nhà thầu phụ → Nhà thầu chính → TVGS → BQLDA</b>. Cấu kiện thi công trước khi phiên bản mới có hiệu lực vẫn gắn phiên bản cũ.</span></div></div>`;
+    const body = `<div class="dbody"><div class="card">${docs.map((x, i) => `<div class="row ${hp('t_qt') ? 'tap' : ''}" ${hp('t_qt') ? `onclick="docEdit(${i})"` : ''}><span class="ico" style="font-weight:900;font-size:15.5px;background:${/hiệu lực|đồng ý/i.test(x.tt || '') && !/hết/i.test(x.tt || '') ? '#E9F7EF' : '#F0F2F5'}">${esc(x.ver || '')}</span><div class="rmain"><div class="rname">${esc(x.ten || '')}</div><div class="rsub">${esc(x.so || '')}${x.ngay ? ' · ' + dmy(x.ngay) : ''}</div>${x.ghi ? `<div class="rsub">${esc(x.ghi)}</div>` : ''}</div><span class="badge ${/hết/i.test(x.tt || '') ? 'b-gy' : /kèm/i.test(x.tt || '') ? 'b-am' : 'b-gr'}">${esc(x.tt || '')}</span></div>`).join('') || '<div class="empty">Chưa có tài liệu</div>'}</div>
+      </div>`;
     return shell({ back:1, title:'Tài liệu & bản vẽ', sub:'M27 · phiên bản và chấp thuận', body, act:hp('t_qt') ? `<button class="btn" onclick="docEdit(-1)">＋ Thêm phiên bản</button>` : '' });
   }
 };
@@ -2428,14 +2454,14 @@ VIEWS.boq = {
     const body = `<div class="dbody"><div class="card" style="overflow-x:auto"><table class="tbl"><thead><tr><th>Hạng mục</th><th>ĐV</th><th class="r">Theo HĐ</th><th class="r">Sau ĐC</th><th class="r">Đã đổ</th><th class="r">Đã NT</th></tr></thead><tbody>
       ${rows.map(r => r.length <= 2 ? `<tr><td colspan="6" style="background:#F6F8FB;font-weight:900">${esc(r[0])} · ${esc(r[1] || '')}</td></tr>` : (() => { const d = boqDone(r); return `<tr><td>${esc(r[0])}</td><td>${esc(r[1])}</td><td class="r">${r[2] ? fmtN(r[2], 2) : '—'}</td><td class="r">${fmtN(r[3], 2)}</td><td class="r">${d.est ? '≈' : ''}${fmtN(d.dd, 0)}</td><td class="r" style="color:var(--primary)">${d.est ? '≈' : ''}${fmtN(d.nt, 0)}</td></tr>`; })()).join('')}</tbody></table></div>
       ${B.cfg.info && B.cfg.info.tienDo ? `<div class="kv-box"><div class="kv"><span>Tiến độ theo HĐ</span><b>${esc(B.cfg.info.tienDo)}</b></div></div>` : ''}
-      <div class="note n-gy">📘<span>"Đã đổ / Đã NT" lấy từ cấu kiện nhân khối lượng bản vẽ của từng cấu kiện (L khoan, thép lồng, V lý thuyết). Dòng có dấu ≈ ước theo tỉ lệ số cấu kiện. Không suy ra từ lượng bê tông xe giao.</span></div></div>`;
+      </div>`;
     return shell({ back:1, title:'BOQ & khối lượng', sub:'M28 · ' + esc(projName()), body, act:`${hp('t_qs') || hp('t_qt') ? `<button class="btn ghost" onclick="boqEdit()">✏️ Sửa BOQ</button>` : ''}<button class="btn" onclick="boqExcel()">⬇ Xuất Excel</button>` });
   }
 };
 function boqEdit() {
   const rows = B.cfg.boq || [];
   sheet(`<div class="fsec-t" style="border:none;padding:0">Sửa BOQ</div><div class="small" style="margin-bottom:8px">Mỗi dòng: Hạng mục | Đơn vị | Theo HĐ | Sau ĐC | coc/tv | cách tính (L, thep, v, vd hoặc để trống). Dòng nhóm: Mã | Tên nhóm.</div>
-    <div class="fg"><textarea id="boq-t" style="min-height:300px;font-size:12px;font-family:monospace">${esc(rows.map(r => r.join(' | ')).join('\n'))}</textarea></div><button class="btn" onclick="boqSave()">Lưu</button>`);
+    <div class="fg"><textarea id="boq-t" style="min-height:300px;font-size:13px;font-family:monospace">${esc(rows.map(r => r.join(' | ')).join('\n'))}</textarea></div><button class="btn" onclick="boqSave()">Lưu</button>`);
 }
 function boqSave() {
   const rows = $('#boq-t').value.split('\n').map(l => l.split('|').map(x => x.trim())).filter(r => r[0]).map(r => r.length <= 2 ? r : [r[0], r[1] || '', num(r[2]) || 0, num(r[3]) || 0, r[4] || 'coc', r[5] || '']);
@@ -2464,7 +2490,7 @@ VIEWS.qtri = {
           <div class="fg-row">${[['kl', 'Khối lượng riêng (g/cm³)'], ['nhot', 'Độ nhớt Marsh (s)'], ['nhotTruoc', 'Độ nhớt trước đổ (s)'], ['cat', 'Hàm lượng cát (%)'], ['ph', 'pH'], ['sut', 'Độ sụt (cm)']].map(f => `<div class="fg"><label>${f[1]} · từ – đến</label><input id="lm-${f[0]}" value="${esc((L[f[0]] || []).join(' – '))}"></div>`).join('')}</div>
           <div class="fg"><label>Điểm Hold trước đổ</label><div class="ynrow"><button class="yn ${!cfg.hold || cfg.hold.batBuoc !== 0 ? 'on' : ''}" onclick="cfgSave('hold',{batBuoc:1});render(false)">Bắt buộc giải phóng mới mở Đổ bê tông</button><button class="yn ${cfg.hold && cfg.hold.batBuoc === 0 ? 'on o' : ''}" onclick="cfgSave('hold',{batBuoc:0});render(false)">Chỉ nhắc</button></div></div>
           <button class="btn sm" onclick="saveLim()">Lưu ngưỡng</button></div>
-        <div class="fsec"><div class="fsec-t">📐 Cao độ dùng cho mặt cắt<small>tên | cao độ (m)</small></div><div class="fg"><textarea id="lv-t" style="min-height:180px;font-family:monospace;font-size:12px">${esc(lv.map(l => l[0] + ' | ' + l[1]).join('\n'))}</textarea></div>
+        <div class="fsec"><div class="fsec-t">📐 Cao độ dùng cho mặt cắt<small>tên | cao độ (m)</small></div><div class="fg"><textarea id="lv-t" style="min-height:180px;font-family:monospace;font-size:13px">${esc(lv.map(l => l[0] + ' | ' + l[1]).join('\n'))}</textarea></div>
           <div class="fg"><label>Góc xoay mặt bằng (độ) · để cạnh dài nằm ngang</label><input id="rot-in" inputmode="decimal" value="${esc(cfg.rot || 0)}"></div><button class="btn sm" onclick="saveLv()">Lưu</button></div>`;
     } else if (tab === 'ck') {
       const all = Object.values(CK), n = l => all.filter(c => c.loai === l).length;
@@ -2484,7 +2510,7 @@ VIEWS.qtri = {
     } else if (tab === 'dm') {
       const r = RES();
       inner = `<div class="fsec"><div class="fsec-t">📚 Danh mục dùng khi ghi nhật ký</div>
-        ${[['to', 'Tổ đội · mỗi dòng 1 tổ'], ['may', 'Máy · Mã | Tên | Loại (Khoan / Cạp / Cẩu / Đào)'], ['do', 'Thiết bị đo · Tên | Hạn kiểm chuẩn (yyyy-mm-dd)'], ['tram', 'Trạm bê tông'], ['capPhoi', 'Cấp phối bê tông']].map(f => `<div class="fg"><label>${f[1]}</label><textarea id="dm-${f[0]}" style="min-height:${f[0] === 'to' || f[0] === 'may' ? 140 : 90}px;font-size:13px">${esc((r[f[0]] || []).map(x => Array.isArray(x) ? x.join(' | ') : x).join('\n'))}</textarea></div>`).join('')}
+        ${[['to', 'Tổ đội · mỗi dòng 1 tổ'], ['may', 'Máy · Mã | Tên | Loại (Khoan / Cạp / Cẩu / Đào)'], ['do', 'Thiết bị đo · Tên | Hạn kiểm chuẩn (yyyy-mm-dd)'], ['tram', 'Trạm bê tông'], ['capPhoi', 'Cấp phối bê tông']].map(f => `<div class="fg"><label>${f[1]}</label><textarea id="dm-${f[0]}" style="min-height:${f[0] === 'to' || f[0] === 'may' ? 140 : 90}px;font-size:14.5px">${esc((r[f[0]] || []).map(x => Array.isArray(x) ? x.join(' | ') : x).join('\n'))}</textarea></div>`).join('')}
         <button class="btn sm" onclick="saveDm()">Lưu danh mục</button></div>`;
     } else if (tab === 'mau') {
       const demo = cfg.demo && cfg.demo.on, n = Object.keys(CK).length;
@@ -2690,7 +2716,7 @@ VIEWS.hd = {
       ['📦 Kho', 'Menu → Chuyển sang Kho (giữ đăng nhập). Màn Vật tư xem phiếu yêu cầu theo cấu kiện từ Kho, không tạo chứng từ ở Thi công.'],
       ['🧪 Dữ liệu mẫu', 'Dự án có dải cam "Dữ liệu mẫu" là để tập — ghi thoải mái. Admin xóa dữ liệu mẫu khi bắt đầu dùng thật.']
     ];
-    return shell({ back:1, title:'Hướng dẫn sử dụng', sub:'Thi công ' + TC_APP_VERSION, body:`<div class="dbody">${S.map(s => `<div class="fsec"><div class="fsec-t">${s[0]}</div><div style="font-size:13.5px;line-height:1.55;color:var(--text2)">${esc(s[1])}</div></div>`).join('')}</div>` });
+    return shell({ back:1, title:'Hướng dẫn sử dụng', sub:'Thi công ' + TC_APP_VERSION, body:`<div class="dbody">${S.map(s => `<div class="fsec"><div class="fsec-t">${s[0]}</div><div style="font-size:15px;line-height:1.55;color:var(--text2)">${esc(s[1])}</div></div>`).join('')}</div>` });
   }
 };
 
@@ -2740,8 +2766,7 @@ function qHtml(a) {
   const dirty = Object.keys(QD).filter(c => TPERM.some(p => QD[c][p[0]] !== undefined && QD[c][p[0]] !== ((QR.roles[c].perm || {})[p[0]] ? 1 : 0)));
   const ut = a.uq || '';
   const users = QR.users.filter(u => u.status === 'active' && (!ut || (u.name + ' ' + u.username + ' ' + u.role).toLowerCase().includes(ut.toLowerCase())));
-  return `<div class="note n-info">🔑<span>Bảng chức danh dùng <b>chung với Kho</b>: sửa ở đây hay ở Kho (Menu → Phân quyền chức danh → mục ⑦ Thi công) đều như nhau. Lưu xong áp dụng ngay cho mọi tài khoản cùng chức danh.</span></div>
-    <div class="fsec"><div class="fsec-t">🛡 Quyền Thi công theo chức danh<small>chạm ô để bật / tắt</small></div>
+  return `<div class="fsec"><div class="fsec-t">🛡 Quyền Thi công theo chức danh<small>chạm ô để bật / tắt</small></div>
       <div style="overflow-x:auto;margin:0 -4px"><table class="qtb"><tr><th style="text-align:left">Chức danh</th>${TPERM.map(p => `<th title="${esc(p[2])}">${p[1]}</th>`).join('')}</tr>
       ${codes.map(c => { const r = QR.roles[c]; return `<tr class="${dirty.includes(c) ? 'dirty' : ''}"><td><b>${esc(r.abbr || c)}</b><small>${esc(r.name || '')}${cnt[c] ? ' · ' + cnt[c] + ' người' : ''}</small></td>${TPERM.map(p => { const on = val(c, p[0]); return `<td><button class="qbx ${on ? 'on' : ''} ${c === 'ADM' ? 'lk' : ''}" ${c === 'ADM' ? 'disabled' : ''} onclick="qTog('${esc(c)}','${p[0]}')">${on ? '✓' : ''}</button></td>`; }).join('')}</tr>`; }).join('')}</table></div>
       <div class="qleg">${TPERM.map(p => `<div><b>${p[1]}</b> ${esc(p[2])}</div>`).join('')}<div><b>ADM</b> Quản trị hệ thống luôn có toàn quyền</div></div>
@@ -2750,8 +2775,7 @@ function qHtml(a) {
       <div class="fg"><input placeholder="Tìm tên / chức danh…" value="${esc(ut)}" oninput="cur.a.uq=this.value;clearTimeout(window._uqT);window._uqT=setTimeout(()=>{render(false);const i=document.querySelector('.fsec input');if(i){i.focus();i.setSelectionRange(i.value.length,i.value.length)}},350)"></div>
       <div class="card">${users.map(u => { const tc = u.role === 'ADM' || ((QR.roles[u.role] || {}).perm || {}).t_xem; const pj = u.projects || [];
         return `<div class="row tap" onclick="qUser('${esc(u.id)}')"><div class="ico ${tc ? 'or' : 'gy'}">${esc(initials(u.name))}</div><div class="rmain"><div class="rname">${esc(u.name)} <span class="small">· ${esc(u.role)}</span></div><div class="rsub">${tc ? TPERM.filter(p => val(u.role, p[0])).map(p => p[1]).join(' · ') : '<span class="c-mut">không vào Thi công</span>'} · ${pj.length ? esc(pj.join(', ')) : '<b class="c-rd">chưa giao dự án</b>'}</div></div><span class="chev">›</span></div>`; }).join('') || '<div class="empty">Không có ai</div>'}</div>
-      <div class="small mt8">Đổi chức danh, khóa tài khoản, duyệt người xin tham gia: làm ở app Kho → Menu → Thành viên.</div></div>
-    <div class="small" style="margin:6px 2px">Quyền của bạn (Admin): toàn quyền.</div>`;
+      </div>`;
 }
 function qTog(c, k) { const cur0 = (QR.roles[c].perm || {})[k] ? 1 : 0; QD[c] = QD[c] || {}; const now = QD[c][k] !== undefined ? QD[c][k] : cur0; QD[c][k] = now ? 0 : 1; render(false); }
 async function qSave() {
@@ -3258,7 +3282,6 @@ VIEWS.bb = {
     return shell({ back:1, title:'Bộ biên bản ' + esc(c.code), sub:(c.loai === 'tv' ? '12' : '13') + ' biểu theo ITP đã duyệt', body:`<div class="dbody">
       <div class="chip-row" style="padding:0 0 10px;flex-wrap:wrap"><span class="chip ${!a.n ? 'on' : ''}" onclick="cur.a.n=0;render(false)">Tất cả</span>${docs.map(d => `<span class="chip ${+a.n === d.n ? 'on' : ''}" onclick="cur.a.n=${d.n};render(false)">${String(d.n).padStart(3, '0')}</span>`).join('')}</div>
       <div class="split" style="gap:8px"><button class="btn sm" onclick="bbPrint('${esc(c.code)}',${+a.n || 0})">🖨 In / lưu PDF</button><button class="btn ghost sm" onclick="bbExcel(['${esc(c.code)}'])">⬇ Excel</button></div>
-      <div class="note n-info mt8">📄<span>Tự điền từ nhật ký đã ghi. Ô trống = chưa có số liệu (ghi tay hoặc bổ sung trong app). Ô "Kết luận Nghiệm thu" để TVGS đánh dấu khi ký.</span></div>
       <div id="bb-wrap" style="overflow:hidden;background:#e9edf2;padding:10px 0;margin:0 -16px">${sel.map(bbPageHtml).join('')}</div></div>` });
   }
 };
@@ -3343,6 +3366,66 @@ async function bbBatch(kind, day) {
   showLoader('Đang tải hồ sơ…'); for (const k of codes) if (!CKREC[k]) await loadCk(k, true); hideLoader();
   bbStyle(); bbPrintDocs(codes.flatMap(k => bbDocs(CK[k])));
 }
+
+// ===== Bộ biểu tượng Phosphor Duotone (MIT) thay emoji — v5.31.9 =====
+(function () {
+  var SYM = {"alarm": "<path d=\"M216,136a88,88,0,1,1-88-88A88,88,0,0,1,216,136Z\" opacity=\"0.2\"/><path d=\"M128,40a96,96,0,1,0,96,96A96.11,96.11,0,0,0,128,40Zm0,176a80,80,0,1,1,80-80A80.09,80.09,0,0,1,128,216ZM61.66,37.66l-32,32A8,8,0,0,1,18.34,58.34l32-32A8,8,0,0,1,61.66,37.66Zm176,32a8,8,0,0,1-11.32,0l-32-32a8,8,0,0,1,11.32-11.32l32,32A8,8,0,0,1,237.66,69.66ZM184,128a8,8,0,0,1,0,16H128a8,8,0,0,1-8-8V80a8,8,0,0,1,16,0v48Z\"/>", "arrow-right": "<path d=\"M216,128l-72,72V56Z\" opacity=\"0.2\"/><path d=\"M221.66,122.34l-72-72A8,8,0,0,0,136,56v64H40a8,8,0,0,0,0,16h96v64a8,8,0,0,0,13.66,5.66l72-72A8,8,0,0,0,221.66,122.34ZM152,180.69V75.31L204.69,128Z\"/>", "arrow-u-up-left": "<path d=\"M80,40v96L32,88Z\" opacity=\"0.2\"/><path d=\"M168,80H88V40a8,8,0,0,0-13.66-5.66l-48,48a8,8,0,0,0,0,11.32l48,48A8,8,0,0,0,88,136V96h80a48,48,0,0,1,0,96H80a8,8,0,0,0,0,16h88a64,64,0,0,0,0-128ZM72,116.69,43.31,88,72,59.31Z\"/>", "arrows-clockwise": "<path d=\"M216,128a88,88,0,1,1-88-88A88,88,0,0,1,216,128Z\" opacity=\"0.2\"/><path d=\"M224,48V96a8,8,0,0,1-8,8H168a8,8,0,0,1,0-16h28.69L182.06,73.37a79.56,79.56,0,0,0-56.13-23.43h-.45A79.52,79.52,0,0,0,69.59,72.71,8,8,0,0,1,58.41,61.27a96,96,0,0,1,135,.79L208,76.69V48a8,8,0,0,1,16,0ZM186.41,183.29a80,80,0,0,1-112.47-.66L59.31,168H88a8,8,0,0,0,0-16H40a8,8,0,0,0-8,8v48a8,8,0,0,0,16,0V179.31l14.63,14.63A95.43,95.43,0,0,0,130,222.06h.53a95.36,95.36,0,0,0,67.07-27.33,8,8,0,0,0-11.18-11.44Z\"/>", "arrows-left-right": "<path d=\"M208,80v96H48V80Z\" opacity=\"0.2\"/><path d=\"M213.66,181.66l-32,32a8,8,0,0,1-11.32-11.32L188.69,184H48a8,8,0,0,1,0-16H188.69l-18.35-18.34a8,8,0,0,1,11.32-11.32l32,32A8,8,0,0,1,213.66,181.66Zm-139.32-64a8,8,0,0,0,11.32-11.32L67.31,88H208a8,8,0,0,0,0-16H67.31L85.66,53.66A8,8,0,0,0,74.34,42.34l-32,32a8,8,0,0,0,0,11.32Z\"/>", "bank": "<path d=\"M232,96H24L128,32Z\" opacity=\"0.2\"/><path d=\"M24,104H48v64H32a8,8,0,0,0,0,16H224a8,8,0,0,0,0-16H208V104h24a8,8,0,0,0,4.19-14.81l-104-64a8,8,0,0,0-8.38,0l-104,64A8,8,0,0,0,24,104Zm40,0H96v64H64Zm80,0v64H112V104Zm48,64H160V104h32ZM128,41.39,203.74,88H52.26ZM248,208a8,8,0,0,1-8,8H16a8,8,0,0,1,0-16H240A8,8,0,0,1,248,208Z\"/>", "bell": "<path d=\"M208,192H48a8,8,0,0,1-6.88-12C47.71,168.6,56,139.81,56,104a72,72,0,0,1,144,0c0,35.82,8.3,64.6,14.9,76A8,8,0,0,1,208,192Z\" opacity=\"0.2\"/><path d=\"M221.8,175.94C216.25,166.38,208,139.33,208,104a80,80,0,1,0-160,0c0,35.34-8.26,62.38-13.81,71.94A16,16,0,0,0,48,200H88.81a40,40,0,0,0,78.38,0H208a16,16,0,0,0,13.8-24.06ZM128,216a24,24,0,0,1-22.62-16h45.24A24,24,0,0,1,128,216ZM48,184c7.7-13.24,16-43.92,16-80a64,64,0,1,1,128,0c0,36.05,8.28,66.73,16,80Z\"/>", "book": "<path d=\"M208,32V192H72a24,24,0,0,0-24,24V56A24,24,0,0,1,72,32Z\" opacity=\"0.2\"/><path d=\"M208,24H72A32,32,0,0,0,40,56V224a8,8,0,0,0,8,8H192a8,8,0,0,0,0-16H56a16,16,0,0,1,16-16H208a8,8,0,0,0,8-8V32A8,8,0,0,0,208,24Zm-8,160H72a31.82,31.82,0,0,0-16,4.29V56A16,16,0,0,1,72,40H200Z\"/>", "book-open": "<path d=\"M232,56V200H160a32,32,0,0,0-32,32,32,32,0,0,0-32-32H24V56H96a32,32,0,0,1,32,32,32,32,0,0,1,32-32Z\" opacity=\"0.2\"/><path d=\"M232,48H160a40,40,0,0,0-32,16A40,40,0,0,0,96,48H24a8,8,0,0,0-8,8V200a8,8,0,0,0,8,8H96a24,24,0,0,1,24,24,8,8,0,0,0,16,0,24,24,0,0,1,24-24h72a8,8,0,0,0,8-8V56A8,8,0,0,0,232,48ZM96,192H32V64H96a24,24,0,0,1,24,24V200A39.81,39.81,0,0,0,96,192Zm128,0H160a39.81,39.81,0,0,0-24,8V88a24,24,0,0,1,24-24h64Z\"/>", "bookmark-simple": "<path d=\"M192,48V224l-64-40L64,224V48a8,8,0,0,1,8-8H184A8,8,0,0,1,192,48Z\" opacity=\"0.2\"/><path d=\"M184,32H72A16,16,0,0,0,56,48V224a8,8,0,0,0,12.24,6.78L128,193.43l59.77,37.35A8,8,0,0,0,200,224V48A16,16,0,0,0,184,32Zm0,177.57-51.77-32.35a8,8,0,0,0-8.48,0L72,209.57V48H184Z\"/>", "books": "<path d=\"M48,72h64V184H48ZM190.64,38.39a8,8,0,0,0-9.5-6.21l-46.81,10a8.07,8.07,0,0,0-6.15,9.57L139.79,107l62.46-13.42Z\" opacity=\"0.2\"/><path d=\"M231.65,194.55,198.46,36.75a16,16,0,0,0-19-12.39L132.65,34.42a16.08,16.08,0,0,0-12.3,19l33.19,157.8A16,16,0,0,0,169.16,224a16.25,16.25,0,0,0,3.38-.36l46.81-10.06A16.09,16.09,0,0,0,231.65,194.55ZM136,50.15c0-.06,0-.09,0-.09l46.8-10,3.33,15.87L139.33,66Zm6.62,31.47,46.82-10.05,3.34,15.9L146,97.53Zm6.64,31.57,46.82-10.06,13.3,63.24-46.82,10.06ZM216,197.94l-46.8,10-3.33-15.87L212.67,182,216,197.85C216,197.91,216,197.94,216,197.94ZM104,32H56A16,16,0,0,0,40,48V208a16,16,0,0,0,16,16h48a16,16,0,0,0,16-16V48A16,16,0,0,0,104,32ZM56,48h48V64H56Zm0,32h48v96H56Zm48,128H56V192h48v16Z\"/>", "briefcase": "<path d=\"M224,118.31V200a8,8,0,0,1-8,8H40a8,8,0,0,1-8-8V118.31h0A191.14,191.14,0,0,0,128,144,191.08,191.08,0,0,0,224,118.31Z\" opacity=\"0.2\"/><path d=\"M104,112a8,8,0,0,1,8-8h32a8,8,0,0,1,0,16H112A8,8,0,0,1,104,112ZM232,72V200a16,16,0,0,1-16,16H40a16,16,0,0,1-16-16V72A16,16,0,0,1,40,56H80V48a24,24,0,0,1,24-24h48a24,24,0,0,1,24,24v8h40A16,16,0,0,1,232,72ZM96,56h64V48a8,8,0,0,0-8-8H104a8,8,0,0,0-8,8ZM40,72v41.62A184.07,184.07,0,0,0,128,136a184,184,0,0,0,88-22.39V72ZM216,200V131.63A200.25,200.25,0,0,1,128,152a200.19,200.19,0,0,1-88-20.36V200H216Z\"/>", "broadcast": "<path d=\"M160,128a32,32,0,1,1-32-32A32,32,0,0,1,160,128Z\" opacity=\"0.2\"/><path d=\"M128,88a40,40,0,1,0,40,40A40,40,0,0,0,128,88Zm0,64a24,24,0,1,1,24-24A24,24,0,0,1,128,152Zm73.71,7.14a80,80,0,0,1-14.08,22.2,8,8,0,0,1-11.92-10.67,63.95,63.95,0,0,0,0-85.33,8,8,0,1,1,11.92-10.67,80.08,80.08,0,0,1,14.08,84.47ZM69,103.09a64,64,0,0,0,11.26,67.58,8,8,0,0,1-11.92,10.67,79.93,79.93,0,0,1,0-106.67A8,8,0,1,1,80.29,85.34,63.77,63.77,0,0,0,69,103.09ZM248,128a119.58,119.58,0,0,1-34.29,84,8,8,0,1,1-11.42-11.2,103.9,103.9,0,0,0,0-145.56A8,8,0,1,1,213.71,44,119.58,119.58,0,0,1,248,128ZM53.71,200.78A8,8,0,1,1,42.29,212a119.87,119.87,0,0,1,0-168,8,8,0,1,1,11.42,11.2,103.9,103.9,0,0,0,0,145.56Z\"/>", "broom": "<path d=\"M192.8,165.12,43.93,105.57A110.88,110.88,0,0,1,61.47,82.38a8,8,0,0,1,8.67-1.81L95.52,90.85a16,16,0,0,0,20.82-9l21-53.1c4.15-10,15.47-15.33,25.63-11.53a20,20,0,0,1,11.51,26.39L153.13,96.71a16,16,0,0,0,8.93,20.75L187,127.3a8,8,0,0,1,5,7.43V152A104.58,104.58,0,0,0,192.8,165.12Z\" opacity=\"0.2\"/><path d=\"M235.5,216.81c-22.56-11-35.5-34.58-35.5-64.8V134.73a15.94,15.94,0,0,0-10.09-14.87L165,110a8,8,0,0,1-4.48-10.34l21.32-53a28,28,0,0,0-16.1-37,28.14,28.14,0,0,0-35.82,16,.61.61,0,0,0,0,.12L108.9,79a8,8,0,0,1-10.37,4.49L73.11,73.14A15.89,15.89,0,0,0,55.74,76.8C34.68,98.45,24,123.75,24,152a111.45,111.45,0,0,0,31.18,77.53A8,8,0,0,0,61,232H232a8,8,0,0,0,3.5-15.19ZM67.14,88l25.41,10.3a24,24,0,0,0,31.23-13.45l21-53c2.56-6.11,9.47-9.27,15.43-7a12,12,0,0,1,6.88,15.92L145.69,93.76a24,24,0,0,0,13.43,31.14L184,134.73V152c0,.33,0,.66,0,1L55.77,101.71A108.84,108.84,0,0,1,67.14,88Zm48,128a87.53,87.53,0,0,1-24.34-42,8,8,0,0,0-15.49,4,105.16,105.16,0,0,0,18.36,38H64.44A95.54,95.54,0,0,1,40,152a85.9,85.9,0,0,1,7.73-36.29l137.8,55.12c3,18,10.56,33.48,21.89,45.16Z\"/>", "bug": "<path d=\"M208,128v16a80,80,0,0,1-160,0V128Z\" opacity=\"0.2\"/><path d=\"M144,92a12,12,0,1,1,12,12A12,12,0,0,1,144,92ZM100,80a12,12,0,1,0,12,12A12,12,0,0,0,100,80Zm116,64A87.76,87.76,0,0,1,213,167l22.24,9.72A8,8,0,0,1,232,192a7.89,7.89,0,0,1-3.2-.67L207.38,182a88,88,0,0,1-158.76,0L27.2,191.33A7.89,7.89,0,0,1,24,192a8,8,0,0,1-3.2-15.33L43,167A87.76,87.76,0,0,1,40,144v-8H16a8,8,0,0,1,0-16H40v-8a87.76,87.76,0,0,1,3-23L20.8,79.33a8,8,0,1,1,6.4-14.66L48.62,74a88,88,0,0,1,158.76,0l21.42-9.36a8,8,0,0,1,6.4,14.66L213,89.05a87.76,87.76,0,0,1,3,23v8h24a8,8,0,0,1,0,16H216ZM56,120H200v-8a72,72,0,0,0-144,0Zm64,95.54V136H56v8A72.08,72.08,0,0,0,120,215.54ZM200,144v-8H136v79.54A72.08,72.08,0,0,0,200,144Z\"/>", "buildings": "<path d=\"M136,32V216H40V85.35a8,8,0,0,1,3.56-6.66l80-53.33A8,8,0,0,1,136,32Z\" opacity=\"0.2\"/><path d=\"M240,208H224V96a16,16,0,0,0-16-16H144V32a16,16,0,0,0-24.88-13.32L39.12,72A16,16,0,0,0,32,85.34V208H16a8,8,0,0,0,0,16H240a8,8,0,0,0,0-16ZM208,96V208H144V96ZM48,85.34,128,32V208H48ZM112,112v16a8,8,0,0,1-16,0V112a8,8,0,1,1,16,0Zm-32,0v16a8,8,0,0,1-16,0V112a8,8,0,1,1,16,0Zm0,56v16a8,8,0,0,1-16,0V168a8,8,0,0,1,16,0Zm32,0v16a8,8,0,0,1-16,0V168a8,8,0,0,1,16,0Z\"/>", "calculator": "<path d=\"M176,64v48H80V64Z\" opacity=\"0.2\"/><path d=\"M80,120h96a8,8,0,0,0,8-8V64a8,8,0,0,0-8-8H80a8,8,0,0,0-8,8v48A8,8,0,0,0,80,120Zm8-48h80v32H88ZM200,24H56A16,16,0,0,0,40,40V216a16,16,0,0,0,16,16H200a16,16,0,0,0,16-16V40A16,16,0,0,0,200,24Zm0,192H56V40H200ZM100,148a12,12,0,1,1-12-12A12,12,0,0,1,100,148Zm40,0a12,12,0,1,1-12-12A12,12,0,0,1,140,148Zm40,0a12,12,0,1,1-12-12A12,12,0,0,1,180,148Zm-80,40a12,12,0,1,1-12-12A12,12,0,0,1,100,188Zm40,0a12,12,0,1,1-12-12A12,12,0,0,1,140,188Zm40,0a12,12,0,1,1-12-12A12,12,0,0,1,180,188Z\"/>", "calendar": "<path d=\"M216,48V88H40V48a8,8,0,0,1,8-8H208A8,8,0,0,1,216,48Z\" opacity=\"0.2\"/><path d=\"M208,32H184V24a8,8,0,0,0-16,0v8H88V24a8,8,0,0,0-16,0v8H48A16,16,0,0,0,32,48V208a16,16,0,0,0,16,16H208a16,16,0,0,0,16-16V48A16,16,0,0,0,208,32ZM72,48v8a8,8,0,0,0,16,0V48h80v8a8,8,0,0,0,16,0V48h24V80H48V48ZM208,208H48V96H208V208Zm-96-88v64a8,8,0,0,1-16,0V132.94l-4.42,2.22a8,8,0,0,1-7.16-14.32l16-8A8,8,0,0,1,112,120Zm59.16,30.45L152,176h16a8,8,0,0,1,0,16H136a8,8,0,0,1-6.4-12.8l28.78-38.37A8,8,0,1,0,145.07,132a8,8,0,1,1-13.85-8A24,24,0,0,1,176,136,23.76,23.76,0,0,1,171.16,150.45Z\"/>", "camera": "<path d=\"M208,64H176L160,40H96L80,64H48A16,16,0,0,0,32,80V192a16,16,0,0,0,16,16H208a16,16,0,0,0,16-16V80A16,16,0,0,0,208,64ZM128,168a36,36,0,1,1,36-36A36,36,0,0,1,128,168Z\" opacity=\"0.2\"/><path d=\"M208,56H180.28L166.65,35.56A8,8,0,0,0,160,32H96a8,8,0,0,0-6.65,3.56L75.71,56H48A24,24,0,0,0,24,80V192a24,24,0,0,0,24,24H208a24,24,0,0,0,24-24V80A24,24,0,0,0,208,56Zm8,136a8,8,0,0,1-8,8H48a8,8,0,0,1-8-8V80a8,8,0,0,1,8-8H80a8,8,0,0,0,6.66-3.56L100.28,48h55.43l13.63,20.44A8,8,0,0,0,176,72h32a8,8,0,0,1,8,8ZM128,88a44,44,0,1,0,44,44A44.05,44.05,0,0,0,128,88Zm0,72a28,28,0,1,1,28-28A28,28,0,0,1,128,160Z\"/>", "cell-signal-high": "<path d=\"M160,60.7V208H32a8,8,0,0,1-5.66-13.66Z\" opacity=\"0.2\"/><path d=\"M198.12,25.23a16,16,0,0,0-17.44,3.46l-160,160A16,16,0,0,0,32,216H192a16,16,0,0,0,16-16V40A15.94,15.94,0,0,0,198.12,25.23ZM152,80V200H32Zm40,120H168V64l24-24Z\"/>", "chart-bar": "<path d=\"M208,40V208H152V40Z\" opacity=\"0.2\"/><path d=\"M224,200h-8V40a8,8,0,0,0-8-8H152a8,8,0,0,0-8,8V80H96a8,8,0,0,0-8,8v40H48a8,8,0,0,0-8,8v64H32a8,8,0,0,0,0,16H224a8,8,0,0,0,0-16ZM160,48h40V200H160ZM104,96h40V200H104ZM56,144H88v56H56Z\"/>", "chart-line-down": "<path d=\"M224,64V208H32V48H208A16,16,0,0,1,224,64Z\" opacity=\"0.2\"/><path d=\"M232,208a8,8,0,0,1-8,8H32a8,8,0,0,1-8-8V48a8,8,0,0,1,16,0V60.69l56,56,26.34-26.35a8,8,0,0,1,11.32,0L192,148.69V128a8,8,0,0,1,16,0v40a7,7,0,0,1,0,.8c0,.11,0,.21-.05.32s0,.3-.07.46a2.83,2.83,0,0,1-.09.37c0,.13-.06.26-.1.39s-.08.23-.12.35l-.14.39-.15.31c-.06.13-.12.27-.19.4s-.11.18-.16.28l-.24.39-.21.28-.26.35c-.11.14-.24.27-.36.4l-.16.18-.17.15a4.83,4.83,0,0,1-.42.37,3.92,3.92,0,0,1-.32.25l-.3.22-.38.23a2.91,2.91,0,0,1-.3.17l-.37.19-.34.15-.36.13a2.84,2.84,0,0,1-.38.13l-.36.1c-.14,0-.26.07-.4.09l-.42.07-.35.05a7,7,0,0,1-.79,0H160a8,8,0,0,1,0-16h20.69L128,107.31l-26.34,26.35a8,8,0,0,1-11.32,0L40,83.31V200H224A8,8,0,0,1,232,208Z\"/>", "chart-line-up": "<path d=\"M224,64V208H32V48H208A16,16,0,0,1,224,64Z\" opacity=\"0.2\"/><path d=\"M232,208a8,8,0,0,1-8,8H32a8,8,0,0,1-8-8V48a8,8,0,0,1,16,0V156.69l50.34-50.35a8,8,0,0,1,11.32,0L128,132.69,180.69,80H160a8,8,0,0,1,0-16h40a8,8,0,0,1,8,8v40a8,8,0,0,1-16,0V91.31l-58.34,58.35a8,8,0,0,1-11.32,0L96,123.31l-56,56V200H224A8,8,0,0,1,232,208Z\"/>", "chart-pie": "<path d=\"M128,32v96L44.86,176h0A96,96,0,0,1,128,32Z\" opacity=\"0.2\"/><path d=\"M128,24A104,104,0,1,0,232,128,104.11,104.11,0,0,0,128,24Zm71.87,53.27L136,114.14V40.37A88,88,0,0,1,199.87,77.27ZM120,40.37v83l-71.89,41.5A88,88,0,0,1,120,40.37ZM128,216a88,88,0,0,1-71.87-37.27L207.89,91.12A88,88,0,0,1,128,216Z\"/>", "chat-circle-text": "<path d=\"M224,128A96,96,0,0,1,79.93,211.11h0L42.54,223.58a8,8,0,0,1-10.12-10.12l12.47-37.39h0A96,96,0,1,1,224,128Z\" opacity=\"0.2\"/><path d=\"M128,24A104,104,0,0,0,36.18,176.88L24.83,210.93a16,16,0,0,0,20.24,20.24l34.05-11.35A104,104,0,1,0,128,24Zm0,192a87.87,87.87,0,0,1-44.06-11.81,8,8,0,0,0-4-1.08,7.85,7.85,0,0,0-2.53.42L40,216,52.47,178.6a8,8,0,0,0-.66-6.54A88,88,0,1,1,128,216Zm40-104a8,8,0,0,1-8,8H96a8,8,0,0,1,0-16h64A8,8,0,0,1,168,112Zm0,32a8,8,0,0,1-8,8H96a8,8,0,0,1,0-16h64A8,8,0,0,1,168,144Z\"/>", "check-circle": "<path d=\"M224,128a96,96,0,1,1-96-96A96,96,0,0,1,224,128Z\" opacity=\"0.2\"/><path d=\"M173.66,98.34a8,8,0,0,1,0,11.32l-56,56a8,8,0,0,1-11.32,0l-24-24a8,8,0,0,1,11.32-11.32L112,148.69l50.34-50.35A8,8,0,0,1,173.66,98.34ZM232,128A104,104,0,1,1,128,24,104.11,104.11,0,0,1,232,128Zm-16,0a88,88,0,1,0-88,88A88.1,88.1,0,0,0,216,128Z\"/>", "clipboard-text": "<path d=\"M208,48V216a8,8,0,0,1-8,8H56a8,8,0,0,1-8-8V48a8,8,0,0,1,8-8H96a39.83,39.83,0,0,0-8,24v8h80V64a39.83,39.83,0,0,0-8-24h40A8,8,0,0,1,208,48Z\" opacity=\"0.2\"/><path d=\"M168,152a8,8,0,0,1-8,8H96a8,8,0,0,1,0-16h64A8,8,0,0,1,168,152Zm-8-40H96a8,8,0,0,0,0,16h64a8,8,0,0,0,0-16Zm56-64V216a16,16,0,0,1-16,16H56a16,16,0,0,1-16-16V48A16,16,0,0,1,56,32H92.26a47.92,47.92,0,0,1,71.48,0H200A16,16,0,0,1,216,48ZM96,64h64a32,32,0,0,0-64,0ZM200,48H173.25A47.93,47.93,0,0,1,176,64v8a8,8,0,0,1-8,8H88a8,8,0,0,1-8-8V64a47.93,47.93,0,0,1,2.75-16H56V216H200Z\"/>", "clock": "<path d=\"M224,128a96,96,0,1,1-96-96A96,96,0,0,1,224,128Z\" opacity=\"0.2\"/><path d=\"M128,24A104,104,0,1,0,232,128,104.11,104.11,0,0,0,128,24Zm0,192a88,88,0,1,1,88-88A88.1,88.1,0,0,1,128,216Zm64-88a8,8,0,0,1-8,8H128a8,8,0,0,1-8-8V72a8,8,0,0,1,16,0v48h48A8,8,0,0,1,192,128Z\"/>", "coins": "<path d=\"M240,132c0,19.88-35.82,36-80,36-19.6,0-37.56-3.17-51.47-8.44h0C146.76,156.85,176,142,176,124V96.72h0C212.52,100.06,240,114.58,240,132ZM176,84c0-19.88-35.82-36-80-36S16,64.12,16,84s35.82,36,80,36S176,103.88,176,84Z\" opacity=\"0.2\"/><path d=\"M184,89.57V84c0-25.08-37.83-44-88-44S8,58.92,8,84v40c0,20.89,26.25,37.49,64,42.46V172c0,25.08,37.83,44,88,44s88-18.92,88-44V132C248,111.3,222.58,94.68,184,89.57ZM232,132c0,13.22-30.79,28-72,28-3.73,0-7.43-.13-11.08-.37C170.49,151.77,184,139,184,124V105.74C213.87,110.19,232,122.27,232,132ZM72,150.25V126.46A183.74,183.74,0,0,0,96,128a183.74,183.74,0,0,0,24-1.54v23.79A163,163,0,0,1,96,152,163,163,0,0,1,72,150.25Zm96-40.32V124c0,8.39-12.41,17.4-32,22.87V123.5C148.91,120.37,159.84,115.71,168,109.93ZM96,56c41.21,0,72,14.78,72,28s-30.79,28-72,28S24,97.22,24,84,54.79,56,96,56ZM24,124V109.93c8.16,5.78,19.09,10.44,32,13.57v23.37C36.41,141.4,24,132.39,24,124Zm64,48v-4.17c2.63.1,5.29.17,8,.17,3.88,0,7.67-.13,11.39-.35A121.92,121.92,0,0,0,120,171.41v23.46C100.41,189.4,88,180.39,88,172Zm48,26.25V174.4a179.48,179.48,0,0,0,24,1.6,183.74,183.74,0,0,0,24-1.54v23.79a165.45,165.45,0,0,1-48,0Zm64-3.38V171.5c12.91-3.13,23.84-7.79,32-13.57V172C232,180.39,219.59,189.4,200,194.87Z\"/>", "compass-tool": "<path d=\"M160,80a32,32,0,1,1-32-32A32,32,0,0,1,160,80Z\" opacity=\"0.2\"/><path d=\"M215.12,123.64a8,8,0,1,0-14.24-7.28,79.58,79.58,0,0,1-33.08,33.5l-16.58-37.32A40,40,0,0,0,136,40.8V24a8,8,0,0,0-16,0V40.8a40,40,0,0,0-15.22,71.74L56.69,220.75a8,8,0,1,0,14.62,6.5l25.14-56.56A95.48,95.48,0,0,0,128,176a99.13,99.13,0,0,0,31.6-5.21l25.09,56.46a8,8,0,0,0,14.62-6.5l-25-56.25A95.81,95.81,0,0,0,215.12,123.64ZM128,56a24,24,0,1,1-24,24A24,24,0,0,1,128,56Zm0,104a79.52,79.52,0,0,1-25-4l16.42-36.94a39.81,39.81,0,0,0,17.2,0l16.48,37.06A83.21,83.21,0,0,1,128,160Z\"/>", "confetti": "<path d=\"M58.89,154.89l42.22,42.22-50.63,18.4a7.79,7.79,0,0,1-10-10Zm138.82-4.72L105.83,58.29A7.79,7.79,0,0,0,93,61.14l-14.9,41,75.82,75.82,41-14.9A7.79,7.79,0,0,0,197.71,150.17Z\" opacity=\"0.2\"/><path d=\"M111.49,52.63a15.8,15.8,0,0,0-26,5.77L33,202.78A15.83,15.83,0,0,0,47.76,224a16,16,0,0,0,5.46-1l144.37-52.5a15.8,15.8,0,0,0,5.78-26Zm-8.33,135.21-35-35,13.16-36.21,58.05,58.05Zm-55,20,14-38.41,24.45,24.45ZM156,168.64,87.36,100l13-35.87,91.43,91.43ZM160,72a37.8,37.8,0,0,1,3.84-15.58C169.14,45.83,179.14,40,192,40c6.7,0,11-2.29,13.65-7.21A22,22,0,0,0,208,23.94,8,8,0,0,1,224,24c0,12.86-8.52,32-32,32-6.7,0-11,2.29-13.65,7.21A22,22,0,0,0,176,72.06,8,8,0,0,1,160,72ZM136,40V16a8,8,0,0,1,16,0V40a8,8,0,0,1-16,0Zm101.66,82.34a8,8,0,1,1-11.32,11.31l-16-16a8,8,0,0,1,11.32-11.32Zm4.87-42.75-24,8a8,8,0,0,1-5.06-15.18l24-8a8,8,0,0,1,5.06,15.18Z\"/>", "crane": "<path d=\"M128,168H56V88h48Z\" opacity=\"0.2\"/><path d=\"M228.12,17.14a8,8,0,0,0-7.88-.2L102,80H32A16,16,0,0,0,16,96V200a16,16,0,0,0,16,16h88a16,16,0,0,0,16-16V168a7.81,7.81,0,0,0-.34-2.3L113.54,92,216,37.33V160H200v-8a8,8,0,0,0-16,0v8a16,16,0,0,0,16,16h16a16,16,0,0,0,16-16V24A8,8,0,0,0,228.12,17.14ZM98.05,96l19.2,64H64V96ZM48,96v64H32V96ZM32,200h0V176h88v24Z\"/>", "crosshair": "<path d=\"M160,128a32,32,0,1,1-32-32A32,32,0,0,1,160,128Z\" opacity=\"0.2\"/><path d=\"M232,120h-8.34A96.14,96.14,0,0,0,136,32.34V24a8,8,0,0,0-16,0v8.34A96.14,96.14,0,0,0,32.34,120H24a8,8,0,0,0,0,16h8.34A96.14,96.14,0,0,0,120,223.66V232a8,8,0,0,0,16,0v-8.34A96.14,96.14,0,0,0,223.66,136H232a8,8,0,0,0,0-16Zm-96,87.6V200a8,8,0,0,0-16,0v7.6A80.15,80.15,0,0,1,48.4,136H56a8,8,0,0,0,0-16H48.4A80.15,80.15,0,0,1,120,48.4V56a8,8,0,0,0,16,0V48.4A80.15,80.15,0,0,1,207.6,120H200a8,8,0,0,0,0,16h7.6A80.15,80.15,0,0,1,136,207.6ZM128,88a40,40,0,1,0,40,40A40,40,0,0,0,128,88Zm0,64a24,24,0,1,1,24-24A24,24,0,0,1,128,152Z\"/>", "device-mobile": "<path d=\"M192,56V200H64V56Z\" opacity=\"0.2\"/><path d=\"M176,16H80A24,24,0,0,0,56,40V216a24,24,0,0,0,24,24h96a24,24,0,0,0,24-24V40A24,24,0,0,0,176,16ZM72,64H184V192H72Zm8-32h96a8,8,0,0,1,8,8v8H72V40A8,8,0,0,1,80,32Zm96,192H80a8,8,0,0,1-8-8v-8H184v8A8,8,0,0,1,176,224Z\"/>", "download-simple": "<path d=\"M216,48V208H40V48A16,16,0,0,1,56,32H200A16,16,0,0,1,216,48Z\" opacity=\"0.2\"/><path d=\"M224,144v64a8,8,0,0,1-8,8H40a8,8,0,0,1-8-8V144a8,8,0,0,1,16,0v56H208V144a8,8,0,0,1,16,0Zm-101.66,5.66a8,8,0,0,0,11.32,0l40-40a8,8,0,0,0-11.32-11.32L136,124.69V32a8,8,0,0,0-16,0v92.69L93.66,98.34a8,8,0,0,0-11.32,11.32Z\"/>", "drop": "<path d=\"M208,144a80,80,0,0,1-160,0c0-72,80-128,80-128S208,72,208,144Z\" opacity=\"0.2\"/><path d=\"M174,47.75a254.19,254.19,0,0,0-41.45-38.3,8,8,0,0,0-9.18,0A254.19,254.19,0,0,0,82,47.75C54.51,79.32,40,112.6,40,144a88,88,0,0,0,176,0C216,112.6,201.49,79.32,174,47.75ZM128,216a72.08,72.08,0,0,1-72-72c0-57.23,55.47-105,72-118,16.53,13,72,60.75,72,118A72.08,72.08,0,0,1,128,216Zm55.89-62.66a57.6,57.6,0,0,1-46.56,46.55A8.75,8.75,0,0,1,136,200a8,8,0,0,1-1.32-15.89c16.57-2.79,30.63-16.85,33.44-33.45a8,8,0,0,1,15.78,2.68Z\"/>", "drop-half": "<path d=\"M208,144a80,80,0,0,1-80,80V16S208,72,208,144Z\" opacity=\"0.2\"/><path d=\"M174,47.75a254.19,254.19,0,0,0-41.45-38.3,8,8,0,0,0-9.18,0A254.19,254.19,0,0,0,82,47.75C54.51,79.32,40,112.6,40,144a88,88,0,0,0,176,0C216,112.6,201.49,79.32,174,47.75ZM56,144c0-50,42.26-92.71,64-111.4V215.54A72.08,72.08,0,0,1,56,144Zm80,71.54V32.6C157.74,51.29,200,94,200,144A72.08,72.08,0,0,1,136,215.54Z\"/>", "envelope-simple": "<path d=\"M224,56l-96,88L32,56Z\" opacity=\"0.2\"/><path d=\"M224,48H32a8,8,0,0,0-8,8V192a16,16,0,0,0,16,16H216a16,16,0,0,0,16-16V56A8,8,0,0,0,224,48ZM203.43,64,128,133.15,52.57,64ZM216,192H40V74.19l82.59,75.71a8,8,0,0,0,10.82,0L216,74.19V192Z\"/>", "eye": "<path d=\"M128,56C48,56,16,128,16,128s32,72,112,72,112-72,112-72S208,56,128,56Zm0,112a40,40,0,1,1,40-40A40,40,0,0,1,128,168Z\" opacity=\"0.2\"/><path d=\"M247.31,124.76c-.35-.79-8.82-19.58-27.65-38.41C194.57,61.26,162.88,48,128,48S61.43,61.26,36.34,86.35C17.51,105.18,9,124,8.69,124.76a8,8,0,0,0,0,6.5c.35.79,8.82,19.57,27.65,38.4C61.43,194.74,93.12,208,128,208s66.57-13.26,91.66-38.34c18.83-18.83,27.3-37.61,27.65-38.4A8,8,0,0,0,247.31,124.76ZM128,192c-30.78,0-57.67-11.19-79.93-33.25A133.47,133.47,0,0,1,25,128,133.33,133.33,0,0,1,48.07,97.25C70.33,75.19,97.22,64,128,64s57.67,11.19,79.93,33.25A133.46,133.46,0,0,1,231.05,128C223.84,141.46,192.43,192,128,192Zm0-112a48,48,0,1,0,48,48A48.05,48.05,0,0,0,128,80Zm0,80a32,32,0,1,1,32-32A32,32,0,0,1,128,160Z\"/>", "eye-slash": "<path d=\"M128,56C48,56,16,128,16,128s32,72,112,72,112-72,112-72S208,56,128,56Zm0,112a40,40,0,1,1,40-40A40,40,0,0,1,128,168Z\" opacity=\"0.2\"/><path d=\"M53.92,34.62A8,8,0,1,0,42.08,45.38L61.32,66.55C25,88.84,9.38,123.2,8.69,124.76a8,8,0,0,0,0,6.5c.35.79,8.82,19.57,27.65,38.4C61.43,194.74,93.12,208,128,208a127.11,127.11,0,0,0,52.07-10.83l22,24.21a8,8,0,1,0,11.84-10.76Zm47.33,75.84,41.67,45.85a32,32,0,0,1-41.67-45.85ZM128,192c-30.78,0-57.67-11.19-79.93-33.25A133.16,133.16,0,0,1,25,128c4.69-8.79,19.66-33.39,47.35-49.38l18,19.75a48,48,0,0,0,63.66,70l14.73,16.2A112,112,0,0,1,128,192Zm6-95.43a8,8,0,0,1,3-15.72,48.16,48.16,0,0,1,38.77,42.64,8,8,0,0,1-7.22,8.71,6.39,6.39,0,0,1-.75,0,8,8,0,0,1-8-7.26A32.09,32.09,0,0,0,134,96.57Zm113.28,34.69c-.42.94-10.55,23.37-33.36,43.8a8,8,0,1,1-10.67-11.92A132.77,132.77,0,0,0,231.05,128a133.15,133.15,0,0,0-23.12-30.77C185.67,75.19,158.78,64,128,64a118.37,118.37,0,0,0-19.36,1.57A8,8,0,1,1,106,49.79,134,134,0,0,1,128,48c34.88,0,66.57,13.26,91.66,38.35,18.83,18.83,27.3,37.62,27.65,38.41A8,8,0,0,1,247.31,131.26Z\"/>", "factory": "<path d=\"M216,136v80H40V88l64,48V88l64,48Z\" opacity=\"0.2\"/><path d=\"M116,176a8,8,0,0,1-8,8H80a8,8,0,0,1,0-16h28A8,8,0,0,1,116,176Zm60-8H148a8,8,0,0,0,0,16h28a8,8,0,0,0,0-16Zm64,48a8,8,0,0,1-8,8H24a8,8,0,0,1,0-16h8V88a8,8,0,0,1,12.8-6.4L96,120V88a8,8,0,0,1,12.8-6.4l38.74,29.05L159.1,29.74A16.08,16.08,0,0,1,174.94,16h18.12A16.08,16.08,0,0,1,208.9,29.74l15,105.13s.08.78.08,1.13v72h8A8,8,0,0,1,240,216Zm-77.86-94.4,8.53,6.4h36.11L193.06,32H174.94ZM48,208H208V144H168a8,8,0,0,1-4.8-1.6l-14.4-10.8,0,0L112,104v32a8,8,0,0,1-12.8,6.4L48,104Z\"/>", "file-text": "<path d=\"M208,88H152V32Z\" opacity=\"0.2\"/><path d=\"M213.66,82.34l-56-56A8,8,0,0,0,152,24H56A16,16,0,0,0,40,40V216a16,16,0,0,0,16,16H200a16,16,0,0,0,16-16V88A8,8,0,0,0,213.66,82.34ZM160,51.31,188.69,80H160ZM200,216H56V40h88V88a8,8,0,0,0,8,8h48V216Zm-32-80a8,8,0,0,1-8,8H96a8,8,0,0,1,0-16h64A8,8,0,0,1,168,136Zm0,32a8,8,0,0,1-8,8H96a8,8,0,0,1,0-16h64A8,8,0,0,1,168,168Z\"/>", "files": "<path d=\"M208,72V184a8,8,0,0,1-8,8H176V104L136,64H80V40a8,8,0,0,1,8-8h80Z\" opacity=\"0.2\"/><path d=\"M213.66,66.34l-40-40A8,8,0,0,0,168,24H88A16,16,0,0,0,72,40V56H56A16,16,0,0,0,40,72V216a16,16,0,0,0,16,16H168a16,16,0,0,0,16-16V200h16a16,16,0,0,0,16-16V72A8,8,0,0,0,213.66,66.34ZM168,216H56V72h76.69L168,107.31v84.53c0,.06,0,.11,0,.16s0,.1,0,.16V216Zm32-32H184V104a8,8,0,0,0-2.34-5.66l-40-40A8,8,0,0,0,136,56H88V40h76.69L200,75.31Zm-56-32a8,8,0,0,1-8,8H88a8,8,0,0,1,0-16h48A8,8,0,0,1,144,152Zm0,32a8,8,0,0,1-8,8H88a8,8,0,0,1,0-16h48A8,8,0,0,1,144,184Z\"/>", "fire": "<path d=\"M208,144a80,80,0,0,1-160,0c0-30.57,14.42-58.26,31-80l33,32,26.27-72C159.86,41.92,208,88.15,208,144Z\" opacity=\"0.2\"/><path d=\"M183.89,153.34a57.6,57.6,0,0,1-46.56,46.55A8.75,8.75,0,0,1,136,200a8,8,0,0,1-1.32-15.89c16.57-2.79,30.63-16.85,33.44-33.45a8,8,0,0,1,15.78,2.68ZM216,144a88,88,0,0,1-176,0c0-27.92,11-56.47,32.66-84.85a8,8,0,0,1,11.93-.89l24.12,23.41,22-60.41a8,8,0,0,1,12.63-3.41C165.21,36,216,84.55,216,144Zm-16,0c0-46.09-35.79-85.92-58.21-106.33L119.52,98.74a8,8,0,0,1-13.09,3L80.06,76.16C64.09,99.21,56,122,56,144a72,72,0,0,0,144,0Z\"/>", "fire-extinguisher": "<path d=\"M176,168v64a8,8,0,0,1-8,8H104a8,8,0,0,1-8-8V168Z\" opacity=\"0.2\"/><path d=\"M218.3,48.34l-60.68-18.2,30-15A8,8,0,0,0,180.42.85L134,24.05a80.08,80.08,0,0,0-78,80V208a8,8,0,0,0,16,0V176H88v56a16,16,0,0,0,16,16h64a16,16,0,0,0,16-16V104a48.07,48.07,0,0,0-40-47.32V42.75l69.7,20.91a8,8,0,1,0,4.6-15.32ZM88,104v56H72V104a64.07,64.07,0,0,1,56-63.48V56.68A48.07,48.07,0,0,0,88,104Zm80,128H104V176h64Zm0-128v56H104V104a32,32,0,0,1,64,0Z\"/>", "first-aid": "<path d=\"M224,104v48a8,8,0,0,1-8,8H160v56a8,8,0,0,1-8,8H104a8,8,0,0,1-8-8V160H40a8,8,0,0,1-8-8V104a8,8,0,0,1,8-8H96V40a8,8,0,0,1,8-8h48a8,8,0,0,1,8,8V96h56A8,8,0,0,1,224,104Z\" opacity=\"0.2\"/><path d=\"M216,88H168V40a16,16,0,0,0-16-16H104A16,16,0,0,0,88,40V88H40a16,16,0,0,0-16,16v48a16,16,0,0,0,16,16H88v48a16,16,0,0,0,16,16h48a16,16,0,0,0,16-16V168h48a16,16,0,0,0,16-16V104A16,16,0,0,0,216,88Zm0,64H160a8,8,0,0,0-8,8v56H104V160a8,8,0,0,0-8-8H40V104H96a8,8,0,0,0,8-8V40h48V96a8,8,0,0,0,8,8h56Z\"/>", "flag": "<path d=\"M224,56V176c-64,55.43-112-55.43-176,0V56C112,.57,160,111.43,224,56Z\" opacity=\"0.2\"/><path d=\"M42.76,50A8,8,0,0,0,40,56V224a8,8,0,0,0,16,0V179.77c26.79-21.16,49.87-9.75,76.45,3.41,16.4,8.11,34.06,16.85,53,16.85,13.93,0,28.54-4.75,43.82-18a8,8,0,0,0,2.76-6V56A8,8,0,0,0,218.76,50c-28,24.23-51.72,12.49-79.21-1.12C111.07,34.76,78.78,18.79,42.76,50ZM216,172.25c-26.79,21.16-49.87,9.74-76.45-3.41-25-12.35-52.81-26.13-83.55-8.4V59.79c26.79-21.16,49.87-9.75,76.45,3.4,25,12.35,52.82,26.13,83.55,8.4Z\"/>", "flag-checkered": "<path d=\"M224,56v60c-19.89,17.23-38.23,18.39-56,13.48v-60C185.76,74.39,204.11,73.23,224,56ZM104,102.52v-60C86.24,37.61,67.89,38.77,48,56v60c19.89-17.22,38.23-18.39,56-13.48v60c21.62,6,42.38,21,64,27v-60c-21.62-6-42.38-21-64-27Z\" opacity=\"0.2\"/><path d=\"M227.32,48.75A8,8,0,0,0,218.76,50c-28,24.22-51.72,12.48-79.21-1.13C111.07,34.76,78.78,18.79,42.76,50A8,8,0,0,0,40,56V224a8,8,0,0,0,16,0V179.77c26.79-21.16,49.87-9.75,76.45,3.41,28.49,14.09,60.77,30.06,96.79-1.13a8,8,0,0,0,2.76-6V56A8,8,0,0,0,227.32,48.75ZM216,71.6v40.65c-14,11.06-27,13.22-40,10.88V79.34A60.05,60.05,0,0,0,216,71.6Zm-56,3.76v43c-6.66-2.67-13.43-6-20.45-9.48-8.82-4.37-18-8.91-27.55-12.18v-43c6.66,2.66,13.43,6,20.45,9.48C141.27,67.55,150.46,72.09,160,75.36ZM96,48.91V92.69a60.06,60.06,0,0,0-40,7.75V59.78C70,48.72,83,46.57,96,48.91ZM86.58,152A60.06,60.06,0,0,0,56,160.43V119.78c14-11.06,27-13.22,40-10.88v43.8A65.61,65.61,0,0,0,86.58,152ZM112,156.67v-43c6.66,2.66,13.43,6,20.45,9.48,8.82,4.37,18,8.9,27.55,12.17v43c-6.66-2.67-13.43-6-20.45-9.48C130.73,164.47,121.54,159.94,112,156.67Zm64,26.45v-43.8a65.61,65.61,0,0,0,9.42.72A60.11,60.11,0,0,0,216,131.57v40.68C202,183.31,189,185.46,176,183.12Z\"/>", "flask": "<path d=\"M208,216H48a8,8,0,0,1-6.86-12.12l30.48-50.8h0c13.23-2.48,32-1.41,56.37,10.92,32.25,16.33,54.75,12.91,67.5,7.65h0l19.34,32.23A8,8,0,0,1,208,216Z\" opacity=\"0.2\"/><path d=\"M221.69,199.77,160,96.92V40h8a8,8,0,0,0,0-16H88a8,8,0,0,0,0,16h8V96.92L34.31,199.77A16,16,0,0,0,48,224H208a16,16,0,0,0,13.72-24.23ZM110.86,103.25A7.93,7.93,0,0,0,112,99.14V40h32V99.14a7.93,7.93,0,0,0,1.14,4.11L183.36,167c-12,2.37-29.07,1.37-51.75-10.11-15.91-8.05-31.05-12.32-45.22-12.81ZM48,208l28.54-47.58c14.25-1.73,30.31,1.85,47.82,10.72,19,9.61,35,12.88,48,12.88a69.89,69.89,0,0,0,19.55-2.7L208,208Z\"/>", "floppy-disk": "<path d=\"M216,83.31V208a8,8,0,0,1-8,8H176V152a8,8,0,0,0-8-8H88a8,8,0,0,0-8,8v64H48a8,8,0,0,1-8-8V48a8,8,0,0,1,8-8H172.69a8,8,0,0,1,5.65,2.34l35.32,35.32A8,8,0,0,1,216,83.31Z\" opacity=\"0.2\"/><path d=\"M219.31,72,184,36.69A15.86,15.86,0,0,0,172.69,32H48A16,16,0,0,0,32,48V208a16,16,0,0,0,16,16H208a16,16,0,0,0,16-16V83.31A15.86,15.86,0,0,0,219.31,72ZM168,208H88V152h80Zm40,0H184V152a16,16,0,0,0-16-16H88a16,16,0,0,0-16,16v56H48V48H172.69L208,83.31ZM160,72a8,8,0,0,1-8,8H96a8,8,0,0,1,0-16h56A8,8,0,0,1,160,72Z\"/>", "folder": "<path d=\"M128,80H32V56a8,8,0,0,1,8-8H92.69a8,8,0,0,1,5.65,2.34Z\" opacity=\"0.2\"/><path d=\"M216,72H131.31L104,44.69A15.86,15.86,0,0,0,92.69,40H40A16,16,0,0,0,24,56V200.62A15.4,15.4,0,0,0,39.38,216H216.89A15.13,15.13,0,0,0,232,200.89V88A16,16,0,0,0,216,72ZM92.69,56l16,16H40V56ZM216,200H40V88H216Z\"/>", "folder-open": "<path d=\"M208,88v24H69.77a8,8,0,0,0-7.59,5.47L32,208V64a8,8,0,0,1,8-8H93.33a8,8,0,0,1,4.8,1.6L128,80h72A8,8,0,0,1,208,88Z\" opacity=\"0.2\"/><path d=\"M245,110.64A16,16,0,0,0,232,104H216V88a16,16,0,0,0-16-16H130.67L102.94,51.2a16.14,16.14,0,0,0-9.6-3.2H40A16,16,0,0,0,24,64V208a8,8,0,0,0,8,8H211.1a8,8,0,0,0,7.59-5.47l28.49-85.47A16.05,16.05,0,0,0,245,110.64ZM93.34,64,123.2,86.4A8,8,0,0,0,128,88h72v16H69.77a16,16,0,0,0-15.18,10.94L40,158.7V64Zm112,136H43.1l26.67-80H232Z\"/>", "folders": "<path d=\"M232,80v88.89a7.11,7.11,0,0,1-7.11,7.11H200V112a8,8,0,0,0-8-8H120L90.13,81.6a8,8,0,0,0-4.8-1.6H64V56a8,8,0,0,1,8-8h45.33a8,8,0,0,1,4.8,1.6L152,72h72A8,8,0,0,1,232,80Z\" opacity=\"0.2\"/><path d=\"M224,64H154.67L126.93,43.2a16.12,16.12,0,0,0-9.6-3.2H72A16,16,0,0,0,56,56V72H40A16,16,0,0,0,24,88V200a16,16,0,0,0,16,16H192.89A15.13,15.13,0,0,0,208,200.89V184h16.89A15.13,15.13,0,0,0,240,168.89V80A16,16,0,0,0,224,64ZM192,200H40V88H85.33l29.87,22.4A8,8,0,0,0,120,112h72Zm32-32H208V112a16,16,0,0,0-16-16H122.67L94.93,75.2a16.12,16.12,0,0,0-9.6-3.2H72V56h45.33L147.2,78.4A8,8,0,0,0,152,80h72Z\"/>", "gas-pump": "<path d=\"M168,56V216H56V56A16,16,0,0,1,72,40h80A16,16,0,0,1,168,56Z\" opacity=\"0.2\"/><path d=\"M241,69.66,221.66,50.34a8,8,0,0,0-11.32,11.32L229.66,81A8,8,0,0,1,232,86.63V168a8,8,0,0,1-16,0V128a24,24,0,0,0-24-24H176V56a24,24,0,0,0-24-24H72A24,24,0,0,0,48,56V208H32a8,8,0,0,0,0,16H192a8,8,0,0,0,0-16H176V120h16a8,8,0,0,1,8,8v40a24,24,0,0,0,48,0V86.63A23.85,23.85,0,0,0,241,69.66ZM64,208V56a8,8,0,0,1,8-8h80a8,8,0,0,1,8,8V208Zm80-96a8,8,0,0,1-8,8H88a8,8,0,0,1,0-16h48A8,8,0,0,1,144,112Z\"/>", "gear-fine": "<path d=\"M208,128a80,80,0,1,1-80-80A80,80,0,0,1,208,128Z\" opacity=\"0.2\"/><path d=\"M232,120H215.63a87.27,87.27,0,0,0-7.74-28.88l14.18-8.19a8,8,0,0,0-8-13.86l-14.2,8.2a88.78,88.78,0,0,0-21.14-21.14l8.2-14.2a8,8,0,0,0-13.86-8l-8.19,14.18A87.27,87.27,0,0,0,136,40.37V24a8,8,0,0,0-16,0V40.37a87.27,87.27,0,0,0-28.88,7.74L82.93,33.93a8,8,0,0,0-13.86,8l8.2,14.2A88.78,88.78,0,0,0,56.13,77.27l-14.2-8.2a8,8,0,0,0-8,13.86l14.18,8.19A87.27,87.27,0,0,0,40.37,120H24a8,8,0,0,0,0,16H40.37a87.27,87.27,0,0,0,7.74,28.88l-14.18,8.19a8,8,0,0,0,4,14.93,7.92,7.92,0,0,0,4-1.07l14.2-8.2a88.78,88.78,0,0,0,21.14,21.14l-8.2,14.2a8,8,0,0,0,13.86,8l8.19-14.18A87.27,87.27,0,0,0,120,215.63V232a8,8,0,0,0,16,0V215.63a87.27,87.27,0,0,0,28.88-7.74l8.19,14.18a8,8,0,0,0,13.86-8l-8.2-14.2a88.78,88.78,0,0,0,21.14-21.14l14.2,8.2A8,8,0,0,0,225,184a8,8,0,0,0-2.92-10.93l-14.18-8.19A87.27,87.27,0,0,0,215.63,136H232a8,8,0,0,0,0-16ZM85.31,185.94a71.92,71.92,0,0,1,0-115.88L118.76,128ZM128,200A71.58,71.58,0,0,1,99.16,194L132.62,136h66.92A72.08,72.08,0,0,1,128,200Zm4.62-80L99.16,62.05a71.94,71.94,0,0,1,100.38,58Z\"/>", "gear-six": "<path d=\"M230.1,108.76,198.25,90.62c-.64-1.16-1.31-2.29-2-3.41l-.12-36A104.61,104.61,0,0,0,162,32L130,49.89c-1.34,0-2.69,0-4,0L94,32A104.58,104.58,0,0,0,59.89,51.25l-.16,36c-.7,1.12-1.37,2.26-2,3.41l-31.84,18.1a99.15,99.15,0,0,0,0,38.46l31.85,18.14c.64,1.16,1.31,2.29,2,3.41l.12,36A104.61,104.61,0,0,0,94,224l32-17.87c1.34,0,2.69,0,4,0L162,224a104.58,104.58,0,0,0,34.08-19.25l.16-36c.7-1.12,1.37-2.26,2-3.41l31.84-18.1A99.15,99.15,0,0,0,230.1,108.76ZM128,168a40,40,0,1,1,40-40A40,40,0,0,1,128,168Z\" opacity=\"0.2\"/><path d=\"M128,80a48,48,0,1,0,48,48A48.05,48.05,0,0,0,128,80Zm0,80a32,32,0,1,1,32-32A32,32,0,0,1,128,160Zm109.94-52.79a8,8,0,0,0-3.89-5.4l-29.83-17-.12-33.62a8,8,0,0,0-2.83-6.08,111.91,111.91,0,0,0-36.72-20.67,8,8,0,0,0-6.46.59L128,41.85,97.88,25a8,8,0,0,0-6.47-.6A111.92,111.92,0,0,0,54.73,45.15a8,8,0,0,0-2.83,6.07l-.15,33.65-29.83,17a8,8,0,0,0-3.89,5.4,106.47,106.47,0,0,0,0,41.56,8,8,0,0,0,3.89,5.4l29.83,17,.12,33.63a8,8,0,0,0,2.83,6.08,111.91,111.91,0,0,0,36.72,20.67,8,8,0,0,0,6.46-.59L128,214.15,158.12,231a7.91,7.91,0,0,0,3.9,1,8.09,8.09,0,0,0,2.57-.42,112.1,112.1,0,0,0,36.68-20.73,8,8,0,0,0,2.83-6.07l.15-33.65,29.83-17a8,8,0,0,0,3.89-5.4A106.47,106.47,0,0,0,237.94,107.21Zm-15,34.91-28.57,16.25a8,8,0,0,0-3,3c-.58,1-1.19,2.06-1.81,3.06a7.94,7.94,0,0,0-1.22,4.21l-.15,32.25a95.89,95.89,0,0,1-25.37,14.3L134,199.13a8,8,0,0,0-3.91-1h-.19c-1.21,0-2.43,0-3.64,0a8.1,8.1,0,0,0-4.1,1l-28.84,16.1A96,96,0,0,1,67.88,201l-.11-32.2a8,8,0,0,0-1.22-4.22c-.62-1-1.23-2-1.8-3.06a8.09,8.09,0,0,0-3-3.06l-28.6-16.29a90.49,90.49,0,0,1,0-28.26L61.67,97.63a8,8,0,0,0,3-3c.58-1,1.19-2.06,1.81-3.06a7.94,7.94,0,0,0,1.22-4.21l.15-32.25a95.89,95.89,0,0,1,25.37-14.3L122,56.87a8,8,0,0,0,4.1,1c1.21,0,2.43,0,3.64,0a8,8,0,0,0,4.1-1l28.84-16.1A96,96,0,0,1,188.12,55l.11,32.2a8,8,0,0,0,1.22,4.22c.62,1,1.23,2,1.8,3.06a8.09,8.09,0,0,0,3,3.06l28.6,16.29A90.49,90.49,0,0,1,222.9,142.12Z\"/>", "globe": "<path d=\"M224,128a96,96,0,1,1-96-96A96,96,0,0,1,224,128Z\" opacity=\"0.2\"/><path d=\"M128,24h0A104,104,0,1,0,232,128,104.12,104.12,0,0,0,128,24Zm88,104a87.61,87.61,0,0,1-3.33,24H174.16a157.44,157.44,0,0,0,0-48h38.51A87.61,87.61,0,0,1,216,128ZM102,168H154a115.11,115.11,0,0,1-26,45A115.27,115.27,0,0,1,102,168Zm-3.9-16a140.84,140.84,0,0,1,0-48h59.88a140.84,140.84,0,0,1,0,48ZM40,128a87.61,87.61,0,0,1,3.33-24H81.84a157.44,157.44,0,0,0,0,48H43.33A87.61,87.61,0,0,1,40,128ZM154,88H102a115.11,115.11,0,0,1,26-45A115.27,115.27,0,0,1,154,88Zm52.33,0H170.71a135.28,135.28,0,0,0-22.3-45.6A88.29,88.29,0,0,1,206.37,88ZM107.59,42.4A135.28,135.28,0,0,0,85.29,88H49.63A88.29,88.29,0,0,1,107.59,42.4ZM49.63,168H85.29a135.28,135.28,0,0,0,22.3,45.6A88.29,88.29,0,0,1,49.63,168Zm98.78,45.6a135.28,135.28,0,0,0,22.3-45.6h35.66A88.29,88.29,0,0,1,148.41,213.6Z\"/>", "hammer": "<path d=\"M245.66,129,217,157.66a8,8,0,0,1-11.3,0L168.1,120l-28,28-32-32,28-28L80,31.78a87.81,87.81,0,0,1,98.31,18l67.35,67.89A8,8,0,0,1,245.66,129Z\" opacity=\"0.2\"/><path d=\"M251.34,112,183.88,44.08a96.1,96.1,0,0,0-135.77,0l-.09.09L34.25,58.4A8,8,0,0,0,45.74,69.53L59.47,55.35a79.92,79.92,0,0,1,18.71-13.9L124.68,88l-96,96a16,16,0,0,0,0,22.63l20.69,20.69a16,16,0,0,0,22.63,0l96-96,14.34,14.34h0L200,163.3a16,16,0,0,0,22.63,0l28.69-28.69A16,16,0,0,0,251.34,112ZM60.68,216,40,195.31l68-68L128.68,148ZM162.34,114.32,140,136.67,119.31,116l22.35-22.35a8,8,0,0,0,0-11.32L94.32,35a80,80,0,0,1,78.23,20.41l44.22,44.51L188,128.66l-14.34-14.34A8,8,0,0,0,162.34,114.32Zm49,37.66-12-12L228,111.25l12,12Z\"/>", "hand-palm": "<path d=\"M208,116v36a80,80,0,0,1-160,0V76a20,20,0,0,1,40,0V44a20,20,0,0,1,40,0V60a20,20,0,0,1,40,0v56a20,20,0,0,1,40,0Z\" opacity=\"0.2\"/><path d=\"M188,88a27.75,27.75,0,0,0-12,2.71V60a28,28,0,0,0-41.36-24.6A28,28,0,0,0,80,44v6.71A27.75,27.75,0,0,0,68,48,28,28,0,0,0,40,76v76a88,88,0,0,0,176,0V116A28,28,0,0,0,188,88Zm12,64a72,72,0,0,1-144,0V76a12,12,0,0,1,24,0v44a8,8,0,0,0,16,0V44a12,12,0,0,1,24,0v68a8,8,0,0,0,16,0V60a12,12,0,0,1,24,0v68.67A48.08,48.08,0,0,0,120,176a8,8,0,0,0,16,0,32,32,0,0,1,32-32,8,8,0,0,0,8-8V116a12,12,0,0,1,24,0Z\"/>", "hand-pointing": "<path d=\"M216,116v36a80,80,0,0,1-80,80c-44.18,0-55.81-24-93.32-90a20,20,0,0,1,34.64-20L96,152V44a20,20,0,0,1,40,0v56a20,20,0,0,1,40,0v16a20,20,0,0,1,40,0Z\" opacity=\"0.2\"/><path d=\"M196,88a27.86,27.86,0,0,0-13.35,3.39A28,28,0,0,0,144,74.7V44a28,28,0,0,0-56,0v80l-3.82-6.13A28,28,0,0,0,35.73,146l4.67,8.23C74.81,214.89,89.05,240,136,240a88.1,88.1,0,0,0,88-88V116A28,28,0,0,0,196,88Zm12,64a72.08,72.08,0,0,1-72,72c-37.63,0-47.84-18-81.68-77.68l-4.69-8.27,0-.05A12,12,0,0,1,54,121.61a11.88,11.88,0,0,1,6-1.6,12,12,0,0,1,10.41,6,1.76,1.76,0,0,0,.14.23l18.67,30A8,8,0,0,0,104,152V44a12,12,0,0,1,24,0v68a8,8,0,0,0,16,0V100a12,12,0,0,1,24,0v20a8,8,0,0,0,16,0v-4a12,12,0,0,1,24,0Z\"/>", "hand-waving": "<path d=\"M184,213.27A80,80,0,0,1,74.7,184l-40-69.32a20,20,0,0,1,34.64-20L55.08,70A20,20,0,0,1,89.73,50l6.92,12h0a20,20,0,0,1,34.64-20l30,52A20,20,0,0,1,196,74l17.31,30A80,80,0,0,1,184,213.27Z\" opacity=\"0.2\"/><path d=\"M220.17,100,202.86,70a28,28,0,0,0-38.24-10.25,27.69,27.69,0,0,0-9,8.34L138.2,38a28,28,0,0,0-48.48,0A28,28,0,0,0,48.15,74l1.59,2.76A27.67,27.67,0,0,0,38,80.41a28,28,0,0,0-10.24,38.25l40,69.32a87.47,87.47,0,0,0,53.43,41,88.56,88.56,0,0,0,22.92,3,88,88,0,0,0,76.06-132Zm-6.66,62.64A72,72,0,0,1,81.62,180l-40-69.32a12,12,0,0,1,20.78-12L81.63,132a8,8,0,1,0,13.85-8L62,66A12,12,0,1,1,82.78,54L114,108a8,8,0,1,0,13.85-8L103.57,58h0a12,12,0,1,1,20.78-12l33.42,57.9a48,48,0,0,0-5.54,60.6,8,8,0,0,0,13.24-9A32,32,0,0,1,172.78,112a8,8,0,0,0,2.13-10.4L168.23,90A12,12,0,1,1,189,78l17.31,30A71.56,71.56,0,0,1,213.51,162.62ZM184.25,31.71A8,8,0,0,1,194,26a59.62,59.62,0,0,1,36.53,28l.33.57a8,8,0,1,1-13.85,8l-.33-.57a43.67,43.67,0,0,0-26.8-20.5A8,8,0,0,1,184.25,31.71ZM80.89,237a8,8,0,0,1-11.23,1.33A119.56,119.56,0,0,1,40.06,204a8,8,0,0,1,13.86-8,103.67,103.67,0,0,0,25.64,29.72A8,8,0,0,1,80.89,237Z\"/>", "handshake": "<path d=\"M200,152l-40,40L96,176,40,136,72.68,70.63,128,56l55.32,14.63L183.6,72H144L98.34,116.29a8,8,0,0,0,1.38,12.42C117.23,139.9,141,139.13,160,120Z\" opacity=\"0.2\"/><path d=\"M254.3,107.91,228.78,56.85a16,16,0,0,0-21.47-7.15L182.44,62.13,130.05,48.27a8.14,8.14,0,0,0-4.1,0L73.56,62.13,48.69,49.7a16,16,0,0,0-21.47,7.15L1.7,107.9a16,16,0,0,0,7.15,21.47l27,13.51,55.49,39.63a8.06,8.06,0,0,0,2.71,1.25l64,16a8,8,0,0,0,7.6-2.1l55.07-55.08,26.42-13.21a16,16,0,0,0,7.15-21.46Zm-54.89,33.37L165,113.72a8,8,0,0,0-10.68.61C136.51,132.27,116.66,130,104,122L147.24,80h31.81l27.21,54.41ZM41.53,64,62,74.22,36.43,125.27,16,115.06Zm116,119.13L99.42,168.61l-49.2-35.14,28-56L128,64.28l9.8,2.59-45,43.68-.08.09a16,16,0,0,0,2.72,24.81c20.56,13.13,45.37,11,64.91-5L188,152.66Zm62-57.87-25.52-51L214.47,64,240,115.06Zm-87.75,92.67a8,8,0,0,1-7.75,6.06,8.13,8.13,0,0,1-1.95-.24L80.41,213.33a7.89,7.89,0,0,1-2.71-1.25L51.35,193.26a8,8,0,0,1,9.3-13l25.11,17.94L126,208.24A8,8,0,0,1,131.82,217.94Z\"/>", "hard-hat": "<path d=\"M104,51.31V160H40V136A88,88,0,0,1,104,51.31Zm48,0V160h64V136A88,88,0,0,0,152,51.31Z\" opacity=\"0.2\"/><path d=\"M224,152V136a96.37,96.37,0,0,0-64-90.51V40a16,16,0,0,0-16-16H112A16,16,0,0,0,96,40v5.49A96.37,96.37,0,0,0,32,136v16a16,16,0,0,0-16,16v24a16,16,0,0,0,16,16H224a16,16,0,0,0,16-16V168A16,16,0,0,0,224,152Zm-16-16v16H160V62.67A80.36,80.36,0,0,1,208,136ZM144,40V152H112V40ZM48,136A80.36,80.36,0,0,1,96,62.67V152H48Zm176,56H32V168H224v24Z\"/>", "hash": "<path d=\"M165.82,96l-11.64,64h-64l11.64-64Z\" opacity=\"0.2\"/><path d=\"M224,88H175.4l8.47-46.57a8,8,0,0,0-15.74-2.86l-9,49.43H111.4l8.47-46.57a8,8,0,0,0-15.74-2.86L95.14,88H48a8,8,0,0,0,0,16H92.23L83.5,152H32a8,8,0,0,0,0,16H80.6l-8.47,46.57a8,8,0,0,0,6.44,9.3A7.79,7.79,0,0,0,80,224a8,8,0,0,0,7.86-6.57l9-49.43H144.6l-8.47,46.57a8,8,0,0,0,6.44,9.3A7.79,7.79,0,0,0,144,224a8,8,0,0,0,7.86-6.57l9-49.43H208a8,8,0,0,0,0-16H163.77l8.73-48H224a8,8,0,0,0,0-16Zm-76.5,64H99.77l8.73-48h47.73Z\"/>", "hourglass-medium": "<path d=\"M180.92,88,128,128,74.67,88Z\" opacity=\"0.2\"/><path d=\"M200,75.64V40a16,16,0,0,0-16-16H72A16,16,0,0,0,56,40V76a16.07,16.07,0,0,0,6.4,12.8L114.67,128,62.4,167.2A16.07,16.07,0,0,0,56,180v36a16,16,0,0,0,16,16H184a16,16,0,0,0,16-16V180.36a16.09,16.09,0,0,0-6.35-12.77L141.27,128l52.38-39.59A16.09,16.09,0,0,0,200,75.64ZM72,40H184V75.64L178.23,80H77.33L72,76Zm56,78L98.67,96h58.4Zm56,98H72V180l48-36v24a8,8,0,0,0,16,0V144.08l48,36.28Z\"/>", "house": "<path d=\"M216,120v96H152V152H104v64H40V120a8,8,0,0,1,2.34-5.66l80-80a8,8,0,0,1,11.32,0l80,80A8,8,0,0,1,216,120Z\" opacity=\"0.2\"/><path d=\"M219.31,108.68l-80-80a16,16,0,0,0-22.62,0l-80,80A15.87,15.87,0,0,0,32,120v96a8,8,0,0,0,8,8h64a8,8,0,0,0,8-8V160h32v56a8,8,0,0,0,8,8h64a8,8,0,0,0,8-8V120A15.87,15.87,0,0,0,219.31,108.68ZM208,208H160V152a8,8,0,0,0-8-8H104a8,8,0,0,0-8,8v56H48V120l80-80,80,80Z\"/>", "image": "<path d=\"M224,56V178.06l-39.72-39.72a8,8,0,0,0-11.31,0L147.31,164,97.66,114.34a8,8,0,0,0-11.32,0L32,168.69V56a8,8,0,0,1,8-8H216A8,8,0,0,1,224,56Z\" opacity=\"0.2\"/><path d=\"M216,40H40A16,16,0,0,0,24,56V200a16,16,0,0,0,16,16H216a16,16,0,0,0,16-16V56A16,16,0,0,0,216,40Zm0,16V158.75l-26.07-26.06a16,16,0,0,0-22.63,0l-20,20-44-44a16,16,0,0,0-22.62,0L40,149.37V56ZM40,172l52-52,80,80H40Zm176,28H194.63l-36-36,20-20L216,181.38V200ZM144,100a12,12,0,1,1,12,12A12,12,0,0,1,144,100Z\"/>", "key": "<path d=\"M232,98.36C230.73,136.92,198.67,168,160.09,168a71.68,71.68,0,0,1-26.92-5.17h0L120,176H96v24H72v24H40a8,8,0,0,1-8-8V187.31a8,8,0,0,1,2.34-5.65l58.83-58.83h0A71.68,71.68,0,0,1,88,95.91c0-38.58,31.08-70.64,69.64-71.87A72,72,0,0,1,232,98.36Z\" opacity=\"0.2\"/><path d=\"M216.57,39.43A80,80,0,0,0,83.91,120.78L28.69,176A15.86,15.86,0,0,0,24,187.31V216a16,16,0,0,0,16,16H72a8,8,0,0,0,8-8V208H96a8,8,0,0,0,8-8V184h16a8,8,0,0,0,5.66-2.34l9.56-9.57A79.73,79.73,0,0,0,160,176h.1A80,80,0,0,0,216.57,39.43ZM224,98.1c-1.09,34.09-29.75,61.86-63.89,61.9H160a63.7,63.7,0,0,1-23.65-4.51,8,8,0,0,0-8.84,1.68L116.69,168H96a8,8,0,0,0-8,8v16H72a8,8,0,0,0-8,8v16H40V187.31l58.83-58.82a8,8,0,0,0,1.68-8.84A63.72,63.72,0,0,1,96,95.92c0-34.14,27.81-62.8,61.9-63.89A64,64,0,0,1,224,98.1ZM192,76a12,12,0,1,1-12-12A12,12,0,0,1,192,76Z\"/>", "lightbulb": "<path d=\"M208,104a79.86,79.86,0,0,1-30.59,62.92A24.29,24.29,0,0,0,168,186v6a8,8,0,0,1-8,8H96a8,8,0,0,1-8-8v-6a24.11,24.11,0,0,0-9.3-19A79.87,79.87,0,0,1,48,104.45C47.76,61.09,82.72,25,126.07,24A80,80,0,0,1,208,104Z\" opacity=\"0.2\"/><path d=\"M176,232a8,8,0,0,1-8,8H88a8,8,0,0,1,0-16h80A8,8,0,0,1,176,232Zm40-128a87.55,87.55,0,0,1-33.64,69.21A16.24,16.24,0,0,0,176,186v6a16,16,0,0,1-16,16H96a16,16,0,0,1-16-16v-6a16,16,0,0,0-6.23-12.66A87.59,87.59,0,0,1,40,104.49C39.74,56.83,78.26,17.14,125.88,16A88,88,0,0,1,216,104Zm-16,0a72,72,0,0,0-73.74-72c-39,.92-70.47,33.39-70.26,72.39a71.65,71.65,0,0,0,27.64,56.3A32,32,0,0,1,96,186v6h64v-6a32.15,32.15,0,0,1,12.47-25.35A71.65,71.65,0,0,0,200,104Zm-16.11-9.34a57.6,57.6,0,0,0-46.56-46.55,8,8,0,0,0-2.66,15.78c16.57,2.79,30.63,16.85,33.44,33.45A8,8,0,0,0,176,104a9,9,0,0,0,1.35-.11A8,8,0,0,0,183.89,94.66Z\"/>", "lightning": "<path d=\"M96,240l16-80L48,136,160,16,144,96l64,24Z\" opacity=\"0.2\"/><path d=\"M215.79,118.17a8,8,0,0,0-5-5.66L153.18,90.9l14.66-73.33a8,8,0,0,0-13.69-7l-112,120a8,8,0,0,0,3,13l57.63,21.61L88.16,238.43a8,8,0,0,0,13.69,7l112-120A8,8,0,0,0,215.79,118.17ZM109.37,214l10.47-52.38a8,8,0,0,0-5-9.06L62,132.71l84.62-90.66L136.16,94.43a8,8,0,0,0,5,9.06l52.8,19.8Z\"/>", "link": "<path d=\"M218.34,119.6,183.6,154.34a46.58,46.58,0,0,1-44.31,12.26c-.31.34-.62.67-.95,1L103.6,202.34A46.63,46.63,0,1,1,37.66,136.4L72.4,101.66A46.6,46.6,0,0,1,116.71,89.4c.31-.34.62-.67,1-1L152.4,53.66a46.63,46.63,0,0,1,65.94,65.94Z\" opacity=\"0.2\"/><path d=\"M240,88.23a54.43,54.43,0,0,1-16,37L189.25,160a54.27,54.27,0,0,1-38.63,16h-.05A54.63,54.63,0,0,1,96,119.84a8,8,0,0,1,16,.45A38.62,38.62,0,0,0,150.58,160h0a38.39,38.39,0,0,0,27.31-11.31l34.75-34.75a38.63,38.63,0,0,0-54.63-54.63l-11,11A8,8,0,0,1,135.7,59l11-11A54.65,54.65,0,0,1,224,48,54.86,54.86,0,0,1,240,88.23ZM109,185.66l-11,11A38.41,38.41,0,0,1,70.6,208h0a38.63,38.63,0,0,1-27.29-65.94L78,107.31A38.63,38.63,0,0,1,144,135.71a8,8,0,0,0,7.78,8.22H152a8,8,0,0,0,8-7.78A54.86,54.86,0,0,0,144,96a54.65,54.65,0,0,0-77.27,0L32,130.75A54.62,54.62,0,0,0,70.56,224h0a54.28,54.28,0,0,0,38.64-16l11-11A8,8,0,0,0,109,185.66Z\"/>", "link-simple-horizontal": "<path d=\"M240,128h0a48,48,0,0,1-48,48H64a48,48,0,0,1-48-48h0A48,48,0,0,1,64,80H192A48,48,0,0,1,240,128Z\" opacity=\"0.2\"/><path d=\"M80,120h96a8,8,0,0,1,0,16H80a8,8,0,0,1,0-16Zm24,48H64a40,40,0,0,1,0-80h40a8,8,0,0,0,0-16H64a56,56,0,0,0,0,112h40a8,8,0,0,0,0-16Zm88-96H152a8,8,0,0,0,0,16h40a40,40,0,0,1,0,80H152a8,8,0,0,0,0,16h40a56,56,0,0,0,0-112Z\"/>", "lock": "<path d=\"M216,96V208a8,8,0,0,1-8,8H48a8,8,0,0,1-8-8V96a8,8,0,0,1,8-8H208A8,8,0,0,1,216,96Z\" opacity=\"0.2\"/><path d=\"M208,80H176V56a48,48,0,0,0-96,0V80H48A16,16,0,0,0,32,96V208a16,16,0,0,0,16,16H208a16,16,0,0,0,16-16V96A16,16,0,0,0,208,80ZM96,56a32,32,0,0,1,64,0V80H96ZM208,208H48V96H208V208Zm-68-56a12,12,0,1,1-12-12A12,12,0,0,1,140,152Z\"/>", "lock-key": "<path d=\"M208,88H48a8,8,0,0,0-8,8V208a8,8,0,0,0,8,8H208a8,8,0,0,0,8-8V96A8,8,0,0,0,208,88Zm-80,72a20,20,0,1,1,20-20A20,20,0,0,1,128,160Z\" opacity=\"0.2\"/><path d=\"M208,80H176V56a48,48,0,0,0-96,0V80H48A16,16,0,0,0,32,96V208a16,16,0,0,0,16,16H208a16,16,0,0,0,16-16V96A16,16,0,0,0,208,80ZM96,56a32,32,0,0,1,64,0V80H96ZM208,208H48V96H208V208Zm-80-96a28,28,0,0,0-8,54.83V184a8,8,0,0,0,16,0V166.83A28,28,0,0,0,128,112Zm0,40a12,12,0,1,1,12-12A12,12,0,0,1,128,152Z\"/>", "lock-open": "<path d=\"M216,96V208a8,8,0,0,1-8,8H48a8,8,0,0,1-8-8V96a8,8,0,0,1,8-8H208A8,8,0,0,1,216,96Z\" opacity=\"0.2\"/><path d=\"M208,80H96V56a32,32,0,0,1,32-32c15.37,0,29.2,11,32.16,25.59a8,8,0,0,0,15.68-3.18C171.32,24.15,151.2,8,128,8A48.05,48.05,0,0,0,80,56V80H48A16,16,0,0,0,32,96V208a16,16,0,0,0,16,16H208a16,16,0,0,0,16-16V96A16,16,0,0,0,208,80Zm0,128H48V96H208V208Zm-68-56a12,12,0,1,1-12-12A12,12,0,0,1,140,152Z\"/>", "magnifying-glass": "<path d=\"M192,112a80,80,0,1,1-80-80A80,80,0,0,1,192,112Z\" opacity=\"0.2\"/><path d=\"M229.66,218.34,179.6,168.28a88.21,88.21,0,1,0-11.32,11.31l50.06,50.07a8,8,0,0,0,11.32-11.32ZM40,112a72,72,0,1,1,72,72A72.08,72.08,0,0,1,40,112Z\"/>", "map-pin": "<path d=\"M128,24a80,80,0,0,0-80,80c0,72,80,128,80,128s80-56,80-128A80,80,0,0,0,128,24Zm0,112a32,32,0,1,1,32-32A32,32,0,0,1,128,136Z\" opacity=\"0.2\"/><path d=\"M128,64a40,40,0,1,0,40,40A40,40,0,0,0,128,64Zm0,64a24,24,0,1,1,24-24A24,24,0,0,1,128,128Zm0-112a88.1,88.1,0,0,0-88,88c0,31.4,14.51,64.68,42,96.25a254.19,254.19,0,0,0,41.45,38.3,8,8,0,0,0,9.18,0A254.19,254.19,0,0,0,174,200.25c27.45-31.57,42-64.85,42-96.25A88.1,88.1,0,0,0,128,16Zm0,206c-16.53-13-72-60.75-72-118a72,72,0,0,1,144,0C200,161.23,144.53,209,128,222Z\"/>", "map-trifold": "<path d=\"M160,72V216L96,184V40Z\" opacity=\"0.2\"/><path d=\"M228.92,49.69a8,8,0,0,0-6.86-1.45L160.93,63.52,99.58,32.84a8,8,0,0,0-5.52-.6l-64,16A8,8,0,0,0,24,56V200a8,8,0,0,0,9.94,7.76l61.13-15.28,61.35,30.68A8.15,8.15,0,0,0,160,224a8,8,0,0,0,1.94-.24l64-16A8,8,0,0,0,232,200V56A8,8,0,0,0,228.92,49.69ZM104,52.94l48,24V203.06l-48-24ZM40,62.25l48-12v127.5l-48,12Zm176,131.5-48,12V78.25l48-12Z\"/>", "megaphone": "<path d=\"M240,120a40,40,0,0,1-40,40H160V80h40A40,40,0,0,1,240,120Z\" opacity=\"0.2\"/><path d=\"M248,120a48.05,48.05,0,0,0-48-48H160.2c-2.91-.17-53.62-3.74-101.91-44.24A16,16,0,0,0,32,40V200a16,16,0,0,0,26.29,12.25c37.77-31.68,77-40.76,93.71-43.3v31.72A16,16,0,0,0,159.12,214l11,7.33A16,16,0,0,0,194.5,212l11.77-44.36A48.07,48.07,0,0,0,248,120ZM48,199.93V40h0c42.81,35.91,86.63,45,104,47.24v65.48C134.65,155,90.84,164.07,48,199.93Zm131,8,0,.11-11-7.33V168h21.6ZM200,152H168V88h32a32,32,0,1,1,0,64Z\"/>", "microphone": "<path d=\"M168,64v64a40,40,0,0,1-40,40h0a40,40,0,0,1-40-40V64a40,40,0,0,1,40-40h0A40,40,0,0,1,168,64Z\" opacity=\"0.2\"/><path d=\"M128,176a48.05,48.05,0,0,0,48-48V64a48,48,0,0,0-96,0v64A48.05,48.05,0,0,0,128,176ZM96,64a32,32,0,0,1,64,0v64a32,32,0,0,1-64,0Zm40,143.6V240a8,8,0,0,1-16,0V207.6A80.11,80.11,0,0,1,48,128a8,8,0,0,1,16,0,64,64,0,0,0,128,0,8,8,0,0,1,16,0A80.11,80.11,0,0,1,136,207.6Z\"/>", "moon": "<path d=\"M227.89,147.89A96,96,0,1,1,108.11,28.11,96.09,96.09,0,0,0,227.89,147.89Z\" opacity=\"0.2\"/><path d=\"M233.54,142.23a8,8,0,0,0-8-2,88.08,88.08,0,0,1-109.8-109.8,8,8,0,0,0-10-10,104.84,104.84,0,0,0-52.91,37A104,104,0,0,0,136,224a103.09,103.09,0,0,0,62.52-20.88,104.84,104.84,0,0,0,37-52.91A8,8,0,0,0,233.54,142.23ZM188.9,190.34A88,88,0,0,1,65.66,67.11a89,89,0,0,1,31.4-26A106,106,0,0,0,96,56,104.11,104.11,0,0,0,200,160a106,106,0,0,0,14.92-1.06A89,89,0,0,1,188.9,190.34Z\"/>", "mountains": "<path d=\"M144,52a20,20,0,1,1,20,20A20,20,0,0,1,144,52Zm49.44,55.92a8,8,0,0,0-13.77,0l-33,55.75-21-35.67H50.35L8,200H248Z\" opacity=\"0.2\"/><path d=\"M164,80a28,28,0,1,0-28-28A28,28,0,0,0,164,80Zm0-40a12,12,0,1,1-12,12A12,12,0,0,1,164,40Zm90.88,155.92-54.56-92.08A15.87,15.87,0,0,0,186.55,96h0a15.85,15.85,0,0,0-13.76,7.84L146.63,148l-44.84-76.1a16,16,0,0,0-27.58,0L1.11,195.94A8,8,0,0,0,8,208H248a8,8,0,0,0,6.88-12.08ZM88,80l23.57,40H64.43ZM22,192l33-56h66l33,56Zm150.57,0-16.66-28.28L186.55,112,234,192Z\"/>", "note-pencil": "<path d=\"M200,88l-72,72H96V128l72-72Z\" opacity=\"0.2\"/><path d=\"M229.66,58.34l-32-32a8,8,0,0,0-11.32,0l-96,96A8,8,0,0,0,88,128v32a8,8,0,0,0,8,8h32a8,8,0,0,0,5.66-2.34l96-96A8,8,0,0,0,229.66,58.34ZM124.69,152H104V131.31l64-64L188.69,88ZM200,76.69,179.31,56,192,43.31,212.69,64ZM224,128v80a16,16,0,0,1-16,16H48a16,16,0,0,1-16-16V48A16,16,0,0,1,48,32h80a8,8,0,0,1,0,16H48V208H208V128a8,8,0,0,1,16,0Z\"/>", "nut": "<path d=\"M219.84,73.16,131.84,25a8,8,0,0,0-7.68,0l-88,48.18a8,8,0,0,0-4.16,7v95.64a8,8,0,0,0,4.16,7l88,48.18a8,8,0,0,0,7.68,0l88-48.18a8,8,0,0,0,4.16-7V80.18A8,8,0,0,0,219.84,73.16ZM128,168a40,40,0,1,1,40-40A40,40,0,0,1,128,168Z\" opacity=\"0.2\"/><path d=\"M128,80a48,48,0,1,0,48,48A48.06,48.06,0,0,0,128,80Zm0,80a32,32,0,1,1,32-32A32,32,0,0,1,128,160Zm95.68-93.85L135.68,18a15.88,15.88,0,0,0-15.36,0l-88,48.17a16,16,0,0,0-8.32,14v95.64a16,16,0,0,0,8.32,14l88,48.17a15.88,15.88,0,0,0,15.36,0l88-48.17h0a16,16,0,0,0,8.32-14V80.18A16,16,0,0,0,223.68,66.15ZM128,224,40,175.82V80.18L128,32l88,48.17v95.63Z\"/>", "package": "<path d=\"M128,129.09V232a8,8,0,0,1-3.84-1l-88-48.18a8,8,0,0,1-4.16-7V80.18a8,8,0,0,1,.7-3.25Z\" opacity=\"0.2\"/><path d=\"M223.68,66.15,135.68,18a15.88,15.88,0,0,0-15.36,0l-88,48.17a16,16,0,0,0-8.32,14v95.64a16,16,0,0,0,8.32,14l88,48.17a15.88,15.88,0,0,0,15.36,0l88-48.17a16,16,0,0,0,8.32-14V80.18A16,16,0,0,0,223.68,66.15ZM128,32l80.34,44-29.77,16.3-80.35-44ZM128,120,47.66,76l33.9-18.56,80.34,44ZM40,90l80,43.78v85.79L40,175.82Zm176,85.78h0l-80,43.79V133.82l32-17.51V152a8,8,0,0,0,16,0V107.55L216,90v85.77Z\"/>", "paperclip": "<path d=\"M180.75,104.75,204,128l-82.06,81.94a48,48,0,0,1-67.88-67.88L153.37,41.37a32,32,0,0,1,45.26,45.26Z\" opacity=\"0.2\"/><path d=\"M209.66,122.34a8,8,0,0,1,0,11.32l-82.05,82a56,56,0,0,1-79.2-79.21L147.67,35.73a40,40,0,1,1,56.61,56.55L105,193A24,24,0,1,1,71,159L154.3,74.38A8,8,0,1,1,165.7,85.6L82.39,170.31a8,8,0,1,0,11.27,11.36L192.93,81A24,24,0,1,0,159,47L59.76,147.68a40,40,0,1,0,56.53,56.62l82.06-82A8,8,0,0,1,209.66,122.34Z\"/>", "pause": "<path d=\"M208,48V208a8,8,0,0,1-8,8H160a8,8,0,0,1-8-8V48a8,8,0,0,1,8-8h40A8,8,0,0,1,208,48ZM96,40H56a8,8,0,0,0-8,8V208a8,8,0,0,0,8,8H96a8,8,0,0,0,8-8V48A8,8,0,0,0,96,40Z\" opacity=\"0.2\"/><path d=\"M200,32H160a16,16,0,0,0-16,16V208a16,16,0,0,0,16,16h40a16,16,0,0,0,16-16V48A16,16,0,0,0,200,32Zm0,176H160V48h40ZM96,32H56A16,16,0,0,0,40,48V208a16,16,0,0,0,16,16H96a16,16,0,0,0,16-16V48A16,16,0,0,0,96,32Zm0,176H56V48H96Z\"/>", "pencil-simple": "<path d=\"M221.66,90.34,192,120,136,64l29.66-29.66a8,8,0,0,1,11.31,0L221.66,79A8,8,0,0,1,221.66,90.34Z\" opacity=\"0.2\"/><path d=\"M227.31,73.37,182.63,28.68a16,16,0,0,0-22.63,0L36.69,152A15.86,15.86,0,0,0,32,163.31V208a16,16,0,0,0,16,16H92.69A15.86,15.86,0,0,0,104,219.31L227.31,96a16,16,0,0,0,0-22.63ZM92.69,208H48V163.31l88-88L180.69,120ZM192,108.68,147.31,64l24-24L216,84.68Z\"/>", "phone": "<path d=\"M223.94,174.08A48.33,48.33,0,0,1,176,216,136,136,0,0,1,40,80,48.33,48.33,0,0,1,81.92,32.06a8,8,0,0,1,8.3,4.8l21.13,47.2a8,8,0,0,1-.66,7.53L89.32,117a7.93,7.93,0,0,0-.54,7.81c8.27,16.93,25.77,34.22,42.75,42.41a7.92,7.92,0,0,0,7.83-.59l25-21.3a8,8,0,0,1,7.59-.69l47.16,21.13A8,8,0,0,1,223.94,174.08Z\" opacity=\"0.2\"/><path d=\"M222.37,158.46l-47.11-21.11-.13-.06a16,16,0,0,0-15.17,1.4,8.12,8.12,0,0,0-.75.56L134.87,160c-15.42-7.49-31.34-23.29-38.83-38.51l20.78-24.71c.2-.25.39-.5.57-.77a16,16,0,0,0,1.32-15.06l0-.12L97.54,33.64a16,16,0,0,0-16.62-9.52A56.26,56.26,0,0,0,32,80c0,79.4,64.6,144,144,144a56.26,56.26,0,0,0,55.88-48.92A16,16,0,0,0,222.37,158.46ZM176,208A128.14,128.14,0,0,1,48,80,40.2,40.2,0,0,1,82.87,40a.61.61,0,0,0,0,.12l21,47L83.2,111.86a6.13,6.13,0,0,0-.57.77,16,16,0,0,0-1,15.7c9.06,18.53,27.73,37.06,46.46,46.11a16,16,0,0,0,15.75-1.14,8.44,8.44,0,0,0,.74-.56L168.89,152l47,21.05h0s.08,0,.11,0A40.21,40.21,0,0,1,176,208Z\"/>", "plus-circle": "<path d=\"M224,128a96,96,0,1,1-96-96A96,96,0,0,1,224,128Z\" opacity=\"0.2\"/><path d=\"M128,24A104,104,0,1,0,232,128,104.11,104.11,0,0,0,128,24Zm0,192a88,88,0,1,1,88-88A88.1,88.1,0,0,1,128,216Zm48-88a8,8,0,0,1-8,8H136v32a8,8,0,0,1-16,0V136H88a8,8,0,0,1,0-16h32V88a8,8,0,0,1,16,0v32h32A8,8,0,0,1,176,128Z\"/>", "printer": "<path d=\"M232,96v80H192V152H64v24H24V96c0-8.84,7.76-16,17.33-16H214.67C224.24,80,232,87.16,232,96Z\" opacity=\"0.2\"/><path d=\"M214.67,72H200V40a8,8,0,0,0-8-8H64a8,8,0,0,0-8,8V72H41.33C27.36,72,16,82.77,16,96v80a8,8,0,0,0,8,8H56v32a8,8,0,0,0,8,8H192a8,8,0,0,0,8-8V184h32a8,8,0,0,0,8-8V96C240,82.77,228.64,72,214.67,72ZM72,48H184V72H72ZM184,208H72V160H184Zm40-40H200V152a8,8,0,0,0-8-8H64a8,8,0,0,0-8,8v16H32V96c0-4.41,4.19-8,9.33-8H214.67c5.14,0,9.33,3.59,9.33,8Zm-24-52a12,12,0,1,1-12-12A12,12,0,0,1,200,116Z\"/>", "prohibit": "<path d=\"M224,128a96,96,0,1,1-96-96A96,96,0,0,1,224,128Z\" opacity=\"0.2\"/><path d=\"M128,24A104,104,0,1,0,232,128,104.11,104.11,0,0,0,128,24Zm88,104a87.56,87.56,0,0,1-20.41,56.28L71.72,60.4A88,88,0,0,1,216,128ZM40,128A87.56,87.56,0,0,1,60.41,71.72L184.28,195.6A88,88,0,0,1,40,128Z\"/>", "push-pin": "<path d=\"M229.66,98.34,172.39,155.8c11.46,22.93-1.72,45.86-10.11,57a8,8,0,0,1-12,.83L42.34,105.76A8,8,0,0,1,43,93.85c29.65-23.92,57.4-10,57.4-10l57.27-57.46a8,8,0,0,1,11.31,0L229.66,87A8,8,0,0,1,229.66,98.34Z\" opacity=\"0.2\"/><path d=\"M235.32,81.37,174.63,20.69a16,16,0,0,0-22.63,0L98.37,74.49c-10.66-3.34-35-7.37-60.4,13.14a16,16,0,0,0-1.29,23.78L85,159.71,42.34,202.34a8,8,0,0,0,11.32,11.32L96.29,171l48.29,48.29A16,16,0,0,0,155.9,224c.38,0,.75,0,1.13,0a15.93,15.93,0,0,0,11.64-6.33c19.64-26.1,17.75-47.32,13.19-60L235.33,104A16,16,0,0,0,235.32,81.37ZM224,92.69h0l-57.27,57.46a8,8,0,0,0-1.49,9.22c9.46,18.93-1.8,38.59-9.34,48.62L48,100.08c12.08-9.74,23.64-12.31,32.48-12.31A40.13,40.13,0,0,1,96.81,91a8,8,0,0,0,9.25-1.51L163.32,32,224,92.68Z\"/>", "puzzle-piece": "<path d=\"M204,168a28,28,0,0,0,12-2.69V208a8,8,0,0,1-8,8H64a8,8,0,0,1-8-8V165.31a28,28,0,1,1,0-50.62V72a8,8,0,0,1,8-8h46.69a28,28,0,1,1,50.61,0H208a8,8,0,0,1,8,8v42.69A28,28,0,1,0,204,168Z\" opacity=\"0.2\"/><path d=\"M220.27,158.54a8,8,0,0,0-7.7-.46,20,20,0,1,1,0-36.16A8,8,0,0,0,224,114.69V72a16,16,0,0,0-16-16H171.78a35.36,35.36,0,0,0,.22-4,36.15,36.15,0,0,0-11.36-26.25,36,36,0,0,0-60.55,23.63,36.56,36.56,0,0,0,.14,6.62H64A16,16,0,0,0,48,72v32.22a35.36,35.36,0,0,0-4-.22,36.12,36.12,0,0,0-26.24,11.36,35.7,35.7,0,0,0-9.69,27,36.08,36.08,0,0,0,33.31,33.6,36.56,36.56,0,0,0,6.62-.14V208a16,16,0,0,0,16,16H208a16,16,0,0,0,16-16V165.31A8,8,0,0,0,220.27,158.54ZM208,208H64V165.31a8,8,0,0,0-11.43-7.23,20,20,0,1,1,0-36.16A8,8,0,0,0,64,114.69V72h46.69a8,8,0,0,0,7.23-11.43,20,20,0,1,1,36.16,0A8,8,0,0,0,161.31,72H208v32.23a35.68,35.68,0,0,0-6.62-.14A36,36,0,0,0,204,176a35.36,35.36,0,0,0,4-.22Z\"/>", "question": "<path d=\"M224,128a96,96,0,1,1-96-96A96,96,0,0,1,224,128Z\" opacity=\"0.2\"/><path d=\"M140,180a12,12,0,1,1-12-12A12,12,0,0,1,140,180ZM128,72c-22.06,0-40,16.15-40,36v4a8,8,0,0,0,16,0v-4c0-11,10.77-20,24-20s24,9,24,20-10.77,20-24,20a8,8,0,0,0-8,8v8a8,8,0,0,0,16,0v-.72c18.24-3.35,32-17.9,32-35.28C168,88.15,150.06,72,128,72Zm104,56A104,104,0,1,1,128,24,104.11,104.11,0,0,1,232,128Zm-16,0a88,88,0,1,0-88,88A88.1,88.1,0,0,0,216,128Z\"/>", "receipt": "<path d=\"M224,56V208l-32-16-32,16-32-16L96,208,64,192,32,208V56a8,8,0,0,1,8-8H216A8,8,0,0,1,224,56Z\" opacity=\"0.2\"/><path d=\"M72,104a8,8,0,0,1,8-8h96a8,8,0,0,1,0,16H80A8,8,0,0,1,72,104Zm8,40h96a8,8,0,0,0,0-16H80a8,8,0,0,0,0,16ZM232,56V208a8,8,0,0,1-11.58,7.15L192,200.94l-28.42,14.21a8,8,0,0,1-7.16,0L128,200.94,99.58,215.15a8,8,0,0,1-7.16,0L64,200.94,35.58,215.15A8,8,0,0,1,24,208V56A16,16,0,0,1,40,40H216A16,16,0,0,1,232,56Zm-16,0H40V195.06l20.42-10.22a8,8,0,0,1,7.16,0L96,199.06l28.42-14.22a8,8,0,0,1,7.16,0L160,199.06l28.42-14.22a8,8,0,0,1,7.16,0L216,195.06Z\"/>", "record": "<path d=\"M192,128a64,64,0,1,1-64-64A64,64,0,0,1,192,128Z\" opacity=\"0.2\"/><path d=\"M128,24A104,104,0,1,0,232,128,104.11,104.11,0,0,0,128,24Zm0,192a88,88,0,1,1,88-88A88.1,88.1,0,0,1,128,216Zm0-160a72,72,0,1,0,72,72A72.08,72.08,0,0,0,128,56Zm0,128a56,56,0,1,1,56-56A56.06,56.06,0,0,1,128,184Z\"/>", "road-horizon": "<path d=\"M232,192H24L96,64h64Z\" opacity=\"0.2\"/><path d=\"M235.92,199A8,8,0,0,1,225,195.92L155.32,72H136v8a8,8,0,0,1-16,0V72H100.68L31,195.92A8,8,0,0,1,17,188.08L82.32,72H24a8,8,0,0,1,0-16H232a8,8,0,0,1,0,16H173.68L239,188.08A8,8,0,0,1,235.92,199ZM128,112a8,8,0,0,0-8,8v16a8,8,0,0,0,16,0V120A8,8,0,0,0,128,112Zm0,56a8,8,0,0,0-8,8v16a8,8,0,0,0,16,0V176A8,8,0,0,0,128,168Z\"/>", "ruler": "<path d=\"M229.66,90.34,90.34,229.66a8,8,0,0,1-11.31,0L26.34,177a8,8,0,0,1,0-11.31L165.66,26.34a8,8,0,0,1,11.31,0L229.66,79A8,8,0,0,1,229.66,90.34Z\" opacity=\"0.2\"/><path d=\"M235.32,73.37,182.63,20.69a16,16,0,0,0-22.63,0L20.68,160a16,16,0,0,0,0,22.63l52.69,52.68a16,16,0,0,0,22.63,0L235.32,96A16,16,0,0,0,235.32,73.37ZM84.68,224,32,171.31l32-32,26.34,26.35a8,8,0,0,0,11.32-11.32L75.31,128,96,107.31l26.34,26.35a8,8,0,0,0,11.32-11.32L107.31,96,128,75.31l26.34,26.35a8,8,0,0,0,11.32-11.32L139.31,64l32-32L224,84.69Z\"/>", "scales": "<path d=\"M56,88l32,80c0,17.67-20,24-32,24s-32-6.33-32-24ZM200,56l-32,80c0,17.67,20,24,32,24s32-6.33,32-24Z\" opacity=\"0.2\"/><path d=\"M239.43,133l-32-80h0a8,8,0,0,0-9.16-4.84L136,62V40a8,8,0,0,0-16,0V65.58L54.26,80.19A8,8,0,0,0,48.57,85h0v.06L16.57,165a7.92,7.92,0,0,0-.57,3c0,23.31,24.54,32,40,32s40-8.69,40-32a7.92,7.92,0,0,0-.57-3L66.92,93.77,120,82V208H104a8,8,0,0,0,0,16h48a8,8,0,0,0,0-16H136V78.42L187,67.1,160.57,133a7.92,7.92,0,0,0-.57,3c0,23.31,24.54,32,40,32s40-8.69,40-32A7.92,7.92,0,0,0,239.43,133ZM56,184c-7.53,0-22.76-3.61-23.93-14.64L56,109.54l23.93,59.82C78.76,180.39,63.53,184,56,184Zm144-32c-7.53,0-22.76-3.61-23.93-14.64L200,77.54l23.93,59.82C222.76,148.39,207.53,152,200,152Z\"/>", "scissors": "<path d=\"M40.2,95.8a28,28,0,1,1,39.6,0A28,28,0,0,1,40.2,95.8Zm0,64.4a28,28,0,1,0,39.6,0A28,28,0,0,0,40.2,160.2Z\" opacity=\"0.2\"/><path d=\"M157.73,113.13A8,8,0,0,1,159.82,102L227.48,55.7a8,8,0,0,1,9,13.21l-67.67,46.3a7.92,7.92,0,0,1-4.51,1.4A8,8,0,0,1,157.73,113.13Zm80.87,85.09a8,8,0,0,1-11.12,2.08L136,137.7,93.49,166.78a36,36,0,1,1-9-13.19L121.83,128,84.44,102.41a35.86,35.86,0,1,1,9-13.19l143,97.87A8,8,0,0,1,238.6,198.22ZM80,180a20,20,0,1,0-5.86,14.14A19.85,19.85,0,0,0,80,180ZM74.14,90.13a20,20,0,1,0-28.28,0A19.85,19.85,0,0,0,74.14,90.13Z\"/>", "scroll": "<path d=\"M200,176H104s8,6,8,16a24,24,0,0,1-48,0V64A24,24,0,0,0,40,40H176a24,24,0,0,1,24,24Z\" opacity=\"0.2\"/><path d=\"M96,104a8,8,0,0,1,8-8h64a8,8,0,0,1,0,16H104A8,8,0,0,1,96,104Zm8,40h64a8,8,0,0,0,0-16H104a8,8,0,0,0,0,16Zm128,48a32,32,0,0,1-32,32H88a32,32,0,0,1-32-32V64a16,16,0,0,0-32,0c0,5.74,4.83,9.62,4.88,9.66h0A8,8,0,0,1,24,88a7.89,7.89,0,0,1-4.79-1.61h0C18.05,85.54,8,77.61,8,64A32,32,0,0,1,40,32H176a32,32,0,0,1,32,32V168h8a8,8,0,0,1,4.8,1.6C222,170.46,232,178.39,232,192ZM96.26,173.48A8.07,8.07,0,0,1,104,168h88V64a16,16,0,0,0-16-16H67.69A31.71,31.71,0,0,1,72,64V192a16,16,0,0,0,32,0c0-5.74-4.83-9.62-4.88-9.66A7.82,7.82,0,0,1,96.26,173.48ZM216,192a12.58,12.58,0,0,0-3.23-8h-94a26.92,26.92,0,0,1,1.21,8,31.82,31.82,0,0,1-4.29,16H200A16,16,0,0,0,216,192Z\"/>", "shield-check": "<path d=\"M216,56v56c0,96-88,120-88,120S40,208,40,112V56a8,8,0,0,1,8-8H208A8,8,0,0,1,216,56Z\" opacity=\"0.2\"/><path d=\"M208,40H48A16,16,0,0,0,32,56v56c0,52.72,25.52,84.67,46.93,102.19,23.06,18.86,46,25.26,47,25.53a8,8,0,0,0,4.2,0c1-.27,23.91-6.67,47-25.53C198.48,196.67,224,164.72,224,112V56A16,16,0,0,0,208,40Zm0,72c0,37.07-13.66,67.16-40.6,89.42A129.3,129.3,0,0,1,128,223.62a128.25,128.25,0,0,1-38.92-21.81C61.82,179.51,48,149.3,48,112l0-56,160,0ZM82.34,141.66a8,8,0,0,1,11.32-11.32L112,148.69l50.34-50.35a8,8,0,0,1,11.32,11.32l-56,56a8,8,0,0,1-11.32,0Z\"/>", "shovel": "<path d=\"M173.66,173.66l-56,56A8,8,0,0,1,112,232H32a8,8,0,0,1-8-8V144a8,8,0,0,1,2.34-5.66l56-56a8,8,0,0,1,11.32,0l80,80A8,8,0,0,1,173.66,173.66Z\" opacity=\"0.2\"/><path d=\"M245.66,58.34l-48-48a8,8,0,0,0-11.32,11.32L204.69,40l-71,71L99.31,76.68a16,16,0,0,0-22.62,0l-56,56A15.89,15.89,0,0,0,16,144v80a16,16,0,0,0,16,16h80a15.86,15.86,0,0,0,11.31-4.69l56-56a16,16,0,0,0,0-22.62L145,122.34l71-71,18.34,18.35a8,8,0,0,0,11.32-11.32ZM168,168l-56,56H32V144L88,88l34.34,34.34-40,40a8,8,0,0,0,11.32,11.32l40-40Z\"/>", "shuffle": "<path d=\"M107.14,98.8,128,128l-20.86,29.2A64,64,0,0,1,55.06,184H32V72H55.06A64,64,0,0,1,107.14,98.8ZM200.94,72a64,64,0,0,0-52.08,26.8L128,128l20.86,29.2A64,64,0,0,0,200.94,184H232V72Z\" opacity=\"0.2\"/><path d=\"M237.66,178.34a8,8,0,0,1,0,11.32l-24,24a8,8,0,0,1-11.32-11.32L212.69,192H200.94a72.12,72.12,0,0,1-58.59-30.15l-41.72-58.4A56.1,56.1,0,0,0,55.06,80H32a8,8,0,0,1,0-16H55.06a72.12,72.12,0,0,1,58.59,30.15l41.72,58.4A56.1,56.1,0,0,0,200.94,176h11.75l-10.35-10.34a8,8,0,0,1,11.32-11.32ZM143,107a8,8,0,0,0,11.16-1.86l1.2-1.67A56.1,56.1,0,0,1,200.94,80h11.75L202.34,90.34a8,8,0,0,0,11.32,11.32l24-24a8,8,0,0,0,0-11.32l-24-24a8,8,0,0,0-11.32,11.32L212.69,64H200.94a72.12,72.12,0,0,0-58.59,30.15l-1.2,1.67A8,8,0,0,0,143,107Zm-30,42a8,8,0,0,0-11.16,1.86l-1.2,1.67A56.1,56.1,0,0,1,55.06,176H32a8,8,0,0,0,0,16H55.06a72.12,72.12,0,0,0,58.59-30.15l1.2-1.67A8,8,0,0,0,113,149Z\"/>", "sign-out": "<path d=\"M224,56V200a16,16,0,0,1-16,16H48V40H208A16,16,0,0,1,224,56Z\" opacity=\"0.2\"/><path d=\"M120,216a8,8,0,0,1-8,8H48a8,8,0,0,1-8-8V40a8,8,0,0,1,8-8h64a8,8,0,0,1,0,16H56V208h56A8,8,0,0,1,120,216Zm109.66-93.66-40-40a8,8,0,0,0-11.32,11.32L204.69,120H112a8,8,0,0,0,0,16h92.69l-26.35,26.34a8,8,0,0,0,11.32,11.32l40-40A8,8,0,0,0,229.66,122.34Z\"/>", "siren": "<path d=\"M208,129v39H48V128a80,80,0,0,1,80.61-80C172.72,48.33,208,84.89,208,129Z\" opacity=\"0.2\"/><path d=\"M120,16V8a8,8,0,0,1,16,0v8a8,8,0,0,1-16,0Zm80,32a8,8,0,0,0,5.66-2.34l8-8a8,8,0,0,0-11.32-11.32l-8,8A8,8,0,0,0,200,48ZM50.34,45.66A8,8,0,0,0,61.66,34.34l-8-8A8,8,0,0,0,42.34,37.66Zm87,26.45a8,8,0,1,0-2.64,15.78C153.67,91.08,168,108.32,168,128a8,8,0,0,0,16,0C184,100.6,163.93,76.57,137.32,72.11ZM232,176v24a16,16,0,0,1-16,16H40a16,16,0,0,1-16-16V176a16,16,0,0,1,16-16V128a88,88,0,0,1,88-88h.68c48.15.36,87.33,40.29,87.33,89v31A16,16,0,0,1,232,176ZM56,160H200V129c0-40-32.05-72.71-71.45-73H128a72,72,0,0,0-72,72Zm160,40V176H40v24H216Z\"/>", "sparkle": "<path d=\"M194.82,151.43l-55.09,20.3-20.3,55.09a7.92,7.92,0,0,1-14.86,0l-20.3-55.09-55.09-20.3a7.92,7.92,0,0,1,0-14.86l55.09-20.3,20.3-55.09a7.92,7.92,0,0,1,14.86,0l20.3,55.09,55.09,20.3A7.92,7.92,0,0,1,194.82,151.43Z\" opacity=\"0.2\"/><path d=\"M197.58,129.06,146,110l-19-51.62a15.92,15.92,0,0,0-29.88,0L78,110l-51.62,19a15.92,15.92,0,0,0,0,29.88L78,178l19,51.62a15.92,15.92,0,0,0,29.88,0L146,178l51.62-19a15.92,15.92,0,0,0,0-29.88ZM137,164.22a8,8,0,0,0-4.74,4.74L112,223.85,91.78,169A8,8,0,0,0,87,164.22L32.15,144,87,123.78A8,8,0,0,0,91.78,119L112,64.15,132.22,119a8,8,0,0,0,4.74,4.74L191.85,144ZM144,40a8,8,0,0,1,8-8h16V16a8,8,0,0,1,16,0V32h16a8,8,0,0,1,0,16H184V64a8,8,0,0,1-16,0V48H152A8,8,0,0,1,144,40ZM248,88a8,8,0,0,1-8,8h-8v8a8,8,0,0,1-16,0V96h-8a8,8,0,0,1,0-16h8V72a8,8,0,0,1,16,0v8h8A8,8,0,0,1,248,88Z\"/>", "star": "<path d=\"M229.06,108.79l-48.7,42,14.88,62.79a8.4,8.4,0,0,1-12.52,9.17L128,189.09,73.28,222.74a8.4,8.4,0,0,1-12.52-9.17l14.88-62.79-48.7-42A8.46,8.46,0,0,1,31.73,94L95.64,88.8l24.62-59.6a8.36,8.36,0,0,1,15.48,0l24.62,59.6L224.27,94A8.46,8.46,0,0,1,229.06,108.79Z\" opacity=\"0.2\"/><path d=\"M239.18,97.26A16.38,16.38,0,0,0,224.92,86l-59-4.76L143.14,26.15a16.36,16.36,0,0,0-30.27,0L90.11,81.23,31.08,86a16.46,16.46,0,0,0-9.37,28.86l45,38.83L53,211.75a16.38,16.38,0,0,0,24.5,17.82L128,198.49l50.53,31.08A16.4,16.4,0,0,0,203,211.75l-13.76-58.07,45-38.83A16.43,16.43,0,0,0,239.18,97.26Zm-15.34,5.47-48.7,42a8,8,0,0,0-2.56,7.91l14.88,62.8a.37.37,0,0,1-.17.48c-.18.14-.23.11-.38,0l-54.72-33.65a8,8,0,0,0-8.38,0L69.09,215.94c-.15.09-.19.12-.38,0a.37.37,0,0,1-.17-.48l14.88-62.8a8,8,0,0,0-2.56-7.91l-48.7-42c-.12-.1-.23-.19-.13-.5s.18-.27.33-.29l63.92-5.16A8,8,0,0,0,103,91.86l24.62-59.61c.08-.17.11-.25.35-.25s.27.08.35.25L153,91.86a8,8,0,0,0,6.75,4.92l63.92,5.16c.15,0,.24,0,.33.29S224,102.63,223.84,102.73Z\"/>", "sun": "<path d=\"M184,128a56,56,0,1,1-56-56A56,56,0,0,1,184,128Z\" opacity=\"0.2\"/><path d=\"M120,40V16a8,8,0,0,1,16,0V40a8,8,0,0,1-16,0Zm72,88a64,64,0,1,1-64-64A64.07,64.07,0,0,1,192,128Zm-16,0a48,48,0,1,0-48,48A48.05,48.05,0,0,0,176,128ZM58.34,69.66A8,8,0,0,0,69.66,58.34l-16-16A8,8,0,0,0,42.34,53.66Zm0,116.68-16,16a8,8,0,0,0,11.32,11.32l16-16a8,8,0,0,0-11.32-11.32ZM192,72a8,8,0,0,0,5.66-2.34l16-16a8,8,0,0,0-11.32-11.32l-16,16A8,8,0,0,0,192,72Zm5.66,114.34a8,8,0,0,0-11.32,11.32l16,16a8,8,0,0,0,11.32-11.32ZM48,128a8,8,0,0,0-8-8H16a8,8,0,0,0,0,16H40A8,8,0,0,0,48,128Zm80,80a8,8,0,0,0-8,8v24a8,8,0,0,0,16,0V216A8,8,0,0,0,128,208Zm112-88H216a8,8,0,0,0,0,16h24a8,8,0,0,0,0-16Z\"/>", "tag": "<path d=\"M237.66,153,153,237.66a8,8,0,0,1-11.31,0L42.34,138.34A8,8,0,0,1,40,132.69V40h92.69a8,8,0,0,1,5.65,2.34l99.32,99.32A8,8,0,0,1,237.66,153Z\" opacity=\"0.2\"/><path d=\"M243.31,136,144,36.69A15.86,15.86,0,0,0,132.69,32H40a8,8,0,0,0-8,8v92.69A15.86,15.86,0,0,0,36.69,144L136,243.31a16,16,0,0,0,22.63,0l84.68-84.68a16,16,0,0,0,0-22.63Zm-96,96L48,132.69V48h84.69L232,147.31ZM96,84A12,12,0,1,1,84,72,12,12,0,0,1,96,84Z\"/>", "timer": "<path d=\"M216,136a88,88,0,1,1-88-88A88,88,0,0,1,216,136Z\" opacity=\"0.2\"/><path d=\"M128,40a96,96,0,1,0,96,96A96.11,96.11,0,0,0,128,40Zm0,176a80,80,0,1,1,80-80A80.09,80.09,0,0,1,128,216ZM173.66,90.34a8,8,0,0,1,0,11.32l-40,40a8,8,0,0,1-11.32-11.32l40-40A8,8,0,0,1,173.66,90.34ZM96,16a8,8,0,0,1,8-8h48a8,8,0,0,1,0,16H104A8,8,0,0,1,96,16Z\"/>", "toolbox": "<path d=\"M232,120v72a8,8,0,0,1-8,8H32a8,8,0,0,1-8-8V120Z\" opacity=\"0.2\"/><path d=\"M224,64H176V56a24,24,0,0,0-24-24H104A24,24,0,0,0,80,56v8H32A16,16,0,0,0,16,80V192a16,16,0,0,0,16,16H224a16,16,0,0,0,16-16V80A16,16,0,0,0,224,64ZM96,56a8,8,0,0,1,8-8h48a8,8,0,0,1,8,8v8H96ZM32,80H224v32H192v-8a8,8,0,0,0-16,0v8H80v-8a8,8,0,0,0-16,0v8H32ZM224,192H32V128H64v8a8,8,0,0,0,16,0v-8h96v8a8,8,0,0,0,16,0v-8h32v64Z\"/>", "tooth": "<path d=\"M216,79.76c.07,71.42-23.48,128.23-44,142.78a8,8,0,0,1-12.52-6C158,196.31,152,160,128,160s-30,36.31-31.51,56.53a8,8,0,0,1-12.52,6C63.48,208,39.93,151.18,40,79.76A47.94,47.94,0,0,1,88,32h80A47.94,47.94,0,0,1,216,79.76Z\" opacity=\"0.2\"/><path d=\"M171,71.42,149.54,80,171,88.57A8,8,0,1,1,165,103.42L128,88.61,91,103.42A8,8,0,1,1,85,88.57L106.46,80,85,71.42A8,8,0,1,1,91,56.57l37,14.81,37-14.81A8,8,0,1,1,171,71.42Zm53,8.33c0,42.72-8,75.4-14.7,95.28-8.72,25.8-20.62,45.49-32.64,54a15.69,15.69,0,0,1-15.95,1.41,16.09,16.09,0,0,1-9.18-13.36C150.68,205.58,146.48,168,128,168s-22.68,37.59-23.53,49.11a16.09,16.09,0,0,1-16,14.9,15.67,15.67,0,0,1-9.13-2.95c-12-8.53-23.92-28.22-32.64-54C40,155.15,32,122.47,32,79.75A56,56,0,0,1,88,24h80A56,56,0,0,1,224,79.75Zm-16,0A40,40,0,0,0,168,40H88A40,40,0,0,0,48,79.76c0,40.55,7.51,71.4,13.85,90.14,11.05,32.66,23,43.37,26.61,46C91.57,174.67,105.59,152,128,152s36.45,22.71,39.49,63.94h0c3.6-2.59,15.57-13.26,26.66-46C200.49,151.16,208,120.31,208,79.76Z\"/>", "tractor": "<path d=\"M240,188a28,28,0,1,1-28-28A28,28,0,0,1,240,188ZM68,128a44,44,0,1,0,44,44A44,44,0,0,0,68,128Z\" opacity=\"0.2\"/><path d=\"M240,165.41V134a15.89,15.89,0,0,0-11.4-15.32l-.21-.06L192,108.71V72a8,8,0,0,0-16,0v32.38l-24-6.5V56h8a8,8,0,0,0,0-16H40a8,8,0,0,0,0,16h8V88H40a8,8,0,0,0,0,16H68a68.07,68.07,0,0,1,68,68v12a8,8,0,0,0,8,8h32.23A36,36,0,1,0,240,165.41ZM68,88H64V56h72v66.77A83.92,83.92,0,0,0,68,88Zm84,26.45L224,134v20.1A36,36,0,0,0,178.06,176H152ZM212,208a20,20,0,1,1,20-20A20,20,0,0,1,212,208ZM68,120a52,52,0,1,0,52,52A52.06,52.06,0,0,0,68,120Zm0,88a36,36,0,1,1,36-36A36,36,0,0,1,68,208Zm12-36a12,12,0,1,1-12-12A12,12,0,0,1,80,172Z\"/>", "trash": "<path d=\"M200,56V208a8,8,0,0,1-8,8H64a8,8,0,0,1-8-8V56Z\" opacity=\"0.2\"/><path d=\"M216,48H176V40a24,24,0,0,0-24-24H104A24,24,0,0,0,80,40v8H40a8,8,0,0,0,0,16h8V208a16,16,0,0,0,16,16H192a16,16,0,0,0,16-16V64h8a8,8,0,0,0,0-16ZM96,40a8,8,0,0,1,8-8h48a8,8,0,0,1,8,8v8H96Zm96,168H64V64H192ZM112,104v64a8,8,0,0,1-16,0V104a8,8,0,0,1,16,0Zm48,0v64a8,8,0,0,1-16,0V104a8,8,0,0,1,16,0Z\"/>", "tray": "<path d=\"M216,48V160H179.31a8,8,0,0,0-5.66,2.34l-19.31,19.32a8,8,0,0,1-5.66,2.34H107.31a8,8,0,0,1-5.66-2.34L82.34,162.34A8,8,0,0,0,76.68,160H40V48a8,8,0,0,1,8-8H208A8,8,0,0,1,216,48Z\" opacity=\"0.2\"/><path d=\"M208,32H48A16,16,0,0,0,32,48V208a16,16,0,0,0,16,16H208a16,16,0,0,0,16-16V48A16,16,0,0,0,208,32Zm0,16V152h-28.7A15.86,15.86,0,0,0,168,156.69L148.69,176H107.31L88,156.68A15.89,15.89,0,0,0,76.69,152H48V48Zm0,160H48V168H76.69L96,187.32A15.89,15.89,0,0,0,107.31,192h41.38A15.86,15.86,0,0,0,160,187.31L179.31,168H208v40Z\"/>", "tray-arrow-down": "<path d=\"M216,48V160H179.31a8,8,0,0,0-5.66,2.34l-19.31,19.32a8,8,0,0,1-5.66,2.34H107.31a8,8,0,0,1-5.66-2.34L82.34,162.34A8,8,0,0,0,76.68,160H40V48a8,8,0,0,1,8-8H208A8,8,0,0,1,216,48Z\" opacity=\"0.2\"/><path d=\"M208,32H48A16,16,0,0,0,32,48V208a16,16,0,0,0,16,16H208a16,16,0,0,0,16-16V48A16,16,0,0,0,208,32Zm0,16V152h-28.7A15.86,15.86,0,0,0,168,156.69L148.69,176H107.31L88,156.68A15.89,15.89,0,0,0,76.69,152H48V48Zm0,160H48V168H76.69L96,187.32A15.89,15.89,0,0,0,107.31,192h41.38A15.86,15.86,0,0,0,160,187.31L179.31,168H208v40ZM90.34,125.66a8,8,0,0,1,11.32-11.32L120,132.69V72a8,8,0,0,1,16,0v60.69l18.34-18.35a8,8,0,0,1,11.32,11.32l-32,32a8,8,0,0,1-11.32,0Z\"/>", "tray-arrow-up": "<path d=\"M216,48V160H179.31a8,8,0,0,0-5.66,2.34l-19.31,19.32a8,8,0,0,1-5.66,2.34H107.31a8,8,0,0,1-5.66-2.34L82.34,162.34A8,8,0,0,0,76.68,160H40V48a8,8,0,0,1,8-8H208A8,8,0,0,1,216,48Z\" opacity=\"0.2\"/><path d=\"M208,32H48A16,16,0,0,0,32,48V208a16,16,0,0,0,16,16H208a16,16,0,0,0,16-16V48A16,16,0,0,0,208,32Zm0,16V152h-28.7A15.86,15.86,0,0,0,168,156.69L148.69,176H107.31L88,156.69A15.86,15.86,0,0,0,76.69,152H48V48Zm0,160H48V168H76.69L96,187.31A15.86,15.86,0,0,0,107.31,192h41.38A15.86,15.86,0,0,0,160,187.31L179.31,168H208v40ZM90.34,109.66a8,8,0,0,1,0-11.32l32-32a8,8,0,0,1,11.32,0l32,32a8,8,0,0,1-11.32,11.32L136,91.31V152a8,8,0,0,1-16,0V91.31l-18.34,18.35A8,8,0,0,1,90.34,109.66Z\"/>", "truck": "<path d=\"M248,120v64a8,8,0,0,1-8,8H216a24,24,0,0,0-48,0H104a24,24,0,0,0-48,0H32a8,8,0,0,1-8-8V144H184V120Z\" opacity=\"0.2\"/><path d=\"M255.42,117l-14-35A15.93,15.93,0,0,0,226.58,72H192V64a8,8,0,0,0-8-8H32A16,16,0,0,0,16,72V184a16,16,0,0,0,16,16H49a32,32,0,0,0,62,0h50a32,32,0,0,0,62,0h17a16,16,0,0,0,16-16V120A7.94,7.94,0,0,0,255.42,117ZM192,88h34.58l9.6,24H192ZM32,72H176v64H32ZM80,208a16,16,0,1,1,16-16A16,16,0,0,1,80,208Zm81-24H111a32,32,0,0,0-62,0H32V152H176v12.31A32.11,32.11,0,0,0,161,184Zm31,24a16,16,0,1,1,16-16A16,16,0,0,1,192,208Zm48-24H223a32.06,32.06,0,0,0-31-24V128h48Z\"/>", "truck-trailer": "<path d=\"M16,72H120V184H104a24,24,0,0,0-48,0,24,24,0,0,0-48,0V80A8,8,0,0,1,16,72Zm200,32V96a48,48,0,0,0-48-48h-8a8,8,0,0,0-8,8V184h48a24,24,0,0,1,48,0V136A32,32,0,0,0,216,104Z\" opacity=\"0.2\"/><path d=\"M224,96.8V96a56.06,56.06,0,0,0-56-56h-8a16,16,0,0,0-16,16V176H128V72a8,8,0,0,0-8-8H16A16,16,0,0,0,0,80V184a32,32,0,0,0,56,21.13A32,32,0,0,0,111,192h82a32,32,0,0,0,63-8V136A40.07,40.07,0,0,0,224,96.8ZM160,56h8a40,40,0,0,1,40,40v8a8,8,0,0,0,8,8,24,24,0,0,1,24,24v20.31A31.71,31.71,0,0,0,224,152a32.06,32.06,0,0,0-31,24H160ZM112,80v96h-1a32,32,0,0,0-55-13.13,31.9,31.9,0,0,0-40-6.56V80ZM32,200a16,16,0,1,1,16-16A16,16,0,0,1,32,200Zm48,0a16,16,0,1,1,16-16A16,16,0,0,1,80,200Zm144,0a16,16,0,1,1,16-16A16,16,0,0,1,224,200Z\"/>", "upload-simple": "<path d=\"M216,48V208H40V48A16,16,0,0,1,56,32H200A16,16,0,0,1,216,48Z\" opacity=\"0.2\"/><path d=\"M224,144v64a8,8,0,0,1-8,8H40a8,8,0,0,1-8-8V144a8,8,0,0,1,16,0v56H208V144a8,8,0,0,1,16,0ZM93.66,77.66,120,51.31V144a8,8,0,0,0,16,0V51.31l26.34,26.35a8,8,0,0,0,11.32-11.32l-40-40a8,8,0,0,0-11.32,0l-40,40A8,8,0,0,0,93.66,77.66Z\"/>", "user": "<path d=\"M192,96a64,64,0,1,1-64-64A64,64,0,0,1,192,96Z\" opacity=\"0.2\"/><path d=\"M230.92,212c-15.23-26.33-38.7-45.21-66.09-54.16a72,72,0,1,0-73.66,0C63.78,166.78,40.31,185.66,25.08,212a8,8,0,1,0,13.85,8c18.84-32.56,52.14-52,89.07-52s70.23,19.44,89.07,52a8,8,0,1,0,13.85-8ZM72,96a56,56,0,1,1,56,56A56.06,56.06,0,0,1,72,96Z\"/>", "users": "<path d=\"M136,108A52,52,0,1,1,84,56,52,52,0,0,1,136,108Z\" opacity=\"0.2\"/><path d=\"M117.25,157.92a60,60,0,1,0-66.5,0A95.83,95.83,0,0,0,3.53,195.63a8,8,0,1,0,13.4,8.74,80,80,0,0,1,134.14,0,8,8,0,0,0,13.4-8.74A95.83,95.83,0,0,0,117.25,157.92ZM40,108a44,44,0,1,1,44,44A44.05,44.05,0,0,1,40,108Zm210.14,98.7a8,8,0,0,1-11.07-2.33A79.83,79.83,0,0,0,172,168a8,8,0,0,1,0-16,44,44,0,1,0-16.34-84.87,8,8,0,1,1-5.94-14.85,60,60,0,0,1,55.53,105.64,95.83,95.83,0,0,1,47.22,37.71A8,8,0,0,1,250.14,206.7Z\"/>", "users-three": "<path d=\"M168,144a40,40,0,1,1-40-40A40,40,0,0,1,168,144ZM64,56A32,32,0,1,0,96,88,32,32,0,0,0,64,56Zm128,0a32,32,0,1,0,32,32A32,32,0,0,0,192,56Z\" opacity=\"0.2\"/><path d=\"M244.8,150.4a8,8,0,0,1-11.2-1.6A51.6,51.6,0,0,0,192,128a8,8,0,0,1,0-16,24,24,0,1,0-23.24-30,8,8,0,1,1-15.5-4A40,40,0,1,1,219,117.51a67.94,67.94,0,0,1,27.43,21.68A8,8,0,0,1,244.8,150.4ZM190.92,212a8,8,0,1,1-13.85,8,57,57,0,0,0-98.15,0,8,8,0,1,1-13.84-8,72.06,72.06,0,0,1,33.74-29.92,48,48,0,1,1,58.36,0A72.06,72.06,0,0,1,190.92,212ZM128,176a32,32,0,1,0-32-32A32,32,0,0,0,128,176ZM72,120a8,8,0,0,0-8-8A24,24,0,1,1,87.24,82a8,8,0,1,0,15.5-4A40,40,0,1,0,37,117.51,67.94,67.94,0,0,0,9.6,139.19a8,8,0,1,0,12.8,9.61A51.6,51.6,0,0,1,64,128,8,8,0,0,0,72,120Z\"/>", "wall": "<path d=\"M128,104H32V56h96Zm48,0v48H128v48h96V104Z\" opacity=\"0.2\"/><path d=\"M224,48H32a8,8,0,0,0-8,8V200a8,8,0,0,0,8,8H224a8,8,0,0,0,8-8V56A8,8,0,0,0,224,48ZM88,144V112h80v32Zm-48,0V112H72v32Zm144-32h32v32H184Zm32-16H136V64h80ZM120,64V96H40V64ZM40,160h80v32H40Zm96,32V160h80v32Z\"/>", "warning": "<path d=\"M215.46,216H40.54C27.92,216,20,202.79,26.13,192.09L113.59,40.22c6.3-11,22.52-11,28.82,0l87.46,151.87C236,202.79,228.08,216,215.46,216Z\" opacity=\"0.2\"/><path d=\"M236.8,188.09,149.35,36.22h0a24.76,24.76,0,0,0-42.7,0L19.2,188.09a23.51,23.51,0,0,0,0,23.72A24.35,24.35,0,0,0,40.55,224h174.9a24.35,24.35,0,0,0,21.33-12.19A23.51,23.51,0,0,0,236.8,188.09ZM222.93,203.8a8.5,8.5,0,0,1-7.48,4.2H40.55a8.5,8.5,0,0,1-7.48-4.2,7.59,7.59,0,0,1,0-7.72L120.52,44.21a8.75,8.75,0,0,1,15,0l87.45,151.87A7.59,7.59,0,0,1,222.93,203.8ZM120,144V104a8,8,0,0,1,16,0v40a8,8,0,0,1-16,0Zm20,36a12,12,0,1,1-12-12A12,12,0,0,1,140,180Z\"/>", "wifi-slash": "<path d=\"M238.2,87.69l-104,125.43a8,8,0,0,1-12.3,0L17.8,87.69a7.79,7.79,0,0,1,1.31-11.21,180.75,180.75,0,0,1,217.78,0A7.79,7.79,0,0,1,238.2,87.69Z\" opacity=\"0.2\"/><path d=\"M53.92,34.62A8,8,0,1,0,42.08,45.38l4.55,5A187.93,187.93,0,0,0,14.28,70.1,15.93,15.93,0,0,0,8.11,80.91,15.65,15.65,0,0,0,11.65,92.8l104,125.43A15.93,15.93,0,0,0,128,224h0a15.93,15.93,0,0,0,12.31-5.77l28.1-33.88,33.67,37a8,8,0,1,0,11.84-10.76ZM128,208,24.09,82.74A171.5,171.5,0,0,1,57.91,62.79l99.63,109.6ZM244.35,92.8l-49.42,59.58a8,8,0,0,1-12.32-10.21l49.3-59.43A170.76,170.76,0,0,0,128,48a175.15,175.15,0,0,0-32.39,3,8,8,0,1,1-3-15.72A190.62,190.62,0,0,1,128,32,186.67,186.67,0,0,1,241.72,70.1a15.93,15.93,0,0,1,6.17,10.81A15.65,15.65,0,0,1,244.35,92.8Z\"/>", "wrench": "<path d=\"M224,96a64,64,0,0,1-94.94,56L73,217A24,24,0,0,1,39,183L104,126.94a64,64,0,0,1,80-90.29L144,80l5.66,26.34L176,112l43.35-40A63.8,63.8,0,0,1,224,96Z\" opacity=\"0.2\"/><path d=\"M226.76,69a8,8,0,0,0-12.84-2.88l-40.3,37.19-17.23-3.7-3.7-17.23,37.19-40.3A8,8,0,0,0,187,29.24,72,72,0,0,0,88,96,72.34,72.34,0,0,0,94,124.94L33.79,177c-.15.12-.29.26-.43.39a32,32,0,0,0,45.26,45.26c.13-.13.27-.28.39-.42L131.06,162A72,72,0,0,0,232,96,71.56,71.56,0,0,0,226.76,69ZM160,152a56.14,56.14,0,0,1-27.07-7,8,8,0,0,0-9.92,1.77L67.11,211.51a16,16,0,0,1-22.62-22.62L109.18,133a8,8,0,0,0,1.77-9.93,56,56,0,0,1,58.36-82.31l-31.2,33.81a8,8,0,0,0-1.94,7.1L141.83,108a8,8,0,0,0,6.14,6.14l26.35,5.66a8,8,0,0,0,7.1-1.94l33.81-31.2A56.06,56.06,0,0,1,160,152Z\"/>", "x-circle": "<path d=\"M224,128a96,96,0,1,1-96-96A96,96,0,0,1,224,128Z\" opacity=\"0.2\"/><path d=\"M165.66,101.66,139.31,128l26.35,26.34a8,8,0,0,1-11.32,11.32L128,139.31l-26.34,26.35a8,8,0,0,1-11.32-11.32L116.69,128,90.34,101.66a8,8,0,0,1,11.32-11.32L128,116.69l26.34-26.35a8,8,0,0,1,11.32,11.32ZM232,128A104,104,0,1,1,128,24,104.11,104.11,0,0,1,232,128Zm-16,0a88,88,0,1,0-88,88A88.1,88.1,0,0,0,216,128Z\"/>"};
+  var MAP = {"⚠": "warning|a", "✅": "check-circle|g", "🏗": "crane|", "📦": "package|", "⏳": "hourglass-medium|a", "📝": "note-pencil|", "📋": "clipboard-text|", "📚": "books|", "📥": "tray-arrow-down|", "📤": "tray-arrow-up|", "🔒": "lock|", "🔓": "lock-open|", "🔐": "lock-key|", "📴": "wifi-slash|r", "🔁": "arrows-left-right|", "⚖": "scales|", "🚚": "truck|", "🔗": "link|", "📷": "camera|", "📲": "device-mobile|", "✏": "pencil-simple|", "🔢": "hash|", "🗑": "trash|r", "↩": "arrow-u-up-left|", "👤": "user|", "📊": "chart-bar|", "💬": "chat-circle-text|", "⬇": "download-simple|", "⬆": "upload-simple|", "📖": "book-open|", "⭐": "star|a", "🔔": "bell|", "❌": "x-circle|r", "🌐": "globe|", "⚡": "lightning|a", "🛡": "shield-check|", "📈": "chart-line-up|", "📉": "chart-line-down|", "🚪": "sign-out|", "➕": "plus-circle|", "⏱": "timer|", "🔧": "wrench|", "🛠": "toolbox|", "🔄": "arrows-clockwise|", "👉": "hand-pointing|", "🔑": "key|", "👁": "eye|", "💾": "floppy-disk|", "⚙": "gear-six|", "🆕": "sparkle|", "👥": "users|", "📭": "tray|", "⛽": "gas-pump|", "🎤": "microphone|", "🔎": "magnifying-glass|", "🔍": "magnifying-glass|", "🏷": "tag|", "🏠": "house|", "💰": "coins|", "🏢": "buildings|", "💧": "drop|b", "🔩": "nut|", "📁": "folder|", "📂": "folder-open|", "📱": "device-mobile|", "➡": "arrow-right|", "📅": "calendar|", "🗓": "calendar|", "⏰": "alarm|", "🧾": "receipt|", "🛣": "road-horizon|", "🏛": "bank|", "🦺": "hard-hat|", "👷": "users-three|", "👔": "briefcase|", "🛢": "drop-half|", "🧱": "wall|", "⛓": "link-simple-horizontal|", "🦷": "tooth|", "🔥": "fire|r", "🪨": "mountains|", "⛑": "hard-hat|", "📏": "ruler|", "🦾": "gear-fine|", "⛏": "shovel|", "🚜": "tractor|", "🙈": "eye-slash|", "📶": "cell-signal-high|", "❔": "question|", "🕐": "clock|", "🕘": "clock|", "🕖": "clock|", "🥧": "chart-pie|", "🚨": "siren|r", "⏺": "record|", "🏁": "flag-checkered|", "🔖": "bookmark-simple|", "📜": "scroll|", "📍": "map-pin|", "📞": "phone|", "🐞": "bug|r", "✨": "sparkle|", "⛔": "prohibit|r", "📨": "envelope-simple|", "👋": "hand-waving|", "📄": "file-text|", "🧪": "flask|", "✋": "hand-palm|a", "🤝": "handshake|", "📐": "compass-tool|", "🚛": "truck-trailer|", "🗺": "map-trifold|", "🧮": "calculator|", "🎯": "crosshair|", "📑": "files|", "🚩": "flag|r", "📡": "broadcast|", "📘": "book|", "🧹": "broom|", "🌙": "moon|b", "☀": "sun|a", "🖨": "printer|", "🖼": "image|", "🧩": "puzzle-piece|", "⏸": "pause|", "📌": "push-pin|", "🏭": "factory|", "✂": "scissors|", "📎": "paperclip|", "🎉": "confetti|g", "🗣": "megaphone|", "🚑": "first-aid|r", "🔨": "hammer|", "📃": "file-text|", "📆": "calendar|", "💡": "lightbulb|a", "🧰": "toolbox|", "🗂": "folders|", "🔀": "shuffle|", "🧯": "fire-extinguisher|r"};
+  var keys = Object.keys(MAP).sort(function (a, b) { return b.length - a.length; });
+  var RE = new RegExp('(' + keys.map(function (k) { return k.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); }).join('|') + ')\uFE0F?', 'g');
+  var TEST = new RegExp(RE.source);
+  var SKIP = { SCRIPT:1, STYLE:1, TEXTAREA:1, INPUT:1, OPTION:1, SELECT:1, TITLE:1, CODE:1, PRE:1, svg:1, SVG:1, text:1, tspan:1 };
+  var NS = 'http://www.w3.org/2000/svg';
+  function sprite() {
+    if (document.getElementById('pi-sprite')) return;
+    var d = document.createElement('div');
+    d.innerHTML = '<svg id="pi-sprite" xmlns="' + NS + '" style="position:absolute;width:0;height:0;overflow:hidden" aria-hidden="true">' +
+      Object.keys(SYM).map(function (n) { return '<symbol id="pi-' + n + '" viewBox="0 0 256 256">' + SYM[n] + '</symbol>'; }).join('') + '</svg>';
+    document.body.insertBefore(d.firstChild, document.body.firstChild);
+  }
+  function icon(e) {
+    var m = (MAP[e] || '').split('|'), s = document.createElementNS(NS, 'svg');
+    s.setAttribute('class', 'pi' + (m[1] ? ' pi-' + m[1] : '')); s.setAttribute('aria-hidden', 'true'); s.setAttribute('viewBox', '0 0 256 256');
+    var u = document.createElementNS(NS, 'use'); u.setAttribute('href', '#pi-' + m[0]); s.appendChild(u); return s;
+  }
+  function skip(n) {
+    for (var p = n.parentNode; p && p.nodeType === 1; p = p.parentNode) {
+      if (SKIP[p.nodeName] || p.isContentEditable || (p.classList && p.classList.contains('noicon'))) return true;
+      if (p === document.body) return false;
+    }
+    return false;
+  }
+  function fix(t) {
+    var s = t.nodeValue; if (!s || !t.parentNode || !TEST.test(s) || skip(t)) return;
+    var f = document.createDocumentFragment(), last = 0, m; RE.lastIndex = 0;
+    while ((m = RE.exec(s))) {
+      if (m.index > last) f.appendChild(document.createTextNode(s.slice(last, m.index)));
+      f.appendChild(icon(m[1])); last = m.index + m[0].length;
+    }
+    if (last < s.length) f.appendChild(document.createTextNode(s.slice(last)));
+    t.parentNode.replaceChild(f, t);
+  }
+  function scan(root) {
+    if (!root) return;
+    if (root.nodeType === 3) { fix(root); return; }
+    if (root.nodeType !== 1 || SKIP[root.nodeName]) return;
+    var w = document.createTreeWalker(root, 4, null), l = [], n;
+    while ((n = w.nextNode())) if (TEST.test(n.nodeValue)) l.push(n);
+    for (var i = 0; i < l.length; i++) fix(l[i]);
+  }
+  function start() {
+    sprite(); scan(document.body);
+    new MutationObserver(function (ms) {
+      for (var i = 0; i < ms.length; i++) {
+        var m = ms[i];
+        if (m.type === 'characterData') fix(m.target);
+        else for (var j = 0; j < m.addedNodes.length; j++) scan(m.addedNodes[j]);
+      }
+    }).observe(document.body, { childList:true, subtree:true, characterData:true });
+  }
+  window.PI_ICON = function (e) { var d = document.createElement('span'); d.appendChild(icon(e)); return d.innerHTML; };
+  if (document.body) start(); else document.addEventListener('DOMContentLoaded', start);
+})();
 
 if ('serviceWorker' in navigator) { try { navigator.serviceWorker.register('sw.js').catch(() => {}); } catch (e) {} }
 </script>

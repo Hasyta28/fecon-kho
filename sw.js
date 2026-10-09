@@ -1,4 +1,7 @@
-// FECON Kho + Thi công - Service Worker v5.31.7
+// FECON Kho + Thi công - Service Worker v5.31.10
+// 5.31.10: Thi công trên máy tính dùng hết chiều ngang màn hình
+// 5.31.9: biểu tượng Phosphor Duotone (màu cam FECON) thay cho emoji
+// 5.31.8: tên app FECON · chữ to hơn 10% · nút chuyển Kho / Thi công nổi bật · bỏ chú thích thừa
 // 5.31.7: Thi công 1.4 — Admin phân quyền Thi công + giao dự án ngay trong Thi công
 // 5.31.6: menu Thi công giống Kho · màn chọn Kho / Thi công dùng nền đăng nhập
 // 5.31.5: Thi công 1.3.1 — sửa kẹt khi đổi dự án lúc đang đồng bộ
@@ -11,7 +14,7 @@
 //  - Mở app: lấy file từ bộ nhớ của bản đang dùng; thiếu file nào mới lấy từ mạng.
 //  - Có sw.js mới trên GitHub: tải sẵn bản mới vào bộ nhớ riêng nhưng KHÔNG đổi bản đang dùng.
 //  - Địa chỉ có ?fresh=... luôn lấy thẳng từ mạng (app dùng để kiểm tra / tải bản mới).
-const VERSION = '5.31.7';
+const VERSION = '5.31.10';
 const APP = 'fecon-app-', META = 'fecon-meta';
 const CORE = ['./', './index.html', './thicong.html', './manifest.json', './icon-192.png', './icon-512.png', './icon-maskable-192.png', './icon-maskable-512.png', './bg-login.jpg'];
 
