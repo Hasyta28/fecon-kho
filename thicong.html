@@ -373,6 +373,12 @@ body.pk-open .main{padding-bottom:48vh}
 
 .ptitle{flex-wrap:wrap;gap:2px 10px}.ptitle span{white-space:nowrap}
 
+/* Hướng dẫn sử dụng */
+.qhelp{width:30px;height:30px;border-radius:50%;border:2px solid #0056A4;background:#fff;color:#0056A4;font-weight:900;font-size:16.5px;line-height:1;display:flex;align-items:center;justify-content:center;flex-shrink:0;cursor:pointer;padding:0}
+.dhdr .qhelp{margin-left:auto}
+.gd-step{padding:12px 12px 10px;margin-bottom:12px}.gd-st{display:flex;gap:10px;align-items:flex-start;font-size:16px;line-height:1.5;color:var(--text)}
+.gd-n{width:26px;height:26px;border-radius:50%;background:var(--orange);color:#fff;font-weight:900;font-size:14.5px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.gd-step img{display:block;width:100%;max-width:360px;margin:10px auto 0;border-radius:14px;border:1px solid var(--border);box-shadow:0 4px 14px rgba(16,24,40,.08)}
 /* v5.31.10 · Máy tính: dùng hết chiều ngang màn hình như app Kho */
 @media (min-width:900px){
   .scr{max-width:none}
@@ -404,9 +410,9 @@ button .pi,.btn .pi,a .pi,.chip .pi,.tag .pi,.badge .pi,.yn .pi,.bnav .pi,.bnav-
 <div id="app"></div>
 <script>
 // FECON South · THI CÔNG 1.4.3 — chạy cùng app Kho (đăng nhập ở index.html, dùng chung máy chủ Apps Script)
-const KHO_VERSION = '5.31.10';
+const KHO_VERSION = '5.31.11';
 // ===== FECON Thi công 1.0 — lõi: máy chủ, lưu trên máy, hàng đợi gửi, điều hướng =====
-const TC_APP_VERSION = '1.4.3';
+const TC_APP_VERSION = '1.4.4';
 const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbw6Rmi80I7RI3ij2U7RdRF5pYuQTnPrwEmGmUZS5xpxzLwwVynfoFUujZe1lm6HS1ymxw/exec';
 const LS_TOKEN = 'fecon_token_v5', LS_USER = 'fecon_user_v5';           // dùng chung phiên đăng nhập với Kho
 const LS_P = 'tc_proj', LS_BOOT = 'tc_boot2|', LS_OUT = 'tc_out_v1', LS_CA = 'tc_ca', LS_PART = 'fecon_part';
@@ -645,10 +651,10 @@ function shell(o) {        // o: {title, sub, back, body, act, tab, noSync}
   const tabs = [['home','🏠','Tổng quan'],['plan','🗺️','Cấu kiện'],['viec','✅','Việc'],['vt','📦','Vật tư'],['bc','📊','Báo cáo']];
   const nv = taskCount();
   const head = o.back
-    ? `<div class="dhdr"><button class="back" onclick="back()" aria-label="Quay lại">‹</button><div class="dtitle">${o.title}${o.sub ? `<div class="dsub">${o.sub}</div>` : ''}</div>${o.right || ''}</div>`
+    ? `<div class="dhdr"><button class="back" onclick="back()" aria-label="Quay lại">‹</button><div class="dtitle">${o.title}${o.sub ? `<div class="dsub">${o.sub}</div>` : ''}</div>${o.right || (cur.v !== 'hd' && cur.v !== 'hdx' ? '<button class="qhelp" onclick="tcHelp()" aria-label="Hướng dẫn">?</button>' : '')}</div>`
     : `<div class="hdr"><button class="hdr-menu" onclick="sideOn()" aria-label="Menu"><span></span><span></span><span></span></button>
         <div class="hdr-mid"><img class="hdr-logo" src="${LOGO}" alt="FECON South"><div class="hdr-mod">Thi công</div></div>
-        <div class="hdr-right"><div class="hdr-ava tap" onclick="sideOn()">${esc(initials(me && me.name))}</div></div></div>`;
+        <div class="hdr-right"><div class="hdr-ava tap" onclick="sideOn()">${esc(initials(me && me.name))}</div><button class="qhelp" onclick="tcHelp()" aria-label="Hướng dẫn">?</button></div></div>`;
   return `<div class="scr">${head}${o.noSync ? '' : '<div id="syncbar"></div>'}${demoBar()}
     <div class="main" id="main">${o.body}</div>
     ${o.act ? `<div class="actbar">${o.act}</div>` : ''}
@@ -1612,7 +1618,7 @@ function pickList() {
 function render(top) {
   const v = VIEWS[cur.v] || VIEWS.home;
   if (!B) { $('#app').innerHTML = shell({ body:`<div class="dbody">${updCardHtml()}</div><div class="empty"><span class="spin" style="display:inline-block"></span><br>Đang tải dữ liệu thi công…</div>`, tab:'home' }); setSync(); return; }
-  if (!Object.keys(CK).length && cur.v !== 'qtri' && cur.v !== 'proj' && cur.v !== 'hd') { $('#app').innerHTML = shell({ body:noCkHtml(), tab:cur.v }); setSync(); return; }
+  if (!Object.keys(CK).length && cur.v !== 'qtri' && cur.v !== 'proj' && cur.v !== 'hd' && cur.v !== 'hdx') { $('#app').innerHTML = shell({ body:noCkHtml(), tab:cur.v }); setSync(); return; }
   $('#app').innerHTML = v.render(cur.a);
   document.body.classList.toggle('pk-open', !!document.querySelector('#peek.pkf'));
   setSync();
@@ -2701,25 +2707,6 @@ async function soPush() {
 }
 
 // ---------- Hướng dẫn ----------
-VIEWS.hd = {
-  render() {
-    const S = [
-      ['🏠 Tổng quan', 'Xem nhanh cấu kiện đang làm, việc chờ kiểm tra, bê tông hôm nay. Nút cam "＋ Ghi nhật ký thi công" → chọn công việc → chọn cọc / panel → nhập số.'],
-      ['🗺️ Mặt bằng', 'Màu: xanh lá = nghiệm thu, xanh dương = đã đổ, cam = đang làm, vàng = sắp làm (có kế hoạch), trắng = chưa làm, viền đỏ = có NCR mở. Chạm cọc để xem, ＋/－ hoặc 2 ngón để phóng, kéo để di chuyển. Bấm "📐 Mặt cắt" để xem cao độ cả trục.'],
-      ['📝 Ghi nhật ký', 'Mỗi công đoạn một biểu mẫu: Định vị → Khoan / cạp → Hình học → Dung dịch → (Mối nối) → Trước đổ (Hold) → Lồng thép → Xe bê tông → Tremie → Khối lượng → Nghiệm thu. "Lưu nháp" giữ trên máy chủ cho bạn sửa tiếp; "Gửi kiểm tra" báo QA/QC (Telegram).'],
-      ['📶 Mất mạng', 'Vẫn ghi bình thường. Thanh trên cùng báo số thao tác chờ gửi; có mạng app tự gửi, không ghi trùng. Ảnh chụp được thu nhỏ trước khi gửi.'],
-      ['✋ Điểm Hold', 'Màn Đổ bê tông chỉ mở khi "Kiểm tra trước đổ" đã được QA/QC giải phóng (Admin có thể đổi thành chỉ nhắc). Người gửi không tự xác nhận bản ghi của mình.'],
-      ['✅ Xác nhận · trả về', 'QA/QC mở bản ghi "Chờ kiểm tra" → Xác nhận hoặc Trả về (ghi lý do). Bản đã xác nhận chỉ CHT / Admin sửa được và phải ghi lý do — app lưu số cũ → số mới.'],
-      ['🏁 Nghiệm thu', 'Kỹ sư gửi hồ sơ nghiệm thu → QA/QC xác nhận → CHT duyệt nội bộ → cấu kiện chuyển "Nghiệm thu" (xanh lá).'],
-      ['🤝 Bàn giao ca', 'Cuối ca: Báo cáo → Lập bàn giao ca. App tự liệt kê cấu kiện đang dở; ghi tồn tại, việc ca sau, chọn người nhận. Người nhận bấm "Nhận ca".'],
-      ['📊 Báo cáo ngày', 'Tự tổng hợp từ nhật ký: khoan xong, đổ xong, xe bê tông, mẫu dung dịch, NCR, quan trắc, đất thải. Xuất Excel hoặc in PDF.'],
-      ['📦 Kho', 'Menu → Chuyển sang Kho (giữ đăng nhập). Màn Vật tư xem phiếu yêu cầu theo cấu kiện từ Kho, không tạo chứng từ ở Thi công.'],
-      ['🧪 Dữ liệu mẫu', 'Dự án có dải cam "Dữ liệu mẫu" là để tập — ghi thoải mái. Admin xóa dữ liệu mẫu khi bắt đầu dùng thật.']
-    ];
-    return shell({ back:1, title:'Hướng dẫn sử dụng', sub:'Thi công ' + TC_APP_VERSION, body:`<div class="dbody">${S.map(s => `<div class="fsec"><div class="fsec-t">${s[0]}</div><div style="font-size:15px;line-height:1.55;color:var(--text2)">${esc(s[1])}</div></div>`).join('')}</div>` });
-  }
-};
-
 // ---------- Khởi động ----------
 function datalists() {
   let d = $('#dls'); if (!d) { d = document.createElement('div'); d.id = 'dls'; d.style.display = 'none'; document.body.appendChild(d); }
@@ -3366,6 +3353,112 @@ async function bbBatch(kind, day) {
   showLoader('Đang tải hồ sơ…'); for (const k of codes) if (!CKREC[k]) await loadCk(k, true); hideLoader();
   bbStyle(); bbPrintDocs(codes.flatMap(k => bbDocs(CK[k])));
 }
+
+// ===== Hướng dẫn sử dụng Thi công (giống Kho): bài theo chức danh, tìm kiếm, từng bước có ảnh, nút "?" theo màn đang xem =====
+const TC_GUIDES = [
+  { id:'tc_vao', g:'Bắt đầu', t:'Vào phần Thi công, đổi dự án', p:'', s:[
+    'Đăng nhập xong, màn "Chọn phần làm việc" bấm "Thi công". App nhớ lựa chọn, lần sau mở app vào thẳng Thi công.',
+    'Bấm ☰ (Menu): ô "Thi công đang xem" để đổi dự án; nút cam "Chuyển sang Kho" để qua Kho, không phải đăng nhập lại.',
+    'Màn Tổng quan: số cấu kiện đang thi công, chờ kiểm tra, NCR, bê tông hôm nay. Mục "Cần bạn xử lý" là việc đang chờ bạn.'] },
+  { id:'tc_capnhat', g:'Bắt đầu', t:'Cập nhật phiên bản mới', p:'', s:[
+    'Có bản mới, đầu màn Tổng quan hiện thẻ "Có phiên bản mới" → bấm "Cập nhật ngay" (vài giây). "Để sau" thì vẫn dùng bản cũ.',
+    'Hoặc ☰ (Menu) → "Cập nhật phiên bản" → "Kiểm tra bản mới". Thao tác chưa gửi vẫn được giữ sau khi cập nhật.'] },
+  { id:'tc_matbang', g:'Mặt bằng & hồ sơ', t:'Xem mặt bằng, chạm cọc xem mặt cắt', p:'t_xem', s:[
+    'Thanh dưới → "Cấu kiện". Màu: xanh lá = nghiệm thu, xanh dương = đã đổ, cam = đang làm, vàng = sắp làm, trắng = chưa làm, viền đỏ = có tồn tại. Bấm ô đếm để lọc.',
+    'Phóng to bằng ＋ / − hoặc 2 ngón tay, kéo để di chuyển. Phóng từ 3× trở lên sẽ hiện mã cọc.',
+    'Chạm vào cọc / panel: thẻ hiện ngay mặt cắt đứng và hiện trạng. Chạm thanh xám để mở to; "Hồ sơ ›" để xem đầy đủ.'] },
+  { id:'tc_hoso', g:'Mặt bằng & hồ sơ', t:'Hồ sơ một cấu kiện', p:'t_xem', s:[
+    'Tab "Hiện trạng": mặt cắt, chiều sâu khoan, bê tông thực tế / lý thuyết, sai lệch tim, dung dịch cuối.',
+    'Tab "Thi công": các bước theo ITP (H / W / R, ghi rõ vai từng bên). Dấu ✓ xanh là đã xác nhận. Chạm một bước để mở bản ghi.',
+    'Tab "Chất lượng": điểm kiểm tra còn thiếu, hồ sơ nghiệm thu và "Bộ biên bản theo ITP".'] },
+  { id:'tc_ghi', g:'Ghi nhật ký', t:'Ghi nhật ký một công đoạn', p:'t_ghi', s:[
+    'Tổng quan → nút cam "＋ Ghi nhật ký thi công" → chọn công việc: Định vị, Khoan / cạp, Dung dịch, Lồng thép, Xe bê tông, Tremie…',
+    'Chọn cọc / panel: gõ mã (VD: P3.143) hoặc chọn trong nhóm Đang làm / Sắp làm.',
+    'Nhập số liệu. Ô nào ngoài dung sai ITP sẽ báo màu ngay dưới ô.',
+    '"Lưu nháp" để sửa tiếp; "Gửi kiểm tra" để báo QA/QC. Mất mạng vẫn lưu, có mạng app tự gửi.'] },
+  { id:'tc_khoan', g:'Ghi nhật ký', t:'Nhật ký khoan / cạp', p:'t_ghi', s:[
+    'Chọn máy, tổ đội, giờ bắt đầu.',
+    'Bấm "＋ Thêm lần đo": giờ, chiều sâu, địa tầng. Thẻ trên cùng luôn hiện chiều sâu và cao độ đáy hiện tại.',
+    'Đạt chiều sâu thiết kế: chọn "Đạt" ở mục Kết thúc rồi bấm "Gửi kiểm tra".'] },
+  { id:'tc_dd', g:'Ghi nhật ký', t:'Mẫu dung dịch', p:'t_ghi', s:[
+    'Chọn giai đoạn lấy mẫu: Trong khi khoan / Trước làm sạch / Sau làm sạch / Trước đổ.',
+    'Nhập khối lượng riêng, độ nhớt, hàm lượng cát, pH. Xanh = đạt ITP · vàng = ngoài ITP nhưng còn trong biểu mẫu · đỏ = vượt.',
+    'Bấm "Lưu". Mỗi lần thử là một mẫu, xem lại trong hồ sơ cọc.'] },
+  { id:'tc_hold', g:'Ghi nhật ký', t:'Làm sạch & kiểm tra trước đổ (điểm Hold)', p:'t_ghi', s:[
+    'Ghi nhật ký → "Trước đổ": nhập lần làm sạch, cặn đáy 3 vị trí, ống tremie.',
+    'Bấm "✋ Gửi kiểm tra Hold". QA/QC nhận tin, mở bản ghi và bấm "Giải phóng Hold".',
+    'Chưa giải phóng Hold thì màn Đổ bê tông chưa mở.'] },
+  { id:'tc_bt', g:'Ghi nhật ký', t:'Xe bê tông & đổ bê tông tremie', p:'t_ghi', s:[
+    'Mỗi xe: "Xe bê tông" → biển số, số phiếu, giờ trộn / giờ đến, độ sụt → Nhận hoặc Trả lại.',
+    '"Tremie": thêm lần đo (lũy kế m³, Z mặt bê tông, Z đầu ống). App tính độ ngập h và nhắc tháo ống.',
+    'Ghi giờ kết thúc → cấu kiện chuyển "Đã đổ".'] },
+  { id:'tc_qa', g:'Kiểm tra & nghiệm thu', t:'Xác nhận / trả về (QA/QC)', p:'t_qa', s:[
+    'Thanh dưới → "Việc": các bản ghi "Chờ kiểm tra" đang chờ bạn.',
+    'Mở bản ghi → "✓ Xác nhận" hoặc "↩ Trả về" (ghi lý do). Người gửi không tự xác nhận bản của mình.',
+    'Sửa bản đã xác nhận: chỉ CHT / Admin, bắt buộc ghi lý do; app lưu số cũ → số mới.'] },
+  { id:'tc_nt', g:'Kiểm tra & nghiệm thu', t:'Lập hồ sơ nghiệm thu', p:'t_ghi', s:[
+    'Hồ sơ cấu kiện → tab "Chất lượng" → "Lập hồ sơ nghiệm thu". Danh sách điểm ITP cho biết còn thiếu gì.',
+    'Chọn kết luận, số biên bản → "Gửi kiểm tra". QA/QC xác nhận → CHT "Duyệt nội bộ" → cấu kiện chuyển Nghiệm thu.'] },
+  { id:'tc_bb', g:'Kiểm tra & nghiệm thu', t:'In bộ biên bản theo ITP', p:'t_xem', s:[
+    'Hồ sơ cấu kiện → "Bộ biên bản theo ITP" (cọc 13 biểu, panel 12 biểu, tự điền từ nhật ký).',
+    'Chọn "Tất cả" hoặc từng biểu 001, 002… → "In / lưu PDF" hoặc "Excel".',
+    'In cả ngày: Báo cáo → Báo cáo ngày → thẻ "Bộ biên bản theo ITP" ở cuối trang.'] },
+  { id:'tc_bc', g:'Báo cáo & phối hợp', t:'Báo cáo ngày & bàn giao ca', p:'t_xem', s:[
+    'Thanh dưới → "Báo cáo" → "Báo cáo ngày": tự tổng hợp khoan, đổ, xe bê tông, dung dịch, NCR… Chọn ngày cần xem.',
+    'Bấm "In / PDF" hoặc "Excel" để gửi đi.',
+    'Cuối ca: tab "Bàn giao ca" → "Lập bàn giao ca", chọn người nhận. Người nhận mở và bấm "Nhận ca".'] },
+  { id:'tc_ncr', g:'Báo cáo & phối hợp', t:'Ghi sự kiện / NCR / RFI', p:'t_ghi', s:[
+    'Ghi nhật ký → "Sự kiện" (hoặc trong hồ sơ cọc → "Ghi sự kiện / NCR").',
+    'Chọn loại, tiêu đề, hạn xử lý; số NCR tự đánh. Cấu kiện có NCR mở hiện viền đỏ trên mặt bằng.'] },
+  { id:'tc_kh', g:'Báo cáo & phối hợp', t:'Kế hoạch & đăng ký bê tông', p:'t_kh', s:[
+    '☰ (Menu) → "Kế hoạch & phân công": chọn ngày trong tuần, thêm việc (cấu kiện, việc, máy, giờ). App báo khi trùng máy.',
+    '☰ (Menu) → "Kế hoạch bê tông": đăng ký m³ theo cấu kiện; báo cáo ngày đối chiếu nhận / đăng ký.'] },
+  { id:'tc_kho', g:'Báo cáo & phối hợp', t:'Xem vật tư từ Kho', p:'t_xem', s:[
+    'Thanh dưới → "Vật tư": phiếu yêu cầu theo cấu kiện lấy từ Kho, gõ mã để lọc.',
+    'Lập phiếu mới: bấm "Mở Kho · lập phiếu YC" (giữ nguyên đăng nhập).'] },
+  { id:'tc_quyen', g:'Quản trị', t:'Phân quyền Thi công & giao dự án', p:'ADM', s:[
+    '☰ (Menu) → "Quản trị Thi công" → tab "Phân quyền".',
+    'Chạm ô Xem / Ghi / QA / CHT / KH / QS / QT của từng chức danh để bật / tắt → "Lưu".',
+    'Danh sách người dùng: chạm một người → tích dự án → "Lưu".'] },
+  { id:'tc_cauhinh', g:'Quản trị', t:'Nạp cấu kiện, áp dụng ITP', p:'t_qt', s:[
+    'Quản trị Thi công → tab "Cấu kiện" → "Nạp sổ hồ sơ thi công": chọn sổ cọc / sổ tường vây → "Đọc sổ" → "Nạp".',
+    'Hoặc "Tải file mẫu" → điền Mã, Loại, X, Y → chọn file để nạp danh sách cấu kiện.',
+    'Tab "Cấu hình" → "Áp dụng thông tin & ngưỡng theo ITP"; kiểm tra thông tin dự án (in lên biên bản).'] }
+];
+const TC_GICO = { 'Bắt đầu':'🚪', 'Mặt bằng & hồ sơ':'🗺️', 'Ghi nhật ký':'📝', 'Kiểm tra & nghiệm thu':'🏁', 'Báo cáo & phối hợp':'📊', 'Quản trị':'⚙️' };
+const tcGuideOk = g => !g.p || (g.p === 'ADM' ? me && me.role === 'ADM' : hp(g.p));
+let tcGQ = '';
+const vnN = s => String(s || '').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/đ/g, 'd');
+VIEWS.hd = {
+  render(a) {
+    const toks = vnN(tcGQ).split(/\s+/).filter(Boolean);
+    const list = TC_GUIDES.filter(tcGuideOk).filter(g => !toks.length || toks.every(t => vnN(g.t + ' ' + g.g + ' ' + g.s.join(' ')).includes(t)));
+    const groups = [...new Set(list.map(g => g.g))];
+    return shell({ back:1, title:'Hướng dẫn sử dụng', sub:'Thi công', body:`<div class="dbody">
+      <input class="search" id="gd-q" placeholder="🔍 Tìm: khoan, dung dịch, biên bản…" value="${esc(tcGQ)}" oninput="tcGQ=this.value;render(false);const e=document.getElementById('gd-q');e.focus();e.setSelectionRange(e.value.length,e.value.length)">
+      ${groups.map(gr => `<div class="sec-title" style="margin:16px 4px 8px">${esc(gr)}</div><div class="card">
+        ${list.filter(g => g.g === gr).map(g => `<div class="row tap" onclick="go('hdx',{id:'${g.id}'})"><div class="ico or">${TC_GICO[g.g] || '📄'}</div><div class="rmain"><div class="rname">${esc(g.t)}</div><div class="rsub">${g.s.length} bước có ảnh minh họa</div></div><span class="chev">›</span></div>`).join('')}</div>`).join('')
+      || '<div class="empty">Không tìm thấy bài phù hợp</div>'}</div>` });
+  }
+};
+VIEWS.hdx = {
+  render(a) {
+    const g = TC_GUIDES.find(x => x.id === a.id); if (!g) return shell({ back:1, title:'Hướng dẫn', body:'<div class="empty">Không tìm thấy</div>' });
+    return shell({ back:1, title:esc(g.t), sub:esc(g.g), body:`<div class="dbody">
+      ${g.s.map((t, i) => `<div class="card gd-step"><div class="gd-st"><span class="gd-n">${i + 1}</span><span>${esc(t)}</span></div>
+        <img loading="lazy" src="huongdan/${g.id}_${i + 1}.webp" alt="Bước ${i + 1}" onerror="this.style.display='none'"></div>`).join('')}
+      <button class="btn ghost mt12" onclick="go('hd')">📖 Xem tất cả hướng dẫn</button></div>` });
+  }
+};
+// nút "?" → bài hướng dẫn của màn đang xem
+function tcHelpId() {
+  const v = cur.v, a = cur.a || {};
+  if (v === 'form' && F) return ({ khoan:'tc_khoan', dd:'tc_dd', truoc:'tc_hold', xe:'tc_bt', bt:'tc_bt', nt:'tc_nt', sk:'tc_ncr', kh:'tc_kh', khbt:'tc_kh', bg:'tc_bc' })[F.mod] || 'tc_ghi';
+  if (v === 'qtri') return a.tab === 'q' ? 'tc_quyen' : 'tc_cauhinh';
+  if (v === 'viec') return hp('t_qa') ? 'tc_qa' : 'tc_ghi';
+  return ({ home:'tc_vao', plan:'tc_matbang', ck:'tc_hoso', vt:'tc_kho', bc:'tc_bc', bb:'tc_bb', kh:'tc_kh', khbt:'tc_kh', upd:'tc_capnhat', proj:'tc_vao', sk:'tc_ncr' })[v] || '';
+}
+function tcHelp() { const id = tcHelpId(), g = TC_GUIDES.find(x => x.id === id); if (g && tcGuideOk(g)) go('hdx', { id }); else go('hd'); }
 
 // ===== Bộ biểu tượng Phosphor Duotone (MIT) thay emoji — v5.31.9 =====
 (function () {
