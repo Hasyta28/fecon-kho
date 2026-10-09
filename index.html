@@ -893,6 +893,19 @@ body:not(.can-cost) .need-cost{display:none!important}
 .inst-steps li::before{content:counter(st);flex:0 0 26px;height:26px;border-radius:50%;background:var(--primary);color:#fff;font-weight:800;font-size:14.5px;display:flex;align-items:center;justify-content:center}
 .inst-key{display:inline-block;background:var(--bg);border:1px solid var(--border);border-radius:6px;padding:0 6px;font-weight:700}
 </style>
+<style>.gz-sum{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin:12px 0}.gz-sum>div{background:#fff;border:1px solid var(--border);border-radius:12px;padding:10px 6px;text-align:center}.gz-sum b{display:block;font-size:22px;color:var(--navy,#1B2A4A)}.gz-sum span{font-size:12px;color:var(--text2)}.gz-sum .ok b{color:var(--green)}.gz-sum .late b{color:var(--red)}.gz-sum .soon b{color:var(--orange)}
+.gz-h{font-weight:800;font-size:15.5px;margin:16px 2px 8px;color:var(--navy,#1B2A4A)}.gz-h small{font-weight:600;color:var(--text2);font-size:13px;margin-left:6px}
+.gz-row{display:flex;gap:10px;align-items:flex-start;background:#fff;border-bottom:1px solid var(--border);padding:11px 12px}.gz-row:last-child{border-bottom:none}.card-list{background:#fff;border-radius:14px;border:1px solid var(--border);overflow:hidden}
+.gz-ic{width:30px;height:30px;border-radius:9px;display:flex;align-items:center;justify-content:center;flex-shrink:0;background:#FFF4E5;font-size:16px}.gz-ic.done,.gz-ic.out{background:#E9F7EC}.gz-ic.part{background:#FFF6DB}
+.gz-n{font-weight:700;font-size:14.5px;line-height:1.35}.gz-s{font-size:13px;color:var(--text2);margin-top:2px;line-height:1.45}.gz-hi{font-size:12.5px;color:var(--green);margin-top:3px;font-weight:600}
+.gz-row.done .gz-n{color:var(--text2)}.gz-btn{flex-shrink:0;background:var(--orange);color:#fff;border:none;border-radius:9px;padding:7px 11px;font-weight:700;font-size:13px;cursor:pointer}
+.gz-tag{flex-shrink:0;border:1.5px solid var(--border);background:#F1F3F5;border-radius:8px;padding:5px 9px;font-size:12.5px;font-weight:700;color:var(--text2)}.gz-tag.tb{background:#FFF0E0;color:#B35C00;border-color:#F5C89A}.gz-tag.vt{background:#F3EEE4;color:#6B5B3E;border-color:#D9CBB0}
+.gz-chk{display:flex;gap:8px;align-items:flex-start;font-size:13.5px;margin:6px 0 8px;line-height:1.4}.gz-chk input{margin-top:3px}
+.gz-box{border:1.5px solid var(--orange);background:#FFF8F2;border-radius:12px;padding:10px 12px;margin:2px 0 12px}.gz-box.in{border-color:#2F9E44;background:#F1FAF3}.gz-bh{font-size:13.5px;font-weight:700;line-height:1.45}
+.gz-dir{display:grid;grid-template-columns:1fr;gap:6px;margin:8px 0}.gz-dir.two{grid-template-columns:1fr 1fr}.gz-dir button{border:1.5px solid var(--border);background:#fff;border-radius:10px;padding:10px;font-weight:700;font-size:14px;text-align:left;cursor:pointer}.gz-dir.two button{text-align:center}.gz-dir button.on{border-color:var(--orange);background:var(--orange);color:#fff}
+.gz-chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}.gz-chips button{border:1.5px solid #8CC79A;background:#fff;border-radius:10px;padding:6px 10px;font-size:13px;font-weight:700;text-align:left;cursor:pointer}.gz-chips small{display:block;font-weight:500;color:var(--text2);font-size:12px}
+.combo-grp{padding:6px 12px;font-size:12px;font-weight:800;color:var(--orange);background:#FFF8F2;text-transform:uppercase;letter-spacing:.3px}.gz-dir.three{grid-template-columns:1fr 1fr 1fr}.gz-dir.grid2{grid-template-columns:1fr 1fr}.gz-dir.three button,.gz-dir.grid2 button{text-align:center;padding:10px 6px;font-size:13.5px}.gz-off{display:none!important}#dp-loans .detail-header .need-tk{display:none!important}
+.gz-nb{background:var(--red);color:#fff;border-radius:10px;font-size:12px;font-weight:800;padding:1px 7px}</style>
 <style>/* Biểu tượng Phosphor Duotone (v5.31.9) */
 .pi{width:1.15em;height:1.15em;display:inline-block;vertical-align:-.2em;color:#F26522;fill:currentColor;flex-shrink:0;overflow:visible}
 .pi-g{color:#1E9E5A}.pi-r{color:#D93A2B}.pi-a{color:#E08A00}.pi-b{color:#0056A4}
@@ -1162,6 +1175,14 @@ button .pi,.btn .pi,a .pi,.chip .pi,.tag .pi,.badge .pi,.yn .pi,.bnav .pi,.bnav-
   <div class="detail-body" id="dp-members-body"></div>
 </div>
 
+<div class="detail-page" id="dp-gd">
+  <div class="detail-header">
+    <button class="back-btn" onclick="closeDp('dp-gd')">‹</button>
+    <div class="detail-title">🚚 Giải động</div>
+  </div>
+  <div class="detail-body" id="dp-gd-body"></div>
+</div>
+
 <div class="detail-page" id="dp-loans">
   <div class="detail-header">
     <button class="back-btn" onclick="closeDp('dp-loans')">‹</button>
@@ -1267,6 +1288,7 @@ button .pi,.btn .pi,a .pi,.chip .pi,.tag .pi,.badge .pi,.yn .pi,.bnav .pi,.bnav-
     <div class="sidebar-item" data-p="k_nhap" onclick="goTabSb('nhap')"><span class="sidebar-item-ico">📥</span>Nhập kho</div>
     <div class="sidebar-item" data-p="k_xuat" onclick="goTabSb('xuat')"><span class="sidebar-item-ico">📤</span>Xuất kho</div>
     <div class="sidebar-item" data-p="v_ton" onclick="goTabSb('ton')"><span class="sidebar-item-ico">📦</span>Tồn kho</div>
+    <div class="sidebar-item" data-p="v_home" onclick="openDpSb('dp-gd')"><span class="sidebar-item-ico">🚚</span><span style="flex:1">Giải động</span><span id="sb-gz-n" class="gz-nb" style="display:none"></span></div>
     <div class="sidebar-item" data-p="v_home|k_loan" onclick="openDpSb('dp-loans')"><span class="sidebar-item-ico">🔁</span>Cho mượn / Trả</div>
     <div class="sidebar-item" data-p="v_baocao" onclick="goTabSb('baocao')"><span class="sidebar-item-ico">📊</span>Báo cáo</div>
     <div class="sidebar-item need-cost" onclick="openSummary()"><span class="sidebar-item-ico">📈</span>Tổng hợp dự án</div>
@@ -1737,7 +1759,7 @@ button .pi,.btn .pi,a .pi,.chip .pi,.tag .pi,.badge .pi,.yn .pi,.bnav .pi,.bnav-
 // ============================================================
 // CONFIG
 // ============================================================
-const APP_VERSION = '5.31.11';
+const APP_VERSION = '5.33.0';
 const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbw6Rmi80I7RI3ij2U7RdRF5pYuQTnPrwEmGmUZS5xpxzLwwVynfoFUujZe1lm6HS1ymxw/exec';
 // ============================================================
 
@@ -1789,6 +1811,8 @@ const CATEGORIES = [
   {id:'vatLieu',   name:'Vật liệu thi công',   icon:'🪨', svg:'vatLieu',   color:'#8B6B3E', bg:'#F6EFE4'},
   {id:'bhld',      name:'Bảo hộ lao động',     icon:'⛑️', svg:'bhld',      color:'#2B8A3E', bg:'#E9F7EC'},
   {id:'dungCu',    name:'Dụng cụ',             icon:'📏', svg:'dungCu',    color:'#5C7080', bg:'#EDF1F4'},
+  {id:'tbPhuTro',  name:'Thiết bị phụ trợ',    icon:'🧰', svg:'dungCu',    color:'#B35C00', bg:'#FFF0E0'},
+  {id:'vtPhuTro',  name:'Vật tư phụ trợ',      icon:'🧱', svg:'vatLieu',   color:'#6B5B3E', bg:'#F3EEE4'},
   {id:'khac',      name:'Khác',                icon:'📦', svg:'khacVT',    color:'#868E96', bg:'#F1F3F5'}
 ];
 const DEVICE_CATS = [
@@ -8462,6 +8486,580 @@ doLoan = guardBtn('loan', doLoan); saveLoanReturn = guardBtn('loan', saveLoanRet
     if (sp) setTimeout(() => { sp.classList.add('hide'); setTimeout(() => sp.remove(), 500); }, sp.classList.contains('and') ? 1700 : 1900);
   }
 })();
+</script>
+<script>// ===== v5.32.0: GIẢI ĐỘNG — danh sách giải động (BM05), xuất giải động 3 hướng, nhận từ công trình khác, cảnh báo đến hạn =====
+let GD = { P:'', rows:[], inc:[], projects:[], kho:'Kho FECON Đồng Nai', at:0, busy:false };
+const GD_EDIT_R = ['ADM','SK','EQM','DEQ','CM','DCM','QL'];
+const GD_ALERT_R = ['ADM','SK','EQM','DEQ','CM','DCM'];
+const GD_GRP = { may:'Máy cơ sở', tb:'Thiết bị phụ trợ', vt:'Vật tư phụ trợ' };
+const GD_CAT = { tb:'tbPhuTro', vt:'vtPhuTro' };
+const gdCanEdit = () => GD_EDIT_R.indexOf(role) >= 0;
+const gdLeft = r => Math.round((r.qty - r.done) * 1000) / 1000;
+const gdDays = s => { const m = String(s || '').match(/^(\d{4})-(\d{2})-(\d{2})/); if (!m) return null; const n = new Date(); return Math.round((Date.UTC(+m[1], m[2] - 1, +m[3]) - Date.UTC(n.getFullYear(), n.getMonth(), n.getDate())) / 864e5); };
+const gdDmy = s => { const m = String(s || '').match(/^(\d{4})-(\d{2})-(\d{2})/); return m ? `${+m[3]}/${+m[2]}/${m[1]}` : ''; };
+const gdHLbl = h => h.h === 'thue' ? 'Trả bên cho thuê' + (h.dest ? ' · ' + h.dest : '') : h.h === 'kho' ? 'Về ' + (h.dest || GD.kho) : h.h === 'da' ? 'Chuyển dự án ' + h.dest : 'Đã giải động (theo file)';
+function gdDev(r) { return r.grp === 'may' && r.ma ? db.devices.find(d => String(d.maQL || '') === String(r.ma)) : null; }
+function gdState(r) {                                          // done | part | todo ; máy đã "Kết thúc" ở Máy móc → coi như đã rời
+  const dv = gdDev(r);
+  if (r.done >= r.qty - 1e-9 && r.qty > 0) return 'done';
+  if (dv && dv.outDate && !r.done) return 'out';
+  return r.done > 0 ? 'part' : 'todo';
+}
+function gdDue(r) { const st = gdState(r); if (st === 'done' || st === 'out') return null; return gdDays(r.dueDate); }
+function gdAlerts() { if (GD.P !== curProj) return { late:[], soon:[] }; const a = GD.rows.map(r => [r, gdDue(r)]).filter(x => x[1] !== null);
+  return { late:a.filter(x => x[1] < 0).map(x => x[0]), soon:a.filter(x => x[1] >= 0 && x[1] <= 3).map(x => x[0]) }; }
+const gdLS = () => 'fecon_gd_' + curProj;
+function gdCacheLoad() { try { const c = JSON.parse(localStorage.getItem(gdLS()) || 'null'); if (c && c.P === curProj) Object.assign(GD, c); } catch (e) {} }
+function gdCacheSave() { try { localStorage.setItem(gdLS(), JSON.stringify({ P:GD.P, rows:GD.rows, inc:GD.inc, projects:GD.projects, kho:GD.kho, at:GD.at })); } catch (e) {} }
+async function gdLoad(force) {
+  if (!curProj || curProj === 'all' || GD.busy) return;
+  if (GD.P !== curProj) { GD = Object.assign(GD, { P:'', rows:[], inc:[] }); gdCacheLoad(); }
+  if (!force && GD.P === curProj && Date.now() - GD.at < 120000) return;
+  GD.busy = true;
+  try {
+    const p = curProj, r = await api('gdList', { project:p });
+    if (r && r.success && p === curProj) { Object.assign(GD, { P:p, rows:r.rows || [], inc:r.inc || [], projects:r.projects || [], kho:r.kho || GD.kho, at:Date.now() }); gdCacheSave(); gdRefresh(); }
+  } finally { GD.busy = false; }
+}
+function gdRefresh() {
+  gdBadge();
+  if (document.getElementById('dp-gd')?.classList.contains('show')) gdRender();
+  if (curTab === 'home') { const b = document.getElementById('gd-home'); if (b) b.outerHTML = gdHomeHtml(); }
+  if (curTab === 'nhap') gdIncBox();
+}
+function gdBadge() { const a = gdAlerts(), n = a.late.length + a.soon.length, b = document.getElementById('sb-gz-n'); if (b) { b.textContent = n; b.style.display = n ? '' : 'none'; } }
+function gdHomeHtml() {
+  if (GD_ALERT_R.indexOf(role) < 0) return '<div id="gd-home"></div>';
+  const a = gdAlerts(); if (!a.late.length && !a.soon.length) return '<div id="gd-home"></div>';
+  const nm = l => l.slice(0, 3).map(r => escHtml(r.name.length > 34 ? r.name.slice(0, 32) + '…' : r.name)).join(', ') + (l.length > 3 ? ` và ${l.length - 3} mục khác` : '');
+  return `<div id="gd-home" class="alert-banner" style="${a.late.length ? '' : 'border-left-color:var(--orange)'}" onclick="openDp('dp-gd')">
+    <div style="flex:1"><b>🚚 Giải động: ${a.late.length ? `${a.late.length} mục quá hạn` : ''}${a.late.length && a.soon.length ? ' · ' : ''}${a.soon.length ? `${a.soon.length} mục sắp đến hạn` : ''}</b>
+    <div style="font-size:13px;margin-top:3px;color:var(--text2)">Chưa xuất giải động: ${nm(a.late.concat(a.soon))}</div></div><span style="font-size:20px">›</span></div>`;
+}
+
+// ---------- Màn Giải động ----------
+let gdOpen = {}, gdPrev = null;
+function gdRender() {
+  const body = document.getElementById('dp-gd-body'); if (!body) return;
+  if (GD.P !== curProj) { body.innerHTML = '<div class="empty-state"><p>Đang tải danh sách giải động…</p></div>'; gdLoad(true); return; }
+  const rows = GD.rows, cnt = s => rows.filter(r => gdState(r) === s).length, a = gdAlerts();
+  const inc = GD.inc.filter(x => x.recv < x.q - 1e-9);
+  let h = `${gdCanEdit() ? `<label class="btn-full btn-orange" style="display:flex;align-items:center;justify-content:center;gap:8px;cursor:pointer">⬆ Tải danh sách giải động (Excel)<input type="file" accept=".xlsx" style="display:none" onchange="gdFile(this)"></label>` : ''}
+    <div class="gz-sum"><div><b>${rows.length}</b><span>Tổng mục</span></div><div class="ok"><b>${cnt('done')}</b><span>Đã giải động</span></div>
+      <div class="late"><b>${a.late.length}</b><span>Quá hạn</span></div><div class="soon"><b>${a.soon.length}</b><span>Sắp đến hạn</span></div></div>`;
+  if (rows.length) h += `<button class="btn-full" style="background:#fff;color:var(--green);border:1.5px solid var(--green);margin-bottom:4px" onclick="gdExport()">⬇ Xuất Excel mẫu BM05</button>`;
+  if (inc.length) h += `<div class="gz-h">📥 Chuyển đến công trình này</div><div class="card-list">${inc.map(x => `<div class="gz-row"><div class="gz-ic todo">📥</div><div style="flex:1;min-width:0"><div class="gz-n">${escHtml(x.name)}</div>
+      <div class="gz-s">Từ <b>${escHtml(x.src)}</b> · ${fmtNum(x.q)} ${escHtml(x.unit)} · ${gdDmy(x.date)}${x.recv ? ` · đã nhận ${fmtNum(x.recv)}` : ''}</div></div>
+      ${can('tk') ? `<button class="gz-btn" onclick="closeDp('dp-gd');gdIncPick('${x.gdId}','${x.hid}')">Nhập</button>` : ''}</div>`).join('')}</div>`;
+  if (!rows.length) h += `<div class="empty-state" style="padding-top:30px"><div class="e-ico">🚚</div><p><b>Chưa có danh sách giải động</b><br>Tải file BM05 "Danh sách tổng hợp HĐ-GĐ" của dự án.</p></div>`;
+  ['may','tb','vt'].forEach(g => {
+    const L = rows.filter(r => r.grp === g); if (!L.length) return;
+    h += `<div class="gz-h">${GD_GRP[g]} <small>${L.filter(r => gdState(r) === 'done').length}/${L.length} đã giải động</small></div><div class="card-list">${L.map(gdRowHtml).join('')}</div>`;
+  });
+  body.innerHTML = h;
+}
+function gdRowHtml(r) {
+  const st = gdState(r), dd = gdDue(r), left = gdLeft(r);
+  const ico = st === 'done' ? '✅' : st === 'out' ? '✅' : st === 'part' ? '◐' : '⏳';
+  const due = dd === null ? '' : dd < 0 ? `<span class="ln-late">Quá hạn ${-dd} ngày (${gdDmy(r.dueDate)})</span>` : dd <= 3 ? `<span class="ln-soon">${dd ? 'Còn ' + dd + ' ngày' : 'Hạn hôm nay'} (${gdDmy(r.dueDate)})</span>` : 'Hạn ' + gdDmy(r.dueDate);
+  const dv = gdDev(r);
+  const hist = (r.hist || []).map(x => `<div class="gz-hi">✓ ${x.q && r.grp !== 'may' ? fmtNum(x.q) + ' ' + escHtml(r.unit) + ' · ' : ''}${escHtml(gdHLbl(x))}${x.date ? ' · ' + gdDmy(x.date) : ''}${x.recv ? ` · nơi nhận đã nhập ${fmtNum(x.recv)}` : ''}</div>`).join('')
+    + (st === 'out' ? `<div class="gz-hi">✓ Máy đã rời công trình ${escHtml(fmtDMY(dv.outDate))} · chưa ghi hướng</div>` : '');
+  const btn = r.grp === 'may' && st !== 'done' && gdCanEdit() ? `<button class="gz-btn" onclick="gdMayOpen('${r.id}')">Ghi giải động</button>`
+    : r.grp !== 'may' && left > 0 && can('tk') ? `<button class="gz-btn" onclick="gdGoXuat('${r.id}')">Xuất</button>` : '';
+  return `<div class="gz-row ${st}"><div class="gz-ic ${st}">${ico}</div><div style="flex:1;min-width:0">
+    <div class="gz-n">${escHtml(r.name)}</div>
+    <div class="gz-s">${r.ma ? 'Mã ' + escHtml(r.ma) + ' · ' : ''}${r.grp === 'may' ? '' : (st === 'part' ? `Còn ${fmtNum(left)}/${fmtNum(r.qty)} ` : fmtNum(r.qty) + ' ') + escHtml(r.unit) + ' · '}${due}${r.note && st !== 'done' ? ' · ' + escHtml(r.note) : ''}</div>${hist}
+    <div id="gd-may-${r.id}"></div></div>${btn}</div>`;
+}
+function gdDestHtml(id, note) {
+  const ps = (GD.projects || []).filter(p => p !== curProj && p !== GD.kho);
+  const pre = ps.find(p => note && normVN(note).includes(normVN(p)));
+  return `<div class="gz-dir" id="${id}-h">
+      <button type="button" data-h="thue" onclick="gdSetH('${id}','thue')">↩ Trả bên cho thuê</button>
+      <button type="button" data-h="da" onclick="gdSetH('${id}','da')">🏗 Chuyển dự án khác</button>
+      <button type="button" data-h="kho" onclick="gdSetH('${id}','kho')">🏭 Về ${escHtml(GD.kho)}</button></div>
+    <div class="fg" id="${id}-dwrap" style="display:none"><label id="${id}-dlbl">Dự án nhận</label>
+      <select id="${id}-dsel">${ps.length ? ps.map(p => `<option ${p === pre ? 'selected' : ''}>${escHtml(p)}</option>`).join('') : '<option value="">(chưa có dự án khác)</option>'}</select>
+      <input type="text" id="${id}-dtxt" placeholder="Tên đơn vị cho thuê (tùy chọn)" style="display:none"></div>`;
+}
+const gdH = {};
+function gdSetH(id, h) {
+  gdH[id] = h;
+  document.querySelectorAll(`#${id}-h button`).forEach(b => b.classList.toggle('on', b.dataset.h === h));
+  document.getElementById(id + '-dwrap').style.display = h === 'kho' ? 'none' : '';
+  document.getElementById(id + '-dsel').style.display = h === 'da' ? '' : 'none';
+  document.getElementById(id + '-dtxt').style.display = h === 'thue' ? '' : 'none';
+  document.getElementById(id + '-dlbl').textContent = h === 'da' ? 'Dự án nhận' : 'Đơn vị cho thuê';
+}
+function gdDestVal(id) { const h = gdH[id]; return h === 'da' ? document.getElementById(id + '-dsel').value : h === 'thue' ? document.getElementById(id + '-dtxt').value.trim() : GD.kho; }
+function gdDestLbl(h, dest) { return h === 'thue' ? 'Trả bên cho thuê' + (dest ? ' ' + dest : '') : h === 'kho' ? 'Về ' + GD.kho : 'Chuyển dự án ' + dest; }
+
+// máy cơ sở: ghi giải động ngay trong danh sách (đồng thời "Kết thúc · máy rời công trình" nếu máy đang ở dự án)
+function gdMayOpen(id) {
+  const r = GD.rows.find(x => String(x.id) === String(id)), el = document.getElementById('gd-may-' + id); if (!r || !el) return;
+  if (el.innerHTML) { el.innerHTML = ''; return; }
+  const dv = gdDev(r), hasM = dv && !dv.outDate && mUnit(dv) !== 'none';
+  gdH['gm' + id] = '';
+  const t = isoDay(new Date());
+  el.innerHTML = `<div class="mt-box" style="margin-top:8px">${gdDestHtml('gm' + id, r.note)}
+    <div class="fg-row"><div class="fg"><label>Ngày giải động</label><input type="date" id="gm${id}-date" value="${dv && dv.outDate ? String(dv.outDate).slice(0, 10) : t}"></div>
+    ${hasM ? `<div class="fg"><label>${mLbl(dv)} lúc ra</label><input type="number" inputmode="decimal" id="gm${id}-m"></div>` : ''}</div>
+    ${dv && !dv.outDate ? '<div class="pyc-hint" style="margin:-4px 0 8px">Máy sẽ được ghi "rời công trình" trong Máy móc &amp; Thiết bị.</div>' : ''}
+    <button class="btn-full btn-orange" onclick="gdMaySave('${id}')">✓ Lưu giải động</button></div>`;
+}
+async function gdMaySave(id) {
+  const r = GD.rows.find(x => String(x.id) === String(id)); if (!r) return;
+  const k = 'gm' + id, h = gdH[k], dest = h ? gdDestVal(k) : '', date = document.getElementById(k + '-date').value, mEl = document.getElementById(k + '-m');
+  if (!h) { toast('⚠️ Chọn hướng giải động'); return; }
+  if (h === 'da' && !dest) { toast('⚠️ Chọn dự án nhận'); return; }
+  if (!date) { toast('⚠️ Chọn ngày giải động'); return; }
+  if (mEl && mEl.value === '') { toast('⚠️ Nhập số đồng hồ lúc ra'); return; }
+  if (!navigator.onLine) { toast('📴 Cần có mạng để ghi giải động máy'); return; }
+  const dv = gdDev(r);
+  showLoader('Đang lưu...');
+  if (dv && !dv.outDate) {
+    const c = await api('closeDevice', { id:dv.id, outDate:date, outMeter:mEl ? mEl.value : '' });
+    if (!c || !c.success) { hideLoader(); toast('⚠️ ' + ((c && c.error) || 'Không lưu được')); return; }
+    dv.outDate = date; dv.outMeter = mEl && mEl.value !== '' ? +mEl.value : '';
+    (db.devlog = db.devlog || []).push({ id:'L' + Date.now(), deviceId:dv.id, deviceName:dv.name, maQL:dv.maQL || '', kind:'ra', date, meter:dv.outMeter, note:gdDestLbl(h, dest), project:curProj, by:me?.name || '', at:nowStr(), _local:1 });
+  }
+  const res = await api('gdOut', { project:curProj, gdId:r.id, id:'h' + Date.now(), q:r.qty - r.done || 1, h, dest, date });
+  hideLoader();
+  if (!res || !res.success) { toast('⚠️ ' + ((res && res.error) || 'Không lưu được')); return; }
+  Object.assign(r, res.row || {}); gdCacheSave(); toast('✅ Đã ghi giải động: ' + r.name); gdRender(); gdBadge(); saveLocal();
+}
+
+// ---------- Tải file BM05 ----------
+const GD_VT_RE = /^(tole|ton |cu |cu$|cừ|ong |ống|day |dây|dolly|thanh |tam |tấm|khung |ban do|bàn đổ)/i;
+function gdGuessGrp(name) { return GD_VT_RE.test(String(name).trim()) || GD_VT_RE.test(normVN(name)) ? 'vt' : 'tb'; }
+const gdIso = v => {
+  if (typeof v === 'number' && v > 20000) { const d = new Date(Date.UTC(1899, 11, 30) + Math.round(v) * 864e5); return d.toISOString().slice(0, 10); }
+  const m = String(v || '').match(/(\d{1,2})[\/\-.](\d{1,2})[\/\-.](\d{4})/); return m ? `${m[3]}-${m[2].padStart(2, '0')}-${m[1].padStart(2, '0')}` : ''; };
+let gdSJ = null;
+function gdSheetJS() {                                         // SheetJS: đọc nhanh cả file có nhiều liên kết ngoài (ExcelJS rất chậm với file BM05)
+  if (window.XLSX) return Promise.resolve(true);
+  if (!gdSJ) gdSJ = (async () => { for (const u of ['https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js', 'https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js']) { try { await loadScript(u); if (window.XLSX) return true; } catch (e) {} } gdSJ = null; return false; })();
+  return gdSJ;
+}
+async function gdFile(inp) {
+  const f = inp.files && inp.files[0]; inp.value = ''; if (!f) return;
+  showLoader('Đang đọc file...');
+  if (!(await gdSheetJS())) { hideLoader(); toast('⚠️ Không tải được bộ đọc Excel — kiểm tra mạng'); return; }
+  try {
+    const wb = XLSX.read(new Uint8Array(await f.arrayBuffer()), { type:'array', cellFormula:false, cellStyles:false });
+    const sheets = [];
+    wb.SheetNames.forEach(sn => {
+      const A = XLSX.utils.sheet_to_json(wb.Sheets[sn], { header:1, raw:true, defval:'' });
+      let grp = '', rows = [], hdr = false;
+      A.forEach(R => {
+        const v = k => R[k - 1], a = String(v(1) || '').trim();
+        if (/^STT$/i.test(a)) { hdr = true; return; }
+        if (!hdr) return;
+        if (/^I\.\s*M/i.test(a) || /^I\..*(may co so|máy cơ sở)/i.test(a)) { grp = 'may'; return; }
+        if (/^II\./i.test(a) || /phu tro|phụ trợ/i.test(a)) { grp = 'pt'; return; }
+        const name = String(v(3) || '').replace(/\s+/g, ' ').trim(); if (!name || !grp) return;
+        rows.push({ grp: grp === 'may' ? 'may' : gdGuessGrp(name), ma:String(v(2) || '').trim(), name, unit:String(v(5) || '').trim(), qty:+v(6) || 0,
+          inDate:gdIso(v(7)), dueDate:gdIso(v(8)), realDate:gdIso(v(9)), note:String(v(10) || '').trim() });
+      });
+      if (rows.length) sheets.push({ name:sn, rows });
+    });
+    hideLoader();
+    if (!sheets.length) { toast('⚠️ Không thấy dòng nào theo mẫu BM05 (STT · Mã · Tên · ĐVT · SL · ngày…)'); return; }
+    const pn = normVN(curProj), pick = sheets.find(s => normVN(s.name).includes(pn) || pn.includes(normVN(s.name).split(/[\s-]/)[0])) || sheets[0];
+    gdPrev = { sheets, si:sheets.indexOf(pick), stock:true }; gdPrevRender();
+  } catch (e) { hideLoader(); toast('⚠️ Không đọc được file: ' + String(e.message || e).slice(0, 80)); }
+}
+function gdPrevRender() {
+  const P = gdPrev, S = P.sheets[P.si], body = document.getElementById('dp-gd-body');
+  const c = g => S.rows.filter(r => r.grp === g).length;
+  body.innerHTML = `<div class="form-section"><div class="form-section-title">Xem trước danh sách giải động</div>
+    ${P.sheets.length > 1 ? `<div class="fg"><label>Sheet của dự án ${escHtml(curProj)}</label><select onchange="gdPrev.si=+this.value;gdPrevRender()">${P.sheets.map((s, i) => `<option value="${i}" ${i === P.si ? 'selected' : ''}>${escHtml(s.name)} (${s.rows.length} dòng)</option>`).join('')}</select></div>` : ''}
+    <div class="gz-sum"><div><b>${c('may')}</b><span>Máy cơ sở</span></div><div><b>${c('tb')}</b><span>Thiết bị phụ trợ</span></div><div><b>${c('vt')}</b><span>Vật tư phụ trợ</span></div><div class="ok"><b>${S.rows.filter(r => r.realDate).length}</b><span>Đã giải động</span></div></div>
+    <label class="gz-chk"><input type="checkbox" ${P.stock ? 'checked' : ''} onchange="gdPrev.stock=this.checked"> Ghi tồn đầu cho thiết bị / vật tư phụ trợ chưa có trong kho (phiếu nhập "Tồn đầu từ DS giải động")</label>
+    <div class="pyc-hint">Bấm vào nhóm để đổi Thiết bị ↔ Vật tư phụ trợ.</div>
+    <div class="card-list" style="margin-top:8px">${S.rows.map((r, i) => `<div class="gz-row"><div style="flex:1;min-width:0"><div class="gz-n">${escHtml(r.name)}</div>
+      <div class="gz-s">${r.ma ? 'Mã ' + escHtml(r.ma) + ' · ' : ''}${fmtNum(r.qty)} ${escHtml(r.unit)} · hạn ${gdDmy(r.dueDate) || '—'}${r.realDate ? ' · <b style="color:var(--green)">đã GĐ ' + gdDmy(r.realDate) + '</b>' : ''}</div></div>
+      ${r.grp === 'may' ? '<span class="gz-tag">Máy</span>' : `<button class="gz-tag ${r.grp}" onclick="gdPrev.sheets[gdPrev.si].rows[${i}].grp='${r.grp === 'tb' ? 'vt' : 'tb'}';gdPrevRender()">${r.grp === 'tb' ? 'Thiết bị' : 'Vật tư'}</button>`}</div>`).join('')}</div>
+    <button class="btn-full btn-orange" style="margin-top:12px" onclick="gdImportSave()">✓ Lưu danh sách (${S.rows.length} mục)</button>
+    <button class="btn-full" style="margin-top:8px;background:#fff;color:var(--text2);border:1.5px solid var(--border)" onclick="gdPrev=null;gdRender()">Hủy</button></div>`;
+  body.scrollTop = 0;
+}
+async function gdImportSave() {
+  const S = gdPrev.sheets[gdPrev.si], stock = gdPrev.stock;
+  if (!navigator.onLine) { toast('📴 Cần có mạng để lưu danh sách'); return; }
+  showLoader('Đang lưu danh sách...');
+  const r = await api('gdImport', { project:curProj, rows:S.rows }, 60000);
+  if (!r || !r.success) { hideLoader(); toast('⚠️ ' + ((r && r.error) || 'Không lưu được')); return; }
+  Object.assign(GD, { P:curProj, rows:r.rows || [], inc:r.inc || [], projects:r.projects || [], kho:r.kho || GD.kho, at:Date.now() }); gdCacheSave();
+  let nNew = 0;
+  if (stock) {                                                  // thiết bị / vật tư phụ trợ chưa có trong kho → thêm vào danh mục + nhập tồn đầu
+    const items = [], txns = [];
+    S.rows.filter(x => x.grp !== 'may' && !x.realDate && x.qty > 0).forEach(x => {
+      if (db.items.some(i => i.project === curProj && normVN(i.name) === normVN(x.name)) || items.some(i => normVN(i.name) === normVN(x.name))) return;
+      const it = { id:newId(), name:x.name, cat:GD_CAT[x.grp], unit:x.unit || 'Cái', stock:0, minStock:0, project:curProj, maQL:'', ngoaiDM:2 };
+      items.push(it);
+      txns.push({ id:newId(), type:'nhap', itemId:it.id, itemName:it.name, qty:x.qty, unit:it.unit, project:curProj, supplierOrReceiver:'Tồn đầu', note:'Tồn đầu từ DS giải động', datetime:nowStr(), createdByName:me?.name || '' });
+    });
+    if (items.length) {
+      items.forEach(i => db.items.push(i));
+      await push('upsert', { table:'items', rows:items });
+      for (const t of txns) { const it = db.items.find(i => i.id === t.itemId); it.stock = r3(it.stock + t.qty); db.transactions.push(t); push('addTransaction', t); }
+      addLog('Tồn đầu giải động', `${items.length} mục — ${curProj}`); nNew = items.length;
+    }
+  }
+  hideLoader(); gdPrev = null;
+  toast(`✅ Đã lưu danh sách giải động · thêm ${r.add} · cập nhật ${r.upd}${nNew ? ` · ghi tồn đầu ${nNew} mục` : ''}`);
+  gdRender(); gdBadge();
+}
+
+// ---------- v5.33.0: PHIẾU XUẤT gom mọi thao tác: Xuất dùng · Cho mượn · Trả đồ đi mượn · Giải động · Máy rời công trình ----------
+let fxGD = null, fxMode = 'use', fxDev = null;
+function gdRowOfItem(it) { return it && GD.P === curProj ? GD.rows.find(r => r.grp !== 'may' && gdLeft(r) > 0 && normVN(r.name) === normVN(it.name)) : null; }
+function gdRowOfDev(d) { return d && d.maQL && GD.P === curProj ? GD.rows.find(r => r.grp === 'may' && String(r.ma) === String(d.maQL) && gdState(r) !== 'done') : null; }
+const openLoansOf = (kind, it) => projLoans().filter(l => l.status === 'open' && l.kind === kind && (it.dev ? l.itemType === 'tb' && (l.itemId === it.id || normVN(l.itemName) === normVN(it.name)) : l.itemType === 'vt' && (l.itemId === it.id || normVN(l.itemName) === normVN(it.name))));
+function gdGoXuat(id) {
+  const r = GD.rows.find(x => String(x.id) === String(id)); if (!r) return;
+  const it = db.items.find(i => normVN(i.name) === normVN(r.name));
+  if (!it) { toast('⚠️ "' + r.name + '" chưa có trong kho — nhập tồn trước'); return; }
+  closeDp('dp-gd'); goTab('xuat');
+  setTimeout(() => { comboPick('fx', it.id); fxSetMode('gd'); }, 60);
+}
+function loanFieldsHtml(p, cho) {
+  return `<div class="fg"><label>${cho ? 'Người / đơn vị mượn' : 'Mượn của ai (người / công trình)'}</label><input type="text" id="${p}l-party" placeholder="VD: Tổ đội A.Kiên, CT Nhơn Trạch"></div>
+    <div class="fg-row"><div class="fg"><label>Điện thoại (tùy chọn)</label><input type="tel" id="${p}l-phone" inputmode="tel"></div><div class="fg"><label>Hạn trả (tùy chọn)</label><input type="date" id="${p}l-due"></div></div>`;
+}
+function loanPickHtml(p, L, lbl) {
+  return `<div class="fg"><label>${lbl}</label><select id="${p}l-loan" onchange="loanPickQty('${p}')">${L.map(l => `<option value="${l.id}">${escHtml(l.party)} · ${l.itemType === 'tb' ? 'máy' : 'còn ' + fmtNum(loanRemain(l)) + ' ' + escHtml(l.unit)} · ${escHtml(fmtDue(l.dueDate) || l.datetime.split(' ').pop() || '')}</option>`).join('')}</select></div>`;
+}
+function loanPickQty(p) { const l = (db.loans || []).find(x => x.id === +document.getElementById(p + 'l-loan')?.value), q = document.getElementById(p + '-qty'); if (l && q && l.itemType === 'vt') q.value = loanRemain(l); }
+function fxModesHtml(it) {
+  const M = [];
+  if (it.dev) { M.push(['ra', '🏗 Máy rời công trình']); if (!devLoan(it.id)) M.push(['cho', '🔁 Cho mượn máy']); }
+  else { M.push(['use', '📤 Xuất dùng']); if (fxGD) M.push(['gd', '🚚 Giải động']); M.push(['cho', '🔁 Cho mượn']); if (openLoansOf('di', it).length) M.push(['tra', '↩ Trả đồ đi mượn']); }
+  return `<div class="gz-dir ${M.length > 2 ? 'grid2' : 'two'}" id="fx-modes">${M.map(m => `<button type="button" data-m="${m[0]}" onclick="fxSetMode('${m[0]}')">${m[1]}</button>`).join('')}</div><div id="fx-mbody"></div>`;
+}
+function fxModeUpdate() {
+  const box = document.getElementById('fx-gd'); if (!box) return;
+  const it = fxDev ? Object.assign({ dev:1 }, fxDev) : db.items.find(i => i.id === +document.getElementById('fx-item').value);
+  const key = it ? (it.dev ? 'd' : 'i') + it.id : '';
+  if (box.dataset.k === key) return;
+  box.dataset.k = key; fxGD = null;
+  if (!it) { box.innerHTML = ''; fxMode = 'use'; fxShowQty(true); return; }
+  if (!it.dev) fxGD = gdRowOfItem(it); else fxGD = gdRowOfDev(fxDev);
+  const r = fxGD, dd = r ? gdDays(r.dueDate) : null;
+  box.innerHTML = `<div class="gz-box">${r ? `<div class="gz-bh">🚚 Có trong danh sách giải động${r.grp === 'may' ? '' : ` · còn ${fmtNum(gdLeft(r))}/${fmtNum(r.qty)} ${escHtml(r.unit)}`}${dd === null ? '' : dd < 0 ? ` · <b style="color:var(--red)">quá hạn ${-dd} ngày</b>` : ` · hạn ${gdDmy(r.dueDate)}`}</div>` : ''}
+    ${fxModesHtml(it)}</div>`;
+  fxSetMode(it.dev ? 'ra' : 'use');
+}
+function fxShowQty(on) {
+  const q = document.getElementById('fx-qty'); if (q) q.closest('.fg-row').style.display = on ? '' : 'none';
+  const d = document.getElementById('fx-device'); if (d) d.closest('.fg').style.display = on && fxMode === 'use' ? '' : 'none';
+}
+function fxSetMode(m) {
+  if (!document.getElementById('fx-modes')) return;
+  fxMode = m;
+  document.querySelectorAll('#fx-modes button').forEach(b => b.classList.toggle('on', b.dataset.m === m));
+  const it = fxDev ? Object.assign({ dev:1 }, fxDev) : db.items.find(i => i.id === +document.getElementById('fx-item').value), B = document.getElementById('fx-mbody');
+  gdH.fxg = '';
+  let h = '';
+  if (m === 'gd' || (m === 'ra' && fxGD)) h = `<div style="margin-top:8px;font-weight:700;font-size:13.5px">Hướng giải động</div>${gdDestHtml('fxg', fxGD.note)}`;
+  else if (m === 'ra') h = `<div style="margin-top:8px;font-weight:700;font-size:13.5px">Máy đi đâu? (tùy chọn)</div>${gdDestHtml('fxg', '')}`;
+  if (m === 'ra') h += `<div class="fg-row"><div class="fg"><label>Ngày rời công trình</label><input type="date" id="fxr-date" value="${isoDay(new Date())}"></div>
+      ${mUnit(fxDev) !== 'none' ? `<div class="fg"><label>${mLbl(fxDev)} lúc ra</label><input type="number" inputmode="decimal" id="fxr-m"></div>` : ''}</div>`;
+  if (m === 'cho') h += loanFieldsHtml('fx', true);
+  if (m === 'tra') h += loanPickHtml('fx', openLoansOf('di', it), 'Trả lại cho');
+  B.innerHTML = h;
+  fxShowQty(!it?.dev);
+  const q = document.getElementById('fx-qty');
+  if (m === 'gd' && q && fxGD) q.value = Math.min(gdLeft(fxGD), it?.stock || 0) || '';
+  if (m === 'tra') loanPickQty('fx');
+}
+const _gdRenderXuat = renderXuat;
+renderXuat = function (c) {
+  _gdRenderXuat(c); fxGD = null; fxDev = null; fxMode = 'use';
+  const h = document.getElementById('fx-hint'); if (h) h.insertAdjacentHTML('afterend', '<div id="fx-gd"></div>');
+  const t = document.getElementById('fx-item-txt'); if (t) t.placeholder = 'Gõ tên vật tư, thiết bị hoặc máy…';
+  gdLoad();
+};
+function fxPickDev(id) {
+  const d = db.devices.find(x => x.id === id); if (!d) return;
+  fxDev = d; document.getElementById('fx-item-txt').value = d.name; document.getElementById('fx-item').value = '';
+  comboHide('fx'); document.getElementById('fx-hint').innerHTML = `<span style="color:var(--text2)">🏗 Máy đang ở công trình${d.inDate ? ' từ ' + escHtml(fmtDMY(d.inDate)) : ''}</span>`;
+  fxModeUpdate();
+}
+const _gdComboInput = comboInput;
+comboInput = function (p) {
+  if (p === 'fx' && fxDev && document.getElementById('fx-item-txt').value !== fxDev.name) fxDev = null;
+  if (p === 'fx' && fxDev) { fxModeUpdate(); return; }
+  _gdComboInput(p);
+  const q = normVN(document.getElementById(p + '-item-txt')?.value || ''), toks = q.split(/\s+/).filter(Boolean);
+  const lst = document.getElementById(p + '-list');
+  if (p === 'fx') {
+    fxModeUpdate();
+    if (q) {
+      let pre = '';
+      if (GD.P === curProj) {                                  // gợi ý: tên trong danh sách giải động (gõ gần đúng vẫn ra)
+        const L = GD.rows.filter(r => r.grp !== 'may' && gdLeft(r) > 0 && toks.every(t => normVN(r.name).includes(t))).slice(0, 8);
+        const o = L.map(r => { const it = db.items.find(i => i.project === curProj && normVN(i.name) === normVN(r.name)); return it ? `<div class="combo-opt" onmousedown="event.preventDefault()" onclick="comboPick('fx',${it.id});fxSetMode('gd')"><span>🚚 ${escHtml(r.name)}</span><small>Giải động · còn ${fmtNum(gdLeft(r))} ${escHtml(r.unit)}</small></div>` : ''; }).join('');
+        if (o) pre += `<div class="combo-grp">Danh sách giải động</div>${o}`;
+      }
+      const D = db.devices.filter(d => devActive(d) && !d.outDate && toks.every(t => normVN(d.name + ' ' + (d.maQL || '')).includes(t))).slice(0, 6);
+      if (D.length) pre += `<div class="combo-grp">🏗 Máy móc đang ở công trình</div>` + D.map(d => `<div class="combo-opt" onmousedown="event.preventDefault()" onclick="fxPickDev(${d.id})"><span>${escHtml(d.name)}</span><small>${d.maQL ? 'Mã ' + escHtml(d.maQL) : 'Máy'}${devLoan(d.id) ? ' · đang cho mượn' : ''}</small></div>`).join('');
+      if (pre) { lst.innerHTML = pre + lst.innerHTML.replace(/<div class="combo-opt empty">[^<]*<\/div>/, ''); lst.style.display = 'block'; }
+    }
+  }
+  if (p === 'fn') {
+    if (fnGD && normVN(fnGD.name) !== q) fnGdSet(null);
+    let pre = '';
+    const inc = gdIncOpen();
+    if (q && inc.length) {
+      const L = inc.filter(x => toks.every(t => normVN(x.name).includes(t))).slice(0, 6);
+      if (L.length) pre += `<div class="combo-grp">🚚 Giải động chuyển đến</div>` + L.map(x => `<div class="combo-opt" onmousedown="event.preventDefault()" onclick="gdIncPick('${x.gdId}','${x.hid}')"><span>${escHtml(x.name)}</span><small>Từ ${escHtml(x.src)} · ${fmtNum(x.q - x.recv)} ${escHtml(x.unit)}</small></div>`).join('');
+      const ex = inc.find(x => normVN(x.name) === q);
+      if (ex && !fnGD) fnGdSet(ex);
+    }
+    if (q) {                                                   // đang cho mượn → nhận trả ngay trong phiếu nhập
+      const L = projLoans().filter(l => l.status === 'open' && l.kind === 'cho' && toks.every(t => normVN(l.itemName + ' ' + l.party).includes(t))).slice(0, 6);
+      if (L.length) pre += `<div class="combo-grp">↩ Đang cho mượn — nhận trả</div>` + L.map(l => `<div class="combo-opt" onmousedown="event.preventDefault()" onclick="fnPickLoan(${l.id})"><span>${escHtml(l.itemName)}</span><small>${escHtml(l.party)} · ${l.itemType === 'tb' ? 'máy' : 'còn ' + fmtNum(loanRemain(l)) + ' ' + escHtml(l.unit)}</small></div>`).join('');
+    }
+    if (pre && lst) { lst.innerHTML = pre + lst.innerHTML; lst.style.display = 'block'; }
+    fnModeBar();
+  }
+};
+async function fxAfter(msg) { toast(msg); fxDev = null; fxGD = null; closeKeyboard(); goTab('home'); }
+const _gdDoXuat = doXuat;
+doXuat = async function () {
+  const val = id => (document.getElementById(id)?.value || '').trim();
+  if (fxDev) {                                                 // MÁY
+    const d = fxDev;
+    if (fxMode === 'cho') {
+      const party = val('fxl-party'); if (party.length < 2) { toast('⚠️ Ghi rõ người / đơn vị mượn'); return; }
+      const data = { id:newId(), kind:'cho', itemType:'tb', party, phone:val('fxl-phone'), dueDate:val('fxl-due'), note:val('fx-note'), project:curProj, datetime:nowStr(), itemId:d.id, itemName:d.name, unit:'máy', qty:1 };
+      if (data.dueDate && data.dueDate < isoDay(new Date())) { toast('⚠️ Hạn trả đang ở ngày đã qua'); return; }
+      const ok = await pushLoan('addLoan', data); if (ok === 'rejected') return;
+      return fxAfter('✅ Đã ghi cho mượn máy ' + d.name);
+    }
+    const h = gdH.fxg, dest = h ? gdDestVal('fxg') : '', date = val('fxr-date'), mEl = document.getElementById('fxr-m');
+    if (fxGD && !h) { toast('⚠️ Máy có trong danh sách giải động — chọn hướng giải động'); return; }
+    if (h === 'da' && !dest) { toast('⚠️ Chọn dự án nhận'); return; }
+    if (!date) { toast('⚠️ Chọn ngày rời công trình'); return; }
+    if (mEl && mEl.value === '') { toast('⚠️ Nhập ' + mLbl(d).toLowerCase() + ' lúc ra'); return; }
+    if (devLoan(d.id)) { toast('⚠️ Máy đang cho mượn — nhận trả trước (Phiếu nhập)'); return; }
+    if (!navigator.onLine) { toast('📴 Cần có mạng để ghi máy rời công trình'); return; }
+    showLoader('Đang lưu...');
+    const c = await api('closeDevice', { id:d.id, outDate:date, outMeter:mEl ? mEl.value : '' });
+    if (!c || !c.success) { hideLoader(); toast('⚠️ ' + ((c && c.error) || 'Không lưu được')); return; }
+    d.outDate = date; d.outMeter = mEl && mEl.value !== '' ? +mEl.value : '';
+    const lbl = h ? gdDestLbl(h, dest) : val('fx-note');
+    (db.devlog = db.devlog || []).push({ id:'L' + Date.now(), deviceId:d.id, deviceName:d.name, maQL:d.maQL || '', kind:'ra', date, meter:d.outMeter, note:lbl, project:curProj, by:me?.name || '', at:nowStr(), _local:1 });
+    if (fxGD && h) { const r = fxGD, res = await api('gdOut', { project:curProj, gdId:r.id, id:'h' + Date.now(), q:Math.max(1, gdLeft(r)), h, dest, date }); if (res && res.success && res.row) Object.assign(r, res.row); gdCacheSave(); }
+    hideLoader(); saveLocal();
+    return fxAfter('🏗 Đã ghi máy rời công trình: ' + d.name + (h ? ' → ' + gdDestLbl(h, dest) : ''));
+  }
+  const it = db.items.find(i => i.id === +document.getElementById('fx-item').value), qty = r3(+val('fx-qty'));
+  if (fxMode === 'cho' || fxMode === 'tra') {
+    if (!it) { toast('⚠️ Chọn vật tư có trong kho'); return; }
+    if (!(qty > 0)) { toast('⚠️ Nhập số lượng hợp lệ'); return; }
+    if (qty > it.stock + 1e-9) { toast(`❌ Tồn không đủ! Còn ${fmtNum(it.stock)} ${it.unit}`); return; }
+    if (fxMode === 'cho') {
+      const party = val('fxl-party'); if (party.length < 2) { toast('⚠️ Ghi rõ người / đơn vị mượn'); return; }
+      const data = { id:newId(), kind:'cho', itemType:'vt', party, phone:val('fxl-phone'), dueDate:val('fxl-due'), note:val('fx-note'), project:curProj, datetime:nowStr() };
+      if (data.dueDate && data.dueDate < isoDay(new Date())) { toast('⚠️ Hạn trả đang ở ngày đã qua'); return; }
+      let txnId = newId(); if (txnId === data.id) txnId = data.id + 1;
+      Object.assign(data, { itemId:it.id, itemName:it.name, unit:it.unit, qty, txnId });
+      const ok = await pushLoan('addLoan', data); if (ok === 'rejected') return;
+      return fxAfter(`✅ Đã ghi cho mượn ${fmtNum(qty)} ${it.unit} ${it.name}`);
+    }
+    const l = (db.loans || []).find(x => x.id === +val('fxl-loan')); if (!l) { toast('⚠️ Chọn phiếu đi mượn'); return; }
+    if (qty > loanRemain(l) + 1e-9) { toast(`⚠️ Chỉ còn ${fmtNum(loanRemain(l))} ${l.unit} chưa trả`); return; }
+    const ok = await pushLoan('returnLoan', { loanId:l.id, id:newId(), qty, note:val('fx-note'), datetime:nowStr() }); if (ok === 'rejected') return;
+    return fxAfter(`✅ Đã trả lại ${fmtNum(qty)} ${l.unit} ${l.itemName} cho ${l.party}`);
+  }
+  if (fxMode !== 'gd' || !fxGD) return _gdDoXuat();
+  const r = fxGD, h = gdH.fxg, dest = h ? gdDestVal('fxg') : '';
+  if (!h) { toast('⚠️ Chọn hướng giải động'); document.getElementById('fxg-h').scrollIntoView({ block:'center', behavior:'smooth' }); return; }
+  if (h === 'da' && !dest) { toast('⚠️ Chọn dự án nhận'); return; }
+  if (qty > gdLeft(r) + 1e-9 && !confirm(`Số lượng ${fmtNum(qty)} lớn hơn số còn trong danh sách giải động (${fmtNum(gdLeft(r))}). Vẫn xuất?`)) return;
+  const nEl = document.getElementById('fx-note'), old = nEl.value.trim(), lbl = 'Giải động → ' + gdDestLbl(h, dest);
+  nEl.value = lbl + (old ? ' · ' + old : '');
+  const n0 = db.transactions.length;
+  await _gdDoXuat();
+  const t = db.transactions.length > n0 ? db.transactions[db.transactions.length - 1] : null;
+  if (!t || t.type !== 'xuat') { nEl.value = old; return; }
+  const hid = 'h' + t.id, date = isoDay(new Date());
+  r.hist = (r.hist || []).concat([{ id:hid, q:t.qty, h, dest: h === 'kho' ? GD.kho : dest, date, txn:t.id, by:me?.name || '', recv:0 }]); r.done = r3(r.done + t.qty);
+  gdCacheSave(); fxGD = null;
+  push('gdOut', { project:curProj, gdId:r.id, id:hid, q:t.qty, h, dest, date, txn:t.id });
+};
+
+// ---------- PHIẾU NHẬP: Nhập kho · Đi mượn · Nhận trả ----------
+let fnLMode = 'kho', fnLoanId = 0;
+function fnPickLoan(id) {
+  const l = (db.loans || []).find(x => x.id === id); if (!l) return;
+  document.getElementById('fn-item-txt').value = l.itemName; _gdComboInput('fn'); comboHide('fn');
+  fnLoanId = id; fnLMode = 'nhan'; fnModeBar(true);
+  const q = document.getElementById('fn-qty'); if (q) q.value = l.itemType === 'tb' ? 1 : loanRemain(l);
+}
+function fnLoansFor(name) { const n = normVN(name); return n ? projLoans().filter(l => l.status === 'open' && l.kind === 'cho' && normVN(l.itemName) === n) : []; }
+function fnModeBar(force) {
+  const box = document.getElementById('fn-lmode'); if (!box) return;
+  const name = document.getElementById('fn-item-txt').value.trim();
+  if (!name || fnGD) { box.innerHTML = ''; box.dataset.k = ''; fnLMode = 'kho'; return; }
+  const L = fnLoansFor(name), key = normVN(name) + '|' + L.length + '|' + !!fnDev;
+  if (!force && box.dataset.k === key) return;
+  box.dataset.k = key;
+  if (!L.length && fnLMode === 'nhan') fnLMode = 'kho';
+  const M = [['kho', fnDev ? '🏗 Máy vào' : '📥 Nhập kho'], ['di', '🤝 Đi mượn']]; if (L.length) M.push(['nhan', '↩ Nhận trả']);
+  box.innerHTML = `<div class="gz-dir ${M.length > 2 ? 'three' : 'two'}" id="fn-lm">${M.map(m => `<button type="button" data-m="${m[0]}" onclick="fnSetL('${m[0]}')">${m[1]}</button>`).join('')}</div><div id="fn-lbody"></div>`;
+  fnSetL(fnLMode);
+}
+function fnSetL(m) {
+  fnLMode = m;
+  document.querySelectorAll('#fn-lm button').forEach(b => b.classList.toggle('on', b.dataset.m === m));
+  const name = document.getElementById('fn-item-txt').value.trim(), B = document.getElementById('fn-lbody');
+  B.innerHTML = m === 'di' ? loanFieldsHtml('fn', false) : m === 'nhan' ? loanPickHtml('fn', fnLoansFor(name), 'Nhận trả từ') : '';
+  if (m === 'nhan') { const s = document.getElementById('fnl-loan'); if (fnLoanId && s) s.value = fnLoanId; loanPickQty('fn'); }
+  const ct = document.getElementById('fn-ct-box'), dv = document.getElementById('fn-dev-box');
+  if (ct) ct.classList.toggle('gz-off', m !== 'kho'); if (dv) dv.classList.toggle('gz-off', m !== 'kho');
+  const ncc = document.getElementById('fn-ncc'); if (ncc) ncc.closest('.fg').classList.toggle('gz-off', m !== 'kho');
+}
+async function fnLoanSave() {
+  const val = id => (document.getElementById(id)?.value || '').trim();
+  const name = val('fn-item-txt'), qty = r3(+val('fn-qty'));
+  if (!name) { toast('⚠️ Nhập hoặc chọn tên'); return; }
+  if (fnLMode === 'nhan') {
+    const l = (db.loans || []).find(x => x.id === +val('fnl-loan')); if (!l) { toast('⚠️ Chọn phiếu cho mượn'); return; }
+    const q = l.itemType === 'tb' ? loanRemain(l) : qty;
+    if (!(q > 0)) { toast('⚠️ Nhập số lượng hợp lệ'); return; }
+    if (q > loanRemain(l) + 1e-9) { toast(`⚠️ Chỉ còn ${fmtNum(loanRemain(l))} ${l.unit} chưa trả`); return; }
+    const ok = await pushLoan('returnLoan', { loanId:l.id, id:newId(), qty:q, note:val('fn-note'), datetime:nowStr() }); if (ok === 'rejected') return;
+    toast(`✅ Đã nhận trả ${l.itemType === 'tb' ? 'máy ' + l.itemName : fmtNum(q) + ' ' + l.unit + ' ' + l.itemName} từ ${l.party}`);
+  } else {
+    const party = val('fnl-party'); if (party.length < 2) { toast('⚠️ Ghi rõ mượn của ai'); return; }
+    const data = { id:newId(), kind:'di', party, phone:val('fnl-phone'), dueDate:val('fnl-due'), note:val('fn-note'), project:curProj, datetime:nowStr() };
+    if (data.dueDate && data.dueDate < isoDay(new Date())) { toast('⚠️ Hạn trả đang ở ngày đã qua'); return; }
+    if (fnDev || db.devices.some(d => normVN(d.name) === normVN(name))) Object.assign(data, { itemType:'tb', itemId:'', itemName:fnDev ? fnDev.name : name, unit:'máy', qty:1 });
+    else {
+      if (!(qty > 0)) { toast('⚠️ Nhập số lượng hợp lệ'); return; }
+      let item = db.items.find(i => i.id === +val('fn-item')) || db.items.find(i => normVN(i.name) === normVN(name));
+      if (!item) { item = { id:newId(), name, cat:val('fn-cat'), unit:document.getElementById('fn-unit-sel').value, stock:0, minStock:0, project:curProj, ngoaiDM:2 }; db.items.push(item); showLoader('Đang lưu...'); await push('upsert', { table:'items', rows:[item] }); }
+      let txnId = newId(); if (txnId === data.id) txnId = data.id + 1;
+      Object.assign(data, { itemType:'vt', itemId:item.id, itemName:item.name, unit:item.unit, qty, txnId });
+    }
+    const ok = await pushLoan('addLoan', data); if (ok === 'rejected') return;
+    toast(`✅ Đã ghi đi mượn ${data.itemType === 'tb' ? 'máy ' + data.itemName : fmtNum(qty) + ' ' + data.unit + ' ' + data.itemName} của ${party}`);
+  }
+  fnLoanId = 0; fnLMode = 'kho'; if (typeof fnSetDev === 'function') fnSetDev(null); closeKeyboard(); goTab('home');
+}
+
+// ---------- Nhập hàng giải động từ công trình khác ----------
+let fnGD = null;
+const gdIncOpen = () => GD.P === curProj ? GD.inc.filter(x => x.recv < x.q - 1e-9) : [];
+function gdIncPick(gdId, hid) {
+  const x = GD.inc.find(y => String(y.gdId) === String(gdId) && String(y.hid) === String(hid)); if (!x) return;
+  if (curTab !== 'nhap') goTab('nhap');
+  setTimeout(() => {
+    if (x.grp === 'may') { toast('Gõ mã hoặc tên máy trong danh mục P.QLTB để ghi máy vào'); document.getElementById('fn-item-txt').value = x.ma || x.name; _gdComboInput('fn'); fnGD = x; fnGdHint(); return; }
+    const it = db.items.find(i => normVN(i.name) === normVN(x.name));
+    if (it) comboPick('fn', it.id);
+    else {
+      const cat = document.getElementById('fn-cat'); if (cat) cat.value = GD_CAT[x.grp] || 'tbPhuTro';
+      document.getElementById('fn-item-txt').value = x.name; _gdComboInput('fn'); comboHide('fn');
+      const us = document.getElementById('fn-unit-sel');
+      if (us && x.unit) { if (![...us.options].some(o => o.value === x.unit)) us.insertAdjacentHTML('beforeend', `<option>${escHtml(x.unit)}</option>`); us.value = x.unit; }
+    }
+    fnGdSet(x);
+    const q = document.getElementById('fn-qty'); if (q) q.value = r3(x.q - x.recv);
+  }, 60);
+}
+function fnGdSet(x) { fnGD = x; fnGdHint(); fnModeBar(true); }
+function fnGdHint() {
+  const b = document.getElementById('fn-gd'); if (!b) return;
+  b.innerHTML = fnGD ? `<div class="gz-box in"><div class="gz-bh">🚚 Giải động từ công trình <b>${escHtml(fnGD.src)}</b> · ${fmtNum(fnGD.q - fnGD.recv)} ${escHtml(fnGD.unit)} · xuất ngày ${gdDmy(fnGD.date)}</div>
+    <div class="pyc-hint" style="margin:4px 0 0">Lịch sử nhập sẽ ghi chú "Giải động từ công trình ${escHtml(fnGD.src)}".</div></div>` : '';
+}
+function gdIncBox() {
+  const b = document.getElementById('fn-gdinc'); if (!b) return;
+  const L = gdIncOpen();
+  b.innerHTML = L.length ? `<div class="gz-box in" style="margin-bottom:12px"><div class="gz-bh">📥 Hàng giải động chuyển đến (${L.length})</div>
+    <div class="gz-chips">${L.slice(0, 12).map(x => `<button type="button" onclick="gdIncPick('${x.gdId}','${x.hid}')">${escHtml(x.name.length > 30 ? x.name.slice(0, 28) + '…' : x.name)} <small>${fmtNum(x.q - x.recv)} ${escHtml(x.unit)} · ${escHtml(x.src)}</small></button>`).join('')}</div></div>` : '';
+}
+const _gdRenderNhap = renderNhap;
+renderNhap = function (c) {
+  _gdRenderNhap(c); fnGD = null;
+  const sec = c.querySelector('.form-section'); if (sec) sec.insertAdjacentHTML('afterbegin', '<div id="fn-gdinc"></div>');
+  const h = document.getElementById('fn-hint'); if (h) h.insertAdjacentHTML('afterend', '<div id="fn-gd"></div><div id="fn-lmode"></div>'); fnLMode = 'kho'; fnLoanId = 0;
+  gdIncBox(); gdLoad();
+};
+async function gdWrapNhap(orig) {
+  const x = fnGD; if (!x) return orig();
+  const nEl = document.getElementById('fn-note'), old = nEl.value.trim(), lbl = 'Giải động từ công trình ' + x.src;
+  if (!old.includes(lbl)) nEl.value = lbl + (old ? ' · ' + old : '');
+  const n0 = db.transactions.length, d0 = db.devices.length;
+  await orig();
+  const t = db.transactions.length > n0 ? db.transactions.slice(n0).reverse().find(t => t.type === 'nhap') : null;
+  const dv = db.devices.length > d0 ? db.devices[db.devices.length - 1] : null;
+  if (!t && !dv && !(x.grp === 'may' && !fnDev)) { nEl.value = old; return; }
+  const q = t ? t.qty : 1;
+  x.recv = r3(x.recv + q); gdCacheSave();
+  push('gdRecv', { project:curProj, src:x.src, gdId:x.gdId, hid:x.hid, q, txn:t ? t.id : 'D' + Date.now() });
+  fnGD = null;
+}
+const _gdDoNhap = doNhap;
+doNhap = function () { if (fnLMode !== 'kho' && !fnGD && document.getElementById('fn-lm')) return fnLoanSave(); return fnDev ? doNhapMay() : gdWrapNhap(_gdDoNhap); };
+const _gdDoNhapMay = doNhapMay;
+doNhapMay = function () {
+  if (!fnGD && fnDev && fnDev.ma) { const x = gdIncOpen().find(y => y.grp === 'may' && String(y.ma) === String(fnDev.ma)); if (x) fnGD = x; }
+  return gdWrapNhap(_gdDoNhapMay);
+};
+
+// ---------- Tổng quan + menu ----------
+const _gdRenderHome = renderHome;
+renderHome = function (c) {
+  _gdRenderHome(c);
+  c.insertAdjacentHTML('afterbegin', gdHomeHtml());
+  gdLoad();
+};
+DP_RENDER['dp-gd'] = () => { gdPrev = null; gdRender(); gdLoad(true); };
+document.addEventListener('visibilitychange', () => { if (!document.hidden && token && curProj) gdLoad(); });
+
+// ---------- v5.33.0: xuất Excel đúng mẫu BM05, máy chọn từ danh mục P.QLTB → cập nhật nút Nhập ----------
+async function gdExport() {
+  if (!GD.rows.length) { toast('Chưa có danh sách giải động'); return; }
+  showLoader('Đang tạo file Excel...');
+  if (!(await ensureExcelJS())) { hideLoader(); toast('⚠️ Không tải được bộ tạo Excel — kiểm tra mạng'); return; }
+  const wb = new ExcelJS.Workbook(), ws = wb.addWorksheet(String(curProj).slice(0, 30));
+  const B = { top:{style:'thin'}, left:{style:'thin'}, bottom:{style:'thin'}, right:{style:'thin'} }, F = 'Times New Roman';
+  ws.columns = [6, 12, 46, 2, 8, 9, 13, 13, 13, 34].map(w => ({ width:w }));
+  ws.mergeCells('C1:H3'); Object.assign(ws.getCell('C1'), { value:'KẾ HOẠCH GIẢI ĐỘNG MMTB' }); ws.getCell('C1').font = { name:F, bold:true, size:16 }; ws.getCell('C1').alignment = { horizontal:'center', vertical:'middle' };
+  [['I1', 'Số hiệu: BM.QT.QLTB.HĐ-GĐ.04_V02'], ['I2', 'Tài liệu chính: QT.QLTB.HĐ-GĐ_V02'], ['I3', 'Ngày ban hành: ……/……/20…']].forEach(([c, v]) => { ws.getCell(c).value = v; ws.getCell(c).font = { name:F, size:10, italic:true }; });
+  const n = new Date();
+  [['TÊN DỰ ÁN', curProj], ['THỜI GIAN:', `Xuất từ app ngày ${n.getDate()}/${n.getMonth() + 1}/${n.getFullYear()}`]].forEach((r, i) => { ws.getCell('A' + (5 + i)).value = r[0]; ws.getCell('C' + (5 + i)).value = r[1]; ws.getRow(5 + i).font = { name:F, bold:true }; });
+  const H = ['STT', 'Mã Thiết bị', 'Tên thiết bị', '', 'ĐVT', 'Số lượng', 'Ngày huy động thực tế', 'Ngày giải động dự kiến', 'Ngày giải động thực tế', 'Ghi chú'];
+  let row = 8; const hr = ws.getRow(row); H.forEach((h, i) => { const c = hr.getCell(i + 1); c.value = h; c.font = { name:F, bold:true }; c.border = B; c.alignment = { horizontal:'center', vertical:'middle', wrapText:true }; c.fill = { type:'pattern', pattern:'solid', fgColor:{ argb:'FFFCE4D6' } }; });
+  ws.mergeCells(`C${row}:D${row}`); hr.height = 32;
+  const dmy = s => { const m = String(s || '').match(/^(\d{4})-(\d{2})-(\d{2})/); return m ? new Date(Date.UTC(+m[1], m[2] - 1, +m[3])) : null; };
+  [['may', 'I. Máy cơ sở'], ['tb', 'II. Thiết bị phụ trợ'], ['vt', 'III. Vật tư phụ trợ']].forEach(([g, t]) => {
+    const L = GD.rows.filter(r => r.grp === g); if (!L.length) return;
+    row++; ws.getCell('A' + row).value = t; ws.mergeCells(`A${row}:J${row}`); ws.getCell('A' + row).font = { name:F, bold:true }; ws.getCell('A' + row).border = B;
+    L.forEach((r, i) => {
+      row++; const st = gdState(r), dv = gdDev(r), last = (r.hist || []).slice(-1)[0];
+      const real = st === 'done' ? (last && last.date) : st === 'out' ? String(dv.outDate).slice(0, 10) : '';
+      const note = (r.hist || []).map(h => (r.grp === 'may' ? '' : h.q + ' ' + r.unit + ' ') + gdHLbl(h) + (h.date ? ' (' + gdDmy(h.date) + ')' : '')).join('; ')
+        || (st === 'out' ? 'Máy đã rời công trình' : (gdDue(r) !== null && gdDue(r) < 0 ? 'Chưa giải động · quá hạn ' + (-gdDue(r)) + ' ngày' : 'Chưa giải động') + (r.note && !/^chua giai dong$/.test(normVN(r.note)) ? ' · ' + r.note : ''));
+      const v = [i + 1, r.ma ? (isNaN(+r.ma) ? r.ma : +r.ma) : '', r.name, '', r.unit, r.qty, dmy(r.inDate), dmy(r.dueDate), dmy(real), note];
+      const R = ws.getRow(row); v.forEach((x, k) => { const c = R.getCell(k + 1); c.value = x === '' ? null : x; c.border = B; c.font = { name:F }; c.alignment = { vertical:'middle', wrapText:k === 2 || k === 9, horizontal:[0, 4, 5, 6, 7, 8].includes(k) ? 'center' : 'left' }; if (x instanceof Date) c.numFmt = 'dd/mm/yyyy'; });
+      ws.mergeCells(`C${row}:D${row}`);
+      if (st !== 'done' && st !== 'out' && gdDue(r) !== null && gdDue(r) < 0) R.getCell(8).font = { name:F, color:{ argb:'FFC00000' }, bold:true };
+    });
+  });
+  const buf = await wb.xlsx.writeBuffer(); hideLoader();
+  const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([buf], { type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' }));
+  a.download = `BM05_GiaiDong_${slugVN(curProj)}_${n.getDate()}-${n.getMonth() + 1}-${n.getFullYear()}.xlsx`; document.body.appendChild(a); a.click(); setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 4000);
+  toast('✅ Đã xuất file ' + a.download);
+}
+if (typeof fnSetDev === 'function') { const _gdFnSetDev = fnSetDev; fnSetDev = function (x) { const r = _gdFnSetDev(x); try { fnModeBar(true); } catch (e) {} return r; }; }
 </script>
 <script>// ===== Bộ biểu tượng Phosphor Duotone (MIT) thay emoji — v5.31.9 =====
 (function () {

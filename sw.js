@@ -1,4 +1,6 @@
-// FECON Kho + Thi công - Service Worker v5.31.11
+// FECON Kho + Thi công - Service Worker v5.33.0
+// 5.33.0: Mượn/trả + máy rời công trình trong Nhập/Xuất, nhắc giải động Telegram, xuất BM05
+// 5.32.0: Giải động (DS BM05, xuất giải động 3 hướng, nhận từ công trình khác, cảnh báo đến hạn)
 // 5.31.11: Hướng dẫn sử dụng trong Thi công (nút ? trên mỗi màn hình)
 // 5.31.10: Thi công trên máy tính dùng hết chiều ngang màn hình
 // 5.31.9: biểu tượng Phosphor Duotone (màu cam FECON) thay cho emoji
@@ -15,7 +17,7 @@
 //  - Mở app: lấy file từ bộ nhớ của bản đang dùng; thiếu file nào mới lấy từ mạng.
 //  - Có sw.js mới trên GitHub: tải sẵn bản mới vào bộ nhớ riêng nhưng KHÔNG đổi bản đang dùng.
 //  - Địa chỉ có ?fresh=... luôn lấy thẳng từ mạng (app dùng để kiểm tra / tải bản mới).
-const VERSION = '5.31.11';
+const VERSION = '5.33.0';
 const APP = 'fecon-app-', META = 'fecon-meta';
 const CORE = ['./', './index.html', './thicong.html', './manifest.json', './icon-192.png', './icon-512.png', './icon-maskable-192.png', './icon-maskable-512.png', './bg-login.jpg'];
 
