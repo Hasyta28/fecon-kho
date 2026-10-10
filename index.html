@@ -906,6 +906,14 @@ body:not(.can-cost) .need-cost{display:none!important}
 .gz-chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}.gz-chips button{border:1.5px solid #8CC79A;background:#fff;border-radius:10px;padding:6px 10px;font-size:13px;font-weight:700;text-align:left;cursor:pointer}.gz-chips small{display:block;font-weight:500;color:var(--text2);font-size:12px}
 .combo-grp{padding:6px 12px;font-size:12px;font-weight:800;color:var(--orange);background:#FFF8F2;text-transform:uppercase;letter-spacing:.3px}.gz-dir.three{grid-template-columns:1fr 1fr 1fr}.gz-dir.grid2{grid-template-columns:1fr 1fr}.gz-dir.three button,.gz-dir.grid2 button{text-align:center;padding:10px 6px;font-size:13.5px}.gz-off{display:none!important}#dp-loans .detail-header .need-tk{display:none!important}
 .gz-nb{background:var(--red);color:#fff;border-radius:10px;font-size:12px;font-weight:800;padding:1px 7px}</style>
+<style>.badge-ct{background:#FFF2EA;color:#C2410C}
+.ct-line{font-size:12.5px;color:#9A3412;background:#FFF7F0;border-radius:8px;padding:5px 9px;margin-top:6px;line-height:1.45}
+.ct-mhint{font-size:12.5px;color:var(--text2);line-height:1.45;margin:2px 2px 6px}.ct-mhint:empty{display:none}
+.ct-home{display:flex;gap:12px;align-items:center;background:#FFF7F0;border:1.5px solid #F5B58A;border-radius:14px;padding:12px 14px;margin:0 0 12px;cursor:pointer}
+.ct-home b{font-size:14.5px;color:#9A3412}.ct-home div div{font-size:12.5px;color:var(--text2);margin-top:2px;line-height:1.45}.ct-hi{font-size:24px}
+.ct-note{font-size:12.5px;color:var(--text2);line-height:1.5;margin:0 2px 8px}
+.ct-in{width:76px;border:1.5px solid var(--border);border-radius:9px;padding:7px 8px;font-size:15px;font-weight:700;text-align:right;flex-shrink:0}.ct-u{font-size:12.5px;color:var(--text2);align-self:center;min-width:30px}
+.gz-row .ct-in{align-self:center}</style>
 <style>/* Biểu tượng Phosphor Duotone (v5.31.9) */
 .pi{width:1.15em;height:1.15em;display:inline-block;vertical-align:-.2em;color:#F26522;fill:currentColor;flex-shrink:0;overflow:visible}
 .pi-g{color:#1E9E5A}.pi-r{color:#D93A2B}.pi-a{color:#E08A00}.pi-b{color:#0056A4}
@@ -1175,6 +1183,14 @@ button .pi,.btn .pi,a .pi,.chip .pi,.tag .pi,.badge .pi,.yn .pi,.bnav .pi,.bnav-
   <div class="detail-body" id="dp-members-body"></div>
 </div>
 
+<div class="detail-page" id="dp-ct">
+  <div class="detail-header">
+    <button class="back-btn" onclick="closeDp('dp-ct')">‹</button>
+    <div class="detail-title">🏗 Ở công trường</div>
+  </div>
+  <div class="detail-body" id="dp-ct-body"></div>
+</div>
+
 <div class="detail-page" id="dp-gd">
   <div class="detail-header">
     <button class="back-btn" onclick="closeDp('dp-gd')">‹</button>
@@ -1288,6 +1304,7 @@ button .pi,.btn .pi,a .pi,.chip .pi,.tag .pi,.badge .pi,.yn .pi,.bnav .pi,.bnav-
     <div class="sidebar-item" data-p="k_nhap" onclick="goTabSb('nhap')"><span class="sidebar-item-ico">📥</span>Nhập kho</div>
     <div class="sidebar-item" data-p="k_xuat" onclick="goTabSb('xuat')"><span class="sidebar-item-ico">📤</span>Xuất kho</div>
     <div class="sidebar-item" data-p="v_ton" onclick="goTabSb('ton')"><span class="sidebar-item-ico">📦</span>Tồn kho</div>
+    <div class="sidebar-item" data-p="v_home" onclick="openDpSb('dp-ct')"><span class="sidebar-item-ico">🏗</span><span style="flex:1">Ở công trường</span></div>
     <div class="sidebar-item" data-p="v_home" onclick="openDpSb('dp-gd')"><span class="sidebar-item-ico">🚚</span><span style="flex:1">Giải động</span><span id="sb-gz-n" class="gz-nb" style="display:none"></span></div>
     <div class="sidebar-item" data-p="v_home|k_loan" onclick="openDpSb('dp-loans')"><span class="sidebar-item-ico">🔁</span>Cho mượn / Trả</div>
     <div class="sidebar-item" data-p="v_baocao" onclick="goTabSb('baocao')"><span class="sidebar-item-ico">📊</span>Báo cáo</div>
@@ -1759,7 +1776,7 @@ button .pi,.btn .pi,a .pi,.chip .pi,.tag .pi,.badge .pi,.yn .pi,.bnav .pi,.bnav-
 // ============================================================
 // CONFIG
 // ============================================================
-const APP_VERSION = '5.34.0';
+const APP_VERSION = '5.35.0';
 const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbw6Rmi80I7RI3ij2U7RdRF5pYuQTnPrwEmGmUZS5xpxzLwwVynfoFUujZe1lm6HS1ymxw/exec';
 // ============================================================
 
@@ -1843,7 +1860,7 @@ function devIcon(dev, size) {
 const UNITS = ['Lít','Phuy','Thùng','Xô','Kg','Tấn','Cái','Bộ','Cây','Thanh','Tấm','Sợi','Cuộn','Mét','M2','M3','Viên','Đôi','Con','Bịch','Chai','Hộp','Gói'];
 
 // Dữ liệu chỉ tải từ máy chủ SAU KHI đăng nhập (không còn nhúng trong file này)
-const isLow = i => (+i.minStock > 0) && (+i.stock <= +i.minStock);
+const isLow = i => (+i.minStock > 0) && ((typeof ctTot === 'function' && ctTrack(i) ? ctTot(i) : +i.stock) <= +i.minStock);   // v5.35: món theo dõi tính cả ở công trường
 const DEVICE_FUEL_DEFAULT = Object.fromEntries(DEVICE_CATS.map(c => [c.id, c.fuel]));
 const emptyDb = () => ({categories: CATEGORIES, projects: [], items: [], devices: [], devlog: [], transactions: [], repairs: [], notes: [], photos: [], loans: [], txnTotal: 0, txnLastId: '',
   reqs: [], cauKien: [], projCfg: {haoHut:0}, rolePerm: {}, kkMoc: {}, tg: {}, thangDS: null});
@@ -2230,6 +2247,7 @@ function applyServer(r) {
   // Phiếu: máy chủ 5.2 gửi dạng mảng gọn và chỉ gửi phần mới (txnFrom > 0)
   let rows = r.transactions || [];
   if (r.txnCols) rows = rows.map(a => { const o = {}; r.txnCols.forEach((c, i) => o[c] = a[i]); return o; });
+  if (r.txnCols) db.ctOn = r.txnCols.indexOf('ct') >= 0;   // v5.35
   rows = rows.map(t => ({...t, id:+t.id, itemId:+t.itemId, qty:+t.qty||0, refId: t.refId ? (isPycRef(String(t.refId)) ? String(t.refId) : +t.refId) : ''}));
   const base = r.txnCols && r.txnFrom > 0 ? db.transactions.filter(t => !t._local).concat(rows) : rows;
   const ids = new Set(base.map(t => t.id));
@@ -2267,9 +2285,10 @@ function reapplyOutbox() {
     } else if (op.action === 'addTransaction') {
       if (d.project !== curProj) return;
       const it = db.items.find(i => i.id === d.itemId);
-      if (it) { const q = +d.qty || 0; it.stock = Math.round((it.stock + (d.type === 'xuat' ? -q : q)) * 100) / 100; }
+      if (it) ctApply(it, d);                              // v5.35: trong kho + ở công trường
       if (!db.transactions.some(t => t.id === d.id)) db.transactions.push(d);
     } else if (op.action === 'addThang') {                // v5.30: cặp nhập + xuất thẳng ra công trường, tồn không đổi
+      if (d.xuat && d.xuat.ct === 'ra' && d.xuat.project === curProj && !db.transactions.some(x => x.id === d.xuat.id)) siteAdd(d.xuat.itemId, +d.xuat.qty || 0);   // v5.35
       [d.nhap, d.xuat].forEach(t => { if (t && t.project === curProj && !db.transactions.some(x => x.id === t.id)) db.transactions.push(t); });
     } else if (LOAN_ACTIONS[op.action]) {
       applyLoanOp(op.action, d);
@@ -2648,7 +2667,7 @@ function renderHome(c) {
           const it = db.items.find(i => i.id === t.itemId);
           const dc = t.type === 'dieuchinh';
           const who = dc ? (t.reason || '') : t.type==='xuat' ? (t.thietBi || t.supplierOrReceiver) : t.supplierOrReceiver;
-          const lbl = (dc ? 'Điều chỉnh' : t.type==='nhap' ? 'Nhập' : 'Xuất') + (t.thangCT ? ' · 🏗 Thẳng CT' : '');
+          const lbl = (dc ? 'Điều chỉnh' : t.type==='nhap' ? 'Nhập' : 'Xuất') + (t.thangCT ? ' · 🏗 Thẳng CT' : '') + ctTagTxt(t);
           return `<div class="txn-row" onclick="openTxn(${t.id})" style="cursor:pointer">
             <div class="txn-ico ${dc?'adj':t.type==='nhap'?'in':'out'}">${dc?'⚖️':t.type==='nhap'?'📥':'📤'}</div>
             <div style="flex:1;min-width:0">
@@ -2729,14 +2748,14 @@ function drawUnitChart() {
   const cv = document.getElementById('ch-unit'); if (!cv) return;
   const known = new Set(db.categories.map(c => c.id));
   const inCat = i => homeCat === '__other' ? !known.has(i.cat) : i.cat === homeCat;
-  const items = db.items.filter(i => inCat(i) && (i.unit||'Khác').trim() === homeUnit && +i.stock > 0);
-  const total = items.reduce((s,i)=>s+(+i.stock||0),0);
+  const items = db.items.filter(i => inCat(i) && (i.unit||'Khác').trim() === homeUnit && ctTot(i) > 0);
+  const total = items.reduce((s,i)=>s+ctTot(i),0);
   const sub = document.getElementById('unit-sub');
-  if (sub) sub.textContent = homeUnit ? `Tổng tồn: ${fmtNum(total)} ${homeUnit}` : '';
+  if (sub) { const cs = items.reduce((s,i)=>s+ctSite(i),0); sub.textContent = homeUnit ? `Tổng tồn: ${fmtNum(total)} ${homeUnit}${cs > 0 ? ` (gồm ${fmtNum(cs)} ở công trường)` : ''}` : ''; }
   if (!items.length) { cv.parentElement.innerHTML = '<div class="chart-empty">Loại vật tư này hiện không còn tồn kho</div>'; return; }
   charts.unit = new Chart(cv, {
     type:'doughnut',
-    data:{labels: items.map(i => i.name), datasets:[{data: items.map(i => +i.stock), backgroundColor: items.map((_,k)=>PALETTE[k % PALETTE.length]), borderWidth:2, borderColor:'#fff'}]},
+    data:{labels: items.map(i => i.name), datasets:[{data: items.map(i => ctTot(i)), backgroundColor: items.map((_,k)=>PALETTE[k % PALETTE.length]), borderWidth:2, borderColor:'#fff'}]},
     options:{responsive:true, maintainAspectRatio:false, cutout:'55%',
       plugins:{legend:{position: window.innerWidth < 520 ? 'bottom' : 'right', labels:{font:{size:11.5}, boxWidth:12, padding:9,
           generateLabels: ch => ch.data.labels.map((l,k) => ({text:`${l}: ${fmtNum(ch.data.datasets[0].data[k])}`, fillStyle:ch.data.datasets[0].backgroundColor[k], strokeStyle:'#fff', index:k}))}},
@@ -2760,14 +2779,16 @@ function renderDpVatTu() {
 function renderVTRows(items) {
   return items.map(i => {
     let cls='badge-in', s='Đủ hàng';
-    if(i.stock<=0){cls='badge-warn';s='Hết hàng';}
+    const cb=ctBadge(i);
+    if(cb){cls=cb[0];s=cb[1];}
+    else if(i.stock<=0){cls='badge-warn';s='Hết hàng';}
     else if(isLow(i)){cls='badge-out';s='Sắp hết';}
     return `<div class="row-item" onclick="editVatTu(${i.id})">
       <div class="ri-left">
         ${itemIcon(i)}
         <div class="ri-texts">
           <div class="ri-name">${i.name}</div>
-          <div class="ri-sub">Tồn: ${fmtNum(i.stock)} ${i.unit} · Min: ${fmtNum(i.minStock)}</div>
+          <div class="ri-sub">${ctSub(i)} · Min: ${fmtNum(i.minStock)}</div>
         </div>
       </div>
       <div class="ri-right"><span class="txn-badge ${cls}">${s}</span><span class="chevron">›</span></div>
@@ -2828,7 +2849,7 @@ async function updateVatTu() {
   closeModal('modal-edit-vattu');
   updateLowBadge();
   showLoader('Đang lưu...');
-  const ok = await push('upsert', {table:'items', rows:[{id:item.id, name:item.name, cat:item.cat, unit:item.unit, minStock:item.minStock}]});
+  const ok = await push('upsert', {table:'items', rows:[{id:item.id, name:item.name, cat:item.cat, unit:item.unit, minStock:item.minStock, theoDoi:item.theoDoi}]});
   hideLoader();
   if (ok !== 'rejected') toast('✅ Đã cập nhật');
   renderDpVatTu();
@@ -2889,7 +2910,7 @@ function txnRow(t) {
   const fixed = !dc && adjMap()[t.id];
   const sign = dc ? (t.qty > 0 ? '+' : '') : t.type === 'nhap' ? '+' : '-';
   const pr = t.type === 'xuat' && isPycRef(t.refId) ? (db.reqs || []).find(r => r.id === t.refId) : null;
-  const xTag = t.thangCT ? `<div class="txn-sub"><span class="pyc-tag ct">🏗 Thẳng CT</span></div>` : t.type !== 'xuat' ? '' : isPycRef(t.refId)
+  const xTag = ctTagHtml(t) ? ctTagHtml(t) + (t.type === 'xuat' && isPycRef(t.refId) ? `<div class="txn-sub"><span class="pyc-tag">📝 Theo ${escHtml(t.refId)}</span></div>` : '') : t.thangCT ? `<div class="txn-sub"><span class="pyc-tag ct">🏗 Thẳng CT</span></div>` : t.type !== 'xuat' ? '' : isPycRef(t.refId)
     ? `<div class="txn-sub"><span class="pyc-tag">📝 Theo ${escHtml(t.refId)}</span>${pr && pr.duyet === 'chua' ? '<span class="pyc-tag warn">⚠️ CHT/CHP chưa duyệt</span>' : ''}</div>`
     : `<div class="txn-sub"><span class="pyc-tag gray">Xuất thẳng</span></div>`;
   return `<div class="row-item" onclick="openTxn(${t.id})">
@@ -2928,6 +2949,7 @@ function openTxn(id) {
       ${kv('Vật tư', escHtml(it?.name || t.itemName || '?'))}
       ${kv(kk ? 'Số đếm thực tế (mốc)' : dc ? 'Điều chỉnh tồn' : 'Số lượng', `${!kk && dc && t.qty > 0 ? '+' : ''}${fmtNum(t.qty)} ${unit}`)}
       ${t.thangCT ? kv('Hình thức', '🏗 Thẳng ra công trường') + kv('Phiếu đi cặp', pairOf(t) ? `<a onclick="openTxn(${+t.thangCT})">${t.type === 'nhap' ? 'Xuất' : 'Nhập'} #${+t.thangCT}</a>` : '#' + escHtml(String(t.thangCT))) : ''}
+      ${t.ct && !t.thangCT ? kv('Kiểu phiếu', escHtml(ctLbl(t.ct))) : ''}
       ${t.type === 'xuat' && !t.thangCT ? kv('Hình thức', isPycRef(t.refId) ? `<a onclick="closeModal('modal-txn');openReq('${escHtml(t.refId)}')">Theo phiếu ${escHtml(t.refId)}</a>` : 'Xuất thẳng') : ''}
       ${adjs.length ? kv('Số lượng sau điều chỉnh', `${fmtNum(effQty(t))} ${unit}`) : ''}
       ${kv('Dự án', escHtml(t.project || ''))}
@@ -3140,7 +3162,7 @@ function comboInput(p) {
   let list = q ? db.items.filter(i => normVN(i.name).includes(q)) : db.items.filter(i => i.cat === cat);
   const exact = q ? db.items.find(i => normVN(i.name) === q) : null;
   const optK = i => `<div class="combo-opt" onmousedown="event.preventDefault()" onclick="comboPick('${p}',${i.id})">
-      <span>${escHtml(i.name)}</span><small>Tồn: ${fmtNum(i.stock)} ${escHtml(i.unit)}</small></div>`;
+      <span>${escHtml(i.name)}</span><small>${ctOptTxt(i)}</small></div>`;
   let html = list.slice(0, 40).map(optK).join('');
   if (p === 'fn') {                                         // v5.29: gợi ý từ danh mục P.QLTB
     if (fnDev && txt !== fnDev.name) fnSetDev(null);
@@ -3156,7 +3178,7 @@ function comboInput(p) {
   if (exact) {
     document.getElementById(p+'-item').value = exact.id;
     comboSetUnit(p, 'old', exact.unit);
-    hint.innerHTML = `<span style="color:var(--text2)">Tồn hiện tại: ${fmtNum(exact.stock)} ${escHtml(exact.unit)}</span>`;
+    hint.innerHTML = `<span style="color:var(--text2)">${ctTrack(exact) || ctSite(exact) ? 'Trong kho ' + fmtNum(exact.stock) + ' · Ở công trường ' + fmtNum(ctSite(exact)) : 'Tồn hiện tại: ' + fmtNum(exact.stock)} ${escHtml(exact.unit)}</span>`;
   } else {
     document.getElementById(p+'-item').value = '';
     if (allowNew && q) { comboSetUnit(p, 'new'); hint.innerHTML = `<span style="color:var(--green)">➕ Vật tư mới — chọn đơn vị, sẽ được thêm vào nhóm đang chọn</span>`; }
@@ -3287,9 +3309,10 @@ async function doNhapThang(item, qty, proj) {
   const giao = document.getElementById('fn-giao').value.trim();
   const base = {itemId:item.id, itemName:item.name, qty, unit:item.unit, project:proj, datetime:now, createdByName:who};
   const n = {...base, id:nId, type:'nhap', supplierOrReceiver:document.getElementById('fn-ncc').value, note:document.getElementById('fn-note').value, thangCT:xId};
-  const x = {...base, id:xId, type:'xuat', supplierOrReceiver:giao, thietBi:'', note:'', thangCT:nId};
+  const x = {...base, id:xId, type:'xuat', supplierOrReceiver:giao, thietBi:'', note:'', thangCT:nId, ct:ctTrack(item) ? 'ra' : ''};
   withAdminTime(n, 'fn-time'); if (n.datetime !== now) x.datetime = n.datetime;
   db.transactions.push(n, x);                                // tồn kho không đổi
+  if (x.ct) siteAdd(item.id, qty);                           // v5.35: + ở công trường
   addLog('Nhập thẳng ra công trường', `${qty} ${item.unit} ${item.name}${giao ? ' → ' + giao : ''} — ${proj}`);
   push('addThang', {nhap:n, xuat:x});
   const ph = formPhotos.fn.splice(0);
@@ -3351,14 +3374,14 @@ async function doXuat() {
   const dev = document.getElementById('fx-device').value;
   if (!qty || qty <= 0) { toast('⚠️ Nhập số lượng hợp lệ'); return; }
   const item = db.items.find(i => i.id === itemId); if (!item) return;
-  if (qty > item.stock) { toast(`❌ Tồn không đủ! Còn ${fmtNum(item.stock)} ${item.unit}`); return; }
+  if (!ctQtyOk(item, qty)) return;                                        // v5.35: kiểm đúng nơi lấy (kho / công trường)
   if (!(await askIfDupTxn('xuat', item, qty))) return;               // v5.28.1: vừa xuất cùng vật tư, cùng số lượng → hỏi lại
   const devObj = db.devices.find(x => x.name === dev);                     // v5.20: xuất dầu cho máy có đồng hồ → bắt buộc giờ máy
   let mr = {meter:'', meterNote:''};
   if (devObj && isDieselItem(item) && mUnit(devObj) !== 'none') { if (!document.getElementById('fx-mbox')) { fxMeterUpdate(); toast('⚠️ Nhập ' + mLbl(devObj).toLowerCase() + ' hiện tại'); return; } mr = meterRead('fx', devObj); if (!mr) return; }
-  item.stock = Math.round((item.stock - qty) * 100) / 100;
-  const txn = {id:newId(), type:'xuat', itemId, itemName:item.name, qty, unit:item.unit, project:proj,
-    supplierOrReceiver:document.getElementById('fx-note').value,
+  const _ct = fxCtVal(item); ctApply(item, {type:'xuat', ct:_ct, qty});          // v5.35
+  const txn = {id:newId(), type:'xuat', ct:_ct, itemId, itemName:item.name, qty, unit:item.unit, project:proj,
+    supplierOrReceiver:window.fxRecvO || document.getElementById('fx-note').value,
     thietBi:dev, note:document.getElementById('fx-note').value, datetime:nowStr(), createdByName:me?.name||'', meter:mr.meter, meterNote:mr.meterNote};
   withAdminTime(txn, 'fx-time');
   db.transactions.push(txn);
@@ -3582,7 +3605,7 @@ function txnShareText(t) {
   const dc = t.type === 'dieuchinh';
   const L = [];
   const pr = pairOf(t);
-  L.push(`${dc ? '⚖️ PHIẾU ĐIỀU CHỈNH' : t.thangCT ? '🏗 NHẬP THẲNG RA CÔNG TRƯỜNG' : t.type === 'nhap' ? '📥 PHIẾU NHẬP KHO' : '📤 PHIẾU XUẤT KHO'} — ${t.project || ''}`);
+  L.push(`${dc ? (t.ct === 'site' ? '🏗 KHAI SỐ Ở CÔNG TRƯỜNG' : '⚖️ PHIẾU ĐIỀU CHỈNH') : t.thangCT ? '🏗 NHẬP THẲNG RA CÔNG TRƯỜNG' : t.ct === 've' ? '↩ CÔNG TRƯỜNG VỀ KHO' : t.ct === 'ra' ? '🏗 XUẤT RA CÔNG TRƯỜNG' : t.ct === 'ngoai' || t.ct === 'ctra' ? '🚚 XUẤT RA KHỎI CÔNG TRÌNH' : t.type === 'nhap' ? '📥 PHIẾU NHẬP KHO' : '📤 PHIẾU XUẤT KHO'} — ${t.project || ''}`);
   L.push(`Vật tư: ${name}`);
   L.push(`Số lượng: ${dc ? (t.qty > 0 ? '+' : '') : t.type === 'nhap' ? '+' : '-'}${fmtNum(t.qty)} ${unit}${adjMap()[t.id] ? ` (sau điều chỉnh: ${fmtNum(effQty(t))})` : ''}`);
   if (t.thangCT) {                                            // v5.30: 1 tin cho cả cặp nhập + xuất
@@ -3594,7 +3617,7 @@ function txnShareText(t) {
   if (t.thietBi) L.push(`Thiết bị: ${t.thietBi}`);
   if (t.note && t.note !== t.supplierOrReceiver) L.push(`Ghi chú: ${t.note}`);
   if (t.reason) L.push(`Lý do: ${t.reason}`);
-  if (it) L.push(`Tồn hiện tại: ${fmtNum(it.stock)} ${unit}`);
+  if (it) L.push(ctTrack(it) || ctSite(it) ? `Trong kho: ${fmtNum(it.stock)} · Ở công trường: ${fmtNum(ctSite(it))} · Tổng ghi nhận: ${fmtNum(ctTot(it))} ${unit}` : `Tồn hiện tại: ${fmtNum(it.stock)} ${unit}`);
   L.push(`Người lập: ${t.createdByName || me?.name || ''} · ${t.datetime || ''}`);
   const n = photosOf(t.id).length; if (n) L.push(`📷 ${n} ảnh biên bản`);
   return L.join('\n');
@@ -3988,7 +4011,9 @@ function renderTonRows(items) {
   if (!items.length) return '<div class="empty-state"><p>Không có vật tư</p></div>';
   return items.map(i => {
     let cls='badge-in',s='Đủ hàng',fc='var(--green)';
-    if(i.stock<=0){cls='badge-warn';s='Hết hàng';fc='var(--red)';}
+    const cb=ctBadge(i);
+    if(cb){cls=cb[0];s=cb[1];fc='#C2410C';}
+    else if(i.stock<=0){cls='badge-warn';s='Hết hàng';fc='var(--red)';}
     else if(isLow(i)){cls='badge-out';s='Sắp hết';fc='var(--orange)';}
     const maxVal = Math.max(i.minStock*2, i.stock, 1);
     const pct = Math.min(100, Math.round(i.stock/maxVal*100));
@@ -4002,6 +4027,7 @@ function renderTonRows(items) {
         <div class="prog-bar"><div class="prog-fill" style="width:${pct}%;background:${fc}"></div></div>
         <div class="prog-nums">${fmtNum(i.stock)} ${i.unit}</div>
       </div>
+      ${ctLine(i)}
       ${itemLoanLine(i)}
       ${kkMocTxt(i) ? `<div class="kk-moc">🔢 ${kkMocTxt(i)}</div>` : ''}
       ${ql ? `<div class="min-edit" id="me-${i.id}" style="display:none;margin-top:8px" onclick="event.stopPropagation()">
@@ -4688,7 +4714,7 @@ async function buildNxtWorkbook() {
   const isFuelGroup = i => i.cat === 'nhienLieu' || isFuelItem(i);
   const itemById = id => db.items.find(i => i.id === id);
   // Phiếu điều chỉnh có "phiếu gốc" đã được cộng vào số lượng của phiếu gốc (effQty) → không tính lại
-  const moves = db.transactions.map(kkAsDc).filter(t => !(t.type === 'dieuchinh' && t.refId));   // kiểm kê → điều chỉnh bằng phần lệch
+  const moves = db.transactions.map(kkAsDc).filter(t => !(t.type === 'dieuchinh' && t.refId) && !(t.ct === 'ctra' || t.ct === 'site'));   // v5.35   // kiểm kê → điều chỉnh bằng phần lệch
   const net = t => t.type === 'nhap' ? effQty(t) : t.type === 'xuat' ? -effQty(t) : LOAN_T[t.type] ? LOAN_T[t.type] * (+t.qty || 0) : (+t.qty || 0);
   const sorted = arr => arr.slice().sort((a, b) => ((parseVN(a.datetime) || 0) - (parseVN(b.datetime) || 0)) || (a.id - b.id));
   const kho = moves.filter(t => !LOAN_T[t.type]);                     // nhập / xuất / điều chỉnh (mượn – trả để ở sheet riêng)
@@ -4742,7 +4768,7 @@ async function buildNxtWorkbook() {
       let note = t.type === 'dieuchinh' ? (t.reason || 'Kiểm kê') : (t.note && t.note !== t.supplierOrReceiver ? t.note : '');
       if (adj) note = [note, `Đã điều chỉnh: ghi ${fmtNum(t.qty)} → đúng ${fmtNum(q)}`].filter(Boolean).join(' · ');
       const vals = [xd(d), it?.name || t.itemName, it?.unit || t.unit, TYPE[t.type], t.type === 'dieuchinh' ? '' : (t.supplierOrReceiver || ''),
-        t.thietBi || '', q, tm, note, t.createdByName || '', t.type === 'xuat' ? (isPycRef(t.refId) ? 'Theo ' + t.refId : 'Xuất thẳng') : '',
+        t.thietBi || '', q, tm, note, t.createdByName || '', t.ct ? ctLbl(t.ct) + (isPycRef(t.refId) ? ' · theo ' + t.refId : '') : t.type === 'xuat' ? (isPycRef(t.refId) ? 'Theo ' + t.refId : 'Xuất thẳng') : '',
         t.type === 'xuat' && isPycRef(t.refId) ? (r0 => r0 ? AP_PLAIN(r0) : '')((db.reqs || []).find(x => x.id === t.refId)) : ''];
       vals.forEach((v, i) => ws.getCell(r, 2 + i).value = v === '' ? null : v);
       ws.getCell(r, 2).numFmt = 'dd/mm/yyyy';
@@ -4818,6 +4844,17 @@ async function buildNxtWorkbook() {
   }
   nxtSheet('NXT dầu nhớt', logFuel, true);
   nxtSheet('NXT vật tư', logVt, false);
+  if (ctOn() && db.items.some(i => ctTrack(i) || ctSite(i))) {     // v5.35: thiết bị / vật tư phụ trợ đang ghi nhận tại dự án
+    const ws = sheet('Ở công trường', [6, 44, 10, 13, 15, 15], 5);
+    title(ws, 'THIẾT BỊ / VẬT TƯ PHỤ TRỢ ĐANG GHI NHẬN TẠI DỰ ÁN', 6);
+    header(ws, 5, ['STT', 'Tên', 'Đơn vị', 'Trong kho', 'Ở công trường', 'Tổng ghi nhận'], 1);
+    let r = 6;
+    db.items.filter(i => ctTrack(i) || ctSite(i)).sort((a, b) => ctTot(b) - ctTot(a) || a.name.localeCompare(b.name, 'vi')).forEach((it, k) => {
+      [k + 1, it.name, it.unit, +it.stock || 0, ctSite(it), {formula:`D${r}+E${r}`, result:ctTot(it)}].forEach((v, c) => ws.getCell(r, c + 1).value = v);
+      [4, 5, 6].forEach(c => ws.getCell(r, c).numFmt = '#,##0.##;-#,##0.##;"-"'); body(ws, r, 1, 6); ws.getCell(r, 6).font = {...FONT, bold:true}; r++;
+    });
+    const n = ws.getCell(r + 1, 2); n.value = 'Số hiện tại lúc xuất file. Ở công trường = đã xuất ra công trường, vẫn thuộc dự án (chưa trả / chưa chuyển đi).'; n.font = {...FONT, italic:true, size:9, color:{argb:'FF777777'}};
+  }
 
   // ---------- 5. THEO DÕI DẦU THEO THIẾT BỊ ----------
   {
@@ -5468,14 +5505,14 @@ function withAdminTime(txn, inputId) {
   const v = can('admin') && el ? localToVN(el.value) : '';
   if (v) { txn.txTime = v; txn.datetime = v; }
 }
-const txnEffect = t => (TSIGN[t.type] || 0) * (+t.qty || 0);
+const txnEffect = t => ctFx(t)[0];                         // v5.35: phần trong kho
 function stockAdd(itemId, d) { const it = db.items.find(i => i.id === itemId); if (it && d) it.stock = Math.round((it.stock + d) * 100) / 100; }
 
 // Áp thao tác Admin lên dữ liệu trên máy (lúc bấm, và áp lại khi còn chờ gửi)
 function applyAdminOp(action, d) {
   if (action === 'editTxn') {
     const t = db.transactions.find(x => x.id === d.id); if (!t) return;
-    stockAdd(t.itemId, -txnEffect(t));
+    (stockAdd(t.itemId, -txnEffect(t)), siteAdd(t.itemId, -siteEffect(t)));
     const it = db.items.find(i => i.id === d.itemId) || db.items.find(i => i.id === t.itemId);
     Object.assign(t, {itemId:it ? it.id : t.itemId, itemName:it ? it.name : t.itemName, unit:it ? it.unit : t.unit, qty:+d.qty,
       note:d.note, clientTime:''});
@@ -5483,14 +5520,14 @@ function applyAdminOp(action, d) {
     if (t.type === 'xuat') t.thietBi = d.thietBi;
     if (t.type === 'dieuchinh') t.reason = d.reason;
     if (d.datetime) t.datetime = d.datetime;
-    stockAdd(t.itemId, txnEffect(t));
+    (stockAdd(t.itemId, txnEffect(t)), siteAdd(t.itemId, siteEffect(t)));
     const pr = pairOf(t);                                     // v5.30: phiếu đi cặp đổi theo (vật tư, số lượng, ngày giờ)
-    if (pr) { stockAdd(pr.itemId, -txnEffect(pr)); Object.assign(pr, {itemId:t.itemId, itemName:t.itemName, unit:t.unit, qty:t.qty, datetime:t.datetime, clientTime:''}); stockAdd(pr.itemId, txnEffect(pr)); }
+    if (pr) { (stockAdd(pr.itemId, -txnEffect(pr)), siteAdd(pr.itemId, -siteEffect(pr))); Object.assign(pr, {itemId:t.itemId, itemName:t.itemName, unit:t.unit, qty:t.qty, datetime:t.datetime, clientTime:''}); (stockAdd(pr.itemId, txnEffect(pr)), siteAdd(pr.itemId, siteEffect(pr))); }
   } else if (action === 'deleteTxn') {
     const t0 = db.transactions.find(x => x.id === d.id), roots = [d.id].concat(pairOf(t0) ? [pairOf(t0).id] : []);   // v5.30: xóa cả cặp
     const gone = db.transactions.filter(x => roots.includes(x.id) || (x.type === 'dieuchinh' && roots.includes(+x.refId)));
     if (!gone.length) return;
-    gone.forEach(x => stockAdd(x.itemId, -txnEffect(x)));
+    gone.forEach(x => (stockAdd(x.itemId, -txnEffect(x)), siteAdd(x.itemId, -siteEffect(x))));
     const ids = new Set(gone.map(x => x.id));
     db.transactions = db.transactions.filter(x => !ids.has(x.id));
     db.photos = (db.photos || []).filter(p => !ids.has(p.txnId));
@@ -5501,7 +5538,7 @@ function applyAdminOp(action, d) {
   } else if (action === 'deleteLoan') {
     const l = (db.loans || []).find(x => x.id === d.id); if (!l) return;
     const gone = db.transactions.filter(t => +t.refId === l.id && t.type !== 'dieuchinh');
-    gone.forEach(t => stockAdd(t.itemId, -txnEffect(t)));
+    gone.forEach(t => (stockAdd(t.itemId, -txnEffect(t)), siteAdd(t.itemId, -siteEffect(t))));
     const ids = new Set(gone.map(t => t.id));
     db.transactions = db.transactions.filter(t => !ids.has(t.id));
     db.loans = db.loans.filter(x => x.id !== l.id);
@@ -8451,7 +8488,8 @@ function askDup(msg, yes) {
 // Vừa lập phiếu cùng loại, cùng vật tư, cùng số lượng trong 2 phút → hỏi lại
 async function askIfDupTxn(type, item, qty) {
   const now = Date.now();
-  const t = db.transactions.find(x => x.type === type && +x.itemId === +item.id && Math.abs(+x.qty - qty) < 1e-9 &&
+  const ctK = type === 'xuat' ? fxCtVal(item) : (typeof fnLMode !== 'undefined' && fnLMode === 've' ? 've' : '');   // v5.35
+  const t = db.transactions.find(x => x.type === type && +x.itemId === +item.id && Math.abs(+x.qty - qty) < 1e-9 && String(x.ct || '') === ctK &&
     (x.createdByName || '') === (me?.name || '') && (d => d && now - d.getTime() < 120000 && now - d.getTime() > -60000)(parseVN(x.datetime)));
   if (!t) return true;
   const at = parseVN(t.datetime), hm = at ? String(at.getHours()).padStart(2, '0') + ':' + String(at.getMinutes()).padStart(2, '0') : '';
@@ -8573,16 +8611,28 @@ function gdRowHtml(r) {
     <div class="gz-s">${r.ma ? 'Mã ' + escHtml(r.ma) + ' · ' : ''}${r.grp === 'may' ? '' : (st === 'part' ? `Còn ${fmtNum(left)}/${fmtNum(r.qty)} ` : fmtNum(r.qty) + ' ') + escHtml(r.unit) + ' · '}${due}${r.note && st !== 'done' ? ' · ' + escHtml(r.note) : ''}</div>${hist}
     <div id="gd-may-${r.id}"></div></div>${btn}</div>`;
 }
-function gdDestHtml(id, note) {
-  const ps = (GD.projects || []).filter(p => p !== curProj && p !== GD.kho);
+function gdDestHtml(id, note, opt) {
+  const ps = ((GD.projects || []).length ? GD.projects : (db.projects || [])).filter(p => p !== curProj && p !== GD.kho);
   const pre = ps.find(p => note && normVN(note).includes(normVN(p)));
-  return `<div class="gz-dir" id="${id}-h">
-      <button type="button" data-h="thue" onclick="gdSetH('${id}','thue')">↩ Trả bên cho thuê</button>
+  const sug = opt && opt.it ? ctPartySug(opt.it) : [];                       // v5.35: gợi ý nơi trả = nơi đã nhập về
+  gdSug[id] = sug;
+  return `<div class="gz-dir ${opt && opt.more ? 'grid2' : ''}" id="${id}-h">
+      <button type="button" data-h="thue" onclick="gdSetH('${id}','thue')">↩ Trả bên cho thuê${opt && opt.more ? ' / NCC' : ''}</button>
       <button type="button" data-h="da" onclick="gdSetH('${id}','da')">🏗 Chuyển dự án khác</button>
-      <button type="button" data-h="kho" onclick="gdSetH('${id}','kho')">🏭 Về ${escHtml(GD.kho)}</button></div>
+      <button type="button" data-h="kho" onclick="gdSetH('${id}','kho')">🏭 Về ${escHtml(GD.kho)}</button>
+      ${opt && opt.more ? `<button type="button" data-h="hong" onclick="gdSetH('${id}','hong')">🗑 Hư hỏng / thanh lý</button><button type="button" data-h="khac" onclick="gdSetH('${id}','khac')">✏️ Khác</button>` : ''}</div>
     <div class="fg" id="${id}-dwrap" style="display:none"><label id="${id}-dlbl">Dự án nhận</label>
       <select id="${id}-dsel">${ps.length ? ps.map(p => `<option ${p === pre ? 'selected' : ''}>${escHtml(p)}</option>`).join('') : '<option value="">(chưa có dự án khác)</option>'}</select>
-      <input type="text" id="${id}-dtxt" placeholder="Tên đơn vị cho thuê (tùy chọn)" style="display:none"></div>`;
+      <input type="text" id="${id}-dtxt" placeholder="Tên đơn vị cho thuê (tùy chọn)" style="display:none" list="${id}-dl"><datalist id="${id}-dl">${sug.map(x => `<option value="${escHtml(x)}">`).join('')}</datalist>
+      <div class="gz-chips" id="${id}-sug" style="display:none">${sug.slice(0, 4).map(x => `<button type="button" onclick="document.getElementById('${id}-dtxt').value=this.dataset.v" data-v="${escHtml(x)}">${escHtml(x)}</button>`).join('')}</div></div>`;
+}
+const gdSug = {};
+function ctPartySug(it) {                                       // nơi đã nhập món này về (NCC / bên cho thuê / dự án), mới nhất trước
+  const seen = new Set(), out = [];
+  db.transactions.filter(t => t.itemId === it.id && t.type === 'nhap' && t.ct !== 've').slice().reverse().forEach(t => {
+    const v = String(t.supplierOrReceiver || '').trim(); if (!v || /^(tồn đầu|công trường)$/i.test(v) || seen.has(normVN(v))) return; seen.add(normVN(v)); out.push(v); });
+  (db.loans || []).filter(l => l.kind === 'di' && normVN(l.itemName) === normVN(it.name)).forEach(l => { if (l.party && !seen.has(normVN(l.party))) { seen.add(normVN(l.party)); out.push(l.party); } });
+  return out;
 }
 const gdH = {};
 function gdSetH(id, h) {
@@ -8590,11 +8640,15 @@ function gdSetH(id, h) {
   document.querySelectorAll(`#${id}-h button`).forEach(b => b.classList.toggle('on', b.dataset.h === h));
   document.getElementById(id + '-dwrap').style.display = h === 'kho' ? 'none' : '';
   document.getElementById(id + '-dsel').style.display = h === 'da' ? '' : 'none';
-  document.getElementById(id + '-dtxt').style.display = h === 'thue' ? '' : 'none';
-  document.getElementById(id + '-dlbl').textContent = h === 'da' ? 'Dự án nhận' : 'Đơn vị cho thuê';
+  const tx = document.getElementById(id + '-dtxt'), txt = h === 'thue' || h === 'hong' || h === 'khac';
+  tx.style.display = txt ? '' : 'none';
+  if (tx.dataset.h !== h) { tx.value = h === 'thue' && (gdSug[id] || [])[0] ? gdSug[id][0] : ''; tx.dataset.h = h; }
+  tx.placeholder = h === 'thue' ? 'Tên đơn vị cho thuê / NCC' : h === 'hong' ? 'VD: thủng đáy, không sửa được' : 'VD: cho tổ đội mượn dài hạn';
+  const sg = document.getElementById(id + '-sug'); if (sg) sg.style.display = h === 'thue' && (gdSug[id] || []).length > 1 ? '' : 'none';
+  document.getElementById(id + '-dlbl').textContent = h === 'da' ? 'Dự án nhận' : h === 'hong' ? 'Lý do hư hỏng / thanh lý' : h === 'khac' ? 'Đi đâu' : 'Đơn vị cho thuê / NCC';
 }
-function gdDestVal(id) { const h = gdH[id]; return h === 'da' ? document.getElementById(id + '-dsel').value : h === 'thue' ? document.getElementById(id + '-dtxt').value.trim() : GD.kho; }
-function gdDestLbl(h, dest) { return h === 'thue' ? 'Trả bên cho thuê' + (dest ? ' ' + dest : '') : h === 'kho' ? 'Về ' + GD.kho : 'Chuyển dự án ' + dest; }
+function gdDestVal(id) { const h = gdH[id]; return h === 'da' ? document.getElementById(id + '-dsel').value : h === 'thue' || h === 'hong' || h === 'khac' ? document.getElementById(id + '-dtxt').value.trim() : GD.kho; }
+function gdDestLbl(h, dest) { return h === 'thue' ? 'Trả bên cho thuê' + (dest ? ' ' + dest : '') : h === 'kho' ? 'Về ' + GD.kho : h === 'hong' ? 'Hư hỏng / thanh lý' + (dest ? ': ' + dest : '') : h === 'khac' ? (dest || 'Khác') : 'Chuyển dự án ' + dest; }
 
 // máy cơ sở: ghi giải động ngay trong danh sách (đồng thời "Kết thúc · máy rời công trình" nếu máy đang ở dự án)
 function gdMayOpen(id) {
@@ -8724,7 +8778,7 @@ function gdGoXuat(id) {
   const it = db.items.find(i => normVN(i.name) === normVN(r.name));
   if (!it) { toast('⚠️ "' + r.name + '" chưa có trong kho — nhập tồn trước'); return; }
   closeDp('dp-gd'); goTab('xuat');
-  setTimeout(() => { comboPick('fx', it.id); fxSetMode('gd'); }, 60);
+  setTimeout(() => { comboPick('fx', it.id); fxSetMode('ngoai'); }, 60);
 }
 function loanFieldsHtml(p, cho) {
   return `<div class="fg"><label>${cho ? 'Người / đơn vị mượn' : 'Mượn của ai (người / công trình)'}</label><input type="text" id="${p}l-party" placeholder="VD: Tổ đội A.Kiên, CT Nhơn Trạch"></div>
@@ -8737,8 +8791,13 @@ function loanPickQty(p) { const l = (db.loans || []).find(x => x.id === +documen
 function fxModesHtml(it) {
   const M = [];
   if (it.dev) { M.push(['ra', '🏗 Máy rời công trình']); if (!devLoan(it.id)) M.push(['cho', '🔁 Cho mượn máy']); }
-  else { M.push(['use', '📤 Xuất dùng']); if (fxGD) M.push(['gd', '🚚 Giải động']); M.push(['cho', '🔁 Cho mượn']); if (openLoansOf('di', it).length) M.push(['tra', '↩ Trả đồ đi mượn']); }
-  return `<div class="gz-dir ${M.length > 2 ? 'grid2' : 'two'}" id="fx-modes">${M.map(m => `<button type="button" data-m="${m[0]}" onclick="fxSetMode('${m[0]}')">${m[1]}</button>`).join('')}</div><div id="fx-mbody"></div>`;
+  else {                                                        // v5.35: Ra công trường (vẫn ghi nhận) · Ra khỏi công trình · Xuất dùng hết
+    if (ctTrack(it)) M.push(['ct', '🏗 Ra công trường']); else M.push(['use', '📤 Xuất dùng']);
+    M.push(['ngoai', fxGD ? '🚚 Ra khỏi CT · giải động' : '🚚 Ra khỏi công trình']);
+    if (ctTrack(it)) M.push(['use', '📤 Xuất dùng hết']);
+    M.push(['cho', '🔁 Cho mượn']); if (openLoansOf('di', it).length) M.push(['tra', '↩ Trả đồ đi mượn']);
+  }
+  return `<div class="gz-dir ${M.length > 2 ? 'grid2' : 'two'}" id="fx-modes">${M.map(m => `<button type="button" data-m="${m[0]}" onclick="fxSetMode('${m[0]}')">${m[1]}</button>`).join('')}</div><div class="ct-mhint" id="fx-mhint"></div><div id="fx-mbody"></div>`;
 }
 function fxModeUpdate() {
   const box = document.getElementById('fx-gd'); if (!box) return;
@@ -8751,29 +8810,42 @@ function fxModeUpdate() {
   const r = fxGD, dd = r ? gdDays(r.dueDate) : null;
   box.innerHTML = `<div class="gz-box">${r ? `<div class="gz-bh">🚚 Có trong danh sách giải động${r.grp === 'may' ? '' : ` · còn ${fmtNum(gdLeft(r))}/${fmtNum(r.qty)} ${escHtml(r.unit)}`}${dd === null ? '' : dd < 0 ? ` · <b style="color:var(--red)">quá hạn ${-dd} ngày</b>` : ` · hạn ${gdDmy(r.dueDate)}`}</div>` : ''}
     ${fxModesHtml(it)}</div>`;
-  fxSetMode(it.dev ? 'ra' : 'use');
+  fxSetMode(it.dev ? 'ra' : fxGD ? 'ngoai' : ctTrack(it) ? 'ct' : 'use');
 }
 function fxShowQty(on) {
   const q = document.getElementById('fx-qty'); if (q) q.closest('.fg-row').style.display = on ? '' : 'none';
   const d = document.getElementById('fx-device'); if (d) d.closest('.fg').style.display = on && fxMode === 'use' ? '' : 'none';
 }
+const FX_HINT = { ct:'Từ kho ra công trường: Trong kho −, Ở công trường +. Vẫn ghi nhận tại dự án, không báo hết hàng.',
+  ngoai:'Rời khỏi dự án: trả bên cho thuê / NCC, chuyển dự án khác, về kho công ty, hư hỏng… Tổng ghi nhận giảm.',
+  use:'Dùng hết (tiêu hao): trừ tồn kho, không theo dõi tiếp.' };
+function fxSetSrc(v) { fxSrc = v; document.querySelectorAll('#fx-src button').forEach(b => b.classList.toggle('on', b.dataset.s === v)); const it = db.items.find(i => i.id === +document.getElementById('fx-item').value), q = document.getElementById('fx-qty');
+  if (it && q && !q.value) q.placeholder = 'Còn ' + fmtNum(v === 'ct' ? ctSite(it) : it.stock); }
 function fxSetMode(m) {
   if (!document.getElementById('fx-modes')) return;
+  if (m === 'gd') m = 'ngoai';
   fxMode = m;
   document.querySelectorAll('#fx-modes button').forEach(b => b.classList.toggle('on', b.dataset.m === m));
   const it = fxDev ? Object.assign({ dev:1 }, fxDev) : db.items.find(i => i.id === +document.getElementById('fx-item').value), B = document.getElementById('fx-mbody');
   gdH.fxg = '';
   let h = '';
-  if (m === 'gd' || (m === 'ra' && fxGD)) h = `<div style="margin-top:8px;font-weight:700;font-size:13.5px">Hướng giải động</div>${gdDestHtml('fxg', fxGD.note)}`;
+  const hn = document.getElementById('fx-mhint'); if (hn) hn.textContent = !it || it.dev ? '' : (m === 'use' && !ctTrack(it) ? '' : FX_HINT[m] || '');
+  if (m === 'ngoai' && it && !it.dev) {                         // v5.35: ra khỏi công trình — lấy từ kho hay công trường, đi đâu
+    const sv = ctSite(it); fxSrc = sv > 0 ? 'ct' : 'kho';
+    if (ctOn() && (ctTrack(it) || sv > 0)) h += `<div style="margin-top:8px;font-weight:700;font-size:13.5px">Lấy từ</div><div class="gz-dir two" id="fx-src"><button type="button" data-s="kho" onclick="fxSetSrc('kho')">📦 Trong kho · ${fmtNum(it.stock)}</button><button type="button" data-s="ct" onclick="fxSetSrc('ct')">🏗 Ở công trường · ${fmtNum(sv)}</button></div>`;
+    h += `<div style="margin-top:8px;font-weight:700;font-size:13.5px">${fxGD ? 'Hướng giải động' : 'Đi đâu?'}</div>${fxGD ? gdDestHtml('fxg', fxGD.note) : gdDestHtml('fxg', '', { more:1, it })}`;
+  }
+  else if (m === 'ra' && fxGD) h = `<div style="margin-top:8px;font-weight:700;font-size:13.5px">Hướng giải động</div>${gdDestHtml('fxg', fxGD.note)}`;
   else if (m === 'ra') h = `<div style="margin-top:8px;font-weight:700;font-size:13.5px">Máy đi đâu? (tùy chọn)</div>${gdDestHtml('fxg', '')}`;
   if (m === 'ra') h += `<div class="fg-row"><div class="fg"><label>Ngày rời công trình</label><input type="date" id="fxr-date" value="${isoDay(new Date())}"></div>
       ${mUnit(fxDev) !== 'none' ? `<div class="fg"><label>${mLbl(fxDev)} lúc ra</label><input type="number" inputmode="decimal" id="fxr-m"></div>` : ''}</div>`;
   if (m === 'cho') h += loanFieldsHtml('fx', true);
   if (m === 'tra') h += loanPickHtml('fx', openLoansOf('di', it), 'Trả lại cho');
   B.innerHTML = h;
+  if (document.getElementById('fx-src')) fxSetSrc(fxSrc);
   fxShowQty(!it?.dev);
   const q = document.getElementById('fx-qty');
-  if (m === 'gd' && q && fxGD) q.value = Math.min(gdLeft(fxGD), it?.stock || 0) || '';
+  if (m === 'ngoai' && q && fxGD) q.value = Math.min(gdLeft(fxGD), fxSrc === 'ct' ? ctSite(it) : it?.stock || 0) || '';
   if (m === 'tra') loanPickQty('fx');
 }
 const _gdRenderXuat = renderXuat;
@@ -8798,7 +8870,7 @@ comboInput = function (p) {
   const lst = document.getElementById(p + '-list');
   if (p === 'fx') { fxModeUpdate(); if (lst) { lst.innerHTML = fxSuggestHtml(q); lst.style.display = 'block'; } }
   if (p === 'fx') { const it = db.items.find(i => i.id === +document.getElementById('fx-item').value), hn = document.getElementById('fx-hint');
-    if (isPT(it) && it.stock <= 0 && hn) hn.innerHTML = '<span style="color:var(--orange)">Chưa ghi tồn — có sẵn ở công trường thì cứ xuất, app tự ghi tồn đầu</span>'; }
+    if (isPT(it) && it.stock <= 0 && !(ctSite(it) > 0) && hn) hn.innerHTML = '<span style="color:var(--orange)">Chưa ghi tồn — có sẵn ở công trường thì cứ xuất, app tự ghi tồn đầu</span>'; }
   if (p === 'fn') {
     if (fnGD && normVN(fnGD.name) !== q) fnGdSet(null);
     let pre = '';
@@ -8830,12 +8902,12 @@ function fxSuggestHtml(q) {
   const N = 6, toks = q.split(/\s+/).filter(Boolean), hit = n => toks.every(t => normVN(n).includes(t));
   const more = (k, n) => n > N && !fxMore[k] ? `<div class="combo-opt combo-more" onmousedown="event.preventDefault()" onclick="fxMore['${k}']=1;comboInput('fx')">Xem thêm ${fmtNum(n - N)} tên…</div>` : '';
   const cut = (k, a) => fxMore[k] ? a : a.slice(0, N);
-  const kho = db.items.filter(i => !q || hit(i.name + ' ' + (i.maQL || ''))).sort((a, b) => (b.stock > 0) - (a.stock > 0) || a.name.localeCompare(b.name, 'vi'));
+  const kho = db.items.filter(i => !q || hit(i.name + ' ' + (i.maQL || ''))).sort((a, b) => (ctTot(b) > 0) - (ctTot(a) > 0) || a.name.localeCompare(b.name, 'vi'));
   const gd = GD.P === curProj ? GD.rows.filter(r => r.grp !== 'may' && gdLeft(r) > 0 && (!q || hit(r.name))) : [];
   const dv = db.devices.filter(d => !d.outDate && (!q || hit(d.name + ' ' + (d.maQL || ''))));
   let h = '';
   if (gd.length) h += `<div class="combo-head">🚚 Danh sách giải động (${gd.length})</div>` + cut('gd', gd).map(r => `<div class="combo-opt" onmousedown="event.preventDefault()" onclick="gdPickFx('${r.id}')"><span>${escHtml(r.name)}</span><small>Giải động · còn ${fmtNum(gdLeft(r))} ${escHtml(r.unit)}${r.dueDate ? ' · hạn ' + gdDmy(r.dueDate) : ''}</small></div>`).join('') + more('gd', gd.length);
-  if (kho.length) h += `<div class="combo-head">📦 Trong kho dự án (${kho.length})</div>` + cut('kho', kho).map(i => `<div class="combo-opt" onmousedown="event.preventDefault()" onclick="comboPick('fx',${i.id})"><span>${escHtml(i.name)}</span><small>Tồn: ${fmtNum(i.stock)} ${escHtml(i.unit)}</small></div>`).join('') + more('kho', kho.length);
+  if (kho.length) h += `<div class="combo-head">📦 Trong kho dự án (${kho.length})</div>` + cut('kho', kho).map(i => `<div class="combo-opt" onmousedown="event.preventDefault()" onclick="comboPick('fx',${i.id})"><span>${escHtml(i.name)}</span><small>${ctOptTxt(i)}</small></div>`).join('') + more('kho', kho.length);
   if (dv.length) h += `<div class="combo-head">🏗 Máy móc đang ở công trình (${dv.length})</div>` + cut('dv', dv).map(d => `<div class="combo-opt" onmousedown="event.preventDefault()" onclick="fxPickDev(${d.id})"><span>${escHtml(d.name)}</span><small>${d.maQL ? 'Mã ' + escHtml(d.maQL) : 'Máy'}${devLoan(d.id) ? ' · đang cho mượn' : ''}</small></div>`).join('') + more('dv', dv.length);
   const have = new Set(db.items.map(i => normVN(i.name)).concat(gd.map(r => normVN(r.name)))), pt = ptFind(q, have);
   if (pt.length) h += `<div class="combo-head">🧰 Thiết bị &amp; vật tư phụ trợ (${pt.length})</div>` + cut('pt', pt).map(x => ptOpt('fx', x)).join('') + more('pt', pt.length);
@@ -8850,7 +8922,7 @@ async function gdPickFx(id) {                                   // mục giải 
     const q = gdLeft(r), t = { id:newId(), type:'nhap', itemId:it.id, itemName:it.name, qty:q, unit:it.unit, project:curProj, supplierOrReceiver:'Tồn đầu', note:'Tồn đầu từ DS giải động', datetime:nowStr(), createdByName:me?.name || '' };
     it.stock = q; db.transactions.push(t); push('addTransaction', t);
   }
-  comboPick('fx', it.id); fxSetMode('gd');
+  comboPick('fx', it.id); fxSetMode('ngoai');
 }
 async function fxAfter(msg) { toast(msg); fxDev = null; fxGD = null; closeKeyboard(); goTab('home'); }
 const _gdDoXuat = doXuat;
@@ -8883,7 +8955,7 @@ doXuat = async function () {
     return fxAfter('🏗 Đã ghi máy rời công trình: ' + d.name + (h ? ' → ' + gdDestLbl(h, dest) : ''));
   }
   const it = db.items.find(i => i.id === +document.getElementById('fx-item').value), qty = r3(+val('fx-qty'));
-  if (it && qty > 0 && fxMode !== 'tra') ptEnsureStock(it, qty);
+  if (it && qty > 0 && fxMode !== 'tra') { if (fxMode === 'ngoai' && fxCtVal(it) === 'ctra') ctEnsureSite(it, qty, 'Tự khai: có ở công trường, ghi khi xuất ra khỏi công trình'); else ptEnsureStock(it, qty); }
   if (fxMode === 'cho' || fxMode === 'tra') {
     if (!it) { toast('⚠️ Chọn vật tư có trong kho'); return; }
     if (!(qty > 0)) { toast('⚠️ Nhập số lượng hợp lệ'); return; }
@@ -8902,17 +8974,20 @@ doXuat = async function () {
     const ok = await pushLoan('returnLoan', { loanId:l.id, id:newId(), qty, note:val('fx-note'), datetime:nowStr() }); if (ok === 'rejected') return;
     return fxAfter(`✅ Đã trả lại ${fmtNum(qty)} ${l.unit} ${l.itemName} cho ${l.party}`);
   }
-  if (fxMode !== 'gd' || !fxGD) return _gdDoXuat();
+  if (fxMode !== 'ngoai') return _gdDoXuat();                   // xuất dùng · ra công trường (cột ct do phiếu gốc tự ghi)
   const r = fxGD, h = gdH.fxg, dest = h ? gdDestVal('fxg') : '';
-  if (!h) { toast('⚠️ Chọn hướng giải động'); document.getElementById('fxg-h').scrollIntoView({ block:'center', behavior:'smooth' }); return; }
+  if (!h) { toast(r ? '⚠️ Chọn hướng giải động' : '⚠️ Chọn đi đâu'); document.getElementById('fxg-h').scrollIntoView({ block:'center', behavior:'smooth' }); return; }
   if (h === 'da' && !dest) { toast('⚠️ Chọn dự án nhận'); return; }
-  if (qty > gdLeft(r) + 1e-9 && !confirm(`Số lượng ${fmtNum(qty)} lớn hơn số còn trong danh sách giải động (${fmtNum(gdLeft(r))}). Vẫn xuất?`)) return;
-  const nEl = document.getElementById('fx-note'), old = nEl.value.trim(), lbl = 'Giải động → ' + gdDestLbl(h, dest);
+  if ((h === 'hong' || h === 'khac') && !dest) { toast(h === 'hong' ? '⚠️ Ghi lý do hư hỏng / thanh lý' : '⚠️ Ghi rõ đi đâu'); document.getElementById('fxg-dtxt').focus(); return; }
+  if (r && qty > gdLeft(r) + 1e-9 && !confirm(`Số lượng ${fmtNum(qty)} lớn hơn số còn trong danh sách giải động (${fmtNum(gdLeft(r))}). Vẫn xuất?`)) return;
+  const nEl = document.getElementById('fx-note'), old = nEl.value.trim(), lbl = (r ? 'Giải động → ' : 'Ra khỏi công trình → ') + gdDestLbl(h, dest);
   nEl.value = lbl + (old ? ' · ' + old : '');
+  window.fxRecvO = gdDestLbl(h, dest);
   const n0 = db.transactions.length;
-  await _gdDoXuat();
+  try { await _gdDoXuat(); } finally { window.fxRecvO = ''; }
   const t = db.transactions.length > n0 ? db.transactions[db.transactions.length - 1] : null;
   if (!t || t.type !== 'xuat') { nEl.value = old; return; }
+  if (!r) return;
   const hid = 'h' + t.id, date = isoDay(new Date());
   r.hist = (r.hist || []).concat([{ id:hid, q:t.qty, h, dest: h === 'kho' ? GD.kho : dest, date, txn:t.id, by:me?.name || '', recv:0 }]); r.done = r3(r.done + t.qty);
   gdCacheSave(); fxGD = null;
@@ -8932,25 +9007,35 @@ function fnModeBar(force) {
   const box = document.getElementById('fn-lmode'); if (!box) return;
   const name = document.getElementById('fn-item-txt').value.trim();
   if (!name || fnGD) { box.innerHTML = ''; box.dataset.k = ''; fnLMode = 'kho'; return; }
-  const L = fnLoansFor(name), key = normVN(name) + '|' + L.length + '|' + !!fnDev;
+  const L = fnLoansFor(name), cit = !fnDev ? db.items.find(i => normVN(i.name) === normVN(name)) : null, ve = !!(cit && ctTrack(cit));   // v5.35
+  const key = normVN(name) + '|' + L.length + '|' + !!fnDev + '|' + ve + '|' + ctSite(cit);
   if (!force && box.dataset.k === key) return;
   box.dataset.k = key;
   if (!L.length && fnLMode === 'nhan') fnLMode = 'kho';
-  const M = [['kho', fnDev ? '🏗 Máy vào' : '📥 Nhập kho'], ['di', '🤝 Đi mượn']]; if (L.length) M.push(['nhan', '↩ Nhận trả']);
-  box.innerHTML = `<div class="gz-dir ${M.length > 2 ? 'three' : 'two'}" id="fn-lm">${M.map(m => `<button type="button" data-m="${m[0]}" onclick="fnSetL('${m[0]}')">${m[1]}</button>`).join('')}</div><div id="fn-lbody"></div>`;
+  if (!ve && fnLMode === 've') fnLMode = 'kho';
+  const M = [['kho', fnDev ? '🏗 Máy vào' : ve ? '📥 Từ ngoài vào' : '📥 Nhập kho']];
+  if (ve) M.push(['ve', '↩ Công trường về kho' + (ctSite(cit) > 0 ? ' · ' + fmtNum(ctSite(cit)) : '')]);
+  M.push(['di', '🤝 Đi mượn']); if (L.length) M.push(['nhan', '↩ Nhận trả']);
+  box.innerHTML = `<div class="gz-dir ${M.length > 3 ? 'grid2' : M.length > 2 ? 'three' : 'two'}" id="fn-lm">${M.map(m => `<button type="button" data-m="${m[0]}" onclick="fnSetL('${m[0]}')">${m[1]}</button>`).join('')}</div><div id="fn-lbody"></div>`;
   fnSetL(fnLMode);
 }
 function fnSetL(m) {
   fnLMode = m;
   document.querySelectorAll('#fn-lm button').forEach(b => b.classList.toggle('on', b.dataset.m === m));
   const name = document.getElementById('fn-item-txt').value.trim(), B = document.getElementById('fn-lbody');
-  B.innerHTML = m === 'di' ? loanFieldsHtml('fn', false) : m === 'nhan' ? loanPickHtml('fn', fnLoansFor(name), 'Nhận trả từ') : '';
+  const cit = db.items.find(i => normVN(i.name) === normVN(name));
+  B.innerHTML = m === 'di' ? loanFieldsHtml('fn', false) : m === 'nhan' ? loanPickHtml('fn', fnLoansFor(name), 'Nhận trả từ')
+    : m === 've' ? `<div class="ct-mhint">Mang từ công trường về kho: Ở công trường −, Trong kho +. Tổng ghi nhận tại dự án không đổi.${cit ? ` Đang ở công trường: <b>${fmtNum(ctSite(cit))} ${escHtml(cit.unit)}</b>.` : ''}</div>`
+    : ve0(cit) ? `<div class="ct-mhint">Hàng mới vào dự án (nhà cung cấp, dự án khác, bên cho thuê…). Tổng ghi nhận tăng.</div>` : '';
+  if (m === 've' && cit) { const q = document.getElementById('fn-qty'); if (q && !q.value && ctSite(cit) > 0) q.value = ctSite(cit); }
   if (m === 'nhan') { const s = document.getElementById('fnl-loan'); if (fnLoanId && s) s.value = fnLoanId; loanPickQty('fn'); }
   const ct = document.getElementById('fn-ct-box'), dv = document.getElementById('fn-dev-box');
   if (ct) ct.classList.toggle('gz-off', m !== 'kho'); if (dv) dv.classList.toggle('gz-off', m !== 'kho');
   const ncc = document.getElementById('fn-ncc'); if (ncc) ncc.closest('.fg').classList.toggle('gz-off', m !== 'kho');
 }
+const ve0 = it => !!(it && ctTrack(it) && !fnDev);
 async function fnLoanSave() {
+  if (fnLMode === 've') return ctNhapVe();                      // v5.35
   const val = id => (document.getElementById(id)?.value || '').trim();
   const name = val('fn-item-txt'), qty = r3(+val('fn-qty'));
   if (!name) { toast('⚠️ Nhập hoặc chọn tên'); return; }
@@ -9131,6 +9216,185 @@ function ptEnsureStock(it, qty) {                               // thiết bị 
   const q = r3(qty - it.stock), t = { id:newId(), type:'nhap', itemId:it.id, itemName:it.name, qty:q, unit:it.unit, project:curProj, supplierOrReceiver:'Tồn đầu', note:'Tồn đầu (có sẵn ở công trường, ghi khi xuất)', datetime:nowStr(), createdByName:me?.name || '' };
   it.stock = r3(it.stock + q); db.transactions.push(t); push('addTransaction', t);
 }
+</script>
+<script>// ===== v5.35.0 · Ở CÔNG TRƯỜNG =====
+// Mỗi vật tư có 2 số: Trong kho (stock) + Ở công trường (site). Tổng = đang ghi nhận tại dự án.
+// Thiết bị / vật tư phụ trợ tự theo dõi; thủ kho đánh dấu thêm / bỏ từng món (theoDoi 1 / 0, trống = theo nhóm).
+// Kiểu phiếu (cột ct): xuất ra = kho → công trường · xuất ngoai / ctra = ra khỏi công trình (từ kho / từ công trường)
+//                      nhập ve = công trường → kho · điều chỉnh site = khai số ở công trường
+const CT_LBL = { ra:'Ra công trường', ngoai:'Ra khỏi công trình', ctra:'Ra khỏi công trình (từ công trường)', ve:'Từ công trường về kho', site:'Khai số ở công trường' };
+const r3c = v => Math.round(v * 1000) / 1000;
+const ctOn = () => !!(db && db.ctOn);                               // máy chủ 5.35+ (có cột "ct")
+const ctGrp = it => it && (it.cat === 'tbPhuTro' || it.cat === 'vtPhuTro');
+function ctTrack(it) {
+  if (!it || !ctOn()) return false;
+  const f = String(it.theoDoi === undefined || it.theoDoi === null ? '' : it.theoDoi);
+  return f === '1' ? true : f === '0' ? false : ctGrp(it);
+}
+const ctSite = it => it && ctOn() ? (+it.site || 0) : 0;
+const ctTot = it => r3c((+it.stock || 0) + ctSite(it));
+const ctLbl = c => CT_LBL[c] || '';
+function ctFx(t) {                                                   // → [Δ trong kho, Δ ở công trường]
+  const q = +t.qty || 0, c = String(t.ct || '');
+  if (t.type === 'xuat') return c === 'ra' ? [-q, q] : c === 'ctra' ? [0, -q] : [-q, 0];
+  if (t.type === 'nhap') return c === 've' ? [q, -q] : [q, 0];
+  if (t.type === 'dieuchinh') return c === 'site' ? [0, q] : [q, 0];
+  return [(TSIGN[t.type] || 0) * q, 0];
+}
+const siteEffect = t => ctFx(t)[1];
+function ctApply(it, t) {
+  const f = ctFx(t);
+  if (f[0]) it.stock = Math.round((+it.stock + f[0]) * 100) / 100;
+  if (f[1] || (t.type === 'dieuchinh' && t.ct === 'site')) it.site = r3c(ctSite(it) + f[1]);
+}
+function siteAdd(itemId, d) { const it = db.items.find(i => i.id === itemId); if (it && d) it.site = r3c(ctSite(it) + d); }
+// ---------- hiển thị ----------
+function ctSub(it) {                                                 // dòng phụ ở danh sách vật tư
+  if (!ctTrack(it) && !ctSite(it)) return `Tồn: ${fmtNum(it.stock)} ${escHtml(it.unit)}`;
+  return `Kho ${fmtNum(it.stock)} · 🏗 Ở CT ${fmtNum(ctSite(it))} · <b>Tổng ${fmtNum(ctTot(it))}</b> ${escHtml(it.unit)}`;
+}
+const ctOptTxt = it => ctTrack(it) || ctSite(it) ? `Kho ${fmtNum(it.stock)} · Ở CT ${fmtNum(ctSite(it))} ${escHtml(it.unit)}` : `Tồn: ${fmtNum(it.stock)} ${escHtml(it.unit)}`;
+function ctBadge(it) {                                               // null = dùng nhãn cũ (Đủ / Sắp hết / Hết hàng)
+  if (!(ctSite(it) > 0)) return null;
+  if (+it.stock <= 0) return ['badge-ct', '🏗 Ở công trường'];
+  return null;
+}
+function ctLine(it) {                                                // dòng thêm ở màn Tồn kho
+  if (!ctTrack(it) && !ctSite(it)) return '';
+  return `<div class="ct-line">🏗 Ở công trường <b>${fmtNum(ctSite(it))}</b> · Trong kho ${fmtNum(it.stock)} · <b>Tổng ghi nhận ${fmtNum(ctTot(it))} ${escHtml(it.unit)}</b></div>`;
+}
+function ctTagHtml(t) {
+  if (!t || !t.ct || t.thangCT) return '';
+  const out = t.ct === 'ngoai' || t.ct === 'ctra';
+  return `<div class="txn-sub"><span class="pyc-tag ${out ? 'warn' : 'ct'}">${t.ct === 've' ? '↩' : t.ct === 'site' ? '✍' : out ? '🚚' : '🏗'} ${escHtml(ctLbl(t.ct))}</span>${out && t.supplierOrReceiver ? `<span class="pyc-tag gray">→ ${escHtml(t.supplierOrReceiver)}</span>` : ''}</div>`;
+}
+const ctTagTxt = t => t && t.ct && !t.thangCT ? ' · ' + ctLbl(t.ct) : '';
+
+// ---------- phiếu xuất: kiểu đang chọn ----------
+let fxSrc = 'kho';
+function fxCtVal(item) {
+  if (!ctOn()) return '';
+  if (fxMode === 'ct') return 'ra';
+  if (fxMode === 'ngoai') return fxSrc === 'ct' ? 'ctra' : 'ngoai';
+  return '';
+}
+function ctQtyOk(item, qty) {
+  const ct = fxCtVal(item), fromCt = ct === 'ctra', av = fromCt ? ctSite(item) : +item.stock;
+  if (qty > av + 1e-9) { toast(`❌ ${fromCt ? 'Ở công trường' : 'Trong kho'} chỉ còn ${fmtNum(av)} ${item.unit}`); return false; }
+  return true;
+}
+// thiết bị / vật tư phụ trợ đang ở công trường nhưng app chưa ghi nhận → tự khai phần thiếu (giống tồn đầu 5.33.2)
+function ctKhai(it, d, reason) {
+  if (!d) return null;
+  const t = { id:newId(), type:'dieuchinh', ct:'site', itemId:it.id, itemName:it.name, qty:r3c(d), unit:it.unit, project:curProj, supplierOrReceiver:'', thietBi:'', note:'', reason, refId:'', datetime:nowStr(), createdByName:me?.name || '' };
+  ctApply(it, t); db.transactions.push(t); push('addTransaction', t);
+  return t;
+}
+function ctEnsureSite(it, qty, why) { if (ctTrack(it) && qty > ctSite(it) + 1e-9) ctKhai(it, qty - ctSite(it), why); }
+
+// ---------- phiếu nhập: từ công trường về kho ----------
+async function ctNhapVe() {
+  const val = id => (document.getElementById(id)?.value || '').trim();
+  const name = val('fn-item-txt'), qty = r3c(+val('fn-qty'));
+  const item = db.items.find(i => i.id === +val('fn-item')) || db.items.find(i => normVN(i.name) === normVN(name));
+  if (!item) { toast('⚠️ Chọn vật tư đã có trong kho'); return; }
+  if (!(qty > 0)) { toast('⚠️ Nhập số lượng hợp lệ'); return; }
+  if (!(await askIfDupTxn('nhap', item, qty))) return;
+  closeKeyboard();
+  ctEnsureSite(item, qty, 'Tự khai: có ở công trường, ghi khi nhập về kho');
+  const txn = { id:newId(), type:'nhap', ct:'ve', itemId:item.id, itemName:item.name, qty, unit:item.unit, project:curProj,
+    supplierOrReceiver:'Công trường', note:val('fn-note'), datetime:nowStr(), createdByName:me?.name || '' };
+  withAdminTime(txn, 'fn-time');
+  ctApply(item, txn); db.transactions.push(txn);
+  addLog('Nhập từ công trường về kho', `${qty} ${item.unit} ${item.name} — ${curProj}`);
+  updateLowBadge();
+  push('addTransaction', txn);
+  const ph = formPhotos.fn.splice(0);
+  toast(`↩ ${fmtNum(qty)} ${item.unit} ${item.name} từ công trường về kho${ph.length ? ` · ${ph.length} ảnh` : ''}`);
+  fnLMode = 'kho'; fnLoanId = 0;
+  afterSave(txn);
+  if (ph.length) queuePhotos(txn.id, ph);
+}
+
+// ---------- đề xuất số đang ở công trường từ phiếu cũ (thủ kho xác nhận) ----------
+const ctLeaving = t => t.type === 'xuat' && (t.ct === 'ngoai' || t.ct === 'ctra' || (!t.ct && /^Giải động →/.test(String(t.note || ''))));
+function ctSuggest(it) {
+  // vật tư theo dõi không bị dùng hết: tổng đã nhập vào dự án − phần đã ra khỏi công trình = đang ghi nhận; trừ trong kho + đang cho mượn + đã ghi ở CT → phần chưa ghi
+  const mine = db.transactions.filter(t => t.itemId === it.id);
+  if (mine.some(t => t.type === 'dieuchinh' && t.ct === 'site')) return 0;            // đã xác nhận / khai rồi
+  let tot = 0;
+  mine.forEach(t => {
+    if (t.type === 'nhap' && t.ct !== 've') tot += effQty(t);
+    else if (t.type === 'dieuchinh' && !t.refId && t.ct !== 'site') tot += +t.qty || 0;
+    else if (ctLeaving(t)) tot -= t.ct === 'ctra' ? (+t.qty || 0) : effQty(t);
+  });
+  const lent = (db.loans || []).filter(l => l.status === 'open' && l.kind === 'cho' && l.itemId === it.id).reduce((s, l) => s + loanRemain(l), 0);
+  return Math.max(0, r3c(tot - (+it.stock || 0) - ctSite(it) - lent));
+}
+function ctPending() { return ctOn() ? db.items.filter(i => ctTrack(i) && ctSuggest(i) > 0.0005) : []; }
+const ctCanKhai = () => can('tk');
+function ctHomeHtml() {
+  if (!ctOn() || !ctCanKhai()) return '';
+  const n = ctPending().length; if (!n) return '';
+  return `<div class="ct-home" onclick="openDpSb('dp-ct')"><div class="ct-hi">🏗</div><div style="flex:1"><b>Xác nhận số đang ở công trường · ${n} món</b><div>Tank, cont, tole… đã xuất ra công trường trước đây đang hiện "Hết hàng". App đã tính sẵn, chỉ cần xem và bấm xác nhận.</div></div><span class="chevron">›</span></div>`;
+}
+let ctEdit = {};
+function ctRender() {
+  const B = document.getElementById('dp-ct-body'); if (!B) return;
+  if (!ctOn()) { B.innerHTML = '<div class="empty-state"><p>Cần cập nhật máy chủ (Apps Script 5.35) để dùng mục này.</p></div>'; return; }
+  const P = ctPending(), L = db.items.filter(i => ctTrack(i) || ctSite(i)).sort((a, b) => ctSite(b) - ctSite(a) || a.name.localeCompare(b.name, 'vi'));
+  const pend = P.length ? `<div class="gz-h">Cần xác nhận<small>${P.length} món · tính từ phiếu cũ</small></div>
+    <div class="ct-note">Số đề xuất = đã nhập vào dự án − đã ra khỏi công trình − đang trong kho − đang cho mượn. Sửa nếu thực tế khác, rồi bấm xác nhận.</div>
+    <div class="card-list">${P.map(i => `<div class="gz-row"><div class="gz-ic">🏗</div><div style="flex:1;min-width:0"><div class="gz-n">${escHtml(i.name)}</div>
+      <div class="gz-s">Trong kho ${fmtNum(i.stock)} · đang ghi ở CT ${fmtNum(ctSite(i))} ${escHtml(i.unit)}</div></div>
+      <input class="ct-in" type="number" inputmode="decimal" id="ctq-${i.id}" value="${ctEdit[i.id] !== undefined ? ctEdit[i.id] : ctSuggest(i)}" oninput="ctEdit[${i.id}]=this.value"><span class="ct-u">${escHtml(i.unit)}</span></div>`).join('')}</div>
+    ${ctCanKhai() ? `<button class="btn-full btn-green" style="margin-top:10px" onclick="ctConfirmAll()">✅ Xác nhận ${P.length} món</button>` : ''}` : '';
+  B.innerHTML = `${pend}<div class="gz-h">Đang ghi nhận tại dự án<small>${L.length} món theo dõi</small></div>
+    <div class="card-list">${L.map(i => `<div class="gz-row"><div class="gz-ic ${ctSite(i) > 0 ? 'part' : ''}">${ctSite(i) > 0 ? '🏗' : '📦'}</div><div style="flex:1;min-width:0"><div class="gz-n">${escHtml(i.name)}</div>
+      <div class="gz-s">Kho ${fmtNum(i.stock)} · Ở công trường <b>${fmtNum(ctSite(i))}</b> · Tổng ${fmtNum(ctTot(i))} ${escHtml(i.unit)}</div></div>
+      ${ctCanKhai() ? `<button class="gz-tag" onclick="ctFix(${i.id})">Sửa số</button>` : ''}</div>`).join('') || '<div class="empty-state"><p>Chưa có thiết bị / vật tư phụ trợ</p></div>'}</div>
+    <div class="ct-note" style="margin-top:10px">Thiết bị phụ trợ + vật tư phụ trợ tự được theo dõi. Món khác (VD: ván khuôn, giàn giáo) bấm vào vật tư ở mục Vật tư → bật "Theo dõi ở công trường".</div>`;
+}
+async function ctConfirmAll() {
+  const P = ctPending(); if (!P.length) return;
+  let n = 0;
+  for (const it of P) {
+    const v = r3c(+(document.getElementById('ctq-' + it.id)?.value || 0));
+    if (!(v >= 0)) { toast('⚠️ Số không hợp lệ: ' + it.name); return; }
+    const t = { id:newId(), type:'dieuchinh', ct:'site', itemId:it.id, itemName:it.name, qty:v, unit:it.unit, project:curProj, supplierOrReceiver:'', thietBi:'', note:'',
+      reason:'Xác nhận số đang ở công trường (tính từ phiếu cũ' + (v !== ctSuggest(it) ? ', thủ kho sửa từ ' + fmtNum(ctSuggest(it)) : '') + ')', refId:'', datetime:nowStr(), createdByName:me?.name || '' };
+    ctApply(it, t); db.transactions.push(t); push('addTransaction', t); n++;
+  }
+  ctEdit = {}; addLog('Xác nhận số ở công trường', n + ' món'); toast(`✅ Đã ghi nhận ${n} món đang ở công trường`); ctRender(); updateLowBadge();
+}
+async function ctFix(id) {
+  const it = db.items.find(i => i.id === id); if (!it) return;
+  const v = prompt(`Số ${it.name} đang ở công trường (${it.unit})\nHiện ghi: ${fmtNum(ctSite(it))}`, String(ctSite(it)));
+  if (v === null) return;
+  const n = r3c(+String(v).replace(',', '.'));
+  if (!(n >= 0)) { toast('⚠️ Số không hợp lệ'); return; }
+  const why = prompt('Lý do (VD: kiểm đếm thực tế ngày …)', 'Kiểm đếm thực tế ở công trường');
+  if (!why || why.trim().length < 5) { toast('⚠️ Ghi rõ lý do (ít nhất 5 ký tự)'); return; }
+  const t = { id:newId(), type:'dieuchinh', ct:'site', itemId:it.id, itemName:it.name, qty:r3c(n - ctSite(it)), unit:it.unit, project:curProj, supplierOrReceiver:'', thietBi:'', note:'', reason:why.trim(), refId:'', datetime:nowStr(), createdByName:me?.name || '' };
+  ctApply(it, t); db.transactions.push(t); push('addTransaction', t); toast('✅ Đã sửa số ở công trường'); ctRender();
+}
+DP_RENDER['dp-ct'] = () => ctRender();
+{ const _ctHome = renderHome; renderHome = function (c) { _ctHome(c); const h = ctHomeHtml(); if (h) c.insertAdjacentHTML('afterbegin', h); }; }
+
+// ---------- sửa vật tư: bật / tắt theo dõi ở công trường ----------
+{ const _ctEdit = editVatTu; editVatTu = function (id) {
+  _ctEdit(id); const it = db.items.find(i => i.id === id); if (!it || !ctOn()) return;
+  const st = document.getElementById('ev-stock-txt'); if (st && (ctTrack(it) || ctSite(it))) st.innerHTML = `${fmtNum(it.stock)} ${escHtml(it.unit)} trong kho · 🏗 ${fmtNum(ctSite(it))} ở công trường · <b>tổng ${fmtNum(ctTot(it))}</b>`;
+  const box = document.getElementById('ev-ql'); if (!box) return;
+  document.getElementById('ev-ct')?.remove();
+  box.insertAdjacentHTML('afterend', `<label class="gz-chk" id="ev-ct"${hp('k_dm') ? '' : ' style="opacity:.6"'}><input type="checkbox" id="ev-ct-on" ${ctTrack(it) ? 'checked' : ''} ${hp('k_dm') ? '' : 'disabled'}>
+    <span><b>Theo dõi ở công trường</b><br><small>Xuất ra công trường vẫn ghi nhận tại dự án, không trừ hết. ${ctGrp(it) ? 'Nhóm phụ trợ: mặc định bật.' : 'Dùng cho ván khuôn, giàn giáo, dụng cụ dùng lại…'}</small></span></label>`);
+}; }
+{ const _ctUpd = updateVatTu; updateVatTu = function () {
+  const it = db.items.find(i => i.id === +document.getElementById('ev-id').value), cb = document.getElementById('ev-ct-on');
+  if (it && cb && !cb.disabled) { const cat = document.getElementById('ev-cat').value, def = cat === 'tbPhuTro' || cat === 'vtPhuTro'; it.theoDoi = cb.checked === def ? '' : (cb.checked ? 1 : 0); }
+  return _ctUpd();
+}; }
 </script>
 <script>// ===== Bộ biểu tượng Phosphor Duotone (MIT) thay emoji — v5.31.9 =====
 (function () {
