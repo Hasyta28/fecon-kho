@@ -462,9 +462,9 @@ button .pi,.btn .pi,a .pi,.chip .pi,.tag .pi,.badge .pi,.yn .pi,.bnav .pi,.bnav-
 <div id="app"></div>
 <script>
 // FECON South · THI CÔNG 1.4.3 — chạy cùng app Kho (đăng nhập ở index.html, dùng chung máy chủ Apps Script)
-const KHO_VERSION = '5.38.0';
+const KHO_VERSION = '5.39.0';
 // ===== FECON Thi công 1.0 — lõi: máy chủ, lưu trên máy, hàng đợi gửi, điều hướng =====
-const TC_APP_VERSION = '1.8.0';
+const TC_APP_VERSION = '1.9.0';
 const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbw6Rmi80I7RI3ij2U7RdRF5pYuQTnPrwEmGmUZS5xpxzLwwVynfoFUujZe1lm6HS1ymxw/exec';
 const LS_TOKEN = 'fecon_token_v5', LS_USER = 'fecon_user_v5';           // dùng chung phiên đăng nhập với Kho
 const LS_P = 'tc_proj', LS_BOOT = 'tc_boot2|', LS_OUT = 'tc_out_v1', LS_CA = 'tc_ca', LS_PART = 'fecon_part';
@@ -639,7 +639,7 @@ function flushOut() {
       if (r.offline) { syncErr = r.error; break; }
       outbox.shift(); saveOut();
       if (!r.success) {
-        toast('❌ ' + (r.error || 'Máy chủ từ chối') + (it.data.rec ? ' · ' + (MODS[it.data.rec.mod] || {}).t : ''), 6000);
+        toast('❌ ' + (r.error || 'Máy chủ từ chối') + (/Loại bản ghi không hợp lệ/.test(r.error || '') ? ' — cần dán thicong.gs mới' : '') + (it.data.rec ? ' · ' + (MODS[it.data.rec.mod] || {}).t : ''), 6000);
         if (it.action === 'tcSave' && REC[it.data.rec.id] && REC[it.data.rec.id]._pend && !REC[it.data.rec.id].rev) delete REC[it.data.rec.id];
         continue;
       }
@@ -842,7 +842,7 @@ function dz(c) {
 const r2 = v => Math.round(v * 100) / 100;
 function lvMap() { const o = {}; ((B && B.cfg && B.cfg.levels) || []).forEach(l => { if (/thi công/i.test(l[0])) o.gl = +l[1]; }); return o; }
 const LIM = () => Object.assign({ e:75, exy:50, nghieng:1, ngTV:0.5, kl:[1.05, 1.15], nhot:[18, 45], nhotTruoc:[18, 28], cat:[0, 5], ph:[7, 9], can:100, hMin:1.5, gianDoan:60, sut:[18, 20], qtCanh:25, qtDung:30, sauTre:90, ongDoan:3,
-  hGoiY:2, ongChinh:3.15, ongLe:[2, 1.5, 1], cachDay:[0.3, 0.5], hanChong:10, longDinh:50, duBT:1, xeM3:7 }, (B && B.cfg && B.cfg.limits) || {});   // 5.34: số mặc định chờ kỹ sư xác nhận
+  hGoiY:2, ongChinh:3.15, ongLe:[2, 1.5, 1], cachDay:[0.3, 0.5], hanChong:10, longDinh:50, duBT:1, xeM3:7, kpXY:'', kpZ:'', kpXoay:'' }, (B && B.cfg && B.cfg.limits) || {});   // 5.34: số mặc định chờ kỹ sư xác nhận
 const RES = () => Object.assign({ to:[], may:[], do:[], tram:[], capPhoi:[] }, (B && B.cfg && B.cfg.res) || {});
 // Thông tin + ngưỡng + điểm kiểm tra theo ITP đã duyệt TTHC (ITP-0001-C cọc + Kingpost, ITP-0003-A tường vây, ITP-0002-A tường dẫn)
 const ITP_TTHC = {
@@ -888,6 +888,11 @@ function ddEval(c, d) {           // → {s:'ok'|'bm'|'bad'|'', bad:[...], bm:[.
 }
 const DDB = { ok:['Đạt ITP', 'b-gr'], bm:['Chỉ đạt biểu mẫu', 'b-am'], bad:['Vượt', 'b-rd'], '':['—', 'b-gy'] };
 function itpOf(c) {
+  const l = itpBase(c);
+  if (c && c.loai !== 'tv' && c.m && c.m.kp && c.m.kp.ten && !l.some(p => p[0] === 'kp')) { const i = l.findIndex(p => p[0] === 'bt'); const o = l.slice(); o.splice(i >= 0 ? i + 1 : o.length, 0, ['kp', 'H', 'Lắp đặt kingpost', 'ITP-0001-C · KP mục II.4']); return o; }
+  return l;
+}
+function itpBase(c) {
   const it = (B && B.cfg && B.cfg.itp) || {};
   const k = c && c.loai === 'tv' ? 'tv' : 'coc';
   return it[k] || (k === 'tv'
@@ -897,6 +902,7 @@ function itpOf(c) {
 // điểm ITP của 1 cấu kiện: trạng thái từ bản ghi
 function itpState(c, mod) {
   const l = recsOf(c.code, mod);
+  if (!l.length && mod === 'kp') { const b = lastOf(c.code, 'bt'); if (b && b.d.kp && isFinite(num(b.d.kp.topTT))) return Object.assign(itpState(c, 'bt'), { t:'Theo sổ · đỉnh ' + fmtZ(num(b.d.kp.topTT)) }); }
   if (!l.length) return { s:'none', t:'Chưa có', r:null };
   const r = l[l.length - 1];
   const ok = l.some(x => x.st === 'xn' || x.st === 'duyet');
@@ -1042,12 +1048,14 @@ function tdData(c) {
   const Lk = sin - z.toe, vOk = k => xong || (isFinite(Lk) && vet[k] >= Lk - 0.05);
   const f = tv ? { dan:!!dv, c1:vOk(1), c2:vOk(2), c3:xong, sach:cans.length > 0 || !!dd, gioang:!!mn, long:ltDone, ong:!!(tr && (T.cb || isFinite(num(tr.d.lOng)))) || !!bt, bt:done, nt:ntOk }
     : { dv:!!dv, vach:!!dv && (isFinite(num(dv.d.ovL)) || kh.length > 0), khoan:xong, xong, sach:cans.length > 0 || !!dd, long:ltDone, ong:!!(tr && (T.cb || isFinite(num(tr.d.lOng)))) || !!bt, bt:done, btx:done, nt:ntOk };
-  const steps = tv ? TD_TV : TD_COC;
+  const kpR = lastOf(c.code, 'kp'), kpB = bt && bt.d.kp && isFinite(num(bt.d.kp.topTT)) ? bt.d.kp : null, hasKp = !tv && !!(c.m && c.m.kp && c.m.kp.ten);
+  f.kp = !!(kpR && (kpR.st !== 'nhap' || isFinite(num(kpR.d.topTT)))) || !!kpB;
+  const steps = tv ? TD_TV : hasKp ? TD_COC.slice(0, 8).concat([['kp', 'Hạ kingpost', 'kp']], TD_COC.slice(8)) : TD_COC;
   // bước đang làm = sau bước xong cuối cùng, hoặc bước đã bắt đầu xa nhất (đang khoan / đang hạ lồng / đang đổ)
-  const go = tv ? { c1:vet[1] > 0, c2:vet[2] > 0, c3:vet[3] > 0 || kh.length > 0, long:!!lt, bt:!!bt } : { khoan:kh.length > 0, long:!!lt, bt:!!bt };
+  const go = tv ? { c1:vet[1] > 0, c2:vet[2] > 0, c3:vet[3] > 0 || kh.length > 0, long:!!lt, bt:!!bt } : { khoan:kh.length > 0, long:!!lt, bt:!!bt, kp:!!kpR };
   let last = -1, st = -1; steps.forEach((s, i) => { if (f[s[0]]) last = i; else if (go[s[0]]) st = i; });
   const cur = Math.min(Math.max(last + 1, st), steps.length - 1);
-  return { c, z, ty, L, tv, dv, tr, lt, bt, nt, mn, dd, kh, dep, xong, sin, T, zK, zDay, cans, segs, laps, ltRows, nSeg, nHa, ltDone, N, BC, done, zCuoi, ntOk, dx, dy, vachTop, vachL, vet, Lk, f, steps, cur, all:last === steps.length - 1 };
+  return { kpR, kpB, hasKp, c, z, ty, L, tv, dv, tr, lt, bt, nt, mn, dd, kh, dep, xong, sin, T, zK, zDay, cans, segs, laps, ltRows, nSeg, nHa, ltDone, N, BC, done, zCuoi, ntOk, dx, dy, vachTop, vachL, vet, Lk, f, steps, cur, all:last === steps.length - 1 };
 }
 // chữ tóm tắt cho mỗi bước
 function tdChip(D, k) {
@@ -1065,6 +1073,7 @@ function tdChip(D, k) {
     case 'ong': return T.cb ? cbTxt(T.cb) : D.tr && isFinite(num(D.tr.d.lOng)) ? fmtN(D.tr.d.lOng, 2) + ' m' : '';
     case 'bt': return BC ? (D.done ? fmtN(BC.v, 1) + ' m³' : (isFinite(BC.h) ? 'h ' + fmtN(BC.h, 2) + ' m · ' : '') + 'còn ' + fmtN(BC.con, 1) + ' m³') : '';
     case 'btx': return D.done ? fmtN(BC.v, 1) + ' m³' + (isFinite(BC.kf) ? ' · ×' + fmtN(BC.kf, 2) : '') : '';
+    case 'kp': { const k = D.kpR ? D.kpR.d : D.kpB; if (!k) return D.c.m.kp ? D.c.m.kp.ten : ''; const t = num(k.topTT); return (k.ten || D.c.m.kp.ten || '') + (isFinite(t) ? ' · đỉnh ' + fmtZ(t) : ''); }
     case 'nt': return D.ntOk ? 'đã nghiệm thu' : '';
   }
   return '';
@@ -1540,6 +1549,28 @@ const MODS = {
         note:'📷 Chụp ảnh ngay tại từng mục — ảnh lưu kèm hồ sơ cọc.' }
     ],
     prep:(d, c) => { const n = noiCalc(c, d); if (isFinite(n.noi)) d.noi = r2(n.noi); if (isFinite(n.topTT) && !isFinite(num(d.zTreo))) d.zTreo = r2(n.topTT); } },
+  kp:{ t:'Hạ kingpost', i:'🏗️', ck:'req', qa:1, hold:1, needSv:'1.5.0',
+    steps:ctx => [['Thông tin', 'Loại, tiết diện, chiều dài, cao độ — tự điền theo shop drawing SHO-0004-A.'], ['Hạ', 'Hạ ngay sau khi đổ bê tông xong, trước khi rút casing.'], ['Đo kiểm', 'Toàn đạc 2 điểm: tim kingpost và điểm hướng (cánh b), cao độ đỉnh.'], ['Ảnh & gửi', 'Tích checklist, chụp ảnh rồi gửi QA/QC (điểm Hold ITP).']],
+    stepAt:ctx => { const d = ctx.d; return !ctx.rec || !d.tu ? 2 : !isFinite(num(d.x1)) || !isFinite(num(d.topTT)) ? 3 : 4; },
+    sec:ctx => [
+      { st:1, t:'🏗️ Kingpost thiết kế', f:[row(T('ten', 'Loại kingpost', { def:c => (c.m.kp || {}).ten || '' }), T('td', 'Tiết diện', { def:c => (c.m.kp || {}).td || '' })),
+        row(N('L', 'Chiều dài', 'm', { def:c => (c.m.kp || {}).L }), N('top', 'Cao độ đỉnh TK', 'm', { def:c => (c.m.kp || {}).top })),
+        C('mui', 'Cao độ mũi (tính)', ctx => { const v = num(ctx.d.top) - num(ctx.d.L); return isFinite(v) ? fmtZ(v) : ''; }, 'm')],
+        note:'📐 Căn cứ: shop drawing kingpost SHO-0004-A · ITP-0001-C (thi công kingpost — lắp đặt là điểm Hold).' },
+      { st:2, t:'⬇️ Hạ kingpost', f:[row(TM('tu', 'Bắt đầu', { def:() => nowHM() }), TM('den', 'Kết thúc')),
+        row(T('khung', 'Khung hạ', { def:() => 'Khung hạ Kingpost' }), S('may', 'Cẩu', ctx => resMay(ctx, /cẩu/i))),
+        C('sauBT', 'Sau khi đổ BT xong', ctx => { const b = lastOf(ctx.c.code, 'bt'), m = b && b.d.ketThuc ? minDiff(b.d.ketThuc, ctx.d.tu) : NaN; return isFinite(m) ? String(m) : ''; }, 'phút', { lim:ctx => { const b = lastOf(ctx.c.code, 'bt'); return b && b.d.ketThuc ? { c:'o', m:'đổ bê tông xong lúc ' + esc(b.d.ketThuc) } : { c:'w', m:'chưa ghi giờ kết thúc đổ bê tông' }; } })] },
+      { st:3, t:'🎯 Tim kingpost', sub:'điểm 1 · VN2000', f:[row(N('x1TK', 'X thiết kế', '', { def:c => kpPt(c).x1, ro:1 }), N('y1TK', 'Y thiết kế', '', { def:c => kpPt(c).y1, ro:1 })),
+        row(N('x1', 'X thực tế', 'm'), N('y1', 'Y thực tế', 'm')),
+        row(C('dx1', 'ΔX', ctx => dmm(ctx.d.x1, ctx.d.x1TK), 'mm', { lim:kpLim('kpXY', ctx => dmmN(ctx.d.x1, ctx.d.x1TK), 'mm') }), C('dy1', 'ΔY', ctx => dmm(ctx.d.y1, ctx.d.y1TK), 'mm', { lim:kpLim('kpXY', ctx => dmmN(ctx.d.y1, ctx.d.y1TK), 'mm') }))] },
+      { st:3, t:'🧭 Hướng cánh', sub:'điểm b', f:[row(N('x2TK', 'X thiết kế', '', { def:c => kpPt(c).x2, ro:1 }), N('y2TK', 'Y thiết kế', '', { def:c => kpPt(c).y2, ro:1 })),
+        row(N('x2', 'X thực tế', 'm'), N('y2', 'Y thực tế', 'm')),
+        C('xoay', 'Góc xoay', ctx => { const a = kpXoay(ctx.d); return isFinite(a) ? (a >= 0 ? '+' : '−') + fmtN(Math.abs(a), 2) : ''; }, '°', { lim:kpLim('kpXoay', ctx => kpXoay(ctx.d), '°') })] },
+      { st:3, t:'📏 Cao độ đỉnh', f:[row(N('topTT', 'Cao độ đỉnh thực tế', 'm'), C('dz', 'Sai số', ctx => dmm(ctx.d.topTT, ctx.d.top), 'mm', { lim:kpLim('kpZ', ctx => dmmN(ctx.d.topTT, ctx.d.top), 'mm') }))],
+        note:'Dung sai lấy ở Quản trị → Cấu hình (Kingpost). Để trống thì app chỉ ghi sai số, không kết luận.' },
+      { st:4, t:'✅ Checklist · ảnh', f:[CKL('ckl', ctx => ['Kingpost đúng loại, tiết diện, chiều dài', 'Hạ đúng tim, đúng hướng cánh', 'Cao độ đỉnh đúng thiết kế', 'Cố định kingpost, tháo khung hạ an toàn'])], note:'📷 Chụp ảnh ngay tại từng mục.' }
+    ],
+    prep:(d, c) => { const a = kpXoay(d); if (isFinite(a)) d.xoayN = r2(a); } },
   xe:{ t:'Tiếp nhận xe bê tông', i:'🚚', ck:'req', multi:1, qa:0,
     init:(d, c) => { if (!d.pb) d.pb = [{ ck:c.code, m3:'' }]; if (!d.qd) d.qd = 'nhan'; },
     steps:ctx => [['Phiếu giao', 'Chép từ phiếu giao hàng.'], ['Kiểm tra', 'Giờ trộn → giờ đến, độ sụt — app báo quá giờ, ngoài độ sụt.'], ['Nhận & phân bổ', 'Nhận / trả, chia cho cấu kiện, lấy mẫu.']],
@@ -1652,6 +1683,11 @@ const dmmN = (a, b) => (num(a) - num(b)) * 1000;
 const dmm = (a, b) => { const v = dmmN(a, b); return isFinite(v) ? (v > 0 ? '+' : '') + Math.round(v) : ''; };
 function minDiff(a, b) { if (!a || !b) return NaN; const [h1, m1] = a.split(':').map(Number), [h2, m2] = b.split(':').map(Number); let d = (h2 * 60 + m2) - (h1 * 60 + m1); if (d < 0) d += 1440; return d; }
 function ngMax(rows) { let m = NaN; (rows || []).forEach(r => { const s = num(r.sau), x = num(r.x) || 0, y = num(r.y) || 0; if (s > 0) { const v = Math.hypot(x, y) / 1000 / s * 100; m = isFinite(m) ? Math.max(m, v) : v; } }); return m; }
+// 5.39: kingpost — tọa độ thiết kế (nạp từ trang KP của sổ hồ sơ; chưa có thì lấy tim cọc), góc xoay, dung sai
+function kpPt(c) { const k = (c && c.m && c.m.kp) || {}, r3 = v => isFinite(num(v)) ? Math.round(num(v) * 1000) / 1000 : ''; const o = kpPt0(c, k); return { x1:r3(o.x1), y1:r3(o.y1), x2:r3(o.x2), y2:r3(o.y2) }; }
+function kpPt0(c, k) { return { x1:isFinite(num(k.x1TK)) ? num(k.x1TK) : c.x, y1:isFinite(num(k.y1TK)) ? num(k.y1TK) : c.y, x2:isFinite(num(k.x2TK)) ? num(k.x2TK) : '', y2:isFinite(num(k.y2TK)) ? num(k.y2TK) : '' }; }
+function kpXoay(d) { const a = Math.atan2(num(d.y2TK) - num(d.y1TK), num(d.x2TK) - num(d.x1TK)), b = Math.atan2(num(d.y2) - num(d.y1), num(d.x2) - num(d.x1)); if (!isFinite(a) || !isFinite(b)) return NaN; let x = (b - a) * 180 / Math.PI; while (x > 180) x -= 360; while (x < -180) x += 360; return x; }
+function kpLim(key, fn, u) { return ctx => { const v = fn(ctx), L = num(LIM()[key]); if (!isFinite(v)) return null; if (!isFinite(L) || L <= 0) return { c:'o', m:'chưa khai dung sai — chỉ ghi số' }; return Math.abs(v) <= L ? { c:'o', m:`✓ trong ±${fmtN(L)} ${u}` } : { c:'w', m:`⚠ vượt ±${fmtN(L)} ${u}` }; }; }
 function xePrev(ctx) { const id = F && F.id, mine = (ctx.d.pb || [])[0] && ctx.d.pb[0].ck || (ctx.c && ctx.c.code); return Object.values(REC).filter(r => r.mod === 'xe' && r.id !== id && r.st !== 'huy' && r.ngay === (F ? F.ngay : today()) && r.d.gioDen && ((r.d.pb || []).some(x => x && x.ck === mine) || r.ck === mine) && minDiff(r.d.gioDen, ctx.d.gioDen) < 720).sort((a, b) => minDiff(a.d.gioDen, ctx.d.gioDen) - minDiff(b.d.gioDen, ctx.d.gioDen))[0] || null; }
 function qtPrev(ctx) { const id = F && F.id, k = String(ctx.d.diem || '').trim().toUpperCase(); if (!k) return null; return Object.values(REC).filter(r => r.mod === 'qt' && r.id !== id && r.st !== 'huy' && String(r.d.diem || '').trim().toUpperCase() === k && (r.d.loai || 'nghieng') === (ctx.d.loai || 'nghieng') && isFinite(num(r.d.gt))).sort((a, b) => (b.ngay + (b.d.gio || '')).localeCompare(a.ngay + (a.d.gio || '')))[0] || null; }
 function khBusy(ctx) { const id = F && F.id, d = ctx.d; if (!d.may) return null; return Object.values(REC).find(r => r.mod === 'kh' && r.id !== id && r.st !== 'huy' && r.d.may === d.may && (r.ngay === d._ngay || r.d._ngay === d._ngay)) || null; }
@@ -1842,6 +1878,7 @@ function setP(o, p, v) { const ks = p.split('.'); let a = o; ks.slice(0, -1).for
 function openForm(mod, code, id, extra) {
   const M = MODS[mod];
   if (!M) return;
+  if (M.needSv && verLt(B && B.sv, M.needSv)) { toast('Phiếu ' + M.t + ' cần máy chủ Thi công ' + M.needSv + ' — nhờ Admin dán tệp thicong.gs mới trong Apps Script', 6000); return; }
   if (M.ck === 'req' && !code) { pickCk(c => openForm(mod, c, null, extra), { mod }); return; }
   if (!hp('t_ghi') && !id && !(M.perm && hp(M.perm))) { toast('Bạn chỉ có quyền xem'); return; }
   if (M.only && code && CK[code] && CK[code].loai !== M.only) { toast(M.t + ' chỉ dùng cho tường vây'); return; }
@@ -1851,6 +1888,7 @@ function openForm(mod, code, id, extra) {
   }
   go('form', { mod, code:code || '', id:id || '', ngay:extra && extra.ngay, d0:extra && extra.d0 });
 }
+function verLt(a, b) { const x = String(a || '0').split('.').map(Number), y = String(b).split('.').map(Number); for (let i = 0; i < 3; i++) { if ((x[i] || 0) !== (y[i] || 0)) return (x[i] || 0) < (y[i] || 0); } return false; }
 function formCtx() { const c = F.code ? CK[F.code] : null; return { mod:F.mod, c, d:F.d, rec:F.rec, lim:LIM(), res:RES(), z:c ? dz(c) : null }; }
 function initForm(a) {
   const M = MODS[a.mod], rec = a.id ? REC[a.id] : null;
@@ -2264,7 +2302,7 @@ function ckRow(c) {
   return `<div class="row tap" onclick="go('ck',{code:'${esc(c.code)}'})"><div class="ico ${c.step === 'hold' ? 'rd' : 'or'}">${ic}</div><div class="rmain"><div class="rname">${esc(ckName(c))} <span class="small">· ${esc(c.loai === 'tv' ? (c.m.k || c.type) : c.truc || c.type)}</span></div><div class="rsub">${esc(stepLabel(c))}${extra ? ' · ' + extra : ''}</div></div><span class="chev">›</span></div>`;
 }
 function quickPick() {
-  const extra = [['hh','📡','Hình học'],['truoc','✋','Trước đổ'],['moinoi','🔗','Mối nối'],['nt','🏁','Nghiệm thu'],['tn','🧪','Thí nghiệm'],['ht','🧱','Hiện trạng'],['hse','🦺','HSE'],['qt','📈','Quan trắc'],['dt','🚛','Đất thải']];
+  const extra = [['hh','📡','Hình học'],['truoc','✋','Trước đổ'],['moinoi','🔗','Mối nối'],['kp','🏗️','Kingpost'],['nt','🏁','Nghiệm thu'],['tn','🧪','Thí nghiệm'],['ht','🧱','Hiện trạng'],['hse','🦺','HSE'],['qt','📈','Quan trắc'],['dt','🚛','Đất thải']];
   sheet(`<div class="fsec-t" style="border:none;padding:0;margin-bottom:12px">Ghi nhật ký · chọn công việc</div><div class="qgrid">${QUICK.concat(extra).map(q => `<button class="q" onclick="closeSheet();openForm('${q[0]}')"><span>${q[1]}</span>${q[2]}</button>`).join('')}</div>`);
 }
 
@@ -3079,7 +3117,7 @@ VIEWS.qtri = {
       const info = cfg.info || {}, L = LIM(), lv = cfg.levels || [];
       inner = `${itpBox(cfg)}<div class="fsec"><div class="fsec-t">🏢 Thông tin dự án<small>in lên biên bản</small></div>${INFO_F.map(f => `<div class="fg"><label>${f[1]}</label><input id="in-${f[0]}" value="${esc(info[f[0]] || '')}"></div>`).join('')}<button class="btn sm" onclick="saveInfo()">Lưu thông tin</button></div>
         <div class="fsec"><div class="fsec-t">📏 Ngưỡng kiểm tra<small>theo BPTC / chỉ dẫn kỹ thuật</small></div>
-          <div class="fg-row">${[['e', 'Sai lệch tim tối đa (mm)'], ['exy', 'Sai lệch tim mỗi trục X/Y (mm)'], ['nghieng', 'Nghiêng cọc tối đa (%)'], ['ngTV', 'Nghiêng tường vây (%)'], ['gianDoan', 'Gián đoạn đổ BT tối đa (phút)'], ['can', 'Cặn đáy tối đa (mm)'], ['hMin', 'Độ ngập ống tremie tối thiểu (m) · báo đỏ'], ['hGoiY', 'Độ ngập giữ lại khi gợi ý tháo ống (m)'], ['ongChinh', 'Chiều dài ống tremie chính (m)'], ['sauTre', 'Thời gian sau trộn tối đa (phút)'], ['hanChong', 'Hàn chồng râu (× đường kính, VD 10)'], ['longDinh', 'Dung sai đỉnh thép chủ (± mm)'], ['duBT', 'Đổ dư trên cắt đầu cọc (m)'], ['xeM3', 'Dung tích 1 xe bê tông (m³)'], ['qtCanh', 'Quan trắc nghiêng · cảnh báo (mm)'], ['qtDung', 'Quan trắc nghiêng · dừng (mm)']].map(f => `<div class="fg"><label>${f[1]}</label><input inputmode="decimal" id="lm-${f[0]}" value="${esc(L[f[0]])}"></div>`).join('')}</div>
+          <div class="fg-row">${[['e', 'Sai lệch tim tối đa (mm)'], ['exy', 'Sai lệch tim mỗi trục X/Y (mm)'], ['nghieng', 'Nghiêng cọc tối đa (%)'], ['ngTV', 'Nghiêng tường vây (%)'], ['gianDoan', 'Gián đoạn đổ BT tối đa (phút)'], ['can', 'Cặn đáy tối đa (mm)'], ['hMin', 'Độ ngập ống tremie tối thiểu (m) · báo đỏ'], ['hGoiY', 'Độ ngập giữ lại khi gợi ý tháo ống (m)'], ['ongChinh', 'Chiều dài ống tremie chính (m)'], ['sauTre', 'Thời gian sau trộn tối đa (phút)'], ['hanChong', 'Hàn chồng râu (× đường kính, VD 10)'], ['longDinh', 'Dung sai đỉnh thép chủ (± mm)'], ['duBT', 'Đổ dư trên cắt đầu cọc (m)'], ['xeM3', 'Dung tích 1 xe bê tông (m³)'], ['qtCanh', 'Quan trắc nghiêng · cảnh báo (mm)'], ['qtDung', 'Quan trắc nghiêng · dừng (mm)'], ['kpXY', 'Kingpost · lệch tim mỗi trục (± mm) — trống: chỉ ghi số'], ['kpZ', 'Kingpost · cao độ đỉnh (± mm)'], ['kpXoay', 'Kingpost · góc xoay (± độ)']].map(f => `<div class="fg"><label>${f[1]}</label><input inputmode="decimal" id="lm-${f[0]}" value="${esc(L[f[0]])}"></div>`).join('')}</div>
           <div class="fg-row">${[['kl', 'Khối lượng riêng (g/cm³)'], ['nhot', 'Độ nhớt Marsh (s)'], ['nhotTruoc', 'Độ nhớt trước đổ (s)'], ['cat', 'Hàm lượng cát (%)'], ['ph', 'pH'], ['sut', 'Độ sụt (cm)'], ['cachDay', 'Đầu ống tremie cách đáy (m)']].map(f => `<div class="fg"><label>${f[1]} · từ – đến</label><input id="lm-${f[0]}" value="${esc((L[f[0]] || []).join(' – '))}"></div>`).join('')}
             <div class="fg"><label>Ống tremie lẻ (m) · cách nhau bằng /</label><input id="lm-ongLe" value="${esc((L.ongLe || []).join(' / '))}"></div></div>
           <div class="fg"><label>Điểm Hold trước đổ</label><div class="ynrow"><button class="yn ${!cfg.hold || cfg.hold.batBuoc !== 0 ? 'on' : ''}" onclick="cfgSave('hold',{batBuoc:1});render(false)">Bắt buộc giải phóng mới mở Đổ bê tông</button><button class="yn ${cfg.hold && cfg.hold.batBuoc === 0 ? 'on o' : ''}" onclick="cfgSave('hold',{batBuoc:0});render(false)">Chỉ nhắc</button></div></div>
@@ -3147,7 +3185,7 @@ async function applyItp() {
 function saveInfo() { const o = Object.assign({}, B.cfg.info || {}); INFO_F.forEach(([k]) => o[k] = $('#in-' + k).value.trim()); cfgSave('info', o); toast('Đã lưu'); }
 function saveLim() {
   const o = Object.assign({}, B.cfg.limits || {});
-  ['e', 'exy', 'nghieng', 'ngTV', 'gianDoan', 'can', 'hMin', 'hGoiY', 'ongChinh', 'sauTre', 'hanChong', 'longDinh', 'duBT', 'xeM3', 'qtCanh', 'qtDung'].forEach(k => { const v = num($('#lm-' + k).value); if (isFinite(v)) o[k] = v; });
+  ['e', 'exy', 'nghieng', 'ngTV', 'gianDoan', 'can', 'hMin', 'hGoiY', 'ongChinh', 'sauTre', 'hanChong', 'longDinh', 'duBT', 'xeM3', 'qtCanh', 'qtDung', 'kpXY', 'kpZ', 'kpXoay'].forEach(k => { const v = num($('#lm-' + k).value); if (isFinite(v)) o[k] = v; });
   const le = $('#lm-ongLe').value.split('/').map(num).filter(x => x > 0); if (le.length) o.ongLe = le;
   ['kl', 'nhot', 'nhotTruoc', 'cat', 'ph', 'sut', 'cachDay'].forEach(k => { const p = $('#lm-' + k).value.split(/[–\-~]/).map(num).filter(isFinite); if (p.length === 2) o[k] = p; });
   cfgSave('limits', o); toast('Đã lưu ngưỡng');
@@ -3489,6 +3527,8 @@ const PILE_DEF = { P1:{ toe:-65.5, stop:-6.25, cut:-7.25 }, P2:{ toe:-65.5, stop
 function parseCKN(R, kpRows) {
   const kpT = {}, warn = [];
   if (kpRows) kpRows.forEach(r => { if (r && xStr(r[10])) kpT[xStr(r[10])] = { td:xStr(r[11]), top:xNum(r[14]), chan:xNum(r[15]), mui:xNum(r[16]), L:xNum(r[17]) }; });
+  const kpP = {};                                                  // tọa độ kingpost: điểm 1 = tim, điểm b = hướng cánh
+  if (kpRows) kpRows.forEach(r => { if (!r) return; const n = xStr(r[1]), p = xStr(r[3]).toLowerCase(), x = xNum(r[4]), y = xNum(r[5]); if (!n || !isFinite(x) || !isFinite(y)) return; const o = kpP[n] = kpP[n] || {}; if (p === '1') { o.x1TK = x; o.y1TK = y; } else if (p === 'b') { o.x2TK = x; o.y2TK = y; } });
   const best = {}, cks = [], recs = [];
   R.forEach((r, i) => {                                             // trùng tên: giữ dòng có bê tông thực tế, đổ muộn hơn
     if (!r || i < 5) return;
@@ -3512,6 +3552,7 @@ function parseCKN(R, kpRows) {
     const kpn = xStr(r[103]) || xStr(r[22]), kpi = kpT[kpn] || {};
     const meta = { d:1, gl, matDat:isFinite(ground) ? ground : undefined, col:stop, cut, toe, v:vlt, bv:'', thepTreo:isFinite(xNum(r[11])) ? xNum(r[11]) : undefined, ongSA:isFinite(xNum(r[24])) ? xNum(r[24]) : undefined, id:xStr(r[2]) };
     if (kpn) meta.kp = { ten:kpn, td:xStr(r[104]) || kpi.td || '', L:isFinite(xNum(r[105])) ? xNum(r[105]) : kpi.L, top:isFinite(xNum(r[106])) ? xNum(r[106]) : kpi.top, topTT:isFinite(xNum(r[107])) ? xNum(r[107]) : undefined, tang:xStr(r[23]) };
+    if (meta.kp && kpP[code]) Object.assign(meta.kp, kpP[code]);
     cks.push({ code, loai:/^T\d/.test(code) ? 'tp' : 'coc', type, x:X, y:Y, kv:'', truc:'', meta });
     const add = (mod, at, d, k) => { if (!at || !at.d) return; recs.push({ id:idOf(code + '|' + mod + '|' + (k || 0)), ck:code, mod, ngay:caDay(at), at:at.d + ' ' + at.t, d }); };
     const t = k => xDT(r[k]);
@@ -3659,7 +3700,7 @@ function minSpan(a, b) { const m = minDiff(a, b); return isFinite(m) ? (m < 0 ? 
 function bbData(c) {
   const z = dz(c), L = LIM(), I = bbInfo(), tv = c.loai === 'tv', m = c.m || {};
   const one = mod => lastOf(c.code, mod), all = mod => recsOf(c.code, mod);
-  const dv = one('dv'), kh = one('khoan'), hh = one('hh'), tr = one('truoc'), lt = one('lt'), bt = one('bt'), kl = one('kl'), mn = one('moinoi');
+  const dv = one('dv'), kh = one('khoan'), hh = one('hh'), tr = one('truoc'), lt = one('lt'), bt = one('bt'), kl = one('kl'), mn = one('moinoi'), kpr = one('kp');
   const dd = all('dd'), xe = all('xe').filter(r => r.d.qd !== 'tra'), tn = all('tn');
   const D = x => x ? x.d : {};
   const gl = isFinite(nv(D(dv).ovZ)) ? nv(D(dv).ovZ) : tv ? (isFinite(nv(D(dv).zDinh)) ? nv(D(dv).zDinh) : z.gl) : z.gl;
@@ -3669,7 +3710,7 @@ function bbData(c) {
   const vlt = isFinite(nv(D(bt).vlt)) ? nv(D(bt).vlt) : z.vlt;
   const pick3 = dd.length <= 3 ? dd : [dd[0], dd[1], dd[dd.length - 1]];
   const no = (String(m.id || '').match(/(\d+)\s*$/) || [])[1] || c.code;
-  return { c, z, L, I, tv, m, dv, kh, hh, tr, lt, bt, kl, mn, dd, dd3:pick3, xe, tn, D, gl, dep, vtt, vlt, kRows, no,
+  return { kpr, c, z, L, I, tv, m, dv, kh, hh, tr, lt, bt, kl, mn, dd, dd3:pick3, xe, tn, D, gl, dep, vtt, vlt, kRows, no,
     mac:tv ? (I.macTv || 'B35') : (I.macCoc || 'B30'), bv:tv ? (I.bvTv || z.bv || '') : (I.bvCoc || z.bv || ''), tc:tv ? (I.tcTv || 'TCVN 14213-2:2024; TCVN 9395-2012') : (I.tcCoc || 'TCVN 9395-2012: Cọc khoan nhồi - Thi công và nghiệm thu'),
     hm:tv ? 'THI CÔNG CỌC KHOAN NHỒI ĐẠI TRÀ VÀ TƯỜNG VÂY - HẦM ĐẬU XE CÔNG VIÊN' : 'THI CÔNG CỌC KHOAN NHỒI ĐẠI TRÀ' };
 }
@@ -3686,7 +3727,7 @@ const ckL = (ok, has) => has ? BOX(ok) + ' Đạt' : '☐ Đạt';
 
 // ---------- 13 biểu cọc ----------
 function bbCoc(X) {
-  const { c, z, L, D, dv, kh, hh, tr, lt, bt, xe, gl, dep } = X, d = D(dv), b = D(bt), t = D(tr), l = D(lt), kp = Object.assign({}, X.m.kp || {}, b.kp || {});
+  const { c, z, L, D, dv, kh, hh, tr, lt, bt, xe, gl, dep } = X, d = D(dv), b = D(bt), t = D(tr), l = D(lt), kp = Object.assign({}, X.m.kp || {}, b.kp || {}, X.kpr ? X.kpr.d : {});
   const dX = isFinite(nv(d.xTt)) ? nv(d.xTt) - nv(d.xTk || c.x) : NaN, dY = isFinite(nv(d.yTt)) ? nv(d.yTt) - nv(d.yTk || c.y) : NaN, lim = (L.exy || 50) / 1000;
   const zDay = isFinite(dep) ? gl - dep : NaN, matDat = isFinite(nv(d.matDat)) ? nv(d.matDat) : X.m.matDat;
   const ddRow = r => r ? [r, ...['kl', 'nhot', 'ph', 'cat'].map(k => f2(r.d[k], k === 'kl' ? 3 : k === 'ph' ? 1 : 0))] : null;
@@ -3746,8 +3787,8 @@ function bbCoc(X) {
   docs.push(bbChart(X, 10));
   // 011 Kingpost
   docs.push({ n:11, ngay:rDay(bt), extraHead:[{ q:[['Loại Kingpost', kp.ten || ''], ['Tiết diện', kp.td || ''], ['Chiều dài', isFinite(nv(kp.L)) ? f2(kp.L) + ' m' : '']] }], bv2:X.I.bvKp,
-    blocks:[TB(['Tọa độ', 'Thiết kế (m)', 'Thực tế (m)', 'Sai số (m)', 'Dung sai (m)', 'Kết luận', 'Ghi nhận'], ['X1', 'Y1', 'X2', 'Y2'].map(k => [k, '', '', '', '', '', '']), [2, 2, 2, 2, 1, 1, 2]),
-      TB(['', 'Thiết kế (m)', 'Thực tế (m)', 'Sai số (m)', 'Dung sai', 'Kết luận', 'Ghi nhận'], [['Cao độ đỉnh Kingpost', fz(kp.top), fz(kp.topTT), isFinite(nv(kp.topTT)) && isFinite(nv(kp.top)) ? f3(nv(kp.topTT) - nv(kp.top)) : '', '', '', kp.ten ? '' : 'Cọc không có kingpost']], [2, 2, 2, 2, 1, 1, 2])], ket:'Đồng ý nghiệm thu' });
+    blocks:[TB(['Tọa độ', 'Thiết kế (m)', 'Thực tế (m)', 'Sai số (m)', 'Dung sai (m)', 'Kết luận', 'Ghi nhận'], [['X1', 'x1TK', 'x1', 'kpXY'], ['Y1', 'y1TK', 'y1', 'kpXY'], ['X2', 'x2TK', 'x2', ''], ['Y2', 'y2TK', 'y2', '']].map(q => { const a = nv(kp[q[1]]), b2 = nv(kp[q[2]]), tol = nv(L[q[3]]); return [q[0], isFinite(a) ? a.toFixed(3) : '', isFinite(b2) ? b2.toFixed(3) : '', isFinite(a) && isFinite(b2) ? f3(b2 - a) : '', isFinite(tol) && tol > 0 ? '±' + f3(tol / 1000) : '', isFinite(a) && isFinite(b2) && isFinite(tol) && tol > 0 ? (Math.abs(b2 - a) * 1000 <= tol ? 'Đạt' : 'Không đạt') : '', q[0][1] === '1' ? 'Điểm tim KP' : 'Điểm hướng KP']; }), [2, 2, 2, 2, 1, 1, 2]),
+      TB(['', 'Thiết kế (m)', 'Thực tế (m)', 'Sai số (m)', 'Dung sai', 'Kết luận', 'Ghi nhận'], [['Cao độ đỉnh Kingpost', fz(kp.top), fz(kp.topTT), isFinite(nv(kp.topTT)) && isFinite(nv(kp.top)) ? f3(nv(kp.topTT) - nv(kp.top)) : '', nv(L.kpZ) > 0 ? '±' + f3(nv(L.kpZ) / 1000) : '', nv(L.kpZ) > 0 && isFinite(nv(kp.topTT)) && isFinite(nv(kp.top)) ? (Math.abs(nv(kp.topTT) - nv(kp.top)) * 1000 <= nv(L.kpZ) ? 'Đạt' : 'Không đạt') : '', kp.ten ? (isFinite(nv(kp.xoayN)) ? 'xoay ' + f2(nv(kp.xoayN)) + '°' : '') : 'Cọc không có kingpost']], [2, 2, 2, 2, 1, 1, 2])], ket:'Đồng ý nghiệm thu' });
   // 012 Lấp đầu cọc
   docs.push({ n:12, ngay:rDay(bt), blocks:[TB(['Biện pháp lấp đầu cọc', 'Thời gian, ghi chú', 'Đạt', 'Không đạt', 'Nhà thầu phụ', 'Nhà thầu chính', 'TVGS'],
     [['Rút ống casing', b.rutCasing ? at2(bt, b.rutCasing) : 'Ngày', '☐', '☐', '', '', ''], ['Lấp đầu cọc bằng vật liệu: ……………', b.lapDau ? at2(bt, b.lapDau) : 'Ngày', '☐', '☐', '', '', ''], ['', 'Từ mặt bê tông tới mặt đất tự nhiên: ' + (isFinite(nv(b.zCuoi)) && isFinite(nv(matDat)) ? f2(nv(matDat) - nv(b.zCuoi)) + ' m' : '……'), '', '', '', '', '']], [3, 4, 1, 1, 1, 1, 1]),
@@ -4053,6 +4094,11 @@ const TC_GUIDES = [
     'Kiểm tra trước đổ: nhập ① chiều sâu đáy sau làm sạch và ② phần ống + phễu nhô trên sin → app chọn tổ hợp ống (ống 3,15 m + ống lẻ) sao cho đầu ống cách đáy 0,30–0,50 m.',
     'Đổ bê tông: mỗi lần đo chỉ nhập thước dây (từ sin) và số ống 3,15 m còn lắp; lũy kế m³ lấy từ phiếu xe. App ra độ ngập h, số ống tháo được (giữ ngập ≥ 2,0 m, báo đỏ dưới 1,5 m), m³ còn cần và số xe gọi thêm.',
     'Số mặc định (hàn chồng 10d, dung sai ±50 mm, đổ dư 1,0 m, xe 7 m³, bộ ống) sửa ở Quản trị Thi công → Cấu hình. Thông số lồng / râu / lớp đất theo loại cọc ở Quản trị → Loại TK.'] },
+  { id:'tc_kp', g:'Ghi nhật ký', t:'Hạ kingpost', p:'t_ghi', s:[
+    'Cọc có kingpost: hình tiến độ có thêm bước "Hạ kingpost" ngay sau Đổ bê tông. Ghi nhật ký → "Kingpost" hoặc bấm "▶ Tiếp tục" ở Hồ sơ cọc.',
+    'Bước 1 tự điền loại, tiết diện, chiều dài, cao độ đỉnh theo shop drawing SHO-0004-A (nạp từ trang KP của sổ hồ sơ). Bước 2 ghi giờ hạ, khung hạ, cẩu.',
+    'Bước 3 "Đo kiểm": nhập tọa độ toàn đạc điểm tim (điểm 1) và điểm hướng cánh (điểm b), cao độ đỉnh → app ra ΔX, ΔY, góc xoay, sai số cao độ. Dung sai khai ở Quản trị → Cấu hình; để trống thì chỉ ghi số.',
+    'Bước 4: checklist + ảnh → "Gửi kiểm tra Hold". Biên bản 011 tự lấy số từ phiếu.'] },
   { id:'tc_qa', g:'Kiểm tra & nghiệm thu', t:'Xác nhận / trả về (QA/QC)', p:'t_qa', s:[
     'Thanh dưới → "Việc": các bản ghi "Chờ kiểm tra" đang chờ bạn.',
     'Mở bản ghi → "✓ Xác nhận" hoặc "↩ Trả về" (ghi lý do). Người gửi không tự xác nhận bản của mình.',
@@ -4114,7 +4160,7 @@ VIEWS.hdx = {
 // nút "?" → bài hướng dẫn của màn đang xem
 function tcHelpId() {
   const v = cur.v, a = cur.a || {};
-  if (v === 'form' && F) return ({ khoan:'tc_khoan', dd:'tc_dd', truoc:'tc_hold', xe:'tc_bt', bt:'tc_bt', nt:'tc_nt', sk:'tc_ncr', kh:'tc_kh', khbt:'tc_kh', bg:'tc_bc' })[F.mod] || 'tc_ghi';
+  if (v === 'form' && F) return ({ khoan:'tc_khoan', dd:'tc_dd', truoc:'tc_hold', kp:'tc_kp', xe:'tc_bt', bt:'tc_bt', nt:'tc_nt', sk:'tc_ncr', kh:'tc_kh', khbt:'tc_kh', bg:'tc_bc' })[F.mod] || 'tc_ghi';
   if (v === 'qtri') return a.tab === 'q' ? 'tc_quyen' : 'tc_cauhinh';
   if (v === 'viec') return hp('t_qa') ? 'tc_qa' : 'tc_ghi';
   return ({ home:'tc_vao', plan:'tc_matbang', ck:'tc_hoso', vt:'tc_kho', bc:'tc_bc', bb:'tc_bb', kh:'tc_kh', khbt:'tc_kh', upd:'tc_capnhat', proj:'tc_vao', sk:'tc_ncr' })[v] || '';
