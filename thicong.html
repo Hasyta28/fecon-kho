@@ -463,9 +463,9 @@ button .pi,.btn .pi,a .pi,.chip .pi,.tag .pi,.badge .pi,.yn .pi,.bnav .pi,.bnav-
 <div id="app"></div>
 <script>
 // FECON South · THI CÔNG 1.4.3 — chạy cùng app Kho (đăng nhập ở index.html, dùng chung máy chủ Apps Script)
-const KHO_VERSION = '5.41.0';
+const KHO_VERSION = '5.42.0';
 // ===== FECON Thi công 1.0 — lõi: máy chủ, lưu trên máy, hàng đợi gửi, điều hướng =====
-const TC_APP_VERSION = '1.10.0';
+const TC_APP_VERSION = '1.11.0';
 const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbw6Rmi80I7RI3ij2U7RdRF5pYuQTnPrwEmGmUZS5xpxzLwwVynfoFUujZe1lm6HS1ymxw/exec';
 const LS_TOKEN = 'fecon_token_v5', LS_USER = 'fecon_user_v5';           // dùng chung phiên đăng nhập với Kho
 const LS_P = 'tc_proj', LS_BOOT = 'tc_boot2|', LS_OUT = 'tc_out_v1', LS_CA = 'tc_ca', LS_PART = 'fecon_part';
@@ -2346,7 +2346,7 @@ async function setProj(p) {
 }
 
 // ---------- M03 Mặt bằng ----------
-const PV = { z:1, cx:null, cy:null, f:'all', st:'', sel:'', mode:'map', q:'' };
+const PV = { z:1, cx:null, cy:null, f:'all', st:'', sel:'', mode:'map', q:'', kp:false };
 let GEO = null;
 function geo() {
   if (GEO && GEO.P === P && GEO.n === Object.keys(CK).length && GEO.rot === B.cfg.rot) return GEO;
@@ -2378,9 +2378,10 @@ VIEWS.plan = {
     all.forEach(c => { cnt[c.st]++; if (c.flag === 'tt') cnt.tt++; });
     const kvs = Array.from(new Set(all.map(c => c.kv).filter(k => k && k !== 'TV'))).sort((a, b) => a.localeCompare(b, 'vi', { numeric:true }));
     const nCoc = all.filter(c => c.loai !== 'tv').length, nTv = all.filter(c => c.loai === 'tv').length;
+    const kps = all.filter(hasKp), nKp = kps.length, nKpD = kps.filter(kpDone).length;
     const chips = [['all', 'Tất cả'], ['coc', 'Cọc ' + nCoc], ['tv', 'Tường vây ' + nTv]].concat(kvs.map(k => [k, k]));
     const body = `<div class="ptitle" style="padding-bottom:8px"><b>Mặt bằng</b><span>${esc(projName())}</span></div>
-      <div class="chip-row"><span class="chip navy ${PV.mode === 'map' ? 'on' : ''}" onclick="PV.mode='map';render(false)">🗺️ Bản vẽ</span><span class="chip navy ${PV.mode === 'list' ? 'on' : ''}" onclick="PV.mode='list';render(false)">☰ Danh sách</span>${chips.map(x => `<span class="chip ${PV.f === x[0] ? 'on' : ''}" onclick="PV.f='${esc(x[0])}';render(false)">${esc(x[1])}</span>`).join('')}</div>
+      <div class="chip-row"><span class="chip navy ${PV.mode === 'map' ? 'on' : ''}" onclick="PV.mode='map';render(false)">🗺️ Bản vẽ</span><span class="chip navy ${PV.mode === 'list' ? 'on' : ''}" onclick="PV.mode='list';render(false)">☰ Danh sách</span>${nKp ? `<span class="chip ${PV.kp ? 'on' : ''}" onclick="PV.kp=!PV.kp;render(false)">⌶ Kingpost ${nKpD}/${nKp}</span>` : ''}${chips.map(x => `<span class="chip ${PV.f === x[0] ? 'on' : ''}" onclick="PV.f='${esc(x[0])}';render(false)">${esc(x[1])}</span>`).join('')}</div>
       <div class="section"><div class="cnt">${['nt', 'dd', 'dl', 'sl', 'cl', 'tt'].map(s => `<button class="${PV.st === s ? 'on' : ''}" onclick="PV.st=PV.st==='${s}'?'':'${s}';render(false)"><i style="background:${s === 'tt' ? '#E74C3C' : ST[s].c}"></i>${s === 'tt' ? 'Có tồn tại' : ST[s].t}<b>${cnt[s]}</b></button>`).join('')}</div></div>
       ${PV.mode === 'map' ? `<div class="section"><div class="planbox" id="pbox"><svg id="psvg"></svg><div class="zbtns"><button onclick="pz(1.6)">＋</button><button onclick="pz(1/1.6)">－</button><button onclick="PV.z=1;PV.cx=null;drawPlan()" title="Toàn bộ">⌖</button></div><div class="zlab" id="zlab"></div></div></div>
         <div class="section ${CK[PV.sel] ? 'pkf' : ''}" id="peek">${peekHtml()}</div>` : planList()}`;
@@ -2390,12 +2391,28 @@ VIEWS.plan = {
 };
 function planMatch(c) {
   if (cur.v === 'home') return true;
+  if (PV.kp && !hasKp(c)) return false;
   if (PV.f === 'coc' && c.loai === 'tv') return false;
   if (PV.f === 'tv' && c.loai !== 'tv') return false;
   if (PV.f !== 'all' && PV.f !== 'coc' && PV.f !== 'tv' && c.kv !== PV.f) return false;
   if (PV.st === 'tt') return c.flag === 'tt';
   if (PV.st && c.st !== PV.st) return false;
   return true;
+}
+// 5.42: kingpost trên mặt bằng — chữ H xoay theo hướng cánh thiết kế (điểm tim 1 → điểm hướng b); đặc = đã hạ, rỗng = chưa hạ
+function hasKp(c) { return c.loai !== 'tv' && !!(c.m && c.m.kp && c.m.kp.ten); }
+function kpDone(c) {
+  const r = lastOf(c.code, 'kp'), b = lastOf(c.code, 'bt');
+  return !!(r && (r.st !== 'nhap' || isFinite(num(r.d.topTT)))) || !!(b && b.d.kp && isFinite(num(b.d.kp.topTT))) || isFinite(num(c.m.kp.topTT));
+}
+function kpAng(c, g) {
+  const k = c.m.kp; if (!isFinite(+k.x1TK) || !isFinite(+k.y1TK) || !isFinite(+k.x2TK) || !isFinite(+k.y2TK) || (+k.x1TK === +k.x2TK && +k.y1TK === +k.y2TK)) return 0;
+  const a = g.tf(+k.x1TK, +k.y1TK), b = g.tf(+k.x2TK, +k.y2TK);
+  return Math.atan2(-(b[1] - a[1]), b[0] - a[0]) * 180 / Math.PI;
+}
+function kpMark(c, g, p, r, op) {
+  const s = r * 0.72, d = kpDone(c);
+  return `<g transform="translate(${p[0].toFixed(2)},${(-p[1]).toFixed(2)}) rotate(${kpAng(c, g).toFixed(1)}) scale(${(s / 5).toFixed(4)})" opacity="${op}" pointer-events="none"><path d="M-5,-5H5V-3H1V3H5V5H-5V3H-1V-3H-5Z" fill="${d ? '#1A2332' : '#fff'}" stroke="#1A2332" stroke-width="1" vector-effect="non-scaling-stroke" stroke-linejoin="miter"/></g>`;
 }
 function drawPlan() {
   const g = geo(), svg = $('#psvg'), box = $('#pbox'); if (!svg || !box) return;
@@ -2409,7 +2426,7 @@ function drawPlan() {
   const r0 = 2.6 / ppm, sw = 1 / ppm, showLab = ppm * 8 > 34;
   let s = '';
   if (g.poly.length) s += `<polygon points="${g.poly.map(p => p[0].toFixed(2) + ',' + (-p[1]).toFixed(2)).join(' ')}" fill="#FFF8EF" stroke="#E2C9A6" stroke-width="${(1.2 * sw).toFixed(3)}"/>`;
-  const sel = PV.sel, any = PV.st || PV.f !== 'all';
+  const sel = PV.sel, any = PV.st || PV.f !== 'all' || PV.kp;
   Object.values(CK).forEach(c => {
     const q = g.pts[c.code]; if (!q) return;
     const on = planMatch(c), op = any && !on ? 0.18 : 1, col = ST[c.st].c;
@@ -2424,6 +2441,7 @@ function drawPlan() {
       const r = Math.max((c.m.d || 1) / 2, r0) * (c.loai === 'tp' ? 1.35 : 1);
       s += `<circle data-c="${esc(c.code)}"${bl} cx="${q.p[0].toFixed(2)}" cy="${(-q.p[1]).toFixed(2)}" r="${r.toFixed(2)}" fill="${c.st === 'cl' ? '#fff' : col}" stroke="${c.flag === 'tt' ? '#E74C3C' : c.st === 'cl' ? '#9AA8BA' : col}" stroke-width="${(c.flag === 'tt' ? 2.2 : 1) * sw}" opacity="${op}"/>`;
       if (c.loai === 'tp') s += `<circle cx="${q.p[0].toFixed(2)}" cy="${(-q.p[1]).toFixed(2)}" r="${(r * 1.5).toFixed(2)}" fill="none" stroke="#0B2545" stroke-width="${sw}" stroke-dasharray="${2 * sw} ${2 * sw}" opacity="${op}"/>`;
+      if (hasKp(c)) s += kpMark(c, g, q.p, r, op);
     }
     if (showLab && on) s += `<text x="${(q.p[0] + (q.a ? 0 : r0 * 1.6)).toFixed(2)}" y="${(-q.p[1] + 3 / ppm).toFixed(2)}" font-size="${(9 / ppm).toFixed(2)}" font-weight="700" fill="#1A2332" ${q.a ? 'text-anchor="middle"' : ''} stroke="#fff" stroke-width="${(2.5 / ppm).toFixed(2)}" paint-order="stroke">${esc(c.code)}</text>`;
   });
@@ -2515,15 +2533,21 @@ function peekKeepVisible() {
   const r = t.getBoundingClientRect(), top = el.getBoundingClientRect().top, hd = m.getBoundingClientRect().top;
   if (r.bottom + 16 > top) m.scrollTop += r.bottom + 16 - top; else if (r.top < hd + 8) m.scrollTop += r.top - hd - 8;
 }
+function kpLine(c) {
+  const k = c.m.kp, r = lastOf(c.code, 'kp'), b = lastOf(c.code, 'bt');
+  const tt = r && isFinite(num(r.d.topTT)) ? num(r.d.topTT) : b && b.d.kp && isFinite(num(b.d.kp.topTT)) ? num(b.d.kp.topTT) : num(k.topTT);
+  return [k.ten, k.td, isFinite(+k.L) && k.L !== '' ? 'L ' + fmtN(+k.L, 2) + ' m' : '', isFinite(+k.top) && k.top !== '' ? 'đỉnh TK ' + fmtZ(+k.top) : '', kpDone(c) ? 'đã hạ' + (isFinite(tt) ? ' · đỉnh TT ' + fmtZ(tt) : '') : 'chưa hạ'].filter(Boolean).join(' · ');
+}
 function peekBig() { const el = $('#peek'); if (el) el.classList.toggle('big'); }
 function peekHtml() {
   const c = CK[PV.sel];
   if (c) setTimeout(() => peekLoad(c.code), 0);
-  if (!c) return `<div class="legend"><span><i style="background:#27AE60"></i>Nghiệm thu</span><span><i style="background:#0056A4"></i>Đã đổ</span><span><i style="background:#F26522"></i>Đang làm</span><span><i style="background:#F2C230"></i>Sắp làm</span><span><i style="background:#fff;box-shadow:inset 0 0 0 1.5px #9AA8BA"></i>Chưa làm</span><span><i style="background:#fff;box-shadow:inset 0 0 0 2px #E74C3C"></i>Có tồn tại</span></div>`;
+  if (!c) return `<div class="legend"><span><i style="background:#27AE60"></i>Nghiệm thu</span><span><i style="background:#0056A4"></i>Đã đổ</span><span><i style="background:#F26522"></i>Đang làm</span><span><i style="background:#F2C230"></i>Sắp làm</span><span><i style="background:#fff;box-shadow:inset 0 0 0 1.5px #9AA8BA"></i>Chưa làm</span><span><i style="background:#fff;box-shadow:inset 0 0 0 2px #E74C3C"></i>Có tồn tại</span>${Object.values(CK).some(hasKp) ? `<span><svg width="12" height="12" viewBox="-6 -6 12 12" style="vertical-align:-1px"><path d="M-5,-5H5V-3H1V3H5V5H-5V3H-1V-3H-5Z" fill="#1A2332" stroke="#1A2332" stroke-width="1"/></svg>KP đã hạ</span><span><svg width="12" height="12" viewBox="-6 -6 12 12" style="vertical-align:-1px"><path d="M-5,-5H5V-3H1V3H5V5H-5V3H-1V-3H-5Z" fill="#fff" stroke="#1A2332" stroke-width="1"/></svg>KP chưa hạ</span>` : ''}</div>`;
   const z = dz(c);
   const k3 = c.loai === 'tv' ? [['Dài', fmtN(z.L, 2) + ' m'], ['Đáy', fmtZ(z.toe)], ['V LT', fmtN(z.vlt, 1) + ' m³']] : [['Z mũi', fmtZ(z.toe)], ['L khoan', fmtN(z.Lk, 1) + ' m'], ['V LT', fmtN(z.vlt, 2) + ' m³']];
   return `<div class="card pad"><div class="pk-grab" onclick="peekBig()"><i></i></div><div class="split"><div><b style="font-size:20px;color:var(--navy)">${esc(c.code)}</b><div class="small">${esc(ckDesc(c))}${c.kv && c.kv !== 'TV' ? ' · ' + esc(c.kv) : ''}</div></div><span class="badge ${ST[c.st].b}">${ST[c.st].t}</span></div>
     <div class="small mt8" style="color:var(--text2)">${esc(stepLabel(c))}${c.flag === 'tt' ? ' · <b class="c-rd">có NCR đang mở</b>' : ''}</div>
+    ${hasKp(c) ? `<div class="small mt8" style="color:var(--text);font-weight:600">⌶ ${esc(kpLine(c))}</div>` : ''}
     ${hasRecs(c.code) && c.st !== 'cl' ? `<div class="pk-next">${ckNextBtn(c, 'btn sm')}</div>` : ''}
     <div id="pk-ht" class="mt8">${hasRecs(c.code) ? htHtml(c) : `<div class="mini3">${k3.map(x => `<div>${x[0]}<b>${x[1]}</b></div>`).join('')}</div><div class="small mt8"><span class="spin" style="display:inline-block;width:12px;height:12px;vertical-align:-2px"></span> Đang tải mặt cắt & hiện trạng…</div>`}</div>
     <div style="display:flex;gap:8px;margin-top:12px;position:sticky;bottom:0;background:#fff;padding:8px 0 2px"><button class="btn ghost sm" onclick="PV.sel='';setPeek();drawPlan()">✕ Đóng</button>${c.loai !== 'tv' && c.truc ? `<button class="btn ghost sm" onclick="go('sec',{code:'${esc(c.code)}'})">📐 Mặt cắt</button>` : ''}<button class="btn ghost sm" onclick="go('ck',{code:'${esc(c.code)}'})">Hồ sơ ›</button></div></div>`;
