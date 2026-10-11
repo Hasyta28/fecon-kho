@@ -1,4 +1,8 @@
-// FECON Kho + Thi công - Service Worker v5.35.0
+// FECON Kho + Thi công - Service Worker v5.38.0
+// 5.38.0: Thi công — QA/QC duyệt ngay trên thẻ Việc; Xe BT 3 bước + cách xe trước; Đăng ký BT giờ xe cuối; Quan trắc so lần trước; Kế hoạch báo máy trùng
+// 5.37.0: Thi công — Định vị, Khoan, Trước đổ, Đổ BT từng bước; nút Tiếp tục đúng bước (Hồ sơ, Mặt bằng); Đã tháo n ống; cảnh báo số đo khoan
+// 5.36.0: Thi công — phiếu Lồng thép 4 bước (chỉ nhập số đo), Công cụ tính đoạn nối riêng, Tổng quan thẻ Làm tiếp
+// 5.35.1: Thiết bị / vật tư phụ trợ tổng 0 → ghi rõ Đã ra khỏi CT / Chờ xác nhận / Chưa có phiếu thay cho Hết hàng
 // 5.35.0: Kho — Ở công trường (trong kho + ở công trường), nhập từ công trường về, xuất ra khỏi công trình
 // 5.34.0: Thi công — hình cọc/panel tự vẽ theo tiến độ, tính đoạn nối râu, tổ hợp ống đổ, đổ bê tông
 // 5.33.2: Danh mục chung thiết bị & vật tư phụ trợ trong gợi ý Nhập/Xuất
@@ -21,7 +25,7 @@
 //  - Mở app: lấy file từ bộ nhớ của bản đang dùng; thiếu file nào mới lấy từ mạng.
 //  - Có sw.js mới trên GitHub: tải sẵn bản mới vào bộ nhớ riêng nhưng KHÔNG đổi bản đang dùng.
 //  - Địa chỉ có ?fresh=... luôn lấy thẳng từ mạng (app dùng để kiểm tra / tải bản mới).
-const VERSION = '5.35.0';
+const VERSION = '5.38.0';
 const APP = 'fecon-app-', META = 'fecon-meta';
 const CORE = ['./', './index.html', './thicong.html', './manifest.json', './icon-192.png', './icon-512.png', './icon-maskable-192.png', './icon-maskable-512.png', './bg-login.jpg'];
 

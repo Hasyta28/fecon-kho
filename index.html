@@ -906,7 +906,7 @@ body:not(.can-cost) .need-cost{display:none!important}
 .gz-chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}.gz-chips button{border:1.5px solid #8CC79A;background:#fff;border-radius:10px;padding:6px 10px;font-size:13px;font-weight:700;text-align:left;cursor:pointer}.gz-chips small{display:block;font-weight:500;color:var(--text2);font-size:12px}
 .combo-grp{padding:6px 12px;font-size:12px;font-weight:800;color:var(--orange);background:#FFF8F2;text-transform:uppercase;letter-spacing:.3px}.gz-dir.three{grid-template-columns:1fr 1fr 1fr}.gz-dir.grid2{grid-template-columns:1fr 1fr}.gz-dir.three button,.gz-dir.grid2 button{text-align:center;padding:10px 6px;font-size:13.5px}.gz-off{display:none!important}#dp-loans .detail-header .need-tk{display:none!important}
 .gz-nb{background:var(--red);color:#fff;border-radius:10px;font-size:12px;font-weight:800;padding:1px 7px}</style>
-<style>.badge-ct{background:#FFF2EA;color:#C2410C}
+<style>.badge-ct{background:#FFF2EA;color:#C2410C}.badge-gone{background:#EEF0F3;color:var(--text2)}
 .ct-line{font-size:12.5px;color:#9A3412;background:#FFF7F0;border-radius:8px;padding:5px 9px;margin-top:6px;line-height:1.45}
 .ct-mhint{font-size:12.5px;color:var(--text2);line-height:1.45;margin:2px 2px 6px}.ct-mhint:empty{display:none}
 .ct-home{display:flex;gap:12px;align-items:center;background:#FFF7F0;border:1.5px solid #F5B58A;border-radius:14px;padding:12px 14px;margin:0 0 12px;cursor:pointer}
@@ -1776,7 +1776,7 @@ button .pi,.btn .pi,a .pi,.chip .pi,.tag .pi,.badge .pi,.yn .pi,.bnav .pi,.bnav-
 // ============================================================
 // CONFIG
 // ============================================================
-const APP_VERSION = '5.35.0';
+const APP_VERSION = '5.38.0';
 const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbw6Rmi80I7RI3ij2U7RdRF5pYuQTnPrwEmGmUZS5xpxzLwwVynfoFUujZe1lm6HS1ymxw/exec';
 // ============================================================
 
@@ -9251,13 +9251,27 @@ function siteAdd(itemId, d) { const it = db.items.find(i => i.id === itemId); if
 // ---------- hiển thị ----------
 function ctSub(it) {                                                 // dòng phụ ở danh sách vật tư
   if (!ctTrack(it) && !ctSite(it)) return `Tồn: ${fmtNum(it.stock)} ${escHtml(it.unit)}`;
+  if (ctTot(it) <= 0) {                                              // v5.35.1: tổng 0 → nói rõ đã đi đâu
+    const sg = ctSuggest(it); if (sg > 0.0005) return `App tính còn ${fmtNum(sg)} ${escHtml(it.unit)} ở công trường — Menu → Ở công trường để xác nhận`;
+    const g = ctGone(it); return g ? `Không còn ở dự án · lần cuối: ${escHtml(g.txt)}` : `Mới có tên, chưa có phiếu nhập`;
+  }
   return `Kho ${fmtNum(it.stock)} · 🏗 Ở CT ${fmtNum(ctSite(it))} · <b>Tổng ${fmtNum(ctTot(it))}</b> ${escHtml(it.unit)}`;
 }
 const ctOptTxt = it => ctTrack(it) || ctSite(it) ? `Kho ${fmtNum(it.stock)} · Ở CT ${fmtNum(ctSite(it))} ${escHtml(it.unit)}` : `Tồn: ${fmtNum(it.stock)} ${escHtml(it.unit)}`;
 function ctBadge(it) {                                               // null = dùng nhãn cũ (Đủ / Sắp hết / Hết hàng)
-  if (!(ctSite(it) > 0)) return null;
-  if (+it.stock <= 0) return ['badge-ct', '🏗 Ở công trường'];
-  return null;
+  if (ctSite(it) > 0) return +it.stock <= 0 ? ['badge-ct', '🏗 Ở công trường'] : null;
+  if (!ctTrack(it) || ctTot(it) > 0) return null;
+  // v5.35.1: thiết bị / vật tư phụ trợ không có "hết hàng" — nói rõ vì sao tổng = 0
+  if (ctSuggest(it) > 0.0005) return ['badge-ct', '⏳ Chờ xác nhận ở CT'];
+  const g = ctGone(it);
+  return g ? ['badge-gone', g.t.type === 'xuat' && (g.t.ct || /^Giải động/.test(String(g.t.note || ''))) ? '🚚 Đã ra khỏi CT' : 'Đã xuất hết'] : ['badge-gone', 'Chưa có phiếu'];
+}
+function ctGone(it) {                                                // phiếu làm tổng về 0 gần nhất
+  const L = db.transactions.filter(t => t.itemId === it.id && (t.type === 'xuat' || t.type === 'dieuchinh'));
+  if (!L.length) return null;
+  const t = L[L.length - 1], d = parseVN(t.datetime);
+  const where = t.type === 'xuat' ? String(t.supplierOrReceiver || t.note || '').replace(/^(Giải động|Ra khỏi công trình) → /, '') : (t.reason || '');
+  return { t, txt:(where ? where.slice(0, 40) : '') + (d ? ' (' + d.getDate() + '/' + (d.getMonth() + 1) + ')' : '') };
 }
 function ctLine(it) {                                                // dòng thêm ở màn Tồn kho
   if (!ctTrack(it) && !ctSite(it)) return '';

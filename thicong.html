@@ -422,6 +422,27 @@ body.pk-open .main{padding-bottom:48vh}
 .ckl-ph{width:40px;height:40px;border-radius:10px;background:#F0F2F5;display:flex;align-items:center;justify-content:center;font-size:20px;cursor:pointer;flex:none}
 .tnow{border:1.5px solid var(--orange);background:#FFF4EC;color:#C24E12;font-weight:900;border-radius:8px;padding:7px 4px;width:100%;font-size:14px}
 .ty-box textarea{font-family:monospace;font-size:13px;min-height:150px}
+/* phiếu nhiều bước */
+.wz{display:flex;gap:6px;background:#fff;border-radius:var(--r-sm,12px);padding:10px 12px 8px}
+.wz-s{flex:1;min-width:0;border:none;background:none;padding:0;text-align:left;color:var(--text3,#8A97A6);font-size:12.5px;font-weight:700;font-family:inherit}
+.wz-s i{display:block;height:6px;border-radius:3px;background:#E3E7EC;margin-bottom:6px}
+.wz-s span{display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.wz-s.ok i{background:#15803D}.wz-s.on i{background:var(--orange)}.wz-s.on{color:var(--text)}
+.wz-h{display:flex;flex-direction:column;gap:2px;padding:2px 2px 0}.wz-h b{font-size:22px;color:var(--navy)}.wz-h span{font-size:14.5px;color:var(--text2,#5A6A7A)}
+.actbar .btn.ghost.wz-bk{width:56px;flex:none;font-size:24px}
+/* làm tiếp */
+.lt-card{background:#fff;border-radius:var(--r,16px);padding:12px 14px;display:flex;flex-direction:column;gap:9px;border-left:5px solid var(--orange);margin-bottom:10px}
+.lt-card.w{border-left-color:#B7791F}.lt-card .dots{display:flex;gap:3px}.lt-card .dots i{flex:1;height:6px;border-radius:3px;background:#E3E7EC}
+.lt-card .dots i.d{background:#15803D}.lt-card .dots i.c{background:var(--orange)}.lt-card.w .dots i.c{background:#B7791F}
+.lt-go{border:none;border-radius:12px;min-height:46px;padding:8px 14px;text-align:left;font-size:16.5px;font-weight:800;background:var(--orange);color:#fff;font-family:inherit}
+.lt-card.w .lt-go{background:#FFF7E0;color:#7A4E00}
+.tool-out{background:var(--navy);color:#fff;border-radius:var(--r,16px);padding:14px 16px}.tool-out small{display:block;color:#B9C6D6;font-size:13px;font-weight:700}.tool-out b{font-size:35px}.tool-out .c{color:#F6B48C;font-weight:700}
+.lt-go.wait,.btn.wait{background:#FFF7E0;color:#7A4E00}
+.pk-next{margin-top:8px}.pk-next .btn{width:100%;font-size:16.5px;padding:13px}
+.qa-card{background:#fff;border-radius:var(--r,16px);padding:12px 14px;border-left:5px solid #B7791F;margin-bottom:10px;display:flex;flex-direction:column;gap:6px}
+.qa-card.h{border-left-color:#C0392B}.qa-card b{font-size:17px}
+.qa-s{font-size:15px;line-height:1.45;color:var(--text)}
+.qa-b{display:flex;gap:8px;margin-top:4px}.qa-b .btn{padding:11px}.qa-b .btn.ghost{flex:1}.qa-b .btn.gr{flex:2;background:#15803D}
 
 /* Biểu tượng Phosphor Duotone (v5.31.9) */
 .pi{width:1.15em;height:1.15em;display:inline-block;vertical-align:-.2em;color:#F26522;fill:currentColor;flex-shrink:0;overflow:visible}
@@ -441,9 +462,9 @@ button .pi,.btn .pi,a .pi,.chip .pi,.tag .pi,.badge .pi,.yn .pi,.bnav .pi,.bnav-
 <div id="app"></div>
 <script>
 // FECON South · THI CÔNG 1.4.3 — chạy cùng app Kho (đăng nhập ở index.html, dùng chung máy chủ Apps Script)
-const KHO_VERSION = '5.35.0';
+const KHO_VERSION = '5.38.0';
 // ===== FECON Thi công 1.0 — lõi: máy chủ, lưu trên máy, hàng đợi gửi, điều hướng =====
-const TC_APP_VERSION = '1.5.0';
+const TC_APP_VERSION = '1.8.0';
 const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbw6Rmi80I7RI3ij2U7RdRF5pYuQTnPrwEmGmUZS5xpxzLwwVynfoFUujZe1lm6HS1ymxw/exec';
 const LS_TOKEN = 'fecon_token_v5', LS_USER = 'fecon_user_v5';           // dùng chung phiên đăng nhập với Kho
 const LS_P = 'tc_proj', LS_BOOT = 'tc_boot2|', LS_OUT = 'tc_out_v1', LS_CA = 'tc_ca', LS_PART = 'fecon_part';
@@ -762,6 +783,7 @@ function sideHtml() {
     ${it('👷', 'Nhân sự & thiết bị', "go('nl')")}
     ${it('📐', 'Tài liệu & bản vẽ', "go('tl')")}
     ${it('🧮', 'BOQ & khối lượng', "go('boq')")}
+    ${it('🔗', 'Công cụ tính', "go('tool',{code:(cur.a && cur.a.code) || ''})", 'đoạn nối lồng')}
     <div class="sb-div"></div><div class="sb-grp">Tài khoản</div>
     ${B && B.tg && B.tg.bot ? it('🔔', 'Nhận cảnh báo Telegram', "tgLink()", B.tg.linked ? 'đã bật' : '') : ''}
     ${hp('t_qt') ? it('⚙️', 'Quản trị Thi công', "go('qtri')") : ''}
@@ -1039,7 +1061,7 @@ function tdChip(D, k) {
     case 'xong': return D.xong && isFinite(D.zDay) ? 'đáy ' + fmtZ(D.zDay) : '';
     case 'sach': return D.cans.length ? 'cặn ' + fmtN(Math.max(...D.cans)) + ' mm' : D.dd ? 'dung dịch ' + fmtN(D.dd.d.kl, 2) : '';
     case 'gioang': return D.mn ? (isFinite(num(D.mn.d.zTop)) ? fmtZ(D.mn.d.zTop) + ' → ' + fmtZ(D.mn.d.zBot) : 'đã ghi') : '';
-    case 'long': return D.lt ? (D.ltRows.length && D.nSeg ? D.nHa + '/' + D.nSeg + ' đoạn' : D.ltDone ? 'đã hạ' + (isFinite(num(D.lt.d.n)) ? ' ' + fmtN(D.lt.d.n) + ' lồng' : '') : 'đã ghi') + (N && isFinite(N.noi) ? ' · nối ' + fmtN(N.noi, 2) + ' m' : '') : '';
+    case 'long': return D.lt ? (D.ltRows.length && D.nSeg ? D.nHa + '/' + D.nSeg + ' đoạn' : D.ltDone ? 'đã hạ' + (isFinite(num(D.lt.d.n)) ? ' ' + fmtN(D.lt.d.n) + ' lồng' : '') : 'đã ghi') + (isFinite(num(D.lt.d.noiTT)) ? ' · nối ' + fmtN(num(D.lt.d.noiTT), 2) + ' m' : '') : '';
     case 'ong': return T.cb ? cbTxt(T.cb) : D.tr && isFinite(num(D.tr.d.lOng)) ? fmtN(D.tr.d.lOng, 2) + ' m' : '';
     case 'bt': return BC ? (D.done ? fmtN(BC.v, 1) + ' m³' : (isFinite(BC.h) ? 'h ' + fmtN(BC.h, 2) + ' m · ' : '') + 'còn ' + fmtN(BC.con, 1) + ' m³') : '';
     case 'btx': return D.done ? fmtN(BC.v, 1) + ' m³' + (isFinite(BC.kf) ? ' · ×' + fmtN(BC.kf, 2) : '') : '';
@@ -1202,7 +1224,7 @@ function pileInset(D, k) {
   if (k === 'nt') {
     s += T(X + 12, 42, 'Hồ sơ ' + esc(D.c.code), tdFs(13, 800));
     const BC = D.BC, rows = [['Lệch tim', isFinite(D.dx) ? Math.round(Math.hypot(D.dx, D.dy)) + ' mm' : '—'], ['Đáy hố', fmtZ(D.zDay)], ['Cặn lắng', D.cans.length ? fmtN(Math.max(...D.cans)) + ' mm' : '—'],
-      ['Lồng thép', D.lt ? (D.ltRows.length && D.nSeg ? D.nHa + '/' + D.nSeg + ' đoạn' : 'đã hạ') + (D.N && isFinite(D.N.noi) ? ' · nối ' + fmtN(D.N.noi, 2) : '') : '—'], ['Ống đổ', D.T.cb ? cbTxt(D.T.cb) : '—'],
+      ['Lồng thép', D.lt ? (D.ltRows.length && D.nSeg ? D.nHa + '/' + D.nSeg + ' đoạn' : 'đã hạ') + (isFinite(num(D.lt.d.noiTT)) ? ' · nối ' + fmtN(num(D.lt.d.noiTT), 2) : '') : '—'], ['Ống đổ', D.T.cb ? cbTxt(D.T.cb) : '—'],
       ['Bê tông', BC ? fmtN(BC.v, 1) + ' m³' + (isFinite(BC.kf) ? ' · ×' + fmtN(BC.kf, 2) : '') : '—'], ['Mặt BT cuối', fmtZ(D.zCuoi)], ['Biên bản', '13 biểu tự điền']];
     rows.forEach((r, i) => { s += T(X + 14, 74 + i * 26, r[0], tdFs(12, 0, C.mu)) + T(X + W - 12, 74 + i * 26, esc(r[1]), 'text-anchor="end" ' + tdFs(12, 700)); });
     return s;
@@ -1423,29 +1445,34 @@ const PH_NOTE = '📷 Ảnh hiện trường';
 
 const MODS = {
   dv:{ t:'Định vị & ống vách', i:'🎯', ck:'req', qa:1,
+    steps:ctx => ctx.c && ctx.c.loai === 'tv' ? null : [['Tim cọc', 'Nhập tọa độ thực tế máy toàn đạc đo được — app báo lệch từng trục.'], ['Ống vách', 'Cao độ sin là mốc đo sâu cho mọi bước sau.'], ['Ảnh & gửi', 'Tích checklist, chụp ảnh rồi gửi QA/QC.']],
+    stepAt:ctx => !isFinite(num(ctx.d.xTt)) || !isFinite(num(ctx.d.yTt)) ? 1 : !isFinite(num(ctx.d.ovL)) || !isFinite(num(ctx.d.thang)) ? 2 : 3,
     title:c => c && c.loai === 'tv' ? 'Tường dẫn & định vị' : 'Định vị & ống vách',
     sec:ctx => ctx.c.loai === 'tv' ? [
       { t:'📍 Tường dẫn · định vị panel', f:[row(N('sai', 'Sai lệch tim tường', 'mm', { lim:maxL('e') }), N('rong', 'Bề rộng lòng tường dẫn', 'mm')), row(N('zDinh', 'Cao độ đỉnh tường dẫn', 'm'), T('nguoiDo', 'Người đo', { def:() => me.name }))] }
     ] : [
-      { t:'🎯 Tim cọc · VN2000', f:[row(N('xTk', 'X thiết kế', '', { def:c => c.x, ro:1 }), N('yTk', 'Y thiết kế', '', { def:c => c.y, ro:1 })),
+      { st:1, t:'🎯 Tim cọc · VN2000', f:[row(N('xTk', 'X thiết kế', '', { def:c => c.x, ro:1 }), N('yTk', 'Y thiết kế', '', { def:c => c.y, ro:1 })),
         row(N('xTt', 'X thực tế', 'm'), N('yTt', 'Y thực tế', 'm')),
         row3(C('dX', 'ΔX', ctx => dmm(ctx.d.xTt, ctx.d.xTk), 'mm', { lim:(ctx, v) => axL(ctx, ctx.d.xTt, ctx.d.xTk) }), C('dY', 'ΔY', ctx => dmm(ctx.d.yTt, ctx.d.yTk), 'mm', { lim:(ctx, v) => axL(ctx, ctx.d.yTt, ctx.d.yTk) }),
           C('e', 'Sai lệch e', ctx => { const a = dmmN(ctx.d.xTt, ctx.d.xTk), b = dmmN(ctx.d.yTt, ctx.d.yTk); return isFinite(a) && isFinite(b) ? Math.round(Math.hypot(a, b)) : ''; }, 'mm', { lim:maxL('e') }))],
         note:'Dung sai ITP: ±50 mm theo từng trục X, Y (biên bản kiểm tra hố khoan) · e = √(ΔX² + ΔY²) để tham khảo · tọa độ gốc giữ nguyên' },
-      { t:'🛢️ Ống vách · cao độ sin', f:[row(N('zSin', 'Cao độ sin (mặt bằng tại cọc)', 'm', { def:c => dz(c).gl }), N('ovL', 'Chiều dài ống vách', 'm', { def:c => tyOf(c).vach || '' })),
+      { st:2, t:'🛢️ Ống vách · cao độ sin', f:[row(N('zSin', 'Cao độ sin (mặt bằng tại cọc)', 'm', { def:c => dz(c).gl }), N('ovL', 'Chiều dài ống vách', 'm', { def:c => tyOf(c).vach || '' })),
         row(T('ovD', 'Đường kính ngoài', { ph:'Theo BPTC' }), N('ovZ', 'Z đỉnh ống vách', 'm', { def:c => dz(c).gl })), row(N('thang', 'Độ thẳng đứng', '%', { lim:maxL('nghieng') }), S('may', 'Máy hạ ống', ctx => resMay(ctx))),
         row(S('to', 'Tổ đội', ctx => RES().to), T('nguoiDo', 'Người đo', { def:() => me.name }))],
-        note:'📏 Sin là mốc đo chiều sâu khoan. App dùng lại ở lồng thép, ống đổ, đổ bê tông — không phải nhập lại.' }
+        note:'📏 Sin là mốc đo chiều sâu khoan. App dùng lại ở lồng thép, ống đổ, đổ bê tông — không phải nhập lại.' },
+      { st:3, t:'✅ Checklist · ảnh', f:[CKL('ckl', ctx => ['Mốc tim cọc + cọc dấu', 'Ống vách đã hạ, đo đỉnh ống', 'Đo độ thẳng đứng ống vách'])], note:'📷 Chụp ảnh ngay tại từng mục.' }
     ] },
   khoan:{ t:'Nhật ký khoan', i:'⛏️', ck:'req', qa:1,
     title:c => c && c.loai === 'tv' ? 'Nhật ký cạp' : 'Nhật ký khoan',
     top:ctx => `<div data-live="prog">${liveKhoan(ctx)}</div>`,
-    live:{ prog:liveKhoan },
+    live:{ prog:liveKhoan }, topAt:2,
+    steps:ctx => [['Bắt đầu', 'Máy, tổ đội và giờ bắt đầu.'], ['Đo sâu', 'Mỗi lần đo: bấm "＋ Thêm lần đo", chỉ gõ số thước — giờ app tự ghi.'], ['Kết thúc', 'Đạt chiều sâu thiết kế thì báo xong để làm sạch đáy.']],
+    stepAt:ctx => { const d = ctx.d, n = (d.rows || []).filter(r => r && isFinite(num(r.sau))).length; return +d.xong === 1 ? 3 : n || d.may ? 2 : 1; },
     sec:ctx => [
-      { t:'🛠️ Máy & tổ đội', f:[row(S('may', 'Máy', ctx => resMay(ctx)), S('to', 'Tổ đội', ctx => RES().to)), row(TM('batDau', 'Bắt đầu', { def:() => nowHM() }), TM('ketThuc', 'Kết thúc'))] },
-      { t:'📏 Các lần đo', sub:ctx.c.loai === 'tv' ? 'thước dây từ đỉnh tường dẫn · chọn vết cạp' : 'thước dây từ sin', f:[R('rows', [{ k:'gio', l:'Giờ', t:'time', w:70 }].concat(ctx.c.loai === 'tv' ? [{ k:'vet', l:'Vết', t:'sel', opt:[['', '—'], ['1', '1'], ['2', '2'], ['3', 'Giữa']], w:58 }] : [{ k:'loai', l:'Loại', t:'sel', opt:[['do','Đo'],['lop','Đổi lớp'],['dung','Dừng']], w:66 }]).concat([{ k:'sau', l:'Sâu m', t:'num', w:54 }, { k:'lop', l:'Địa tầng / ghi chú', t:'text', list:'dl-soil' }]),
+      { st:1, t:'🛠️ Máy & tổ đội', f:[row(S('may', 'Máy', ctx => resMay(ctx)), S('to', 'Tổ đội', ctx => RES().to)), TM('batDau', 'Bắt đầu', { def:() => nowHM() })] },
+      { st:2, t:'📏 Các lần đo', sub:ctx.c.loai === 'tv' ? 'thước dây từ đỉnh tường dẫn · chọn vết cạp' : 'thước dây từ sin', f:[R('rows', [{ k:'gio', l:'Giờ', t:'time', w:70 }].concat(ctx.c.loai === 'tv' ? [{ k:'vet', l:'Vết', t:'sel', opt:[['', '—'], ['1', '1'], ['2', '2'], ['3', 'Giữa']], w:58 }] : [{ k:'loai', l:'Loại', t:'sel', opt:[['do','Đo'],['lop','Đổi lớp'],['dung','Dừng']], w:66 }]).concat([{ k:'sau', l:'Sâu m', t:'num', w:54 }, { k:'lop', l:'Địa tầng / ghi chú', t:'text', list:'dl-soil' }]),
         { add:'＋ Thêm lần đo', def:ctx => { const l = (ctx.d.rows || []).slice(-1)[0]; return { gio:nowHM(), loai:'do', vet:l ? l.vet || '' : '', sau:'', lop:l ? l.lop : '' }; } })] },
-      { t:'✅ Kết thúc', f:[YN('xong', 'Đã đạt chiều sâu thiết kế?', [[1, 'Đạt', 'g'], [0, 'Chưa']]), A('ghiChu', 'Ghi chú')],
+      { st:3, t:'✅ Kết thúc', f:[YN('xong', 'Đã đạt chiều sâu thiết kế?', [[1, 'Đạt', 'g'], [0, 'Chưa']]), TM('ketThuc', 'Kết thúc'), A('ghiChu', 'Ghi chú')],
         note:'🔒 Đạt chiều sâu thiết kế chưa đồng nghĩa đủ điều kiện đổ — còn kiểm tra hình học, làm sạch đáy và điểm Hold.' }
     ] },
   hh:{ t:'Hình học hố', i:'📡', ck:'req', qa:1,
@@ -1477,58 +1504,70 @@ const MODS = {
         note:'📘 App không mặc định công nghệ mối nối hay thời gian chờ — lấy theo biện pháp được duyệt của từng dự án.' }
     ] },
   truoc:{ t:'Làm sạch & kiểm tra trước đổ', i:'✋', ck:'req', qa:1, hold:1,
-    top:ctx => `<div data-live="ck">${liveTruoc(ctx)}</div>`,
+    top:ctx => `<div data-live="ck">${liveTruoc(ctx)}</div>`, topAt:4,
+    steps:ctx => [['Làm sạch', 'Cách làm sạch và thời gian.'], ['Cặn đáy', 'Đo 3 vị trí sau làm sạch.'], ['Ống đổ', 'Thả thước từ sin — app chọn tổ hợp ống.'], ['Gửi Hold', 'Xem điều kiện, tích checklist, chụp ảnh rồi gửi QA/QC.']],
+    stepAt:ctx => { const d = ctx.d, f = k => isFinite(num(d[k])); return !d.cach && !d.tu ? 1 : !(f('can1') && f('can2') && f('can3')) ? 2 : !(f('sauCuoi') && f('nho')) && !f('cachDay') ? 3 : 4; },
     sec:ctx => [
-      { t:'🧹 Làm sạch đáy', f:[row(N('lan', 'Lần làm sạch', '', { def:() => 1 }), S('cach', 'Cách làm sạch', ['Thay dung dịch', 'Bơm hút đáy', 'Air-lift', 'Gàu vét'])), row(TM('tu', 'Từ'), TM('den', 'Đến'))] },
-      { t:'📏 Cặn đáy', f:[row3(N('can1', ctx.c.loai === 'tv' ? 'Trái' : 'Vị trí 1', 'mm', { lim:maxL('can') }), N('can2', ctx.c.loai === 'tv' ? 'Giữa' : 'Vị trí 2', 'mm', { lim:maxL('can') }), N('can3', ctx.c.loai === 'tv' ? 'Phải' : 'Vị trí 3', 'mm', { lim:maxL('can') }))] },
-      { t:'🔧 Ống đổ tremie · tổ hợp ống', sub:'thả thước dây từ sin', f:[row(N('sauCuoi', '① Chiều sâu đáy sau làm sạch', 'm', { ph:depthNow(ctx.c.code) ? 'khoan: ' + fmtN(depthNow(ctx.c.code), 2) : '' }), N('nho', '② Ống + phễu nhô trên sin', 'm', { ph:'VD 0,25' })),
+      { st:1, t:'🧹 Làm sạch đáy', f:[row(N('lan', 'Lần làm sạch', '', { def:() => 1 }), S('cach', 'Cách làm sạch', ['Thay dung dịch', 'Bơm hút đáy', 'Air-lift', 'Gàu vét'])), row(TM('tu', 'Từ'), TM('den', 'Đến'))] },
+      { st:2, t:'📏 Cặn đáy', f:[row3(N('can1', ctx.c.loai === 'tv' ? 'Trái' : 'Vị trí 1', 'mm', { lim:maxL('can') }), N('can2', ctx.c.loai === 'tv' ? 'Giữa' : 'Vị trí 2', 'mm', { lim:maxL('can') }), N('can3', ctx.c.loai === 'tv' ? 'Phải' : 'Vị trí 3', 'mm', { lim:maxL('can') }))] },
+      { st:3, t:'🔧 Ống đổ tremie · tổ hợp ống', sub:'thả thước dây từ sin', f:[row(N('sauCuoi', '① Chiều sâu đáy sau làm sạch', 'm', { ph:depthNow(ctx.c.code) ? 'khoan: ' + fmtN(depthNow(ctx.c.code), 2) : '' }), N('nho', '② Ống + phễu nhô trên sin', 'm', { ph:'VD 0,25' })),
         LV('ong'), row3(N('nOng', 'Số ống', '', { def:c => c.loai === 'tv' ? 2 : 1 }), N('dkOng', 'Đường kính', 'mm', { def:() => 273 }), N('cachDay', 'Đầu ống cách đáy', 'm', { show:d => !isFinite(num(d.nho)) }))],
-        note:'🔐 Gửi kiểm tra = báo QA/QC tới giải phóng điểm Hold. Màn Đổ bê tông chỉ mở khi điểm Hold đã được xác nhận.' }
+        note:'🔐 Gửi kiểm tra = báo QA/QC tới giải phóng điểm Hold. Màn Đổ bê tông chỉ mở khi điểm Hold đã được xác nhận.' },
+      { st:4, t:'✅ Checklist · ảnh', f:[CKL('ckl', ctx => ['Cặn đáy đạt giới hạn ITP', 'Dung dịch trước đổ đạt', 'Lồng thép treo đúng cao độ', 'Ống đổ lắp xong, đầu ống cách đáy đúng'])], note:'📷 Chụp ảnh ngay tại từng mục.' }
     ],
     live:{ ck:liveTruoc, ong:liveOng },
     prep:(d, c) => { const t = tremie(c, d); if (t.cb) { d.cachDay = r2(t.cach); d.lOng = r2(t.cb.L); d.combo = { k:t.cb.k, odd:t.cb.odd, L:r2(t.cb.L), main:t.S.main }; d.zDayTT = r2(t.zDay); } } },
   lt:{ t:'Lồng thép', i:'🧱', ck:'req', qa:1, hold:1,
-    top:ctx => `<div data-live="kho">${liveKhoLt(ctx)}</div>`, live:{ kho:liveKhoLt, noi:liveNoi, cat:liveCat },
+    top:ctx => `<div data-live="kho">${liveKhoLt(ctx)}</div>`, live:{ kho:liveKhoLt },
     init:(d, c) => { const sg = tyOf(c).segs; if ((!d.rows || !d.rows.length) && Array.isArray(sg) && sg.length && !d.nguon) d.rows = sg.map((L, i) => ({ ten:'L' + (i + 1), dai:L, thep:'', ha:'' })); },
+    steps:[['Đoạn lồng', 'Bấm "Hạ ✓" khi mỗi đoạn đã xuống — app tự ghi giờ.'], ['Treo lồng', 'Chỉ nhập số đo ngoài hiện trường.'], ['Đo lại', 'Đo kiểm sau khi treo, trước khi gửi QA/QC.'], ['Ảnh & gửi', 'Tích checklist, chụp ảnh từng mục rồi gửi kiểm tra.']],
+    stepAt:ctx => { const d = ctx.d, rows = (d.rows || []).filter(Boolean); if (!rows.length || rows.some(r => !r.ha)) return 1; if (!isFinite(num(d.zMoc))) return 2; if (!isFinite(num(d.zMocSau))) return 3; return 4; },
     sec:ctx => [
-      { t:'🧱 Các đoạn lồng', sub:'bấm "Hạ" khi hạ xong mỗi đoạn', f:[R('rows', [{ k:'ten', l:'Đoạn', t:'text', w:52 }, { k:'dai', l:'Dài (m)', t:'num', w:62 }, { k:'thep', l:'Thép chủ / đai', t:'text' }, { k:'ha', l:'Giờ hạ', t:'tnow', w:76, btn:'Hạ ✓' }],
+      { st:1, t:'🧱 Các đoạn lồng', f:[R('rows', [{ k:'ten', l:'Đoạn', t:'text', w:52 }, { k:'dai', l:'Dài (m)', t:'num', w:62 }, { k:'thep', l:'Thép chủ / đai', t:'text' }, { k:'ha', l:'Giờ hạ', t:'tnow', w:76, btn:'Hạ ✓' }],
         { add:'＋ Thêm đoạn lồng', def:ctx => ({ ten:'L' + ((ctx.d.rows || []).length + 1), dai:'', thep:'', ha:'' }) })] },
-      { t:'📐 Treo lồng · đoạn nối râu', sub:'máy thủy bình + thước dây', f:[row(N('zMoc', '① Đỉnh móc râu (đo)', 'm'), N('zSin', '② Cao độ sin', 'm', { def:c => sinOf(c, 'lt').v })),
-        row(N('lRau', '③ Râu thực tế, cả móc', 'm', { def:c => tyOf(c).rau || '' }), N('lChong', '④ Chồng vào lồng', 'm', { def:c => tyOf(c).chong || '' })), LV('noi')] },
-      { t:'✂️ Phiếu cắt thép · checklist', f:[LV('cat'), CKL('ckl', ctx => ['Cắt đoạn nối đúng chiều dài phiếu', 'Hàn nối vào râu · chồng ≥ ' + fmtN(LIM().hanChong) + 'd, hàn 2 mặt', 'Treo lồng lên thanh gánh / miệng ống vách', 'Cố định lồng chống trôi, chống xoay'])],
-        note:'📷 Chụp ảnh ngay tại từng mục — ảnh lưu kèm hồ sơ cọc.' },
-      { t:'📏 Đo lại sau treo', f:[row(N('zMocSau', 'Đỉnh móc đo lại', 'm'), N('noiTT', 'Đoạn nối đã hàn', 'm', { ph:'âm = đã cắt' })),
-        C('zThepTT', 'Đỉnh thép chủ thực tế', ctx => { const n = noiCalc(ctx.c, ctx.d); return isFinite(n.topTT) ? fmtZ(n.topTT) : ''; }, 'm', { lim:ctx => { const n = noiCalc(ctx.c, ctx.d); if (!isFinite(n.topTT) || !isFinite(n.top)) return null; return Math.abs(n.lech) <= n.tol ? { c:'o', m:`✓ lệch ${Math.round(n.lech)} mm · trong ±${n.tol} mm so với TK ${fmtZ(n.top)}` } : { c:'w', m:`✕ lệch ${Math.round(n.lech)} mm · vượt ±${n.tol} mm — chỉnh lại treo lồng` }; } })],
-        note:'Đỉnh thép chủ = móc đo lại − (râu + nối) + chồng. Sau đó bấm "Gửi kiểm tra Hold" để QA/QC xác nhận.' },
-      { t:'⬇️ Hạ lồng', f:[row(N('n', 'Số lồng', '', { def:c => dz(c).nLong || (tyOf(c).segs || []).length || '' }), N('kl', 'Khối lượng thép', 'tấn', { def:c => dz(c).thep || '' })),
-        row(N('zTreo', 'Cao độ treo đầu lồng', 'm', { ph:'tự lấy từ đo lại' }), N('ongSA', 'Số ống siêu âm', '', { def:c => c.loai === 'tv' ? 4 : 3 })),
-        row(T('huong', 'Hướng ống siêu âm', { ph:'0° / 120° / 240°' }), T('thepCho', 'Thép chờ đầu cọc')), row(S('to', 'Tổ thép', ctx => RES().to), S('may', 'Cẩu', ctx => resMay(ctx, /cẩu/i)))],
-        note:'🔗 Chứng từ xuất kho do app Kho quản lý — ở đây chỉ xem, không tạo phiếu.' }
+      { st:1, t:'📋 Thông tin lồng', f:[row(N('n', 'Số lồng', '', { def:c => dz(c).nLong || (tyOf(c).segs || []).length || '' }), N('kl', 'Khối lượng thép', 'tấn', { def:c => dz(c).thep || '' })),
+        row(N('ongSA', 'Số ống siêu âm', '', { def:c => c.loai === 'tv' ? 4 : 3 }), T('huong', 'Hướng ống siêu âm', { ph:'0° / 120° / 240°' })),
+        row(S('to', 'Tổ thép', ctx => RES().to), S('may', 'Cẩu', ctx => resMay(ctx, /cẩu/i))), T('thepCho', 'Thép chờ đầu cọc')],
+        note:'🔗 Chứng từ xuất kho do app Kho quản lý — ở đây chỉ xem, không tạo phiếu.' },
+      { st:2, t:'📐 Treo lồng', sub:'máy thủy bình + thước dây', f:[row(N('zSin', 'Cao độ sin', 'm', { def:c => sinOf(c, 'lt').v }), N('zMoc', 'Đỉnh móc râu', 'm', { ph:'đo máy thủy bình' })),
+        row(N('lRau', 'Râu (đo thẳng đứng)', 'm', { def:c => tyOf(c).rau || '' }), N('lChong', 'Chồng vào lồng', 'm', { def:c => tyOf(c).chong || '' })),
+        N('noiTT', 'Đoạn nối thực tế (đã hàn)', 'm', { ph:'0 nếu không nối' })],
+        note:'🧮 Cần tính đoạn nối trước khi cắt thép? Mở menu ☰ › Công cụ tính.' },
+      { st:3, t:'📏 Đo lại sau treo', f:[row(N('zMocSau', 'Đỉnh móc đo lại', 'm'), N('lechTim', 'Lệch tim lồng', 'mm')),
+        C('zThepTT', 'Đỉnh thép chủ (suy từ số đo)', ctx => { const n = noiCalc(ctx.c, ctx.d); return isFinite(n.topTT) ? fmtZ(n.topTT) : ''; }, 'm', { lim:ctx => { const n = noiCalc(ctx.c, ctx.d); if (!isFinite(n.topTT) || !isFinite(n.top)) return null; return Math.abs(n.lech) <= n.tol ? { c:'o', m:`✓ lệch ${Math.round(n.lech)} mm · trong ±${n.tol} mm so với TK ${fmtZ(n.top)}` } : { c:'w', m:`✕ lệch ${Math.round(n.lech)} mm · vượt ±${n.tol} mm — kiểm tra lại treo lồng` }; } })],
+        note:'Đỉnh thép chủ = móc đo lại − (râu + nối thực tế) + chồng.' },
+      { st:4, t:'✅ Checklist · ảnh', f:[CKL('ckl', ctx => ['Hàn nối râu đủ chiều dài chồng, đúng quy cách', 'Treo lồng lên thanh gánh / miệng ống vách', 'Cố định lồng chống trôi, chống xoay', 'Ống siêu âm đủ số lượng, bịt kín đầu'])],
+        note:'📷 Chụp ảnh ngay tại từng mục — ảnh lưu kèm hồ sơ cọc.' }
     ],
     prep:(d, c) => { const n = noiCalc(c, d); if (isFinite(n.noi)) d.noi = r2(n.noi); if (isFinite(n.topTT) && !isFinite(num(d.zTreo))) d.zTreo = r2(n.topTT); } },
   xe:{ t:'Tiếp nhận xe bê tông', i:'🚚', ck:'req', multi:1, qa:0,
     init:(d, c) => { if (!d.pb) d.pb = [{ ck:c.code, m3:'' }]; if (!d.qd) d.qd = 'nhan'; },
+    steps:ctx => [['Phiếu giao', 'Chép từ phiếu giao hàng.'], ['Kiểm tra', 'Giờ trộn → giờ đến, độ sụt — app báo quá giờ, ngoài độ sụt.'], ['Nhận & phân bổ', 'Nhận / trả, chia cho cấu kiện, lấy mẫu.']],
+    stepAt:ctx => !isFinite(num(ctx.d.luong)) ? 1 : !isFinite(num(ctx.d.sut)) ? 2 : 3,
     sec:ctx => [
-      { t:'🚚 Phiếu giao hàng', f:[row(N('so', 'Xe số', '', { def:c => recsOf(c.code, 'xe').length + 1 }), T('bien', 'Biển số')), row(T('phieu', 'Số phiếu'), S('capPhoi', 'Cấp phối', ctx => RES().capPhoi)),
-        row(S('tram', 'Trạm', ctx => RES().tram), N('luong', 'Lượng theo phiếu', 'm³')),
-        row3(TM('gioTron', 'Giờ trộn'), TM('gioDen', 'Đến', { def:() => nowHM() }), C('sauTron', 'Sau trộn', ctx => { const m = minDiff(ctx.d.gioTron, ctx.d.gioDen); return isFinite(m) ? m : ''; }, 'phút', { lim:maxL('sauTre') })),
-        N('sut', 'Độ sụt đo', 'cm', { lim:rng('sut') })] },
-      { t:'✅ Quyết định tiếp nhận', f:[YN('qd', '', [['nhan', '✓ Nhận', 'g'], ['mot', 'Nhận một phần', 'o'], ['tra', '✕ Trả lại', 'r']]),
+      { st:1, t:'🚚 Phiếu giao hàng', f:[row(N('so', 'Xe số', '', { def:c => recsOf(c.code, 'xe').length + 1 }), T('bien', 'Biển số')), row(T('phieu', 'Số phiếu'), S('capPhoi', 'Cấp phối', ctx => RES().capPhoi)),
+        row(S('tram', 'Trạm', ctx => RES().tram), N('luong', 'Lượng theo phiếu', 'm³'))] },
+      { st:2, t:'⏱ Thời gian · độ sụt', f:[row3(TM('gioTron', 'Giờ trộn'), TM('gioDen', 'Đến', { def:() => nowHM() }), C('sauTron', 'Sau trộn', ctx => { const m = minDiff(ctx.d.gioTron, ctx.d.gioDen); return isFinite(m) ? m : ''; }, 'phút', { lim:maxL('sauTre') })),
+        row(N('sut', 'Độ sụt đo', 'cm', { lim:rng('sut') }), C('cachXe', 'Cách xe trước', ctx => { const p = xePrev(ctx), m = p ? minDiff(p.d.gioDen, ctx.d.gioDen) : NaN; return isFinite(m) ? String(m) : ''; }, 'phút', { lim:ctx => { const p = xePrev(ctx); if (!p) return null; const m = minDiff(p.d.gioDen, ctx.d.gioDen); return isFinite(m) ? (m > (num(LIM().gianDoan) || 60) ? { c:'w', m:`⚠ xe ${esc(p.d.so || '')} đến ${esc(p.d.gioDen)} — chờ quá ${fmtN(LIM().gianDoan)} phút` } : { c:'o', m:`xe ${esc(p.d.so || '')} đến ${esc(p.d.gioDen)}` }) : null; } }))] },
+      { st:3, t:'✅ Quyết định tiếp nhận', f:[YN('qd', '', [['nhan', '✓ Nhận', 'g'], ['mot', 'Nhận một phần', 'o'], ['tra', '✕ Trả lại', 'r']]),
         row(N('traLai', 'Lượng trả lại', 'm³', { show:d => d.qd && d.qd !== 'nhan' }), T('lyDo', 'Lý do', { show:d => d.qd && d.qd !== 'nhan' }))] },
-      { t:'🧩 Phân bổ cấu kiện', f:[R('pb', [{ k:'ck', l:'Cấu kiện', t:'ck' }, { k:'m3', l:'m³', t:'num', w:84 }], { add:'＋ Thêm cấu kiện', def:() => ({ ck:'', m3:'' }) }),
+      { st:3, t:'🧩 Phân bổ cấu kiện', f:[R('pb', [{ k:'ck', l:'Cấu kiện', t:'ck' }, { k:'m3', l:'m³', t:'num', w:84 }], { add:'＋ Thêm cấu kiện', def:() => ({ ck:'', m3:'' }) }),
         C('pbSum', 'Tổng phân bổ', ctx => fmtN(pbSum(ctx.d), 2), 'm³', { lim:ctx => { const need = (num(ctx.d.luong) || 0) - (num(ctx.d.traLai) || 0); const s = pbSum(ctx.d); if (!s) return null; return Math.abs(s - need) < 0.01 ? { c:'o', m:'✓ khớp lượng nhận' } : { c:'w', m:`⚠ phải bằng ${fmtN(need, 2)} m³ (phiếu − trả lại)` }; } })],
         note:'Xe cấp nhiều cấu kiện → thêm dòng. Để trống m³ khi chỉ 1 cấu kiện: app tự lấy lượng nhận.' },
-      { t:'🧪 Lấy mẫu', f:[T('mau', 'Tổ mẫu (nếu lấy ở xe này)', { ph:'VD: tổ M3 · 3 viên 150×150' })] }
+      { st:3, t:'🧪 Lấy mẫu', f:[T('mau', 'Tổ mẫu (nếu lấy ở xe này)', { ph:'VD: tổ M3 · 3 viên 150×150' })] }
     ],
     prep:(d, c) => { const need = (num(d.luong) || 0) - (num(d.traLai) || 0); d.pb = (d.pb || []).filter(x => x && (x.ck || x.m3)); if (!d.pb.length) d.pb = [{ ck:c.code, m3:need }]; if (d.pb.length === 1 && !isFinite(num(d.pb[0].m3))) d.pb[0].m3 = need; } },
   bt:{ t:'Đổ bê tông · tremie', i:'📏', ck:'req', qa:1,
-    top:ctx => `<div data-live="bt">${liveBT(ctx)}</div>`, live:{ bt:liveBT },
+    top:ctx => `<div data-live="bt">${liveBT(ctx)}</div>`, live:{ bt:liveBT }, topAt:2, topBelow:1,
+    steps:ctx => [['Bắt đầu', 'Giờ bắt đầu và cấp phối.'], ['Đo & tháo ống', 'Mỗi lần đo: thước dây + số ống còn lắp — app tính ngập, số ống tháo, m³ còn cần.'], ['Gián đoạn', 'Ghi tháo ống, chờ xe, sự cố.'], ['Kết thúc', 'Giờ kết thúc và mặt bê tông cuối.']],
+    stepAt:ctx => ctx.d.ketThuc ? 4 : (ctx.d.rows || []).filter(Boolean).length ? 2 : 1,
+    wzOff:ctx => !holdOk(ctx.c) && (!B.cfg.hold || B.cfg.hold.batBuoc !== 0) && !ctx.rec,
     sec:ctx => [
-      { t:'▶️ Bắt đầu', f:[row(TM('batDau', 'Giờ bắt đầu', { def:() => nowHM() }), S('capPhoi', 'Cấp phối', ctx => RES().capPhoi)), C('vltC', 'V lý thuyết', ctx => fmtN(dz(ctx.c).vlt, 2), 'm³')] },
-      { t:'📏 Các lần đo', sub:btCols(ctx)[2].k === 'zMat' ? 'h = Z mặt BT − Z đầu ống' : 'thước dây từ sin · đếm ống ' + fmtN(ongSet().main, 2) + ' m còn lắp', f:[R('rows', btCols(ctx),
-        { add:'＋ Thêm lần đo', def:ctx => { const l = (ctx.d.rows || []).filter(Boolean).slice(-1)[0], T = tremieRec(ctx.c); return btCols(ctx)[2].k === 'zMat' ? { gio:nowHM(), v:vXe(ctx.c.code).v || '', zMat:'', zOng:'' } : { gio:nowHM(), v:vXe(ctx.c.code).v || '', thuoc:'', ong:l && isFinite(num(l.ong)) ? l.ong : (T.cb ? T.cb.k : '') }; } })] },
-      { t:'⏸ Gián đoạn · tháo ống', f:[R('gd', [{ k:'gio', l:'Giờ', t:'time', w:70 }, { k:'nd', l:'Nội dung (tháo ống, chờ xe…)', t:'text' }], { add:'＋ Ghi gián đoạn / tháo ống', def:() => ({ gio:nowHM(), nd:'' }) })] },
-      { t:'🏁 Kết thúc', f:[row(TM('ketThuc', 'Giờ kết thúc'), N('zCuoi', 'Z mặt BT cuối', 'm', { lim:ctx => { const b = btCalc(ctx.c, ctx.d), v = num(ctx.d.zCuoi); if (!isFinite(v)) return null; return v >= b.zDung - 0.005 ? { c:'o', m:`✓ đủ đổ dư — dừng TK ${fmtZ(b.zDung)}` } : { c:'w', m:`⚠ thấp hơn cao độ dừng ${fmtZ(b.zDung)} (cắt + ${fmtN(b.du, 1)} m)` }; } })), A('ghiChu', 'Ghi chú')], note:'Ghi giờ kết thúc → cấu kiện chuyển "Đã đổ".' }
+      { st:1, t:'▶️ Bắt đầu', f:[row(TM('batDau', 'Giờ bắt đầu', { def:() => nowHM() }), S('capPhoi', 'Cấp phối', ctx => RES().capPhoi)), C('vltC', 'V lý thuyết', ctx => fmtN(dz(ctx.c).vlt, 2), 'm³')] },
+      { st:2, t:'📏 Các lần đo', sub:btCols(ctx)[2].k === 'zMat' ? 'h = Z mặt BT − Z đầu ống' : 'thước dây từ sin · đếm ống ' + fmtN(ongSet().main, 2) + ' m còn lắp', f:[R('rows', btCols(ctx),
+        { add:'＋ Thêm lần đo', def:ctx => { const l = (ctx.d.rows || []).filter(Boolean).slice(-1)[0], T = tremieRec(ctx.c); return btCols(ctx)[2].k === 'zMat' ? { gio:nowHM(), v:vXe(ctx.c.code).v || '', zMat:'', zOng:'' } : { gio:nowHM(), v:vXe(ctx.c.code).v || '', thuoc:'', ong:l && isFinite(num(l.ongSau)) ? l.ongSau : l && isFinite(num(l.ong)) ? l.ong : (T.cb ? T.cb.k : '') }; } })] },
+      { st:3, t:'⏸ Gián đoạn · tháo ống', f:[R('gd', [{ k:'gio', l:'Giờ', t:'time', w:70 }, { k:'nd', l:'Nội dung (tháo ống, chờ xe…)', t:'text' }], { add:'＋ Ghi gián đoạn / tháo ống', def:() => ({ gio:nowHM(), nd:'' }) })] },
+      { st:4, t:'🏁 Kết thúc', f:[row(TM('ketThuc', 'Giờ kết thúc'), N('zCuoi', 'Z mặt BT cuối', 'm', { lim:ctx => { const b = btCalc(ctx.c, ctx.d), v = num(ctx.d.zCuoi); if (!isFinite(v)) return null; return v >= b.zDung - 0.005 ? { c:'o', m:`✓ đủ đổ dư — dừng TK ${fmtZ(b.zDung)}` } : { c:'w', m:`⚠ thấp hơn cao độ dừng ${fmtZ(b.zDung)} (cắt + ${fmtN(b.du, 1)} m)` }; } })), A('ghiChu', 'Ghi chú')], note:'Ghi giờ kết thúc → cấu kiện chuyển "Đã đổ".' }
     ],
     prep:(d, c) => { const T = tremieRec(c); (d.rows || []).forEach(r => { if (r && (isFinite(num(r.thuoc)) || isFinite(num(r.ong)))) { const x = btRow(c, r, T); if (isFinite(x.zMat)) r.zMat = r2(x.zMat); if (isFinite(x.zOng)) r.zOng = r2(x.zOng); } });
       let v = 0; (d.rows || []).forEach(r => { if (r && isFinite(num(r.v))) v = Math.max(v, num(r.v)); }); d.luyKe = Math.max(v, d.ketThuc ? vXe(c.code).v : 0); d.vlt = dz(c).vlt; } },
@@ -1586,14 +1625,14 @@ const MODS = {
   kh:{ t:'Việc trong kế hoạch', i:'🗓️', ck:'opt', multi:1, qa:0, perm:'t_kh',
     sec:ctx => [{ t:'🗓️ Việc', f:[row(DT('_ngay', 'Ngày', { def:() => today() }), TM('gio', 'Giờ', { def:() => '07:00' })),
       S('viec', 'Công việc', ['Định vị', 'Khoan cọc', 'Cạp panel', 'Hạ lồng thép', 'Đổ bê tông', 'Siêu âm / thí nghiệm', 'Lắp mối nối', 'Đào hầm', 'Khác']),
-      row(S('may', 'Máy', ctx => [''].concat(RES().may.map(m => m[0]))), S('to', 'Tổ đội', ctx => [''].concat(RES().to))), row(TM('den', 'Đến (dự kiến)'), T('ghiChu', 'Ghi chú'))] }] },
+      row(S('may', 'Máy', ctx => [''].concat(RES().may.map(m => m[0])), { lim:ctx => { const o = khBusy(ctx); return o ? { c:'w', m:`⚠ máy đã có việc ${esc(o.d.viec || '')}${o.ck ? ' · ' + esc(o.ck) : ''} lúc ${esc(o.d.gio || '')}` } : null; } }), S('to', 'Tổ đội', ctx => [''].concat(RES().to))), row(TM('den', 'Đến (dự kiến)'), T('ghiChu', 'Ghi chú'))] }] },
   khbt:{ t:'Đăng ký bê tông', i:'🚚', ck:'req', multi:1, qa:0, perm:'t_kh',
     sec:ctx => [{ t:'🚚 Đăng ký', f:[row(DT('_ngay', 'Ngày đổ', { def:() => today() }), TM('gio', 'Giờ bắt đầu', { def:() => '13:30' })), row(S('capPhoi', 'Cấp phối', ctx => RES().capPhoi), S('tram', 'Trạm', ctx => RES().tram)),
-      row(N('m3', 'Khối lượng đăng ký', 'm³', { def:c => Math.ceil(dz(c).vlt * 1.12) }), N('nXe', 'Số xe', '', { def:c => Math.ceil(dz(c).vlt * 1.12 / (num(LIM().xeM3) || 7)) })), row(N('gc', 'Giãn cách xe', 'phút', { def:() => 20 }), T('lyDo', 'Lý do điều chỉnh (nếu có)'))],
+      row(N('m3', 'Khối lượng đăng ký', 'm³', { def:c => Math.ceil(dz(c).vlt * 1.12) }), N('nXe', 'Số xe', '', { def:c => Math.ceil(dz(c).vlt * 1.12 / (num(LIM().xeM3) || 7)) })), row(N('gc', 'Giãn cách xe', 'phút', { def:() => 20 }), C('xeCuoi', 'Xe cuối dự kiến', ctx => { const g = String(ctx.d.gio || '').split(':').map(Number), n = num(ctx.d.nXe), k = num(ctx.d.gc); if (g.length < 2 || !isFinite(g[0]) || !(n > 0) || !isFinite(k)) return ''; const t = g[0] * 60 + g[1] + (n - 1) * k; return pad2(Math.floor(t / 60) % 24) + ':' + pad2(t % 60) + (t >= 1440 ? ' (+1 ngày)' : ''); }, '')), T('lyDo', 'Lý do điều chỉnh (nếu có)')],
       note:'🏭 Trạm và cấp phối chọn từ danh mục được giao. Mua bê tông và nhà cung cấp không quản lý ở đây.' }] },
   qt:{ t:'Số đo quan trắc', i:'📈', ck:'none', multi:1, qa:0,
     sec:ctx => [{ t:'📈 Số đo', f:[row(T('diem', 'Điểm đo', { list:'dl-qt', req:1 }), S('loai', 'Loại', [['nghieng', 'Nghiêng (mm)'], ['lun', 'Lún (mm)'], ['nuoc', 'Mực nước (m)']])),
-      row(N('gt', 'Giá trị', ''), N('sau', 'Ở độ sâu', 'm', { show:d => !d.loai || d.loai === 'nghieng' })), row(TM('gio', 'Giờ đo', { def:() => nowHM() }), T('ghi', 'Ghi chú'))],
+      row(N('gt', 'Giá trị', ''), N('sau', 'Ở độ sâu', 'm', { show:d => !d.loai || d.loai === 'nghieng' })), C('qtTruoc', 'So với lần trước', ctx => { const p = qtPrev(ctx); if (!p) return ''; const d = num(ctx.d.gt) - num(p.d.gt); return isFinite(d) ? (d >= 0 ? '+' : '−') + fmtN(Math.abs(d), 1) : fmtN(p.d.gt, 1); }, '', { lim:ctx => { const p = qtPrev(ctx); return p ? { c:'o', m:`lần trước ${fmtN(p.d.gt, 1)} · ${dmy(p.ngay)}${p.d.gio ? ' ' + esc(p.d.gio) : ''}` } : { c:'o', m:'điểm này chưa có lần đo trước' }; } }), row(TM('gio', 'Giờ đo', { def:() => nowHM() }), T('ghi', 'Ghi chú'))],
       note:'Ngưỡng cảnh báo / dừng lấy theo phương án quan trắc (Quản trị → Cấu hình). Điểm chưa có kỳ gốc thì không đánh giá.' }] },
   dt:{ t:'Chuyến đất / bùn thải', i:'🚛', ck:'opt', multi:1, qa:0,
     sec:ctx => [{ t:'🚛 Chuyến', f:[row(T('xe', 'Xe'), TM('gio', 'Giờ ra cổng', { def:() => nowHM() })), row(S('vl', 'Vật liệu', ['Đất khoan', 'Bùn bentonite thải', 'Đất đào', 'Khác']), S('cach', 'Cách xác định', [['thung', 'Thể tích thùng (m³)'], ['can', 'Cân (tấn)']])),
@@ -1613,6 +1652,9 @@ const dmmN = (a, b) => (num(a) - num(b)) * 1000;
 const dmm = (a, b) => { const v = dmmN(a, b); return isFinite(v) ? (v > 0 ? '+' : '') + Math.round(v) : ''; };
 function minDiff(a, b) { if (!a || !b) return NaN; const [h1, m1] = a.split(':').map(Number), [h2, m2] = b.split(':').map(Number); let d = (h2 * 60 + m2) - (h1 * 60 + m1); if (d < 0) d += 1440; return d; }
 function ngMax(rows) { let m = NaN; (rows || []).forEach(r => { const s = num(r.sau), x = num(r.x) || 0, y = num(r.y) || 0; if (s > 0) { const v = Math.hypot(x, y) / 1000 / s * 100; m = isFinite(m) ? Math.max(m, v) : v; } }); return m; }
+function xePrev(ctx) { const id = F && F.id, mine = (ctx.d.pb || [])[0] && ctx.d.pb[0].ck || (ctx.c && ctx.c.code); return Object.values(REC).filter(r => r.mod === 'xe' && r.id !== id && r.st !== 'huy' && r.ngay === (F ? F.ngay : today()) && r.d.gioDen && ((r.d.pb || []).some(x => x && x.ck === mine) || r.ck === mine) && minDiff(r.d.gioDen, ctx.d.gioDen) < 720).sort((a, b) => minDiff(a.d.gioDen, ctx.d.gioDen) - minDiff(b.d.gioDen, ctx.d.gioDen))[0] || null; }
+function qtPrev(ctx) { const id = F && F.id, k = String(ctx.d.diem || '').trim().toUpperCase(); if (!k) return null; return Object.values(REC).filter(r => r.mod === 'qt' && r.id !== id && r.st !== 'huy' && String(r.d.diem || '').trim().toUpperCase() === k && (r.d.loai || 'nghieng') === (ctx.d.loai || 'nghieng') && isFinite(num(r.d.gt))).sort((a, b) => (b.ngay + (b.d.gio || '')).localeCompare(a.ngay + (a.d.gio || '')))[0] || null; }
+function khBusy(ctx) { const id = F && F.id, d = ctx.d; if (!d.may) return null; return Object.values(REC).find(r => r.mod === 'kh' && r.id !== id && r.st !== 'huy' && r.d.may === d.may && (r.ngay === d._ngay || r.d._ngay === d._ngay)) || null; }
 function pbSum(d) { return (d.pb || []).reduce((a, x) => a + (num(x && x.m3) || 0), 0); }
 function zDayDef(c) { const z = dz(c), dep = depthNow(c.code); return dep ? r2(sinOf(c).v - dep) : (isFinite(z.toe) ? z.toe : ''); }
 function vltOf(ctx) { const d = ctx.d; if (ctx.c.loai === 'tv') return num(d.b) * num(d.t) * (num(d.zTop) - num(d.zDay)); return Math.PI * num(d.D) * num(d.D) / 4 * (num(d.zCut) - num(d.zDay)); }
@@ -1620,6 +1662,12 @@ function chenh(ctx) { const a = vltOf(ctx), b = num(ctx.d.vtt); if (!(a > 0) || 
 function jName(c) { const m = String(c.code).match(/^(\D*)(\d+)$/); return m ? 'J' + (+m[2] - 1) + '-' + m[2] : 'J-' + c.code; }
 function skNext(loai) { const pre = { NCR:'NCR', RFI:'RFI', PMI:'PMI' }[loai] || 'SK'; let n = 0; Object.values(REC).forEach(r => { if (r.mod === 'sk') { const m = String(r.d.so || '').match(new RegExp('^' + pre + '-(\\d+)')); if (m) n = Math.max(n, +m[1]); } }); return pre + '-' + String(n + 1).padStart(3, '0'); }
 
+// 5.37: số đo nhỏ hơn lần trước / nhảy quá nhiều → nhắc kiểm tra (gõ nhầm 3,46 thay 34,6…)
+function khoanWarn(rows) {
+  let mx = NaN; const out = [];
+  (rows || []).forEach(r => { const v = num(r && r.sau); if (!isFinite(v)) return; if (isFinite(mx) && v < mx - 0.05) out.push(`${esc(r.gio || '')} · ${fmtN(v, 2)} m nhỏ hơn lần trước ${fmtN(mx, 2)} m`); else if (isFinite(mx) && v - mx > 15) out.push(`${esc(r.gio || '')} · ${fmtN(v, 2)} m tăng ${fmtN(v - mx, 1)} m so với lần trước`); mx = isFinite(mx) ? Math.max(mx, v) : v; });
+  return out.length ? `<div class="note n-warn mt8">⚠️<span>Kiểm tra lại số đo: ${out.join(' · ')}</span></div>` : '';
+}
 function liveKhoan(ctx) {
   const c = ctx.c, z = dz(c), rows = (ctx.d.rows || []).filter(r => isFinite(num(r.sau))).sort((a, b) => num(a.sau) - num(b.sau));
   const dep = rows.length ? Math.max(...rows.map(r => num(r.sau))) : 0, L = sinOf(c).v - z.toe;
@@ -1630,7 +1678,7 @@ function liveKhoan(ctx) {
     <div style="text-align:right"><div class="small">Z đáy hiện tại</div><div style="font-size:22px;font-weight:900;color:var(--primary)">${dep ? fmtZ(sinOf(c).v - dep) : '—'}</div></div></div>
     <div class="prog mt8"><i style="width:${pct.toFixed(1)}%"></i></div>
     <div class="small mt8">Thiết kế ${isFinite(L) ? fmtN(L, 2) + ' m (Z mũi ' + fmtZ(z.toe) + ')' : '— chưa có Z mũi'}${isFinite(L) && dep < L ? ' · còn ' + fmtN(L - dep, 2) + ' m' : isFinite(L) && dep >= L ? ' · <b class="c-gr">đã tới chiều sâu thiết kế</b>' : ''} · ${pct.toFixed(0)}%</div>
-    ${lay.length ? `<div class="kv-box mt12">${lay.map(l => `<div class="kv"><span>${fmtN(l[0], 1)} – ${fmtN(l[1], 1)} m</span><b>${esc(l[2])}</b></div>`).join('')}</div>` : ''}</div>`;
+    ${lay.length ? `<div class="kv-box mt12">${lay.map(l => `<div class="kv"><span>${fmtN(l[0], 1)} – ${fmtN(l[1], 1)} m</span><b>${esc(l[2])}</b></div>`).join('')}</div>` : ''}${khoanWarn(ctx.d.rows)}</div>`;
 }
 function liveHH(ctx) {
   const rows = (ctx.d.rows || []).filter(r => isFinite(num(r.sau))).sort((a, b) => num(a.sau) - num(b.sau));
@@ -1701,7 +1749,7 @@ function liveBT(ctx) {
   const blocked = !holdOk(c) && (!B.cfg.hold || B.cfg.hold.batBuoc !== 0) && !(ctx.rec && ctx.rec.rev);
   let adv = '';
   if (isFinite(h)) adv = h < b.hMin ? `<div class="note n-err mt8">⛔<span>Độ ngập <b>${fmtN(h, 2)} m</b> nhỏ hơn ${fmtN(b.hMin, 1)} m (ITP) — <b>không tháo ống</b>, kiểm tra lại số đo.</span></div>`
-    : b.thao > 0 ? `<div class="note n-ok mt8">✂️<span>Tháo được <b>${b.thao} ống</b> ${fmtN(T.S.main, 2)} m → còn ngập ${fmtN(h - b.thao * T.S.main, 2)} m (giữ ≥ ${fmtN(b.hG, 1)} m).</span></div>`
+    : b.thao > 0 ? `<div class="note n-ok mt8">✂️<span>Tháo được <b>${b.thao} ống</b> ${fmtN(T.S.main, 2)} m → còn ngập ${fmtN(h - b.thao * T.S.main, 2)} m (giữ ≥ ${fmtN(b.hG, 1)} m).${btThaoBtn(ctx, b)}</span></div>`
     : `<div class="note n-info mt8">⏳<span>Ngập ${fmtN(h, 2)} m — chưa tháo ống (cần còn ≥ ${fmtN(b.hG, 1)} m sau khi tháo 1 ống). Đổ tiếp.</span></div>`;
   if (!T.cb) adv += `<div class="note n-info mt8">🔧<span>Đang nhập Z trực tiếp. Nhập đáy + ống nhô ở <a class="tap" style="text-decoration:underline" onclick="openForm('truoc','${esc(c.code)}')">Kiểm tra trước đổ</a> thì mỗi lần đo chỉ cần thước dây + số ống.</span></div>`;
   return `${blocked ? `<div class="note n-err">✋<span><b>Chưa giải phóng điểm Hold</b> trước đổ. Mở <a class="tap" style="text-decoration:underline" onclick="openForm('truoc','${esc(c.code)}')">Kiểm tra trước đổ</a> và chờ QA/QC xác nhận.</span></div>` : ''}
@@ -1714,6 +1762,19 @@ function liveBT(ctx) {
   ${adv}
   <div class="fx mt8">Z mặt BT = sin ${fmtZ(T.sin)} − thước · Z đầu ống = sin + nhô ${isFinite(T.nho) ? fmtN(T.nho, 2) : '—'} − ống còn lắp${T.cb && T.cb.odd.length ? ' (gồm ống lẻ ' + T.cb.odd.map(x => fmtN(x, 1)).join(' + ') + ')' : ''}<br>Còn cần = A × (Z dừng ${fmtZ(b.zDung)} − Z mặt) × hệ số đổ ${isFinite(b.kf) ? fmtN(b.kf, 2) : '1,00'} · Z dừng = ${z.tv ? 'đỉnh' : 'cắt đầu cọc'} + ${fmtN(b.du, 1)} m</div>
   ${chart ? `<div class="card pad mt8">${chart}</div>` : ''}`;
+}
+// 5.37: 1 chạm "Đã tháo n ống" → ghi gián đoạn + lần đo sau tự lấy số ống còn lại
+function btThaoBtn(ctx, b) {
+  const rows = ctx.d.rows || [], i = b.last ? rows.indexOf(b.last.r) : -1, r = rows[i];
+  if (!r || !isFinite(num(r.ong)) || !(F && canEdit())) return '';
+  if (isFinite(num(r.ongSau))) return `<br><b>✓ Đã tháo ${num(r.ong) - num(r.ongSau)} ống</b> — lần đo sau tự điền còn ${num(r.ongSau)} ống.`;
+  return `<br><button class="btn sm mt8" style="width:auto;padding:9px 16px" onclick="btThao(${i},${b.thao})">✓ Đã tháo ${b.thao} ống</button>`;
+}
+function btThao(i, n) {
+  const r = (F.d.rows || [])[i]; if (!r) return;
+  r.ongSau = num(r.ong) - n;
+  (F.d.gd = F.d.gd || []).push({ gio:nowHM(), nd:'Tháo ' + n + ' ống · còn ' + r.ongSau + ' ống' });
+  F.dirty = true; rerenderBody(); toast('Đã ghi tháo ' + n + ' ống');
 }
 // 5.34: cột bảng đo đổ bê tông — kiểu mới (thước dây + số ống) hoặc kiểu cũ (Z nhập tay, dữ liệu nạp sổ)
 function btLegacy(d) { const r = (d.rows || []).filter(Boolean); return r.some(x => isFinite(num(x.zMat)) && !isFinite(num(x.thuoc)) && !isFinite(num(x.ong))) && !r.some(x => isFinite(num(x.thuoc))); }
@@ -1735,11 +1796,11 @@ function liveNoi(ctx) {
   const n = noiCalc(ctx.c, ctx.d), ty = n.ty;
   if (!isFinite(n.top)) return `<div class="note n-warn">⚙️<span>Loại <b>${esc(ctx.c.type || '—')}</b> chưa có thông số lồng (phá bỏ đầu cọc, râu, chồng). Quản trị Thi công → <b>Loại TK</b>.</span></div>`;
   const tk = `<div class="kv-box"><div class="kv"><span>Đỉnh thép chủ thiết kế</span><b>${fmtZ(n.top)}${zCT(n.top, ty)}</b></div>${isFinite(num(ty.moc)) ? `<div class="kv"><span>Đỉnh móc thiết kế</span><b>${fmtZ(num(ty.moc))}${zCT(num(ty.moc), ty)}</b></div>` : ''}</div>`;
-  if (!isFinite(n.noi)) return tk + `<div class="note n-gy mt8">📐<span>Nhập ① đỉnh móc và ③ chiều dài râu — app ra ngay đoạn nối.</span></div>`;
+  if (!isFinite(n.noi)) return tk + `<div class="note n-gy mt8">📐<span>Nhập đỉnh móc và chiều dài râu — app ra ngay đoạn nối.</span></div>`;
   const a = Math.abs(n.noi), msg = n.noi > 0.005 ? `<div class="note n-info mt8">🔗<span>Hàn thêm <b>${fmtN(n.noi, 2)} m</b> vào mỗi râu để đỉnh thép chủ đúng ${fmtZ(n.top)}.</span></div>` : n.noi < -0.005 ? `<div class="note n-warn mt8">✂️<span>Râu dài hơn cần <b>${fmtN(a, 2)} m</b>: cắt bớt, không cần nối.</span></div>` : `<div class="note n-ok mt8">✅<span>Râu vừa đúng, không cần nối.</span></div>`;
-  const ms = n.mocSin, w2 = !isFinite(ms) ? '' : ms < 0 ? `<div class="note n-err mt8">⚠️<span>Đỉnh móc thấp hơn sin — kiểm tra lại số ① và ②.</span></div>` : ms > 0.6 ? `<div class="note n-warn mt8">⚠️<span>Móc nhô ${fmtN(ms, 2)} m trên sin là cao bất thường — kiểm tra lại số đo.</span></div>` : '';
+  const ms = n.mocSin, w2 = !isFinite(ms) ? '' : ms < 0 ? `<div class="note n-err mt8">⚠️<span>Đỉnh móc thấp hơn sin — kiểm tra lại đỉnh móc và cao độ sin.</span></div>` : ms > 0.6 ? `<div class="note n-warn mt8">⚠️<span>Móc nhô ${fmtN(ms, 2)} m trên sin là cao bất thường — kiểm tra lại số đo.</span></div>` : '';
   return tk + `<div class="fg-row mt8"><div class="big on"><label>${n.noi < -0.005 ? 'Cắt bớt râu' : 'Đoạn nối râu'}</label><div class="v">${fmtN(a, 2)}<small>m</small></div></div><div class="big calc"><label>Móc nhô trên sin</label><div class="v">${fmtN(ms, 2)}<small>m</small></div></div></div>${msg}${w2}
-    <div class="fx mt8">Đoạn nối = (① móc − thép chủ TK) − (③ râu − ④ chồng)<br>= (${fmtN(n.moc, 2)} − ${fmtN(n.top, 2)}) − (${fmtN(n.rau, 2)} − ${fmtN(n.ch, 2)}) = ${fmtN(n.noi, 2)} m</div>`;
+    <div class="fx mt8">Đoạn nối = (móc − thép chủ TK) − (râu − chồng)<br>= (${fmtN(n.moc, 2)} − ${fmtN(n.top, 2)}) − (${fmtN(n.rau, 2)} − ${fmtN(n.ch, 2)}) = ${fmtN(n.noi, 2)} m</div>`;
 }
 function liveCat(ctx) {
   const n = noiCalc(ctx.c, ctx.d);
@@ -1804,6 +1865,16 @@ function initForm(a) {
   if (M.init) M.init(F.d, c);
   if (M.init2) M.init2(F.d, c);
 }
+// ---------- phiếu nhiều bước (M.steps) ----------
+function wzSteps() { const M = MODS[F.mod]; return typeof M.steps === 'function' ? M.steps(formCtx()) : M.steps; }
+function wzOn() { const M = MODS[F.mod], r = F.rec, st = M.steps ? wzSteps() : null; return !!(st && st.length && canEdit() && (!r || r.st === 'nhap' || r.st === 'tra') && !(M.wzOff && M.wzOff(formCtx()))); }
+function wzStep() { const M = MODS[F.mod]; if (!F.step) F.step = M.stepAt ? M.stepAt(formCtx()) : 1; return Math.min(Math.max(1, F.step), wzSteps().length); }
+function fStep(n) { F.step = n; render(true); }
+function wzBar() {
+  const S = wzSteps(), k = wzStep();
+  return `<div class="wz">${S.map((s, i) => `<button class="wz-s ${i + 1 < k ? 'ok' : i + 1 === k ? 'on' : ''}" onclick="fStep(${i + 1})"><i></i><span>${i + 1}. ${esc(s[0])}</span></button>`).join('')}</div>
+    <div class="wz-h"><b>${esc(S[k - 1][0])}</b><span>${esc(S[k - 1][1] || '')}</span></div>`;
+}
 function secs(ctx) { const M = MODS[ctx.mod]; return typeof M.sec === 'function' ? M.sec(ctx) : M.sec; }
 function hasField(k) { let ok = false; const walk = l => (l || []).forEach(f => { if (f.row || f.row3) walk(f.row || f.row3); else if (f.k === k) ok = true; }); secs(formCtx()).forEach(s => walk(s.f)); return ok; }
 function canEdit() {
@@ -1826,15 +1897,16 @@ VIEWS.form = {
     const sub = [c ? ckDesc(c) : '', F.mod === 'kh' || F.mod === 'khbt' ? '' : dmy(F.ngay)].filter(Boolean).join(' · ');
     const stb = r ? `<div class="stbar ${r.st === 'tra' ? 'n-err' : r.st === 'gui' ? 'n-warn' : r.st === 'xn' || r.st === 'duyet' ? 'n-ok' : 'n-gy'}" style="background:${r.st === 'tra' ? '#FDECEC' : r.st === 'gui' ? '#FFF7E0' : r.st === 'xn' || r.st === 'duyet' ? '#E9F7EF' : '#F0F2F5'}"><span class="badge ${RST[r.st] ? RST[r.st][1] : 'b-gy'}">${RST[r.st] ? RST[r.st][0] : r.st}</span><span style="flex:1">${esc(r.byName || '')}${r._pend ? ' · <b>chờ gửi</b>' : ''}${r.rev > 1 ? ' · sửa ' + (r.rev - 1) + ' lần' : ''}</span>${lastNote(r)}</div>` : '';
     const ckLine = M.ck === 'opt' || (M.ck === 'req' && !r) ? `<div class="card pad tap" style="display:flex;align-items:center;gap:10px;padding:10px 14px" ${ed ? 'onclick="fPickCk()"' : ''}><div class="ico gy">${c ? (c.loai === 'tv' ? '▬' : '●') : '🏗️'}</div><div class="rmain"><div class="small">Cấu kiện</div><div class="rname">${c ? esc(c.code) + ' <span class="small">· ' + esc(stepLabel(c)) + '</span>' : (M.ck === 'opt' ? 'Không gắn cấu kiện' : 'Chưa chọn')}</div></div>${ed ? '<span class="sec-link">Đổi ›</span>' : ''}</div>` : '';
-    const body = `<div class="dbody">${stb}${ckLine}${M.top ? M.top(ctx) : ''}<div id="fbody" style="display:flex;flex-direction:column;gap:12px">${formBody(ctx, ed)}</div>
-      ${r && r.d.nguon ? extraBlock(r) : ''}${photoBlock(ed)}${r && r.sign && r.sign.length ? signBlock(r) : ''}${r && r.d._xungDot ? `<div class="note n-warn">⚠️<span>Bản này được giữ do sửa cùng lúc với bản ${esc(r.d._xungDot)} trên máy khác — đối chiếu rồi hủy bản thừa.</span></div>` : ''}</div>`;
-    return shell({ back:1, title:esc(title), sub:esc(sub), body, act:formActs(ed) });
+    const wz = wzOn(), WS = wz ? wzSteps() : [], k = wz ? wzStep() : 0, last = !wz || k === WS.length, topK = M.topAt === undefined ? 1 : M.topAt;
+    const body = `<div class="dbody">${stb}${ckLine}${wz ? wzBar() : ''}${M.top && (!wz || !topK || k === topK) && !(wz && M.topBelow) ? M.top(ctx) : ''}<div id="fbody" style="display:flex;flex-direction:column;gap:12px">${formBody(ctx, ed)}</div>${M.top && wz && M.topBelow && k === topK ? M.top(ctx) : ''}
+      ${last && r && r.d.nguon ? extraBlock(r) : ''}${last ? photoBlock(ed) : ''}${last && r && r.sign && r.sign.length ? signBlock(r) : ''}${r && r.d._xungDot ? `<div class="note n-warn">⚠️<span>Bản này được giữ do sửa cùng lúc với bản ${esc(r.d._xungDot)} trên máy khác — đối chiếu rồi hủy bản thừa.</span></div>` : ''}</div>`;
+    return shell({ back:1, title:esc(title), sub:esc(sub), body, act:wz && !last ? `${k > 1 ? `<button class="btn ghost" onclick="fStep(${k - 1})">‹ Quay lại</button>` : `<button class="btn ghost" onclick="fSave(false)">Lưu nháp</button>`}<button class="btn" onclick="fStep(${k + 1})">Tiếp: ${esc(WS[k][0])} ›</button>` : (wz && k > 1 ? `<button class="btn ghost wz-bk" onclick="fStep(${k - 1})" aria-label="Quay lại">‹</button>` : '') + formActs(ed) });
   },
   after() { refreshCalc(); }
 };
 function fPickCk() { pickCk(code => { F.code = code; F.dirty = true; render(false); }, { mod:F.mod }); }
 // số liệu nạp từ sổ hồ sơ mà biểu mẫu không có ô riêng
-const XLBL = { tu:'Bắt đầu', den:'Kết thúc', matDat:'Cao độ mặt đất tự nhiên', sauTK:'Chiều sâu thiết kế (m)', sauKhoan:'Sâu sau khoan (m)', sauVet:'Sâu sau vét lắng (m)', sauCuoi:'Sâu trước đổ (m)', lOng:'Chiều dài ống đổ (m)', haOng:'Hạ ống đổ', giaCong:'Gia công lồng', haTu:'Hạ lồng từ', haDen:'Hạ lồng đến', thepTreo:'Thép treo lồng (m)', zDungTK:'Z dừng đổ TK', ncc:'Đơn vị cấp bê tông', thoiTiet:'Thời tiết', rutCasing:'Rút casing', lapDau:'Lấp đầu cọc', gioDi:'Xe khởi hành', batDau:'Bắt đầu', ketThuc:'Kết thúc', kiemTra:'Kiểm tra tấm ngăn nước', thanhGiu:'Hạ thanh giữ', ngX:'Koden X–X’ (%)', ngY:'Koden Y–Y’ (%)', diem:'Sâu 3 điểm (m)', gio:'Giờ' };
+const XLBL = { tu:'Bắt đầu', den:'Kết thúc', matDat:'Cao độ mặt đất tự nhiên', sauTK:'Chiều sâu thiết kế (m)', sauKhoan:'Sâu sau khoan (m)', sauVet:'Sâu sau vét lắng (m)', sauCuoi:'Sâu trước đổ (m)', lOng:'Chiều dài ống đổ (m)', haOng:'Hạ ống đổ', giaCong:'Gia công lồng', haTu:'Hạ lồng từ', haDen:'Hạ lồng đến', thepTreo:'Thép treo lồng (m)', zTreo:'Cao độ treo đầu lồng', zDungTK:'Z dừng đổ TK', ncc:'Đơn vị cấp bê tông', thoiTiet:'Thời tiết', rutCasing:'Rút casing', lapDau:'Lấp đầu cọc', gioDi:'Xe khởi hành', batDau:'Bắt đầu', ketThuc:'Kết thúc', kiemTra:'Kiểm tra tấm ngăn nước', thanhGiu:'Hạ thanh giữ', ngX:'Koden X–X’ (%)', ngY:'Koden Y–Y’ (%)', diem:'Sâu 3 điểm (m)', gio:'Giờ' };
 function extraBlock(r) {
   const keys = new Set(); const walk = l => (l || []).forEach(f => { if (f.row || f.row3) walk(f.row || f.row3); else keys.add(f.k); }); secs(formCtx()).forEach(s => walk(s.f));
   const kv = Object.keys(r.d).filter(k => XLBL[k] && !keys.has(k) && r.d[k] !== '' && r.d[k] !== null && r.d[k] !== undefined).map(k => `<div class="kv"><span>${XLBL[k]}</span><b>${esc(Array.isArray(r.d[k]) ? r.d[k].join(' / ') : typeof r.d[k] === 'number' ? fmtN(r.d[k], 2) : r.d[k])}</b></div>`);
@@ -1843,7 +1915,8 @@ function extraBlock(r) {
 }
 function lastNote(r) { const t = (r.sign || []).filter(s => s.act === 'tra').slice(-1)[0]; return r.st === 'tra' && t ? `<span class="small" style="color:#9B1C1C">${esc(t.note || '')}</span>` : ''; }
 function formBody(ctx, ed) {
-  return secs(ctx).map(s => {
+  const wz = F && wzOn() ? wzStep() : 0;
+  return secs(ctx).filter(s => !wz || !s.st || s.st === wz).map(s => {
     const fs = (s.f || []).map(f => fieldHtml(f, ctx, ed)).join('');
     if (!fs.trim()) return '';
     return `<div class="fsec">${s.t ? `<div class="fsec-t">${s.t}${s.sub ? `<small>${esc(s.sub)}</small>` : ''}</div>` : ''}${fs}</div>`;
@@ -2094,7 +2167,7 @@ function tasks() {
   Object.values(REC).forEach(r => {
     const c = CK[r.ck], what = (MODS[r.mod] || {}).t + (r.ck ? ' · ' + r.ck : '');
     if (r.st === 'gui' && r.mod !== 'sk' && r.mod !== 'bg') {
-      if (hp('t_qa') && r.by !== my) out.push({ i:r.mod === 'truoc' ? '✋' : '📝', t:(r.mod === 'truoc' ? 'Giải phóng Hold · ' : 'Xác nhận · ') + what, s:'Gửi bởi ' + (r.byName || '') + ' · ' + dmy(r.ngay), b:['Chờ bạn', 'b-am'], mine:1, f:r.mod === 'truoc' ? 0 : 1, go:[r.mod, r.ck, r.id] });
+      if (hp('t_qa') && r.by !== my) out.push({ i:r.mod === 'truoc' ? '✋' : '📝', t:(r.mod === 'truoc' ? 'Giải phóng Hold · ' : 'Xác nhận · ') + what, s:'Gửi bởi ' + (r.byName || '') + ' · ' + dmy(r.ngay), b:['Chờ bạn', 'b-am'], mine:1, f:r.mod === 'truoc' ? 0 : 1, go:[r.mod, r.ck, r.id], rid:r.id, qa:1 });
       else if (r.by === my) out.push({ i:'⏳', t:what + ' chờ kiểm tra', s:'Bạn đã gửi · đang chờ người khác', b:['Đang chờ', 'b-gy'], mine:0, f:3, go:[r.mod, r.ck, r.id] });
     }
     if (r.mod === 'nt' && r.st === 'xn' && hp('t_cht') && r.by !== my) out.push({ i:'🏁', t:'Duyệt nội bộ · nghiệm thu ' + r.ck, s:'QA/QC đã xác nhận · chờ CHT', b:['Chờ CHT', 'b-nv'], mine:1, f:1, go:['nt', r.ck, r.id] });
@@ -2140,6 +2213,7 @@ VIEWS.home = {
       ${updCardHtml() ? `<div class="section" style="padding-top:10px">${updCardHtml()}</div>` : ''}
       <div class="ptitle" style="padding-bottom:6px"><b>${lead ? 'Tổng quan công trường' : 'Xin chào, ' + esc((me.name || '').split(' ').pop())}</b><span class="tap" onclick="go('proj')">${ca.dem ? '🌙 Ca đêm' : '☀️ Ca ngày'} · ${dmy(td)}${ca.kv ? ' · ' + esc(ca.kv) : ''} ›</span></div>
       <div class="section"><div class="small" style="margin:-4px 0 10px">${esc(projName())}</div>${hp('t_ghi') ? `<button class="bigadd" onclick="quickPick()">＋ Ghi nhật ký thi công</button>` : ''}</div>
+      ${dl.length ? `<div class="section"><div class="sec-head"><span class="sec-title">Làm tiếp</span>${dl.length > 3 ? `<span class="sec-link tap" onclick="go('plan',{f:'dl'})">Tất cả ${dl.length} ›</span>` : ''}</div>${dl.slice().sort((a, b) => (a.step === 'hold') - (b.step === 'hold')).slice(0, 3).map(ltCard).join('')}</div>` : ''}
       <div class="stat-grid" style="padding-top:0">
         <div class="stat tap" onclick="go('plan',{f:'dl'})"><div class="stat-l c-or">🏗️ Đang thi công</div><div class="stat-v">${dl.length}</div><div class="stat-s">${dl.filter(c => c.loai !== 'tv').length} cọc · ${dl.filter(c => c.loai === 'tv').length} panel</div></div>
         <div class="stat tap" onclick="go('viec')"><div class="stat-l c-am">⏳ Chờ kiểm tra</div><div class="stat-v">${gui}</div><div class="stat-s">${hold} điểm Hold</div></div>
@@ -2154,13 +2228,34 @@ VIEWS.home = {
       <div class="section"><div class="card pad"><div class="split"><span class="rname">Cấu kiện đổ xong · 7 ngày</span><span class="legend"><span><i style="background:var(--orange)"></i>Thực tế</span><span><i style="background:#C5CED9"></i>Đăng ký BT</span></span></div>
         <div class="bars">${days.map((d, i) => `<div><b>${vals[i] || ''}</b><div style="display:flex;gap:2px;align-items:flex-end;width:100%;justify-content:center;height:80px"><i style="height:${(vals[i] / mx * 80).toFixed(0)}px;width:38%"></i><i class="p" style="height:${(plan(d) / mx * 80).toFixed(0)}px;width:30%"></i></div><span>${WD[new Date(d + 'T00:00:00').getDay()]}</span></div>`).join('')}</div>
         <div class="small mt8">Tuần: ${vals.reduce((a, b) => a + b, 0)} cấu kiện · ${fmtN(days.reduce((a, d) => a + ((sd[d] || {}).m3 || 0), 0), 0)} m³ bê tông</div></div></div>
-      <div class="section"><div class="sec-head"><span class="sec-title">Cấu kiện đang làm</span><span class="sec-link tap" onclick="go('plan',{f:'dl'})">Xem mặt bằng ›</span></div>
-        <div class="card">${dl.length ? dl.slice(0, 8).map(ckRow).join('') : '<div class="empty">Chưa có cấu kiện đang làm</div>'}</div></div>
       ${hp('t_ghi') ? `<div class="section"><div class="sec-head"><span class="sec-title">Ghi nhanh</span></div><div class="qgrid">${QUICK.map(q => `<button class="q" onclick="${q[0] === 'sk' || q[0] === 'bg' ? `openForm('${q[0]}')` : `openForm('${q[0]}')`}"><span>${q[1]}</span>${q[2]}</button>`).join('')}</div></div>` : ''}
       <div class="section"><div class="card pad tap" onclick="go('bc')" style="display:flex;gap:12px;align-items:center"><div class="ico am">🤝</div><div class="rmain"><div class="rname">Bàn giao ca</div><div class="rsub">${lastBg ? esc(lastBg.byName) + ' · ' + dmy(lastBg.ngay) + (lastBg.d.nhan && lastBg.d.nhan.at ? ' · đã nhận' : ' · chưa nhận') : 'Chưa có bàn giao'}</div></div><span class="chev">›</span></div></div>`;
     return shell({ body, tab:'home' });
   }
 };
+// 5.37: bước tiếp theo của 1 cấu kiện — dùng chung cho Tổng quan, Hồ sơ cấu kiện, Mặt bằng
+function ckNext(c) {
+  const out = { mod:'', lbl:stepLabel(c), wait:c.step === 'hold', dots:'' };
+  if (!hasRecs(c.code)) return out;
+  try {
+    const D = tdData(c), s = D.steps[D.cur], r = lastOf(c.code, s[2]);
+    out.dots = D.steps.map((x, i) => `<i class="${D.f[x[0]] ? 'd' : i === D.cur && !D.all ? 'c' : ''}"></i>`).join('');
+    const hold = recsOf(c.code).filter(x => x.st === 'gui' && MODS[x.mod] && MODS[x.mod].hold).pop();
+    if (hold && !(r && r.st === 'nhap' && r.mod !== hold.mod && (r.ngay + (r.at || '')) > (hold.ngay + (hold.at || '')))) return Object.assign(out, { mod:hold.mod, wait:true, lbl:'Chờ QA/QC: ' + MODS[hold.mod].t });   // đang làm dở bước sau thì vẫn cho Tiếp tục
+    if (D.all) return Object.assign(out, { mod:'nt', wait:false, lbl:'Đã nghiệm thu · xem hồ sơ', done:true });
+    const ch = tdChip(D, s[0]), wait = out.wait || !!(r && r.st === 'gui');
+    return Object.assign(out, { mod:s[2], wait, lbl:(wait ? 'Chờ QA/QC: ' : s[0] === 'nt' ? '' : 'Tiếp tục: ') + (s[0] === 'nt' ? 'Lập hồ sơ nghiệm thu' : s[1]) + (ch && s[0] !== 'nt' ? ' · ' + ch : '') });
+  } catch (e) { return out; }
+}
+function ckNextBtn(c, cls) {
+  const n = ckNext(c), act = n.mod ? `openForm('${n.mod}','${esc(c.code)}')` : `go('ck',{code:'${esc(c.code)}'})`;
+  return `<button class="${cls || 'btn'} ${n.wait ? 'wait' : ''}" onclick="${act}">${n.wait ? '⏳' : n.done ? '🏁' : '▶'} ${esc(n.lbl)}</button>`;
+}
+// thẻ "Làm tiếp": tiến độ các bước + nút mở đúng bước đang dở
+function ltCard(c) {
+  const sub = esc(c.loai === 'tv' ? (c.m.k || c.type || '') : [c.type, c.truc].filter(Boolean).join(' · ')), n = ckNext(c);
+  return `<div class="lt-card ${n.wait ? 'w' : ''}"><div class="split tap" onclick="go('ck',{code:'${esc(c.code)}'})"><b style="font-size:18.5px">${esc(ckName(c))}</b><span class="small">${sub} ›</span></div>${n.dots ? `<div class="dots">${n.dots}</div>` : ''}${ckNextBtn(c, 'lt-go')}</div>`;
+}
 function ckRow(c) {
   let extra = '';
   if (c.step === 'khoan') { const d = depthNow(c.code), L = dz(c).Lk; extra = d ? `${fmtN(d, 1)} / ${fmtN(L, 1)} m` : ''; }
@@ -2282,7 +2377,7 @@ function drawPlan() {
     }
     if (showLab && on) s += `<text x="${(q.p[0] + (q.a ? 0 : r0 * 1.6)).toFixed(2)}" y="${(-q.p[1] + 3 / ppm).toFixed(2)}" font-size="${(9 / ppm).toFixed(2)}" font-weight="700" fill="#1A2332" ${q.a ? 'text-anchor="middle"' : ''} stroke="#fff" stroke-width="${(2.5 / ppm).toFixed(2)}" paint-order="stroke">${esc(c.code)}</text>`;
   });
-  if (sel && g.pts[sel]) { const q = g.pts[sel]; s += `<circle cx="${q.p[0].toFixed(2)}" cy="${(-q.p[1]).toFixed(2)}" r="${(9 / ppm).toFixed(2)}" fill="none" stroke="#0B2545" stroke-width="${(2.4 * sw).toFixed(3)}"/>`; }
+  if (sel && g.pts[sel]) { const q = g.pts[sel], cx = q.p[0].toFixed(2), cy = (-q.p[1]).toFixed(2); s += `<circle cx="${cx}" cy="${cy}" r="${(9 / ppm).toFixed(2)}" fill="none" stroke="#0B2545" stroke-width="${(2.4 * sw).toFixed(3)}"/><circle class="pl-pulse" cx="${cx}" cy="${cy}" r="${(9 / ppm).toFixed(2)}" fill="none" stroke="#F26522" stroke-width="${(2.4 * sw).toFixed(3)}"><animate attributeName="r" values="${(7 / ppm).toFixed(2)};${(20 / ppm).toFixed(2)};${(7 / ppm).toFixed(2)}" dur="1.4s" repeatCount="indefinite"/><animate attributeName="opacity" values="1;0.15;1" dur="1.4s" repeatCount="indefinite"/></circle>`; }
   s += `<g transform="translate(${(PV.cx + vw / 2 - 26 / ppm).toFixed(2)},${(-PV.cy + vh / 2 - 26 / ppm).toFixed(2)})"><g transform="rotate(${-(+B.cfg.rot || 0)})"><path d="M0 ${-12 / ppm} L${4 / ppm} ${4 / ppm} L0 ${1 / ppm} L${-4 / ppm} ${4 / ppm}Z" fill="#0B2545"/><text y="${-15 / ppm}" font-size="${9 / ppm}" text-anchor="middle" font-weight="800" fill="#0B2545">B</text></g></g>`;
   svg.innerHTML = s;
   const zl = $('#zlab'); if (zl) zl.textContent = (PV.z < 1.05 ? 'Toàn bộ' : 'Phóng ' + PV.z.toFixed(1) + '×') + ' · 10 m ≈ ' + Math.round(10 * ppm) + ' px';
@@ -2342,8 +2437,9 @@ function peekHtml() {
   const k3 = c.loai === 'tv' ? [['Dài', fmtN(z.L, 2) + ' m'], ['Đáy', fmtZ(z.toe)], ['V LT', fmtN(z.vlt, 1) + ' m³']] : [['Z mũi', fmtZ(z.toe)], ['L khoan', fmtN(z.Lk, 1) + ' m'], ['V LT', fmtN(z.vlt, 2) + ' m³']];
   return `<div class="card pad"><div class="pk-grab" onclick="peekBig()"><i></i></div><div class="split"><div><b style="font-size:20px;color:var(--navy)">${esc(c.code)}</b><div class="small">${esc(ckDesc(c))}${c.kv && c.kv !== 'TV' ? ' · ' + esc(c.kv) : ''}</div></div><span class="badge ${ST[c.st].b}">${ST[c.st].t}</span></div>
     <div class="small mt8" style="color:var(--text2)">${esc(stepLabel(c))}${c.flag === 'tt' ? ' · <b class="c-rd">có NCR đang mở</b>' : ''}</div>
+    ${hasRecs(c.code) && c.st !== 'cl' ? `<div class="pk-next">${ckNextBtn(c, 'btn sm')}</div>` : ''}
     <div id="pk-ht" class="mt8">${hasRecs(c.code) ? htHtml(c) : `<div class="mini3">${k3.map(x => `<div>${x[0]}<b>${x[1]}</b></div>`).join('')}</div><div class="small mt8"><span class="spin" style="display:inline-block;width:12px;height:12px;vertical-align:-2px"></span> Đang tải mặt cắt & hiện trạng…</div>`}</div>
-    <div style="display:flex;gap:8px;margin-top:12px;position:sticky;bottom:0;background:#fff;padding:8px 0 2px"><button class="btn ghost sm" onclick="PV.sel='';setPeek();drawPlan()">✕ Đóng</button>${c.loai !== 'tv' && c.truc ? `<button class="btn ghost sm" onclick="go('sec',{code:'${esc(c.code)}'})">📐 Mặt cắt</button>` : ''}<button class="btn sm" onclick="go('ck',{code:'${esc(c.code)}'})">Hồ sơ ›</button></div></div>`;
+    <div style="display:flex;gap:8px;margin-top:12px;position:sticky;bottom:0;background:#fff;padding:8px 0 2px"><button class="btn ghost sm" onclick="PV.sel='';setPeek();drawPlan()">✕ Đóng</button>${c.loai !== 'tv' && c.truc ? `<button class="btn ghost sm" onclick="go('sec',{code:'${esc(c.code)}'})">📐 Mặt cắt</button>` : ''}<button class="btn ghost sm" onclick="go('ck',{code:'${esc(c.code)}'})">Hồ sơ ›</button></div></div>`;
 }
 async function peekLoad(code) {
   if ((CKREC[code] && !CKREC[code].stale) || bulkOk()) { requestAnimationFrame(peekKeepVisible); return; }
@@ -2494,7 +2590,7 @@ const MODSUM = {
   khoan:(r, c) => { let s = 0; (r.d.rows || []).forEach(x => s = Math.max(s, +x.sau || 0)); return `Sâu ${fmtN(s, 2)} m · Z đáy ${fmtZ(dz(c).gl - s)}${+r.d.xong === 1 ? ' · đạt' : ''}`; },
   hh:r => r.d.thuoc == 0 ? 'Không thuộc danh sách kiểm tra' : `Nghiêng ${fmtN(isFinite(num(r.d.ng)) ? r.d.ng : ngMax(r.d.rows), 2)}%${r.d.kl ? ' · ' + (r.d.kl === 'dat' ? 'Đạt' : 'Không đạt') : ''}`,
   dd:r => `${esc(r.d.gd || '')} · ${fmtN(r.d.kl, 2)} · ${fmtN(r.d.nhot)} s · cát ${fmtN(r.d.cat, 1)}%`,
-  truoc:r => r.d.nguon ? `Làm sạch ${r.d.lan || 1} lần · sâu trước đổ ${fmtN(r.d.sauCuoi, 2)} m · lắng ${fmtN(r.d.can1)} mm` : `Cặn ${['can1', 'can2', 'can3'].map(k => r.d[k]).filter(v => v !== undefined && v !== '').map(v => fmtN(v)).join(' · ')} mm · ${fmtN(r.d.nOng)} ống tremie`,
+  truoc:r => r.d.nguon ? `Làm sạch ${r.d.lan || 1} lần · sâu trước đổ ${fmtN(r.d.sauCuoi, 2)} m · lắng ${fmtN(r.d.can1)} mm` : `Cặn ${['can1', 'can2', 'can3'].map(k => r.d[k]).filter(v => v !== undefined && v !== '').map(v => fmtN(v)).join(' · ')} mm${isFinite(num(r.d.lOng)) ? ' · ống ' + fmtN(r.d.lOng, 2) + ' m' : ''}`,
   lt:r => r.d.haTu ? `Hạ lồng ${esc(r.d.haTu)}${r.d.haDen ? '–' + esc(r.d.haDen) : ''}${isFinite(num(r.d.thepTreo)) ? ' · thép treo ' + fmtN(r.d.thepTreo, 2) + ' m' : ''}` : `${fmtN(r.d.n)} lồng · ${fmtN(r.d.kl, 2)} t · ${fmtN(r.d.ongSA)} ống siêu âm`,
   moinoi:r => `${esc(r.d.moi || '')} · ${esc(r.d.loai || '')}${r.d.kiemTra ? ' · KT ' + esc(r.d.kiemTra) : ''}`,
   bt:(r, c) => `${r.d.ketThuc ? 'Xong ' + esc(r.d.ketThuc) : 'Đang đổ'} · ${fmtN(r.d.luyKe, 1)} / ${fmtN(dz(c).vlt, 2)} m³`,
@@ -2547,7 +2643,10 @@ VIEWS.ck = {
         <div class="small mt8" style="color:var(--text2)">${esc(stepLabel(c))}${c.flag === 'tt' ? ' · <b class="c-rd">có NCR đang mở</b>' : ''}${!CKREC[c.code] ? ' · <span class="c-mut">đang tải hồ sơ…</span>' : ''}</div></div>
       <div class="tabs">${[['ht', 'Hiện trạng'], ['tc', 'Thi công'], ['tk', 'Thiết kế'], ['cl', 'Chất lượng'], ['ls', 'Lịch sử']].map(t => `<button class="${tab === t[0] ? 'on' : ''}" onclick="cur.a.tab='${t[0]}';render(false)">${t[1]}</button>`).join('')}</div>
       ${inner}</div>`;
-    return shell({ back:1, title:'Hồ sơ cấu kiện', sub:esc(projName()), body, act:hp('t_ghi') && next ? `<button class="btn ghost" onclick="go('plan',{code:'${esc(c.code)}'})">🗺️ Mặt bằng</button><button class="btn" onclick="openForm('${next[0]}','${esc(c.code)}')">＋ ${esc(next[2])}</button>` : '' });
+    const nx = hasRecs(c.code) ? ckNext(c) : null;
+    const act = nx && nx.mod ? `<button class="btn ghost" onclick="go('plan',{code:'${esc(c.code)}'})">🗺️ Mặt bằng</button>${ckNextBtn(c)}`
+      : hp('t_ghi') && next ? `<button class="btn ghost" onclick="go('plan',{code:'${esc(c.code)}'})">🗺️ Mặt bằng</button><button class="btn" onclick="openForm('${next[0]}','${esc(c.code)}')">＋ ${esc(next[2])}</button>` : '';
+    return shell({ back:1, title:'Hồ sơ cấu kiện', sub:esc(projName()), body, act });
   }
 };
 // danh sách bản ghi nhiều lần của 1 cấu kiện (xe, dung dịch)
@@ -2570,11 +2669,41 @@ VIEWS.viec = {
     let body;
     if (tab === 'tim') {
       body = `<div class="section"><input class="search" id="vq" placeholder="Mã cấu kiện, số NCR, nội dung…" value="${esc(a.q || '')}" onkeydown="if(event.key==='Enter')findRec(this.value)"><button class="btn sm mt8" onclick="findRec($('#vq').value)">🔍 Tìm</button></div><div class="section" id="vres">${a.res || ''}</div>`;
-    } else body = `<div class="section"><div class="card">${l.length ? l.map(taskRow).join('') : '<div class="empty">🎉 Không có việc tồn</div>'}</div></div>`;
+    } else {
+      const qa = l.filter(t => t.qa && REC[t.rid] && REC[t.rid].st === 'gui'), rest = l.filter(t => !qa.includes(t));
+      body = `${qa.length ? `<div class="section"><div class="sec-head"><span class="sec-title">Chờ bạn duyệt · ${qa.length}</span></div>${qa.map(qaCard).join('')}</div>` : ''}
+        <div class="section">${qa.length && rest.length ? '<div class="sec-head"><span class="sec-title">Việc khác</span></div>' : ''}<div class="card">${rest.length ? rest.map(taskRow).join('') : qa.length ? '<div class="empty">Không còn việc khác</div>' : '<div class="empty">🎉 Không có việc tồn</div>'}</div></div>`;
+    }
     return shell({ body:`<div class="ptitle"><b>${all.filter(t => t.mine).length} việc của bạn</b><span>${lastSync ? 'Cập nhật ' + new Date(lastSync).toTimeString().slice(0, 5) : ''}</span></div>
       <div class="chip-row">${[['toi', 'Việc của tôi'], ['tat', 'Tất cả'], ['tim', 'Tìm hồ sơ']].map(t => `<span class="chip ${tab === t[0] ? 'on' : ''}" onclick="cur.a.tab='${t[0]}';render(false)">${t[1]}</span>`).join('')}</div>${body}`, tab:'viec' });
   }
 };
+// 5.38: QA/QC duyệt ngay trên thẻ — có tóm tắt số đo, không phải mở từng phiếu
+function qaSum(r) {
+  const c = CK[r.ck], d = r.d, out = [];
+  try { if (MODSUM[r.mod] && c) out.push(MODSUM[r.mod](r, c)); } catch (e) {}
+  if (r.mod === 'lt' && c) { const rows = (d.rows || []).filter(Boolean), n = noiCalc(c, d); if (rows.length) out.push(rows.filter(x => x.ha).length + '/' + rows.length + ' đoạn đã hạ'); if (isFinite(n.topTT) && isFinite(n.top)) out.push(`đỉnh thép ${fmtZ(n.topTT)} (lệch ${Math.round(n.lech)} mm ${Math.abs(n.lech) <= n.tol ? '✓' : '✕'})`); if (isFinite(num(d.lechTim))) out.push('lệch tim ' + fmtN(d.lechTim) + ' mm'); }
+  if (r.mod === 'truoc') { if (d.combo) out.push(`ống ${d.combo.k} × ${fmtN(d.combo.main || 3.15, 2)}${(d.combo.odd || []).map(x => ' + ' + fmtN(x, 1)).join('')} · cách đáy ${fmtN(d.cachDay, 2)} m`); }
+  const ck = d.ckl ? Object.values(d.ckl).filter(x => x && x.ok).length : 0; if (d.ckl) out.push('checklist ' + ck + ' mục ✓');
+  const ph = photosOf(r.id).length; if (ph) out.push(ph + ' ảnh');
+  return out.filter(Boolean).join(' · ');
+}
+function qaCard(t) {
+  const r = REC[t.rid], hold = r.mod === 'truoc';
+  return `<div class="qa-card ${hold ? 'h' : ''}"><div class="split tap" onclick='openForm(${JSON.stringify(r.mod)},${JSON.stringify(r.ck || '')},${JSON.stringify(r.id)})'><b>${(MODS[r.mod] || {}).i || ''} ${esc(r.ck || '')} · ${esc((MODS[r.mod] || {}).t || r.mod)}</b><span class="small">${esc(dmy(r.ngay))} ›</span></div>
+    <div class="qa-s">${esc(qaSum(r)) || 'Bấm để xem phiếu'}</div><div class="small">Gửi bởi ${esc(r.byName || '')}</div>
+    <div class="qa-b"><button class="btn ghost" onclick="qSign('${r.id}','tra')">↩ Trả về</button><button class="btn gr" onclick="qSign('${r.id}','xn')">${hold ? '✓ Giải phóng Hold' : '✓ Xác nhận'}</button></div></div>`;
+}
+async function qSign(id, act) {
+  const r = REC[id]; if (!r) return;
+  const nm = (MODS[r.mod] || {}).t + (r.ck ? ' · ' + r.ck : '');
+  let note = '';
+  if (act === 'tra') { note = await ask('Trả về: ' + nm, { input:'Lý do trả về', need:1, ok:'Trả về', okCls:'rd' }); if (!note) return; }
+  else if (!(await ask(r.mod === 'truoc' ? 'Giải phóng điểm Hold?' : 'Xác nhận ' + nm + '?', { msg:esc(qaSum(r)), ok:r.mod === 'truoc' ? 'Giải phóng Hold' : 'Xác nhận', okCls:'gr' }))) return;
+  queue('tcSign', { id, act, note:note === true ? '' : note || '' });
+  toast(act === 'xn' ? '✅ Đã xác nhận ' + nm : '↩ Đã trả về ' + nm);
+  render(false);
+}
 async function findRec(q) {
   q = String(q || '').trim(); if (!q) return;
   cur.a.q = q;
@@ -3285,6 +3414,36 @@ async function qUserSave(id) {
   const u = QR.users.find(x => x.id === id); if (u) u.projects = list;
   closeSheet(); toast('✅ Đã giao dự án'); render(false); sync(true);
 }
+// ---------- Công cụ tính (tham khảo, không lưu hồ sơ) ----------
+const TOOL = { code:'', d:{} };
+function toolLoad(code) {
+  const c = CK[code]; TOOL.code = code || ''; TOOL.d = {};
+  if (!c) return;
+  const lt = lastOf(code, 'lt'), ty = tyOf(c), src = lt ? lt.d : {};
+  const pick = (k, dv) => isFinite(num(src[k])) ? num(src[k]) : dv;
+  TOOL.d = { zMoc:pick('zMoc', ''), zSin:pick('zSin', sinOf(c, 'lt').v), lRau:pick('lRau', ty.rau || ''), lChong:pick('lChong', ty.chong || '') };
+}
+function toolIn(el) { TOOL.d[el.dataset.k] = el.value; const o = $('#tool-out'); if (o) o.innerHTML = toolOut(); }
+function toolOut() {
+  const c = CK[TOOL.code]; if (!c) return '<div class="note n-gy">🧮<span>Chọn cọc / panel để lấy cao độ thép chủ thiết kế theo Loại TK.</span></div>';
+  const ctx = { c, d:TOOL.d };
+  return liveNoi(ctx) + '<div class="mt8">' + liveCat(ctx) + '</div>';
+}
+VIEWS.tool = {
+  render(a) {
+    if (a.code !== undefined && a.code !== TOOL.code) toolLoad(a.code);
+    const c = CK[TOOL.code];
+    const inp = (k, l, h) => `<div class="fg"><label>${l}${h ? ` <small class="c-mut">${h}</small>` : ''}</label><input class="in" inputmode="decimal" data-k="${k}" value="${esc(TOOL.d[k] === undefined || TOOL.d[k] === '' ? '' : fmtN(TOOL.d[k], 2))}" oninput="toolIn(this)"></div>`;
+    const body = `<div class="dbody">
+      <div class="card pad tap" style="display:flex;align-items:center;gap:10px;padding:10px 14px" onclick="pickCk(code=>go('tool',{code},true))"><div class="ico gy">●</div><div class="rmain"><div class="small">Cấu kiện</div><div class="rname">${c ? esc(c.code) + ' <span class="small">· ' + esc(c.type || '') + '</span>' : 'Chưa chọn'}</div></div><span class="sec-link">Đổi ›</span></div>
+      <div class="fsec"><div class="fsec-t">🔗 Tính đoạn nối lồng thép<small>${c && lastOf(c.code, 'lt') ? 'đã lấy số đo từ phiếu Lồng thép' : 'nhập số đo'}</small></div>
+        <div class="fg-row">${inp('zMoc', 'Đỉnh móc râu', 'm')}${inp('zSin', 'Cao độ sin', 'm')}</div>
+        <div class="fg-row">${inp('lRau', 'Râu (đo thẳng đứng)', 'm')}${inp('lChong', 'Chồng vào lồng', 'm')}</div></div>
+      <div id="tool-out">${toolOut()}</div>
+      <div class="small" style="line-height:1.5">Công cụ tham khảo — kết quả không lưu vào hồ sơ. Phiếu Lồng thép chỉ ghi số đo thực tế.</div></div>`;
+    return shell({ back:1, title:'Công cụ tính', sub:esc(projName()), body });
+  }
+};
 
 // ===== Nạp SỔ HỒ SƠ Excel (mẫu FECON South): cọc khoan nhồi (trang "TK Nhap") + tường vây (trang "TK Nhập") =====
 // Đọc trong trình duyệt bằng ExcelJS → danh sách cấu kiện thật (tọa độ VN2000) + bản ghi nhật ký thật theo từng công đoạn.
@@ -3865,23 +4024,23 @@ const TC_GUIDES = [
   { id:'tc_ghi', g:'Ghi nhật ký', t:'Ghi nhật ký một công đoạn', p:'t_ghi', s:[
     'Tổng quan → nút cam "＋ Ghi nhật ký thi công" → chọn công việc: Định vị, Khoan / cạp, Dung dịch, Lồng thép, Xe bê tông, Tremie…',
     'Chọn cọc / panel: gõ mã (VD: P3.143) hoặc chọn trong nhóm Đang làm / Sắp làm.',
-    'Nhập số liệu. Ô nào ngoài dung sai ITP sẽ báo màu ngay dưới ô.',
+    'Định vị, Khoan, Lồng thép, Trước đổ, Đổ bê tông đi theo từng bước: vạch trên cùng cho biết đang ở bước nào (chạm để nhảy bước), nút "Tiếp" ở dưới. Mở lại phiếu đang dở → app vào thẳng bước chưa xong. Ô nào ngoài dung sai ITP báo màu ngay dưới ô.',
     '"Lưu nháp" để sửa tiếp; "Gửi kiểm tra" để báo QA/QC. Mất mạng vẫn lưu, có mạng app tự gửi.'] },
   { id:'tc_khoan', g:'Ghi nhật ký', t:'Nhật ký khoan / cạp', p:'t_ghi', s:[
     'Chọn máy, tổ đội, giờ bắt đầu.',
-    'Bấm "＋ Thêm lần đo": giờ, chiều sâu, địa tầng. Thẻ trên cùng luôn hiện chiều sâu và cao độ đáy hiện tại.',
-    'Đạt chiều sâu thiết kế: chọn "Đạt" ở mục Kết thúc rồi bấm "Gửi kiểm tra".'] },
+    'Bước 2 "Đo sâu": bấm "＋ Thêm lần đo", gõ chiều sâu, địa tầng (giờ tự ghi). Thẻ trên cùng hiện chiều sâu, cao độ đáy; app nhắc nếu số đo nhỏ hơn lần trước hoặc tăng quá 15 m (dễ gõ nhầm dấu phẩy).',
+    'Bước 3 "Kết thúc": chọn "Đạt", ghi giờ kết thúc rồi bấm "Gửi kiểm tra".'] },
   { id:'tc_dd', g:'Ghi nhật ký', t:'Mẫu dung dịch', p:'t_ghi', s:[
     'Chọn giai đoạn lấy mẫu: Trong khi khoan / Trước làm sạch / Sau làm sạch / Trước đổ.',
     'Nhập khối lượng riêng, độ nhớt, hàm lượng cát, pH. Xanh = đạt ITP · vàng = ngoài ITP nhưng còn trong biểu mẫu · đỏ = vượt.',
     'Bấm "Lưu". Mỗi lần thử là một mẫu, xem lại trong hồ sơ cọc.'] },
   { id:'tc_hold', g:'Ghi nhật ký', t:'Làm sạch & kiểm tra trước đổ (điểm Hold)', p:'t_ghi', s:[
-    'Ghi nhật ký → "Trước đổ": nhập lần làm sạch, cặn đáy 3 vị trí, ống tremie.',
+    'Trước đổ 4 bước: Làm sạch → Cặn đáy 3 vị trí → Ống đổ (app chọn tổ hợp ống) → Gửi Hold (xem điều kiện, tích checklist, chụp ảnh).',
     'Bấm "✋ Gửi kiểm tra Hold". QA/QC nhận tin, mở bản ghi và bấm "Giải phóng Hold".',
     'Chưa giải phóng Hold thì màn Đổ bê tông chưa mở.'] },
   { id:'tc_bt', g:'Ghi nhật ký', t:'Xe bê tông & đổ bê tông tremie', p:'t_ghi', s:[
     'Mỗi xe: "Xe bê tông" → biển số, số phiếu, giờ trộn / giờ đến, độ sụt → Nhận hoặc Trả lại.',
-    '"Tremie": thêm lần đo (lũy kế m³, Z mặt bê tông, Z đầu ống). App tính độ ngập h và nhắc tháo ống.',
+    'Đổ bê tông 4 bước. Bước "Đo & tháo ống": thêm lần đo (lũy kế m³, thước dây, số ống còn) → app tính ngập h, số ống tháo được, m³ còn cần. Tháo xong bấm "✓ Đã tháo n ống": app ghi gián đoạn và lần đo sau tự điền số ống còn.',
     'Ghi giờ kết thúc → cấu kiện chuyển "Đã đổ".'] },
   { id:'tc_tiendo', g:'Mặt bằng & hồ sơ', t:'Hình cọc / panel tự vẽ theo tiến độ', p:'t_xem', s:[
     'Hồ sơ cấu kiện → tab "Hiện trạng": hình cọc (hoặc panel) tự vẽ theo số đo. Nét mờ = thiết kế chưa làm, cam = đã làm theo số thực tế, phần đang làm nhấp nháy.',
@@ -3889,8 +4048,8 @@ const TC_GUIDES = [
     'Nút cam dưới bước đang chọn mở thẳng form của bước đó — chỉ 1 chạm.'] },
   { id:'tc_long', g:'Ghi nhật ký', t:'Treo lồng, tổ hợp ống đổ, đổ bê tông có tính toán', p:'t_ghi', s:[
     'Định vị: nhập Cao độ sin (mặt bằng tại cọc). App dùng lại sin ở các bước sau, không phải nhập lại.',
-    'Lồng thép: các đoạn lồng tự điền theo bản vẽ, bấm "Hạ ✓" khi hạ xong mỗi đoạn. Mục "Treo lồng": nhập ① đỉnh móc, ③ chiều dài râu thực tế → app ra đoạn nối cần hàn (hoặc phần râu cắt bớt) và phiếu cắt thép (số đoạn × chiều dài, đã cộng hàn chồng).',
-    'Checklist cắt / hàn / treo / cố định: chạm ✓ từng mục, bấm 📷 để chụp ảnh ngay tại mục. Đo lại đỉnh móc sau treo → app báo đỉnh thép chủ xanh / đỏ theo dung sai, rồi "Gửi kiểm tra Hold".',
+    'Lồng thép đi theo 4 bước, nút "Tiếp" ở dưới: ① Đoạn lồng — các đoạn tự điền theo bản vẽ, bấm "Hạ ✓" khi hạ xong mỗi đoạn; ② Treo lồng — chỉ nhập số đo: đỉnh móc, râu (đo thẳng đứng), chồng, đoạn nối thực tế đã hàn. Cần tính đoạn nối trước khi cắt thép: menu ☰ › Công cụ tính.',
+    '③ Đo lại đỉnh móc sau treo, lệch tim → app báo đỉnh thép chủ xanh / đỏ theo dung sai. ④ Checklist: chạm ✓ từng mục, bấm 📷 chụp ngay tại mục, rồi "Gửi kiểm tra Hold". Mở lại phiếu đang dở, app vào thẳng bước chưa xong.',
     'Kiểm tra trước đổ: nhập ① chiều sâu đáy sau làm sạch và ② phần ống + phễu nhô trên sin → app chọn tổ hợp ống (ống 3,15 m + ống lẻ) sao cho đầu ống cách đáy 0,30–0,50 m.',
     'Đổ bê tông: mỗi lần đo chỉ nhập thước dây (từ sin) và số ống 3,15 m còn lắp; lũy kế m³ lấy từ phiếu xe. App ra độ ngập h, số ống tháo được (giữ ngập ≥ 2,0 m, báo đỏ dưới 1,5 m), m³ còn cần và số xe gọi thêm.',
     'Số mặc định (hàn chồng 10d, dung sai ±50 mm, đổ dư 1,0 m, xe 7 m³, bộ ống) sửa ở Quản trị Thi công → Cấu hình. Thông số lồng / râu / lớp đất theo loại cọc ở Quản trị → Loại TK.'] },
