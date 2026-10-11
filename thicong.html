@@ -270,6 +270,7 @@ button{cursor:pointer;-webkit-tap-highlight-color:transparent}
 /* mặt bằng */
 .planbox{position:relative;background:#FBFCFD;border-radius:12px;overflow:hidden;border:1px solid #E8ECF0;touch-action:none;user-select:none;-webkit-user-select:none}
 .planbox svg{display:block;width:100%}
+.pl-blink{animation:plBlink 1.1s ease-in-out infinite}@keyframes plBlink{50%{opacity:.35}}
 .zbtns{position:absolute;right:8px;top:8px;display:flex;flex-direction:column;gap:6px}
 .zbtns button{width:38px;height:38px;border-radius:10px;border:1px solid var(--border);background:#fff;font-size:20px;font-weight:800;color:var(--navy);box-shadow:var(--shadow)}
 .zlab{position:absolute;left:8px;bottom:8px;background:rgba(255,255,255,.9);border-radius:8px;padding:3px 8px;font-size:12px;font-weight:800;color:var(--text2)}
@@ -462,9 +463,9 @@ button .pi,.btn .pi,a .pi,.chip .pi,.tag .pi,.badge .pi,.yn .pi,.bnav .pi,.bnav-
 <div id="app"></div>
 <script>
 // FECON South · THI CÔNG 1.4.3 — chạy cùng app Kho (đăng nhập ở index.html, dùng chung máy chủ Apps Script)
-const KHO_VERSION = '5.40.0';
+const KHO_VERSION = '5.41.0';
 // ===== FECON Thi công 1.0 — lõi: máy chủ, lưu trên máy, hàng đợi gửi, điều hướng =====
-const TC_APP_VERSION = '1.9.0';
+const TC_APP_VERSION = '1.10.0';
 const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbw6Rmi80I7RI3ij2U7RdRF5pYuQTnPrwEmGmUZS5xpxzLwwVynfoFUujZe1lm6HS1ymxw/exec';
 const LS_TOKEN = 'fecon_token_v5', LS_USER = 'fecon_user_v5';           // dùng chung phiên đăng nhập với Kho
 const LS_P = 'tc_proj', LS_BOOT = 'tc_boot2|', LS_OUT = 'tc_out_v1', LS_CA = 'tc_ca', LS_PART = 'fecon_part';
@@ -2251,6 +2252,7 @@ VIEWS.home = {
       ${updCardHtml() ? `<div class="section" style="padding-top:10px">${updCardHtml()}</div>` : ''}
       <div class="ptitle" style="padding-bottom:6px"><b>${lead ? 'Tổng quan công trường' : 'Xin chào, ' + esc((me.name || '').split(' ').pop())}</b><span class="tap" onclick="go('proj')">${ca.dem ? '🌙 Ca đêm' : '☀️ Ca ngày'} · ${dmy(td)}${ca.kv ? ' · ' + esc(ca.kv) : ''} ›</span></div>
       <div class="section"><div class="small" style="margin:-4px 0 10px">${esc(projName())}</div>${hp('t_ghi') ? `<button class="bigadd" onclick="quickPick()">＋ Ghi nhật ký thi công</button>` : ''}</div>
+      ${homePlanHtml()}
       ${dl.length ? `<div class="section"><div class="sec-head"><span class="sec-title">Làm tiếp</span>${dl.length > 3 ? `<span class="sec-link tap" onclick="go('plan',{f:'dl'})">Tất cả ${dl.length} ›</span>` : ''}</div>${dl.slice().sort((a, b) => (a.step === 'hold') - (b.step === 'hold')).slice(0, 3).map(ltCard).join('')}</div>` : ''}
       <div class="stat-grid" style="padding-top:0">
         <div class="stat tap" onclick="go('plan',{f:'dl'})"><div class="stat-l c-or">🏗️ Đang thi công</div><div class="stat-v">${dl.length}</div><div class="stat-s">${dl.filter(c => c.loai !== 'tv').length} cọc · ${dl.filter(c => c.loai === 'tv').length} panel</div></div>
@@ -2269,8 +2271,16 @@ VIEWS.home = {
       ${hp('t_ghi') ? `<div class="section"><div class="sec-head"><span class="sec-title">Ghi nhanh</span></div><div class="qgrid">${QUICK.map(q => `<button class="q" onclick="${q[0] === 'sk' || q[0] === 'bg' ? `openForm('${q[0]}')` : `openForm('${q[0]}')`}"><span>${q[1]}</span>${q[2]}</button>`).join('')}</div></div>` : ''}
       <div class="section"><div class="card pad tap" onclick="go('bc')" style="display:flex;gap:12px;align-items:center"><div class="ico am">🤝</div><div class="rmain"><div class="rname">Bàn giao ca</div><div class="rsub">${lastBg ? esc(lastBg.byName) + ' · ' + dmy(lastBg.ngay) + (lastBg.d.nhan && lastBg.d.nhan.at ? ' · đã nhận' : ' · chưa nhận') : 'Chưa có bàn giao'}</div></div><span class="chev">›</span></div></div>`;
     return shell({ body, tab:'home' });
-  }
+  },
+  after() { if ($('#pbox')) { drawPlan(); planEvents(); } }
 };
+// 5.41: bản vẽ mặt bằng ngay dưới nút Ghi nhật ký (dùng chung bộ vẽ của tab Mặt bằng, luôn hiện toàn bộ — không theo bộ lọc)
+function homePlanHtml() {
+  if (!Object.keys(geo().pts).length) return '';
+  return `<div class="section" style="padding-top:0"><div class="sec-head"><span class="sec-title">🗺️ Bản vẽ mặt bằng</span><span class="sec-link tap" onclick="go('plan')">Mở Mặt bằng ›</span></div>
+    <div class="planbox" id="pbox"><svg id="psvg"></svg><div class="zbtns"><button onclick="pz(1.6)">＋</button><button onclick="pz(1/1.6)">－</button><button onclick="PV.z=1;PV.cx=null;drawPlan()" title="Toàn bộ">⌖</button></div><div class="zlab" id="zlab"></div></div></div>
+    <div class="section ${CK[PV.sel] ? 'pkf' : ''}" id="peek" style="padding-top:0">${peekHtml()}</div>`;
+}
 // 5.37: bước tiếp theo của 1 cấu kiện — dùng chung cho Tổng quan, Hồ sơ cấu kiện, Mặt bằng
 function ckNext(c) {
   const out = { mod:'', lbl:stepLabel(c), wait:c.step === 'hold', dots:'' };
@@ -2379,6 +2389,7 @@ VIEWS.plan = {
   after() { if (PV.mode === 'map') { drawPlan(); planEvents(); } }
 };
 function planMatch(c) {
+  if (cur.v === 'home') return true;
   if (PV.f === 'coc' && c.loai === 'tv') return false;
   if (PV.f === 'tv' && c.loai !== 'tv') return false;
   if (PV.f !== 'all' && PV.f !== 'coc' && PV.f !== 'tv' && c.kv !== PV.f) return false;
@@ -2402,23 +2413,61 @@ function drawPlan() {
   Object.values(CK).forEach(c => {
     const q = g.pts[c.code]; if (!q) return;
     const on = planMatch(c), op = any && !on ? 0.18 : 1, col = ST[c.st].c;
+    const bl = c.st === 'dl' && op === 1 ? ' class="pl-blink"' : '';
     if (q.pl && ppm > 3.5) {
-      s += `<polygon data-c="${esc(c.code)}" points="${q.pl.map(p => p[0].toFixed(2) + ',' + (-p[1]).toFixed(2)).join(' ')}" fill="${col}" stroke="${c.flag === 'tt' ? '#E74C3C' : '#0B2545'}" stroke-width="${(c.flag === 'tt' ? 2 : 0.6) * sw}" opacity="${op}"/>`;
+      s += `<polygon data-c="${esc(c.code)}"${bl} points="${q.pl.map(p => p[0].toFixed(2) + ',' + (-p[1]).toFixed(2)).join(' ')}" fill="${col}" stroke="${c.flag === 'tt' ? '#E74C3C' : '#0B2545'}" stroke-width="${(c.flag === 'tt' ? 2 : 0.6) * sw}" opacity="${op}"/>`;
     } else if (q.a) {
       const t = Math.max((c.m.t || 0.8), 3.2 / ppm);
-      s += `<line data-c="${esc(c.code)}" x1="${q.a[0].toFixed(2)}" y1="${(-q.a[1]).toFixed(2)}" x2="${q.b[0].toFixed(2)}" y2="${(-q.b[1]).toFixed(2)}" stroke="${col}" stroke-width="${t.toFixed(2)}" opacity="${op}"/>`;
+      s += `<line data-c="${esc(c.code)}"${bl} x1="${q.a[0].toFixed(2)}" y1="${(-q.a[1]).toFixed(2)}" x2="${q.b[0].toFixed(2)}" y2="${(-q.b[1]).toFixed(2)}" stroke="${col}" stroke-width="${t.toFixed(2)}" opacity="${op}"/>`;
       if (c.flag === 'tt') s += `<line x1="${q.a[0].toFixed(2)}" y1="${(-q.a[1]).toFixed(2)}" x2="${q.b[0].toFixed(2)}" y2="${(-q.b[1]).toFixed(2)}" stroke="#E74C3C" stroke-width="${(t * 0.35).toFixed(2)}" opacity="${op}"/>`;
     } else {
       const r = Math.max((c.m.d || 1) / 2, r0) * (c.loai === 'tp' ? 1.35 : 1);
-      s += `<circle data-c="${esc(c.code)}" cx="${q.p[0].toFixed(2)}" cy="${(-q.p[1]).toFixed(2)}" r="${r.toFixed(2)}" fill="${c.st === 'cl' ? '#fff' : col}" stroke="${c.flag === 'tt' ? '#E74C3C' : c.st === 'cl' ? '#9AA8BA' : col}" stroke-width="${(c.flag === 'tt' ? 2.2 : 1) * sw}" opacity="${op}"/>`;
+      s += `<circle data-c="${esc(c.code)}"${bl} cx="${q.p[0].toFixed(2)}" cy="${(-q.p[1]).toFixed(2)}" r="${r.toFixed(2)}" fill="${c.st === 'cl' ? '#fff' : col}" stroke="${c.flag === 'tt' ? '#E74C3C' : c.st === 'cl' ? '#9AA8BA' : col}" stroke-width="${(c.flag === 'tt' ? 2.2 : 1) * sw}" opacity="${op}"/>`;
       if (c.loai === 'tp') s += `<circle cx="${q.p[0].toFixed(2)}" cy="${(-q.p[1]).toFixed(2)}" r="${(r * 1.5).toFixed(2)}" fill="none" stroke="#0B2545" stroke-width="${sw}" stroke-dasharray="${2 * sw} ${2 * sw}" opacity="${op}"/>`;
     }
     if (showLab && on) s += `<text x="${(q.p[0] + (q.a ? 0 : r0 * 1.6)).toFixed(2)}" y="${(-q.p[1] + 3 / ppm).toFixed(2)}" font-size="${(9 / ppm).toFixed(2)}" font-weight="700" fill="#1A2332" ${q.a ? 'text-anchor="middle"' : ''} stroke="#fff" stroke-width="${(2.5 / ppm).toFixed(2)}" paint-order="stroke">${esc(c.code)}</text>`;
   });
+  s += planRipples(g, ppm, sw, any);
   if (sel && g.pts[sel]) { const q = g.pts[sel], cx = q.p[0].toFixed(2), cy = (-q.p[1]).toFixed(2); s += `<circle cx="${cx}" cy="${cy}" r="${(9 / ppm).toFixed(2)}" fill="none" stroke="#0B2545" stroke-width="${(2.4 * sw).toFixed(3)}"/><circle class="pl-pulse" cx="${cx}" cy="${cy}" r="${(9 / ppm).toFixed(2)}" fill="none" stroke="#F26522" stroke-width="${(2.4 * sw).toFixed(3)}"><animate attributeName="r" values="${(7 / ppm).toFixed(2)};${(20 / ppm).toFixed(2)};${(7 / ppm).toFixed(2)}" dur="1.4s" repeatCount="indefinite"/><animate attributeName="opacity" values="1;0.15;1" dur="1.4s" repeatCount="indefinite"/></circle>`; }
   s += `<g transform="translate(${(PV.cx + vw / 2 - 26 / ppm).toFixed(2)},${(-PV.cy + vh / 2 - 26 / ppm).toFixed(2)})"><g transform="rotate(${-(+B.cfg.rot || 0)})"><path d="M0 ${-12 / ppm} L${4 / ppm} ${4 / ppm} L0 ${1 / ppm} L${-4 / ppm} ${4 / ppm}Z" fill="#0B2545"/><text y="${-15 / ppm}" font-size="${9 / ppm}" text-anchor="middle" font-weight="800" fill="#0B2545">B</text></g></g>`;
   svg.innerHTML = s;
-  const zl = $('#zlab'); if (zl) zl.textContent = (PV.z < 1.05 ? 'Toàn bộ' : 'Phóng ' + PV.z.toFixed(1) + '×') + ' · 10 m ≈ ' + Math.round(10 * ppm) + ' px';
+  const zl = $('#zlab'); if (zl) zl.textContent = (PV.z < 1.05 ? 'Toàn bộ' : 'Phóng ' + PV.z.toFixed(1) + '×') + (showLab ? ' · 10 m ≈ ' + Math.round(10 * ppm) + ' px' : ' · bấm ＋ để hiện mã');
+}
+// 5.41: chỗ đang thi công tỏa sóng 3 vòng (cọc: vòng tròn · panel: theo đúng viền panel)
+function offPoly(pl, d) {           // dời đều các cạnh đa giác ra ngoài d (toạ độ SVG)
+  const n = pl.length, ar = q => q.reduce((a, p, i) => { const r = q[(i + 1) % n]; return a + p[0] * r[1] - r[0] * p[1]; }, 0);
+  const go = k => pl.map((p, i) => {
+    const a = pl[(i + n - 1) % n], b = pl[(i + 1) % n];
+    const e1 = [p[0] - a[0], p[1] - a[1]], e2 = [b[0] - p[0], b[1] - p[1]], l1 = Math.hypot(e1[0], e1[1]) || 1, l2 = Math.hypot(e2[0], e2[1]) || 1;
+    const n1 = [e1[1] / l1 * k, -e1[0] / l1 * k], n2 = [e2[1] / l2 * k, -e2[0] / l2 * k];
+    const dn = Math.max(0.25, 1 + n1[0] * n2[0] + n1[1] * n2[1]);
+    return [p[0] + d * (n1[0] + n2[0]) / dn, p[1] + d * (n1[1] + n2[1]) / dn];
+  });
+  const r = go(1); return Math.abs(ar(r)) >= Math.abs(ar(pl)) ? r : go(-1);
+}
+function planRipples(g, ppm, sw, any) {
+  const dur = 2.4, beg = [0, 0.8, 1.6], d0 = 2 / ppm, d1 = 32 / ppm, w = (2 * sw).toFixed(3);
+  const an = (n, v, b) => `<animate attributeName="${n}" values="${v}" dur="${dur}s" begin="${b}s" repeatCount="indefinite"/>`;
+  const op = b => an('opacity', '0.95;0.45;0', b);
+  const pts = q => q.map(p => p[0].toFixed(2) + ',' + p[1].toFixed(2)).join(' ');
+  let s = '';
+  Object.values(CK).forEach(c => {
+    if (c.st !== 'dl') return; const q = g.pts[c.code]; if (!q || (any && !planMatch(c))) return;
+    let pl = null;
+    if (q.pl && ppm > 3.5) pl = q.pl.map(p => [p[0], -p[1]]);
+    else if (q.a) {
+      const a = [q.a[0], -q.a[1]], b = [q.b[0], -q.b[1]], L = Math.hypot(b[0] - a[0], b[1] - a[1]) || 1, h = Math.max((c.m.t || 0.8), 3.2 / ppm) / 2;
+      const nx = -(b[1] - a[1]) / L * h, ny = (b[0] - a[0]) / L * h;
+      pl = [[a[0] + nx, a[1] + ny], [b[0] + nx, b[1] + ny], [b[0] - nx, b[1] - ny], [a[0] - nx, a[1] - ny]];
+    }
+    if (pl) { const p0 = pts(offPoly(pl, d0)), p1 = pts(offPoly(pl, d1));
+      beg.forEach(b => { s += `<polygon points="${p0}" fill="none" stroke="#F26522" stroke-width="${w}" stroke-linejoin="round" opacity="0" pointer-events="none">${an('points', p0 + ';' + p1, b)}${op(b)}</polygon>`; });
+    } else {
+      const r = Math.max((c.m.d || 1) / 2, 2.6 / ppm) * (c.loai === 'tp' ? 1.35 : 1), r0 = (r + d0).toFixed(2), r1 = (r + d1).toFixed(2);
+      beg.forEach(b => { s += `<circle cx="${q.p[0].toFixed(2)}" cy="${(-q.p[1]).toFixed(2)}" r="${r0}" fill="none" stroke="#F26522" stroke-width="${w}" opacity="0" pointer-events="none">${an('r', r0 + ';' + r1, b)}${op(b)}</circle>`; });
+    }
+  });
+  return s;
 }
 function pz(f, px, py) {
   const box = $('#pbox'); if (!box) return;
