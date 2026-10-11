@@ -1398,7 +1398,7 @@ button .pi,.btn .pi,a .pi,.chip .pi,.tag .pi,.badge .pi,.yn .pi,.bnav .pi,.bnav-
       <button class="btn-cancel" onclick="closeModal('modal-loan')">Đóng</button>
       <button class="btn-ok need-tk" id="ml-ret-btn" style="background:var(--green)" onclick="openLoanReturn()">↩️ Nhận trả</button>
     </div>
-    <button class="btn-full need-tk" id="ml-close-btn" style="background:none;color:var(--red);font-size:14.5px;margin-top:10px;padding:10px" onclick="openLoanClose()">Đóng phiếu — không trả đủ</button>
+    <button class="btn-full need-tk" id="ml-close-btn" style="background:none;color:var(--red);font-size:14.5px;margin-top:10px;padding:10px" onclick="openLoanClose()">🏷 Bỏ thông tin mượn</button>
     <div class="modal-actions need-admin" style="margin-top:4px">
       <button class="btn-cancel" onclick="openEditLoan()">✏️ Sửa phiếu mượn</button>
       <button class="btn-cancel" style="color:var(--red)" onclick="deleteLoanAdmin()">🗑 Xóa phiếu mượn</button>
@@ -1776,7 +1776,7 @@ button .pi,.btn .pi,a .pi,.chip .pi,.tag .pi,.badge .pi,.yn .pi,.bnav .pi,.bnav-
 // ============================================================
 // CONFIG
 // ============================================================
-const APP_VERSION = '5.39.0';
+const APP_VERSION = '5.40.0';
 const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbw6Rmi80I7RI3ij2U7RdRF5pYuQTnPrwEmGmUZS5xpxzLwwVynfoFUujZe1lm6HS1ymxw/exec';
 // ============================================================
 
@@ -1860,7 +1860,7 @@ function devIcon(dev, size) {
 const UNITS = ['Lít','Phuy','Thùng','Xô','Kg','Tấn','Cái','Bộ','Cây','Thanh','Tấm','Sợi','Cuộn','Mét','M2','M3','Viên','Đôi','Con','Bịch','Chai','Hộp','Gói'];
 
 // Dữ liệu chỉ tải từ máy chủ SAU KHI đăng nhập (không còn nhúng trong file này)
-const isLow = i => (+i.minStock > 0) && ((typeof ctTot === 'function' && ctTrack(i) ? ctTot(i) : +i.stock) <= +i.minStock);   // v5.35: món theo dõi tính cả ở công trường
+const isLow = i => (+i.minStock > 0) && ((typeof ctTot === 'function' && ctTrack(i) ? ctTot(i) : +i.stock) + (typeof loanOutQty === 'function' ? loanOutQty(i) : 0) <= +i.minStock);   // v5.40: đồ cho mượn vẫn là của dự án   // v5.35: món theo dõi tính cả ở công trường
 const DEVICE_FUEL_DEFAULT = Object.fromEntries(DEVICE_CATS.map(c => [c.id, c.fuel]));
 const emptyDb = () => ({categories: CATEGORIES, projects: [], items: [], devices: [], devlog: [], transactions: [], repairs: [], notes: [], photos: [], loans: [], txnTotal: 0, txnLastId: '',
   reqs: [], cauKien: [], projCfg: {haoHut:0}, rolePerm: {}, kkMoc: {}, tg: {}, thangDS: null});
@@ -2238,6 +2238,7 @@ function applyServer(r) {
   db.repairs = (r.repairs||[]).map(rp => ({...rp, id:+rp.id, deviceId:+rp.deviceId, cost:+rp.cost||0}));
   db.notes = (r.notes||[]).map(n => ({...n, id:+n.id}));
   db.loans = (r.loans||[]).map(normLoan);                 // phiếu mượn: luôn lấy bản đầy đủ từ máy chủ (thay đổi chờ gửi được áp lại sau)
+  db.loanV2 = Array.isArray(r.loanIn); db.loanIn = r.loanIn || []; db.allProjects = r.allProjects || db.projects || [];   // v5.40
   if (r.photos) {
     const sp = r.photos.map(p => ({...p, id:+p.id, txnId:+p.txnId}));
     const pids = new Set(sp.map(p => p.id));
@@ -5062,7 +5063,7 @@ function normLoan(l) {
   return {...l, id:+l.id, itemId: l.itemId === '' || l.itemId == null ? '' : +l.itemId, qty:+l.qty || 0, returned:+l.returned || 0,
     closeQty:+l.closeQty || 0, history:(Array.isArray(l.history) ? l.history : []).map(h => ({...h, id:+h.id, q:+h.q || 0}))};
 }
-const loanRemain = l => r3(l.qty - l.returned - (l.status === 'closed' ? l.closeQty : 0));
+const loanRemain = l => r3(l.qty - l.returned - (+l.closeQty || 0));      // v5.40: bỏ thông tin mượn từng phần
 const isoDay = d => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
 const fmtDue = s => { const m = String(s || '').match(/^(\d{4})-(\d{2})-(\d{2})$/); return m ? `${+m[3]}/${+m[2]}/${m[1]}` : ''; };
 // Số ngày quá hạn (> 0 = quá hạn, 0 = hạn hôm nay, < 0 = còn hạn, null = không đặt hạn / đã xong)
@@ -7391,7 +7392,7 @@ let listLimit = {nhap:100, xuat:100, dieuchinh:100};
 // ===== v5.18.0: CHỨC DANH & PHÂN QUYỀN (Admin cài trong app) =====
 const PERM_UI = [
   ['Màn hình được thấy', [['v_pyc','Phiếu yêu cầu',''],['v_home','Tổng quan',''],['v_nhap','Phiếu nhập (xem)',''],['v_xuat','Phiếu xuất (xem)',''],['v_ton','Tồn kho (số lượng)',''],['v_baocao','Báo cáo',''],['v_stat','Thống kê dự án đang làm','Chi phí, tiến độ của dự án được giao'],['v_all','Tổng hợp các dự án','Xem mọi dự án, so sánh, chi phí nhiều dự án'],['v_ver','Xem nội dung cập nhật phiên bản','Thông báo đầy đủ, chi tiết từng bản, lịch sử cập nhật']]],
-  ['Kho', [['k_nhap','Lập phiếu nhập',''],['k_xuat','Lập phiếu xuất (xuất thẳng)',''],['k_edit','Sửa / điều chỉnh phiếu',''],['k_kk','Kiểm kê',''],['k_dm','Thêm, sửa tên + nhóm vật tư / thiết bị','Đổi đơn vị và xóa: chỉ Admin'],['k_copy','Chép vật tư từ dự án khác',''],['k_loan','Cho mượn / trả dụng cụ',''],['k_meter','Ghi giờ máy thiết bị','Khi xuất dầu, vào / kết thúc công trình'],['k_thang','Nhập thẳng ra công trường','Phiếu nhập có 2 ô 📦 Vào kho / 🏗 Thẳng ra công trường (nhập + xuất cùng lúc, tồn không đổi)']]],
+  ['Kho', [['k_nhap','Lập phiếu nhập',''],['k_xuat','Lập phiếu xuất (xuất thẳng)',''],['k_edit','Sửa / điều chỉnh phiếu',''],['k_kk','Kiểm kê',''],['k_dm','Thêm, sửa tên + nhóm vật tư / thiết bị','Đổi đơn vị và xóa: chỉ Admin'],['k_copy','Chép vật tư từ dự án khác',''],['k_bomuon','Duyệt bỏ thông tin mượn','Mặc định CHT, CHP, P.QLTB'],['k_loan','Cho mượn / trả dụng cụ',''],['k_meter','Ghi giờ máy thiết bị','Khi xuất dầu, vào / kết thúc công trình'],['k_thang','Nhập thẳng ra công trường','Phiếu nhập có 2 ô 📦 Vào kho / 🏗 Thẳng ra công trường (nhập + xuất cùng lúc, tồn không đổi)']]],
   ['Giá & chi phí', [['g_view','Xem giá, chi phí',''],['g_price','Sửa bảng giá',''],['g_prog','Cập nhật tiến độ thi công','']]],
   ['Phiếu yêu cầu', [['y_tao','Tạo phiếu',''],['y_bs','Xin bổ sung ngoài định mức',''],['y_duyet','Duyệt phiếu',''],['y_giao','Giao hàng theo phiếu (kho)',''],['y_nhan','Xác nhận nhận hàng',''],['y_xem','Xem mọi phiếu của dự án','Tắt = chỉ thấy phiếu của mình']]],
   ['Xuất file', [['x_nxt','Xuất Excel NXT',''],['x_pyc','Xuất báo cáo phiếu YC','']]],
@@ -8780,9 +8781,57 @@ function gdGoXuat(id) {
   closeDp('dp-gd'); goTab('xuat');
   setTimeout(() => { comboPick('fx', it.id); fxSetMode('ngoai'); }, 60);
 }
+// v5.40: mượn / cho mượn — chọn ĐỐI TƯỢNG: tổ đội trong công trình · dự án FECON khác (liên kết 2 đầu) · đơn vị ngoài
+const LW = { to:['👷', 'Tổ đội trong CT'], da:['🏢', 'Dự án FECON khác'], dv:['🏭', 'Đơn vị ngoài'] };
+const loanW = {};
 function loanFieldsHtml(p, cho) {
-  return `<div class="fg"><label>${cho ? 'Người / đơn vị mượn' : 'Mượn của ai (người / công trình)'}</label><input type="text" id="${p}l-party" placeholder="VD: Tổ đội A.Kiên, CT Nhơn Trạch"></div>
-    <div class="fg-row"><div class="fg"><label>Điện thoại (tùy chọn)</label><input type="tel" id="${p}l-phone" inputmode="tel"></div><div class="fg"><label>Hạn trả (tùy chọn)</label><input type="date" id="${p}l-due"></div></div>`;
+  loanW[p] = '';
+  const W = cho ? ['to', 'da', 'dv'] : ['da', 'dv'];
+  return `<div style="margin-top:8px;font-weight:700;font-size:13.5px">${cho ? 'Cho ai mượn?' : 'Mượn của ai?'}</div>
+    <div class="gz-dir ${W.length === 3 ? 'three' : 'two'} lw-who" id="${p}l-who">${W.map(w => `<button type="button" data-w="${w}" onclick="loanSetW('${p}','${w}',${cho ? 1 : 0})"><span style="font-size:18px">${LW[w][0]}</span><br>${LW[w][1]}</button>`).join('')}</div>
+    <div id="${p}l-wbody"></div><input type="hidden" id="${p}l-party">
+    <div class="fg-row"><div class="fg"><label>Người liên hệ (tùy chọn)</label><input type="text" id="${p}l-ps" oninput="loanCompose('${p}')" placeholder="VD: A. Hùng"></div><div class="fg"><label>Điện thoại (tùy chọn)</label><input type="tel" id="${p}l-phone" inputmode="tel"></div></div>
+    <div class="fg"><label>Hạn trả (không bắt buộc)</label><div class="lw-due">${[['', 'Không'], [7, '+7 ngày'], [15, '+15'], [30, '+30']].map(x => `<button type="button" data-d="${x[0]}" onclick="loanDue('${p}','${x[0]}')">${x[1]}</button>`).join('')}</div><input type="date" id="${p}l-due" style="margin-top:6px" onchange="loanDueMark('${p}')"></div>`;
+}
+function loanPartySug(w) {
+  const seen = new Set(), out = [];
+  (db.loans || []).filter(l => (l.ptype || '') === w || (!l.ptype && w === 'dv')).forEach(l => { const n = String(l.party || '').split(' · ')[0]; if (n && !seen.has(normVN(n))) { seen.add(normVN(n)); out.push(n); } });
+  if (w === 'dv') (db.transactions || []).filter(t => t.type === 'nhap' && t.supplierOrReceiver).slice(-200).forEach(t => { const n = String(t.supplierOrReceiver); if (!/^(Công trường|Kho)/.test(n) && !seen.has(normVN(n))) { seen.add(normVN(n)); out.push(n); } });
+  return out.slice(0, 30);
+}
+function loanSetW(p, w, cho) {
+  loanW[p] = w;
+  document.querySelectorAll('#' + p + 'l-who button').forEach(b => b.classList.toggle('on', b.dataset.w === w));
+  const B = document.getElementById(p + 'l-wbody'), isDev = p === 'fx' ? !!fxDev : !!(typeof fnDev !== 'undefined' && fnDev);
+  const projs = (db.allProjects && db.allProjects.length ? db.allProjects : db.projects || []).filter(x => x !== curProj);
+  let h = '';
+  if (w === 'da') {
+    h = projs.length ? `<div class="fg"><label>Dự án</label><select id="${p}l-proj" onchange="loanCompose('${p}')"><option value="">— chọn dự án —</option>${projs.map(x => `<option>${escHtml(x)}</option>`).join('')}</select></div>`
+      : `<div class="fg"><label>Dự án</label><input type="text" id="${p}l-proj" oninput="loanCompose('${p}')" placeholder="Tên dự án FECON"></div>`;
+    h += `<div class="ct-mhint">${isDev ? 'Máy móc: chỉ ghi tên dự án (máy chuyển hẳn dùng "Máy rời công trình").' : db.loanV2 ? (cho ? 'Dự án nhận sẽ thấy phiếu "Hàng mượn đến" để xác nhận — 2 bên khớp số.' : 'Dự án cho mượn sẽ thấy "Dự án khác báo đã mượn của bạn" để xác nhận.') : 'Máy chủ chưa cập nhật 5.40 — chỉ ghi tên dự án, chưa liên kết 2 đầu.'}</div>`;
+  } else {
+    const sug = loanPartySug(w);
+    h = `<div class="fg"><label>${w === 'to' ? 'Tổ đội' : 'Tên đơn vị'}</label><input type="text" id="${p}l-pn" list="${p}l-dl" oninput="loanCompose('${p}')" placeholder="${w === 'to' ? 'VD: Tổ khoan 2' : 'VD: Cty Nhật Nam (nhà thầu chính)'}"><datalist id="${p}l-dl">${sug.map(x => `<option value="${escHtml(x)}">`).join('')}</datalist></div>`;
+    if (w === 'to') h += `<div class="ct-mhint">Tổ đội trong công trình giữ đồ — vẫn là của dự án, app theo dõi đến khi trả.</div>`;
+    else h += `<div class="ct-mhint">${cho ? 'Đồ vẫn là của dự án — app theo dõi đến khi nhận trả, không báo "Hết hàng".' : 'Đồ mượn không phải của dự án — danh sách vật tư ghi "Đồ mượn" và nhắc trả.'}</div>`;
+  }
+  B.innerHTML = h; loanCompose(p);
+}
+function loanCompose(p) {
+  const w = loanW[p], g = id => (document.getElementById(p + id)?.value || '').trim();
+  const name = w === 'da' ? (g('l-proj') ? 'Dự án ' + g('l-proj') : '') : g('l-pn');
+  const ps = g('l-ps'), el = document.getElementById(p + 'l-party');
+  if (el) el.value = name ? name + (ps ? ' · ' + ps : '') : '';
+  return { party:el ? el.value : '', ptype:w || '', linkP:w === 'da' ? g('l-proj') : '' };
+}
+function loanDue(p, n) { const el = document.getElementById(p + 'l-due'); if (!el) return; if (n === '') el.value = ''; else { const d = new Date(); d.setDate(d.getDate() + +n); el.value = isoDay(d); } loanDueMark(p, n); }
+function loanDueMark(p, n) { document.querySelectorAll('#' + p + 'l-due').forEach(() => {}); const box = document.getElementById(p + 'l-due')?.previousElementSibling; if (box) box.querySelectorAll('button').forEach(b => b.classList.toggle('on', n !== undefined ? b.dataset.d === String(n) : false)); }
+function loanCheckWho(p) {
+  const c = loanCompose(p);
+  if (!c.ptype) { toast('⚠️ Chọn ' + (p === 'fx' ? 'cho ai mượn' : 'mượn của ai')); return null; }
+  if (c.ptype === 'da' && !c.linkP) { toast('⚠️ Chọn dự án'); return null; }
+  if (c.party.length < 2) { toast('⚠️ Ghi rõ ' + (c.ptype === 'to' ? 'tổ đội' : 'tên đơn vị')); return null; }
+  return c;
 }
 function loanPickHtml(p, L, lbl) {
   return `<div class="fg"><label>${lbl}</label><select id="${p}l-loan" onchange="loanPickQty('${p}')">${L.map(l => `<option value="${l.id}">${escHtml(l.party)} · ${l.itemType === 'tb' ? 'máy' : 'còn ' + fmtNum(loanRemain(l)) + ' ' + escHtml(l.unit)} · ${escHtml(fmtDue(l.dueDate) || l.datetime.split(' ').pop() || '')}</option>`).join('')}</select></div>`;
@@ -8839,6 +8888,8 @@ function fxSetMode(m) {
   else if (m === 'ra') h = `<div style="margin-top:8px;font-weight:700;font-size:13.5px">Máy đi đâu? (tùy chọn)</div>${gdDestHtml('fxg', '')}`;
   if (m === 'ra') h += `<div class="fg-row"><div class="fg"><label>Ngày rời công trình</label><input type="date" id="fxr-date" value="${isoDay(new Date())}"></div>
       ${mUnit(fxDev) !== 'none' ? `<div class="fg"><label>${mLbl(fxDev)} lúc ra</label><input type="number" inputmode="decimal" id="fxr-m"></div>` : ''}</div>`;
+  if (m === 'cho' && it && !it.dev && ctOn() && ctSite(it) > 0) { fxSrc = +it.stock > 0 ? 'kho' : 'ct'; h += `<div style="margin-top:8px;font-weight:700;font-size:13.5px">Lấy từ</div><div class="gz-dir two" id="fx-src"><button type="button" data-s="kho" onclick="fxSetSrc('kho')">📦 Trong kho · ${fmtNum(it.stock)}</button><button type="button" data-s="ct" onclick="fxSetSrc('ct')">🏗 Ở công trường · ${fmtNum(ctSite(it))}</button></div><div class="ct-mhint">Lấy từ công trường: app tự ghi "về kho" rồi cho mượn — không phải làm 2 phiếu.</div>`; }
+  else if (m === 'cho') fxSrc = 'kho';
   if (m === 'cho') h += loanFieldsHtml('fx', true);
   if (m === 'tra') h += loanPickHtml('fx', openLoansOf('di', it), 'Trả lại cho');
   B.innerHTML = h;
@@ -8931,8 +8982,8 @@ doXuat = async function () {
   if (fxDev) {                                                 // MÁY
     const d = fxDev;
     if (fxMode === 'cho') {
-      const party = val('fxl-party'); if (party.length < 2) { toast('⚠️ Ghi rõ người / đơn vị mượn'); return; }
-      const data = { id:newId(), kind:'cho', itemType:'tb', party, phone:val('fxl-phone'), dueDate:val('fxl-due'), note:val('fx-note'), project:curProj, datetime:nowStr(), itemId:d.id, itemName:d.name, unit:'máy', qty:1 };
+      const w = loanCheckWho('fx'); if (!w) return; const party = w.party;
+      const data = { id:newId(), kind:'cho', itemType:'tb', party, ptype:w.ptype, phone:val('fxl-phone'), dueDate:val('fxl-due'), note:val('fx-note'), project:curProj, datetime:nowStr(), itemId:d.id, itemName:d.name, unit:'máy', qty:1 };
       if (data.dueDate && data.dueDate < isoDay(new Date())) { toast('⚠️ Hạn trả đang ở ngày đã qua'); return; }
       const ok = await pushLoan('addLoan', data); if (ok === 'rejected') return;
       return fxAfter('✅ Đã ghi cho mượn máy ' + d.name);
@@ -8955,15 +9006,21 @@ doXuat = async function () {
     return fxAfter('🏗 Đã ghi máy rời công trình: ' + d.name + (h ? ' → ' + gdDestLbl(h, dest) : ''));
   }
   const it = db.items.find(i => i.id === +document.getElementById('fx-item').value), qty = r3(+val('fx-qty'));
-  if (it && qty > 0 && fxMode !== 'tra') { if (fxMode === 'ngoai' && fxCtVal(it) === 'ctra') ctEnsureSite(it, qty, 'Tự khai: có ở công trường, ghi khi xuất ra khỏi công trình'); else ptEnsureStock(it, qty); }
+  if (it && qty > 0 && fxMode !== 'tra') { if (fxMode === 'ngoai' && fxCtVal(it) === 'ctra') ctEnsureSite(it, qty, 'Tự khai: có ở công trường, ghi khi xuất ra khỏi công trình'); else if (fxMode === 'cho' && fxSrc === 'ct' && ctTrack(it)) ctEnsureSite(it, qty, 'Tự khai: có ở công trường, ghi khi cho mượn'); else ptEnsureStock(it, qty); }
   if (fxMode === 'cho' || fxMode === 'tra') {
     if (!it) { toast('⚠️ Chọn vật tư có trong kho'); return; }
     if (!(qty > 0)) { toast('⚠️ Nhập số lượng hợp lệ'); return; }
-    if (qty > it.stock + 1e-9) { toast(`❌ Tồn không đủ! Còn ${fmtNum(it.stock)} ${it.unit}`); return; }
+    const fromCt = fxMode === 'cho' && fxSrc === 'ct' && ctTrack(it);
+    if (fromCt ? qty > ctSite(it) + 1e-9 : qty > it.stock + 1e-9) { toast(`❌ ${fromCt ? 'Ở công trường' : 'Tồn'} không đủ! Còn ${fmtNum(fromCt ? ctSite(it) : it.stock)} ${it.unit}`); return; }
     if (fxMode === 'cho') {
-      const party = val('fxl-party'); if (party.length < 2) { toast('⚠️ Ghi rõ người / đơn vị mượn'); return; }
-      const data = { id:newId(), kind:'cho', itemType:'vt', party, phone:val('fxl-phone'), dueDate:val('fxl-due'), note:val('fx-note'), project:curProj, datetime:nowStr() };
+      const w = loanCheckWho('fx'); if (!w) return; const party = w.party;
+      const data = { id:newId(), kind:'cho', itemType:'vt', party, ptype:w.ptype, linkP:w.linkP, phone:val('fxl-phone'), dueDate:val('fxl-due'), note:val('fx-note'), project:curProj, datetime:nowStr() };
       if (data.dueDate && data.dueDate < isoDay(new Date())) { toast('⚠️ Hạn trả đang ở ngày đã qua'); return; }
+      if (fromCt) {                                              // v5.40: lấy từ công trường → tự ghi về kho trước (cùng hàng đợi, đúng thứ tự)
+        const ve = { id:newId(), type:'nhap', ct:'ve', itemId:it.id, itemName:it.name, qty, unit:it.unit, project:curProj, supplierOrReceiver:'Công trường', note:'Tự ghi khi cho mượn → ' + party, datetime:nowStr(), createdByName:me?.name || '' };
+        if (ve.id === data.id) ve.id = data.id + 2;
+        ctApply(it, ve); db.transactions.push(ve); push('addTransaction', ve);
+      }
       let txnId = newId(); if (txnId === data.id) txnId = data.id + 1;
       Object.assign(data, { itemId:it.id, itemName:it.name, unit:it.unit, qty, txnId });
       const ok = await pushLoan('addLoan', data); if (ok === 'rejected') return;
@@ -9015,7 +9072,7 @@ function fnModeBar(force) {
   if (!ve && fnLMode === 've') fnLMode = 'kho';
   const M = [['kho', fnDev ? '🏗 Máy vào' : ve ? '📥 Từ ngoài vào' : '📥 Nhập kho']];
   if (ve) M.push(['ve', '↩ Công trường về kho' + (ctSite(cit) > 0 ? ' · ' + fmtNum(ctSite(cit)) : '')]);
-  M.push(['di', '🤝 Đi mượn']); if (L.length) M.push(['nhan', '↩ Nhận trả']);
+  M.push(['di', '🤝 Mượn từ ngoài']); if (L.length) M.push(['nhan', '↩ Nhận trả']);
   box.innerHTML = `<div class="gz-dir ${M.length > 3 ? 'grid2' : M.length > 2 ? 'three' : 'two'}" id="fn-lm">${M.map(m => `<button type="button" data-m="${m[0]}" onclick="fnSetL('${m[0]}')">${m[1]}</button>`).join('')}</div><div id="fn-lbody"></div>`;
   fnSetL(fnLMode);
 }
@@ -9047,8 +9104,8 @@ async function fnLoanSave() {
     const ok = await pushLoan('returnLoan', { loanId:l.id, id:newId(), qty:q, note:val('fn-note'), datetime:nowStr() }); if (ok === 'rejected') return;
     toast(`✅ Đã nhận trả ${l.itemType === 'tb' ? 'máy ' + l.itemName : fmtNum(q) + ' ' + l.unit + ' ' + l.itemName} từ ${l.party}`);
   } else {
-    const party = val('fnl-party'); if (party.length < 2) { toast('⚠️ Ghi rõ mượn của ai'); return; }
-    const data = { id:newId(), kind:'di', party, phone:val('fnl-phone'), dueDate:val('fnl-due'), note:val('fn-note'), project:curProj, datetime:nowStr() };
+    const w = loanCheckWho('fn'); if (!w) return; const party = w.party;
+    const data = { id:newId(), kind:'di', party, ptype:w.ptype, linkP:w.linkP, phone:val('fnl-phone'), dueDate:val('fnl-due'), note:val('fn-note'), project:curProj, datetime:nowStr() };
     if (data.dueDate && data.dueDate < isoDay(new Date())) { toast('⚠️ Hạn trả đang ở ngày đã qua'); return; }
     if (fnDev || db.devices.some(d => normVN(d.name) === normVN(name))) Object.assign(data, { itemType:'tb', itemId:'', itemName:fnDev ? fnDev.name : name, unit:'máy', qty:1 });
     else {
@@ -9258,7 +9315,14 @@ function ctSub(it) {                                                 // dòng ph
   return `Kho ${fmtNum(it.stock)} · 🏗 Ở CT ${fmtNum(ctSite(it))} · <b>Tổng ${fmtNum(ctTot(it))}</b> ${escHtml(it.unit)}`;
 }
 const ctOptTxt = it => ctTrack(it) || ctSite(it) ? `Kho ${fmtNum(it.stock)} · Ở CT ${fmtNum(ctSite(it))} ${escHtml(it.unit)}` : `Tồn: ${fmtNum(it.stock)} ${escHtml(it.unit)}`;
+// v5.40: đồ đang cho mượn (vẫn của dự án) · đồ đi mượn (không phải của dự án)
+const loanQtyOf = (it, kind) => (typeof projLoans === 'function' ? projLoans() : []).filter(l => l.status === 'open' && l.kind === kind && l.itemType === 'vt' && (l.itemId === it.id || normVN(l.itemName) === normVN(it.name))).reduce((a, l) => a + loanRemain(l), 0);
+const loanOutQty = it => it ? r3c(loanQtyOf(it, 'cho')) : 0;
+const loanInQty = it => it ? r3c(loanQtyOf(it, 'di')) : 0;
 function ctBadge(it) {                                               // null = dùng nhãn cũ (Đủ / Sắp hết / Hết hàng)
+  const lo = loanOutQty(it);
+  if (lo > 0 && ctTot(it) <= 0) return ['badge-ct', '🔁 Cho mượn ' + fmtNum(lo)];
+  if (ctTot(it) > 0 && loanInQty(it) >= ctTot(it) - 1e-9) return ['badge-loanin', '🤝 Đồ mượn'];
   if (ctSite(it) > 0) return +it.stock <= 0 ? ['badge-ct', '🏗 Ở công trường'] : null;
   if (!ctTrack(it) || ctTot(it) > 0) return null;
   // v5.35.1: thiết bị / vật tư phụ trợ không có "hết hàng" — nói rõ vì sao tổng = 0
@@ -9275,7 +9339,8 @@ function ctGone(it) {                                                // phiếu 
 }
 function ctLine(it) {                                                // dòng thêm ở màn Tồn kho
   if (!ctTrack(it) && !ctSite(it)) return '';
-  return `<div class="ct-line">🏗 Ở công trường <b>${fmtNum(ctSite(it))}</b> · Trong kho ${fmtNum(it.stock)} · <b>Tổng ghi nhận ${fmtNum(ctTot(it))} ${escHtml(it.unit)}</b></div>`;
+  const lo = loanOutQty(it);
+  return `<div class="ct-line">🏗 Ở công trường <b>${fmtNum(ctSite(it))}</b> · Trong kho ${fmtNum(it.stock)}${lo ? ` · 🔁 Cho mượn <b>${fmtNum(lo)}</b>` : ''} · <b>Tổng ghi nhận ${fmtNum(r3c(ctTot(it) + lo))} ${escHtml(it.unit)}</b></div>`;
 }
 function ctTagHtml(t) {
   if (!t || !t.ct || t.thangCT) return '';
@@ -9409,6 +9474,151 @@ DP_RENDER['dp-ct'] = () => ctRender();
   if (it && cb && !cb.disabled) { const cat = document.getElementById('ev-cat').value, def = cat === 'tbPhuTro' || cat === 'vtPhuTro'; it.theoDoi = cb.checked === def ? '' : (cb.checked ? 1 : 0); }
   return _ctUpd();
 }; }
+</script>
+<script>// ===== v5.40.0 KHO — MƯỢN / CHO MƯỢN NGOÀI CÔNG TRÌNH =====
+// Cho mượn = phiếu xuất, mượn = phiếu nhập (kho trừ / cộng ngay); phiếu mượn chỉ là NHÃN theo dõi.
+// · Đối tượng: tổ đội trong CT (to) · dự án FECON khác (da, liên kết 2 đầu) · đơn vị ngoài (dv)
+// · Dự án bên kia xác nhận: loanLinkAccept / loanLinkReject (db.loanIn từ máy chủ)
+// · Bỏ thông tin mượn: thủ kho đề xuất (dropReq) → quyền k_bomuon duyệt (dropDecide). Không tạo phiếu, tồn không đổi.
+const LW_IC = { to:'👷', da:'🏢', dv:'🏭' };
+const loanLinkTxt = l => !l.link ? '' : l.link.st === 'cho' ? '⏳ chờ ' + l.link.p + ' xác nhận' : l.link.st === 'tc' ? '⛔ ' + l.link.p + ' từ chối' + (l.link.note ? ': ' + l.link.note : '') : '🔗 đã khớp với ' + l.link.p;
+const loanOpsWaiting = l => (l.history || []).filter(h => h.lk === 'cho').length;
+
+// ---- danh sách phiếu mượn: thêm biểu tượng đối tượng + trạng thái liên kết / chờ duyệt ----
+loanRow = function (l) {
+  const cho = l.kind === 'cho', lk = loanLinkTxt(l), w = loanOpsWaiting(l);
+  return `<div class="row-item" onclick="openLoan(${l.id})">
+    <div class="txn-ico ${cho ? 'out' : 'adj'}">${l.itemType === 'tb' ? '🏗️' : cho ? '🔁' : '📥'}</div>
+    <div style="flex:1;min-width:0">
+      <div class="txn-name">${hasPhotos(l.id) ? '📷 ' : ''}${escHtml(l.itemName)}</div>
+      <div class="txn-sub">${cho ? '→' : '←'} ${LW_IC[l.ptype] || ''} <b style="color:var(--text2)">${escHtml(l.party)}</b></div>
+      <div class="txn-sub">${escHtml((l.datetime || '').replace(/^\S+\s+/, ''))}${loanDueHtml(l) ? ' · ' + loanDueHtml(l) : ''}</div>
+      ${lk || l.drop || w ? `<div class="txn-sub">${lk ? `<span class="pyc-tag ${l.link && l.link.st === 'ok' ? 'ct' : 'warn'}">${escHtml(lk)}</span>` : ''}${l.drop ? '<span class="pyc-tag warn">🏷 chờ duyệt bỏ thông tin mượn</span>' : ''}${w ? `<span class="pyc-tag warn">⏳ ${w} thao tác chờ bên kia</span>` : ''}</div>` : ''}
+    </div>
+    <div style="flex-shrink:0;margin-left:8px;text-align:right">${loanStatusBadge(l)}</div>
+  </div>`;
+};
+loanStatusBadge = function (l) {
+  if (l.status === 'done') return `<span class="txn-badge badge-in">Đã trả đủ</span>`;
+  if (l.status === 'closed') return `<span class="txn-badge badge-gray">Đã bỏ thông tin mượn${l.closeQty ? ` · ${fmtNum(l.closeQty)}` : ''}</span>`;
+  if (l.itemType === 'tb') return `<span class="txn-badge ${l.kind === 'cho' ? 'badge-out' : 'badge-blue'}">${l.kind === 'cho' ? 'Đang cho mượn' : 'Đang mượn'}</span>`;
+  return `<span class="txn-badge ${l.kind === 'cho' ? 'badge-out' : 'badge-blue'}">Còn ${fmtNum(loanRemain(l))}/${fmtNum(l.qty)} ${escHtml(l.unit)}</span>`;
+};
+
+// ---- chi tiết phiếu: thêm liên kết, đề xuất đang chờ, lịch sử bỏ nhãn; nút Bỏ thông tin mượn ----
+const _klOpenLoan = openLoan;
+openLoan = function (id) {
+  _klOpenLoan(id);
+  const l = (db.loans || []).find(x => x.id === id); if (!l) return;
+  const body = document.getElementById('ml-body'), u = escHtml(l.unit), cho = l.kind === 'cho';
+  const lk = loanLinkTxt(l), bo = (l.history || []).filter(h => h.t === 'bo' || h.t === 'botc');
+  let add = '';
+  if (lk) add += `<div class="note-lk ${l.link && l.link.st === 'ok' ? 'ok' : ''}">${LW_IC.da} ${escHtml(lk)}</div>`;
+  if (l.drop) add += `<div class="note-lk warn">🏷 Chờ duyệt bỏ thông tin mượn <b>${fmtNum(l.drop.q)} ${u}</b> · ${escHtml(l.drop.reason)}${l.drop.note ? ' · ' + escHtml(l.drop.note) : ''}<br><small>Đề xuất: ${escHtml(l.drop.byName || '')} · ${escHtml(l.drop.at || '')}</small>${hp('k_bomuon') ? `<div class="kl-ab"><button class="btn-full" style="background:#fff;color:var(--red);border:1.5px solid var(--border)" onclick="dropDecide(${l.id},0)">✕ Từ chối</button><button class="btn-full" style="background:var(--green)" onclick="dropDecide(${l.id},1)">✓ Duyệt</button></div>` : ''}</div>`;
+  if (bo.length) add += `<div class="grp-label">Bỏ thông tin mượn</div><div class="kv-box" style="padding:2px 14px">${bo.map(h => `<div class="ln-hist"><div>${h.t === 'bo' ? '🏷' : '⛔'}</div><div style="flex:1">${h.t === 'bo' ? 'Bỏ thông tin mượn' : 'Không duyệt'} ${fmtNum(h.q)} ${u}${h.note ? `<small>📝 ${escHtml(h.note)}</small>` : ''}<small>👤 ${escHtml(h.by || '')}${h.ap ? ' · duyệt: ' + escHtml(h.ap) : ''} · ${escHtml(h.at || '')}${h.lk === 'cho' ? ' · ⏳ chờ bên kia' : ''}</small></div></div>`).join('')}</div>`;
+  if (add && body) body.insertAdjacentHTML('afterbegin', add);
+  const btn = document.getElementById('ml-close-btn');
+  if (btn) {
+    btn.textContent = cho ? '🏷 Bỏ thông tin mượn (không lấy lại)' : '🏷 Bỏ thông tin mượn (không phải trả)';
+    btn.onclick = () => dropOpen(l.id);
+    btn.style.display = l.status === 'open' && !l.drop ? '' : 'none';
+    if (!db.loanV2) btn.onclick = () => openLoanClose();               // máy chủ cũ: giữ cách đóng phiếu cũ
+  }
+};
+
+// ---- đề xuất bỏ thông tin mượn ----
+let dropSel = { id:0, ly:'' };
+function dropOpen(id) {
+  const l = (db.loans || []).find(x => x.id === id); if (!l) return;
+  dropSel = { id, ly:'' };
+  const cho = l.kind === 'cho', rem = loanRemain(l), u = escHtml(l.unit);
+  const LY = cho ? ['Cuối CT · bàn giao luôn', 'Bên kia mua lại', 'Mất / hỏng', 'Khác'] : ['Cuối CT · bên kia để lại luôn', 'Dự án mua lại', 'Mất / hỏng', 'Khác'];
+  const el = document.createElement('div'); el.className = 'kl-sheet-w'; el.id = 'kl-sheet';
+  el.innerHTML = `<div class="kl-dim" onclick="dropClose()"></div><div class="kl-sheet">
+    <div class="kl-h">🏷 Bỏ thông tin mượn</div>
+    <div class="kl-s"><b>${escHtml(l.itemName)}</b> · ${escHtml(l.party)}<br>${cho ? 'Cho mượn' : 'Đi mượn'} ${l.itemType === 'tb' ? 'máy' : fmtNum(l.qty) + ' ' + u}${l.returned ? ' · đã trả ' + fmtNum(l.returned) : ''} · <b>còn ${fmtNum(rem)}</b></div>
+    ${l.itemType === 'vt' ? `<div class="fg"><label>Số lượng bỏ thông tin mượn (còn ${fmtNum(rem)} ${u})</label><input type="number" inputmode="decimal" id="kl-q" value="${rem}"></div>` : ''}
+    <div class="fg"><label>Lý do</label><div class="lw-due" id="kl-ly">${LY.map(x => `<button type="button" onclick="dropLy(this)">${escHtml(x)}</button>`).join('')}</div></div>
+    <div class="fg"><label>Ghi chú (VD: biên bản bàn giao số…)</label><input type="text" id="kl-note"></div>
+    <div class="ct-mhint">${cho ? 'Phiếu cho mượn đã là phiếu xuất từ lúc ghi' : 'Phiếu đi mượn đã là phiếu nhập từ lúc ghi'} — bỏ thông tin mượn chỉ thôi theo dõi ${cho ? 'đòi lại' : 'trả'}. Không tạo phiếu mới, tồn kho không đổi. Ảnh biên bản: thêm ở mục Ảnh của phiếu mượn. Cần CHT / CHP / P.QLTB duyệt.</div>
+    <div class="kl-ab"><button class="btn-full" style="background:#EEF0F3;color:var(--text)" onclick="dropClose()">Hủy</button><button class="btn-full kl-pri" onclick="dropSend()">Gửi đề xuất duyệt</button></div></div>`;
+  document.body.appendChild(el);
+}
+function dropLy(b) { dropSel.ly = b.textContent; document.querySelectorAll('#kl-ly button').forEach(x => x.classList.toggle('on', x === b)); }
+function dropClose() { const el = document.getElementById('kl-sheet'); if (el) el.remove(); }
+async function dropSend() {
+  const l = (db.loans || []).find(x => x.id === dropSel.id); if (!l) return;
+  const qEl = document.getElementById('kl-q'), q = qEl ? r3(+qEl.value) : loanRemain(l), note = (document.getElementById('kl-note')?.value || '').trim();
+  if (!(q > 0) || q > loanRemain(l) + 1e-9) { toast(`⚠️ Số lượng từ 0 đến ${fmtNum(loanRemain(l))}`); return; }
+  if (!dropSel.ly) { toast('⚠️ Chọn lý do'); return; }
+  if (dropSel.ly === 'Khác' && note.length < 3) { toast('⚠️ Ghi rõ lý do ở ô ghi chú'); return; }
+  if (!navigator.onLine) { toast('📴 Cần có mạng để gửi đề xuất'); return; }
+  showLoader('Đang gửi...');
+  const r = await api('dropReq', { loanId:l.id, id:newId(), qty:q, reason:dropSel.ly, note, datetime:nowStr() });
+  hideLoader();
+  if (!r || !r.success) { toast('⚠️ ' + ((r && r.error) || 'Không gửi được')); return; }
+  dropClose(); closeModal('modal-loan');
+  toast('🏷 Đã gửi đề xuất — chờ CHT / CHP / P.QLTB duyệt');
+  await syncAll(true);
+}
+async function dropDecide(id, ok) {
+  const l = (db.loans || []).find(x => x.id === id); if (!l || !l.drop) return;
+  let note = '';
+  if (!ok) { note = (prompt('Lý do không duyệt?') || '').trim(); if (note.length < 3) { if (note) toast('⚠️ Ghi rõ lý do'); return; } }
+  else if (!confirm(`Duyệt bỏ thông tin mượn ${fmtNum(l.drop.q)} ${l.unit} ${l.itemName} (${l.party})?\nLý do: ${l.drop.reason}`)) return;
+  if (!navigator.onLine) { toast('📴 Cần có mạng'); return; }
+  showLoader('Đang lưu...');
+  const r = await api('dropDecide', { loanId:id, ok:ok ? 1 : '', note });
+  hideLoader();
+  if (!r || !r.success) { toast('⚠️ ' + ((r && r.error) || 'Không lưu được')); return; }
+  closeModal('modal-loan'); toast(ok ? '✅ Đã duyệt' : '⛔ Đã từ chối');
+  await syncAll(true);
+}
+
+// ---- Tổng quan: việc chờ xác nhận (dự án khác gửi) + chờ duyệt bỏ thông tin mượn ----
+function loanInboxHtml() {
+  if (!db.loanV2) return '';
+  const IN = hp('k_loan') ? (db.loanIn || []) : [], DR = hp('k_bomuon') ? projLoans().filter(l => l.drop) : [];
+  if (!IN.length && !DR.length) return '';
+  const TAG = { new:x => x.kind === 'cho' ? ['🤝 HÀNG MƯỢN ĐẾN', '#0B5CAD', '✓ Nhận ' + fmtNum(x.qty)] : ['📝 DỰ ÁN KHÁC BÁO ĐÃ MƯỢN CỦA BẠN', '#7A4E00', '✓ Xác nhận cho mượn'],
+    tra:x => x.kind === 'cho' ? ['↩ ' + x.from + ' ĐÃ NHẬN TRẢ', '#B7791F', '✓ Xác nhận đã trả'] : ['↩ HÀNG TRẢ VỀ', '#B7791F', '✓ Nhận trả ' + fmtNum(x.qty)],
+    bo:() => ['🏷 BỎ THÔNG TIN MƯỢN THEO DỰ ÁN KHÁC', '#5A6A7A', '✓ Xác nhận theo'] };
+  const c1 = IN.map((x, i) => { const t = TAG[x.k](x); return `<div class="kl-card" style="border-left-color:${t[1]}"><div class="kl-tag" style="color:${t[1]}">${t[0]}</div>
+    <div class="kl-t">${escHtml(x.itemName)} × ${fmtNum(x.qty)} ${escHtml(x.unit)}</div>
+    <div class="kl-s">Từ dự án <b>${escHtml(x.from)}</b> · ${escHtml(x.by || '')} · ${escHtml(x.at || '')}${x.due ? ' · hạn ' + fmtDue(x.due) : ''}${x.note ? '<br>📝 ' + escHtml(x.note) : ''}</div>
+    <div class="kl-ab"><button class="btn-full" style="background:#fff;color:var(--text);border:1.5px solid var(--border)" onclick="loanInAct(${i},0)">Từ chối / sai số</button><button class="btn-full" style="background:var(--green)" onclick="loanInAct(${i},1)">${t[2]}</button></div></div>`; }).join('');
+  const c2 = DR.map(l => `<div class="kl-card" style="border-left-color:#7A4E00"><div class="kl-tag" style="color:#7A4E00">🏷 CHỜ BẠN DUYỆT · BỎ THÔNG TIN MƯỢN</div>
+    <div class="kl-t">${escHtml(l.itemName)} · ${l.itemType === 'tb' ? 'máy' : fmtNum(l.drop.q) + ' / ' + fmtNum(loanRemain(l)) + ' ' + escHtml(l.unit)}</div>
+    <div class="kl-s">${l.kind === 'cho' ? 'Cho mượn' : 'Đi mượn'} · ${LW_IC[l.ptype] || ''} ${escHtml(l.party)} · lý do: <b>${escHtml(l.drop.reason)}</b>${l.drop.note ? ' · ' + escHtml(l.drop.note) : ''}<br>Đề xuất: ${escHtml(l.drop.byName || '')} · ${escHtml(l.drop.at || '')}</div>
+    <div class="kl-ab"><button class="btn-full" style="background:#fff;color:var(--red);border:1.5px solid var(--border)" onclick="dropDecide(${l.id},0)">✕ Từ chối</button><button class="btn-full" style="background:var(--green)" onclick="dropDecide(${l.id},1)">✓ Duyệt</button></div></div>`).join('');
+  return `<div class="kl-sec">${IN.length ? `<div class="kl-gh">Chờ bạn xác nhận · dự án khác gửi (${IN.length})</div>${c1}` : ''}${DR.length ? `<div class="kl-gh">Chờ bạn duyệt (${DR.length})</div>${c2}` : ''}</div>`;
+}
+async function loanInAct(i, ok) {
+  const x = (db.loanIn || [])[i]; if (!x) return;
+  let note = '';
+  if (!ok) { note = (prompt('Lý do từ chối / số thực nhận?') || '').trim(); if (note.length < 3) { if (note) toast('⚠️ Ghi rõ lý do'); return; } }
+  if (!navigator.onLine) { toast('📴 Cần có mạng'); return; }
+  showLoader('Đang lưu...');
+  const r = await api(ok ? 'loanLinkAccept' : 'loanLinkReject', { project:curProj, src:x.src, k:x.k, hid:x.hid || '', note });
+  hideLoader();
+  if (!r || !r.success) { toast('⚠️ ' + ((r && r.error) || 'Không lưu được')); return; }
+  toast(ok ? '✅ Đã xác nhận — 2 dự án đã khớp số' : '⛔ Đã báo dự án ' + x.from);
+  await syncAll(true);
+}
+const _klAlert = loanAlertHtml;
+loanAlertHtml = function () { return loanInboxHtml() + _klAlert(); };
+
+(function () {
+  const css = `.lw-who button{min-height:58px;line-height:1.25;font-size:12.5px}.lw-due{display:flex;gap:6px;flex-wrap:wrap}.lw-due button{padding:8px 12px;border-radius:16px;border:1.5px solid var(--border);background:#fff;font-weight:700;font-size:13px;font-family:inherit}.lw-due button.on{border-color:var(--navy,#1B2A4A);background:#E7EDF5}
+.kl-sec{margin:10px 0}.kl-gh{font-size:12px;font-weight:800;color:var(--text2);letter-spacing:.03em;text-transform:uppercase;margin:6px 2px}.kl-card{background:#fff;border-radius:14px;padding:12px 14px;border-left:5px solid #0B5CAD;margin-bottom:10px;box-shadow:0 1px 3px rgba(0,0,0,.05)}
+.kl-tag{font-size:11.5px;font-weight:800}.kl-t{font-size:16px;font-weight:800;margin-top:2px}.kl-s{font-size:13px;color:var(--text2);line-height:1.5;margin-top:2px}.kl-ab{display:flex;gap:8px;margin-top:10px}.kl-ab .btn-full{flex:1;margin:0;padding:12px 8px;font-size:14px}.kl-ab .btn-full:last-child{flex:2}
+.note-lk{background:#E7F0FA;color:#0B3B6B;border-radius:10px;padding:9px 12px;font-size:13.5px;margin-bottom:10px;line-height:1.5}.note-lk.ok{background:#E9F7EF;color:#1E6B3F}.note-lk.warn{background:#FFF7E0;color:#7A4E00}
+.kl-sheet-w{position:fixed;inset:0;z-index:9000}.kl-dim{position:absolute;inset:0;background:rgba(11,37,69,.4)}.kl-sheet{position:absolute;left:0;right:0;bottom:0;background:#fff;border-radius:20px 20px 0 0;padding:16px 16px calc(18px + env(safe-area-inset-bottom));max-height:88vh;overflow:auto}
+.kl-h{font-size:18px;font-weight:800;margin-bottom:6px}.kl-sheet .kl-s{margin-bottom:10px}.kl-sheet .lw-due button.on{border-color:#F26522;background:#FFF4EC;color:#C2410C}
+.kl-pri{background:#F26522!important;color:#fff!important;opacity:1!important}
+.badge-loanin{background:#FFF7E0;color:#7A4E00}`;
+  const st = document.createElement('style'); st.textContent = css; document.head.appendChild(st);
+})();
 </script>
 <script>// ===== Bộ biểu tượng Phosphor Duotone (MIT) thay emoji — v5.31.9 =====
 (function () {
