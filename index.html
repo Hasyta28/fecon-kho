@@ -1776,7 +1776,7 @@ button .pi,.btn .pi,a .pi,.chip .pi,.tag .pi,.badge .pi,.yn .pi,.bnav .pi,.bnav-
 // ============================================================
 // CONFIG
 // ============================================================
-const APP_VERSION = '5.42.0';
+const APP_VERSION = '5.43.0';
 const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbw6Rmi80I7RI3ij2U7RdRF5pYuQTnPrwEmGmUZS5xpxzLwwVynfoFUujZe1lm6HS1ymxw/exec';
 // ============================================================
 
@@ -9619,6 +9619,398 @@ loanAlertHtml = function () { return loanInboxHtml() + _klAlert(); };
 .badge-loanin{background:#FFF7E0;color:#7A4E00}`;
   const st = document.createElement('style'); st.textContent = css; document.head.appendChild(st);
 })();
+</script>
+<script>// ===== v5.43.0 KHO — NẠP SỔ NHẬP XUẤT TỪ EXCEL (Admin) =====
+// 5 bước: Đọc file → Ghép cột (nhớ theo dự án) → Khớp tên → Xem trước & nạp → Chênh lệch tồn (kiểm kê điều chỉnh)
+// Mỗi dòng sổ → 1 phiếu nhập / xuất đúng ngày. Khóa dòng (hash nội dung + thứ tự trùng) → nạp lại file chỉ thêm dòng mới.
+(function () {
+  const sb = [...document.querySelectorAll('.sidebar-item.need-admin')].find(e => /Danh mục P\.QLTB/.test(e.textContent));
+  const html = '<div class="sidebar-item need-admin" onclick="closeSidebar();setTimeout(nxOpen,300)"><span class="sidebar-item-ico">📥</span>Nạp sổ nhập xuất từ Excel</div>';
+  if (sb) sb.insertAdjacentHTML('afterend', html);
+  document.body.insertAdjacentHTML('beforeend', `<div class="detail-page" id="dp-nxt"><div class="detail-header"><button class="back-btn" onclick="closeDp('dp-nxt')">‹</button><div class="detail-title">📥 Nạp sổ nhập xuất từ Excel</div></div><div class="detail-body" id="dp-nxt-body"></div></div>
+  <style>
+  .nx-bar{display:flex;gap:4px;margin:2px 0 12px}.nx-bar button{flex:1;border:none;background:none;padding:0;text-align:left;cursor:pointer}.nx-bar i{display:block;height:5px;border-radius:3px;background:#D5DAE1}.nx-bar i.on{background:var(--orange)}.nx-bar span{display:block;font-size:11.5px;font-weight:700;color:#8A97A6;margin-top:4px}.nx-bar .cur span{color:#C2410C}
+  .nx-card{background:#fff;border:1px solid var(--border);border-radius:14px;padding:12px 14px;margin-bottom:12px}.nx-t{font-weight:800;font-size:15px;margin-bottom:8px}
+  .nx-sh{display:flex;gap:10px;align-items:flex-start;padding:8px 0;border-bottom:1px solid #F0F2F5;cursor:pointer}.nx-sh:last-child{border-bottom:none}.nx-sh b{font-size:14px}.nx-sh small{display:block;color:var(--text2);font-size:12.5px;margin-top:2px}
+  .nx-g2{display:grid;grid-template-columns:1fr 1fr;gap:8px}.nx-g3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px}.nx-st{background:#F5F7FA;border-radius:10px;padding:8px 10px}.nx-st b{display:block;font-size:19px}.nx-st span{font-size:12px;color:var(--text2)}
+  .nx-warn{background:#FFFBEB;border:1px solid #F5D78E;border-radius:12px;padding:10px 12px;font-size:13px;line-height:1.55;margin-bottom:12px}.nx-warn b.h{color:#92400E}
+  .nx-ok{background:#ECFDF3;border:1px solid #A7E3BD;border-radius:12px;padding:10px 12px;font-size:13.5px;margin-bottom:12px}
+  .nx-tabs{display:flex;gap:6px;margin-bottom:10px;flex-wrap:wrap}.nx-tabs button,.nx-k button{flex:1;min-height:38px;border-radius:10px;border:1.5px solid var(--navy,#0B2545);background:#fff;color:var(--navy,#0B2545);font-weight:700;font-size:13px;cursor:pointer;padding:4px 8px}.nx-tabs button.on{background:var(--navy,#0B2545);color:#fff}
+  .nx-k{display:flex;gap:6px;margin:4px 0 8px}.nx-k button{border-color:var(--orange);color:#C2410C}.nx-k button.on{background:var(--orange);color:#fff}
+  .nx-f{display:flex;gap:8px;align-items:center;padding:6px 0;border-bottom:1px solid #F0F2F5}.nx-f label{width:96px;font-size:13px;font-weight:700;flex-shrink:0}.nx-f label i{color:#B42318;font-style:normal}.nx-f select{width:128px;flex-shrink:0;height:36px;border-radius:8px;border:1.5px solid var(--border);font-size:12.5px;padding:0 4px}.nx-f select.miss{border-color:#B42318}.nx-f span{flex:1;min-width:0;font-size:12px;color:var(--text2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .nx-near{border:1px solid var(--border);border-radius:10px;padding:8px 10px;margin-bottom:8px}.nx-near .b{display:flex;gap:6px;margin-top:6px}.nx-near .b button{flex:1;height:34px;border-radius:9px;border:1.5px solid var(--navy,#0B2545);background:#fff;color:var(--navy,#0B2545);font-weight:700;font-size:12.5px;cursor:pointer}.nx-near .b button.on{background:var(--navy,#0B2545);color:#fff}
+  .nx-row{display:flex;gap:8px;font-size:12.5px;padding:6px 0;border-bottom:1px solid #F0F2F5;align-items:center}.nx-row:last-child{border-bottom:none}.nx-row .d{width:44px;color:var(--text2);flex-shrink:0}.nx-row .n{flex:1;min-width:0}.nx-row select{max-width:130px;height:30px;font-size:12px;border-radius:7px;border:1px solid var(--border)}
+  .nx-lech{display:flex;align-items:center;font-size:13px;padding:8px 2px;border-bottom:1px solid #F0F2F5;cursor:pointer}.nx-lech.on{background:#FFF4EC}.nx-lech .c{width:28px;text-align:center;font-size:16px}.nx-lech .n{flex:1;min-width:0}.nx-lech .v{width:62px;text-align:right}.nx-lech .v.dd{font-weight:800;color:#C2410C}.nx-lech.dis{opacity:.55;cursor:default}
+  .nx-act{display:flex;gap:8px;margin-top:6px}.nx-act .bk{width:104px;flex-shrink:0;background:#fff;color:var(--navy,#0B2545);border:1.5px solid var(--border)}
+  .nx-batch{display:flex;gap:8px;align-items:center;padding:8px 0;border-bottom:1px solid #F0F2F5;font-size:13px}.nx-batch:last-child{border-bottom:none}.nx-batch button{border:1.5px solid #E5484D;color:#C92A2A;background:#fff;border-radius:8px;padding:5px 9px;font-weight:700;font-size:12.5px;cursor:pointer}
+  </style>`);
+})();
+
+const NX = { step:1, info:null, file:'', sheets:[], tab:0, dec:{}, cats:{}, res:null, chon:{}, near:[], showNew:false };
+const NXF = [['date', 'Ngày', 1], ['name', 'Tên vật tư', 1], ['unit', 'Đơn vị', 0], ['type', 'Nhập / Xuất', 1], ['qty', 'Số lượng', 1], ['qIn', 'SL nhập', 1], ['qOut', 'SL xuất', 1], ['party', 'NCC / đội', 0], ['recv', 'Nơi nhận', 0], ['note', 'Ghi chú', 0]];
+const NXRE = {
+  date:/^(ngay|ngay thang|ngay nhap xuat|thoi gian ngay|date)$|^ngay\b/,
+  name:/^(ten|ten vat tu|ten hang|ten vt|vat tu|ten vat tu thiet bi|hang hoa|ten hang hoa)$|^ten (vat|hang)/,
+  unit:/^(dvt|don vi|don vi tinh|dv)$/,
+  type:/^(xuat ?\/ ?nhap|nhap ?\/ ?xuat|loai|nhap xuat|xuat nhap|n\/x|x\/n)$/,
+  qty:/^(khoi luong|so luong|sl|kl|luong)$/,
+  qIn:/^(nhap|sl nhap|so luong nhap|kl nhap|khoi luong nhap)$/,
+  qOut:/^(xuat|sl xuat|so luong xuat|kl xuat|khoi luong xuat)$/,
+  party:/(ncc|nha cung cap|ntp|nha thau|doi|don vi cap|nguon)/,
+  recv:/(thiet bi|noi nhan|nguoi nhan|bo phan nhan|may nhan|xe nhan|cap cho)/,
+  note:/^(ghi chu|dien giai|noi dung)/
+};
+const nxN = v => normVN(String(v == null ? '' : v)).replace(/\s*\/\s*/g, '/');
+const nxCompact = v => normVN(String(v || '')).replace(/[^a-z0-9]/g, '');
+function nxDice(a, b) {
+  a = nxCompact(a); b = nxCompact(b); if (!a || !b) return 0; if (a === b) return 1;
+  const bg = s => { const m = {}; for (let i = 0; i < s.length - 1; i++) { const k = s.substr(i, 2); m[k] = (m[k] || 0) + 1; } return m; };
+  const A = bg(a), B = bg(b); let n = 0; Object.keys(A).forEach(k => { if (B[k]) n += Math.min(A[k], B[k]); });
+  return 2 * n / Math.max(1, a.length + b.length - 2);
+}
+function nxHash(s) {                                            // cyrb53 → base36
+  let h1 = 0xdeadbeef, h2 = 0x41c6ce57;
+  for (let i = 0; i < s.length; i++) { const c = s.charCodeAt(i); h1 = Math.imul(h1 ^ c, 2654435761); h2 = Math.imul(h2 ^ c, 1597334677); }
+  h1 = Math.imul(h1 ^ (h1 >>> 16), 2246822507) ^ Math.imul(h2 ^ (h2 >>> 13), 3266489909);
+  h2 = Math.imul(h2 ^ (h2 >>> 16), 2246822507) ^ Math.imul(h1 ^ (h1 >>> 13), 3266489909);
+  return (4294967296 * (2097151 & h2) + (h1 >>> 0)).toString(36);
+}
+const nxCol = i => XLSX.utils.encode_col(i);
+const nxIso = (y, m, d) => y + '-' + String(m).padStart(2, '0') + '-' + String(d).padStart(2, '0');
+const nxDmy = iso => iso ? iso.slice(8, 10) + '/' + iso.slice(5, 7) : '';
+const nxDays = iso => Date.UTC(+iso.slice(0, 4), +iso.slice(5, 7) - 1, +iso.slice(8, 10)) / 864e5;
+function nxDate(v) {                                            // → {iso, alt (đảo ngày/tháng), sure}
+  const ok = (y, m, d) => y > 1990 && y < 2100 && m >= 1 && m <= 12 && d >= 1 && d <= 31;
+  if (typeof v === 'number' && v > 20000 && v < 80000) {
+    const t = new Date(Math.round((v - 25569) * 864e5)), y = t.getUTCFullYear(), m = t.getUTCMonth() + 1, d = t.getUTCDate();
+    const amb = d <= 12 && d !== m;
+    return { iso:nxIso(y, m, d), alt:amb ? nxIso(y, d, m) : '', sure:!amb };
+  }
+  const s = String(v || '').trim(); let mm;
+  if ((mm = s.match(/^(\d{1,2})[\/\-.](\d{1,2})[\/\-.](\d{2,4})/))) { let y = +mm[3]; if (y < 100) y += 2000; if (ok(y, +mm[2], +mm[1])) return { iso:nxIso(y, +mm[2], +mm[1]), alt:'', sure:true }; }
+  if ((mm = s.match(/^(\d{4})-(\d{1,2})-(\d{1,2})/)) && ok(+mm[1], +mm[2], +mm[3])) return { iso:nxIso(+mm[1], +mm[2], +mm[3]), alt:'', sure:true };
+  return null;
+}
+
+async function nxOpen() {
+  if (!curProj || curProj === 'all') { toast('Chọn 1 dự án trước (đầu màn hình) rồi mở lại'); return; }
+  Object.assign(NX, { step:1, info:null, file:'', sheets:[], tab:0, dec:{}, cats:{}, res:null, chon:{}, near:[], showNew:false, P:curProj });
+  openDp('dp-nxt', nxRender); nxInfo();
+}
+async function nxInfo() {
+  const r = await api('nxtInfo', { project:curProj }, 30000);
+  if (r && r.success) { NX.info = r; if (NX.sheets.length) nxApplyMemory(); }
+  else NX.info = { keys:[], batches:[], maps:{}, err:(r && r.error) || 'Không kết nối được máy chủ' };
+  nxRender();
+}
+async function nxFile(inp) {
+  const f = inp.files && inp.files[0]; inp.value = ''; if (!f) return;
+  showLoader('Đang đọc file...');
+  if (!(await gdSheetJS())) { hideLoader(); toast('⚠️ Không tải được bộ đọc Excel — kiểm tra mạng'); return; }
+  try {
+    const wb = XLSX.read(new Uint8Array(await f.arrayBuffer()), { type:'array', cellFormula:false, cellStyles:false });
+    NX.file = f.name; NX.sheets = wb.SheetNames.map(sn => nxSheet(sn, XLSX.utils.sheet_to_json(wb.Sheets[sn], { header:1, raw:true, defval:'' })));
+    NX.dec = {}; NX.cats = {}; NX.res = null; NX.chon = {}; NX.tab = 0;
+    nxApplyMemory();
+    hideLoader(); nxRender();
+  } catch (e) { hideLoader(); toast('⚠️ Không đọc được file: ' + String(e.message || e).slice(0, 80)); }
+}
+// tìm dòng tiêu đề + đoán cột
+function nxGuess(A) {
+  let best = null;
+  for (let r = 0; r < Math.min(A.length, 40); r++) {
+    const row = A[r] || [], m = {}; let hit = 0;
+    row.forEach((c, i) => {
+      const h = nxN(c); if (!h || h.length > 40) return;
+      NXF.forEach(([k]) => { if (m[k] === undefined && NXRE[k].test(h)) { m[k] = i; hit++; } });
+      if (m.ton === undefined && /^(ton|ton kho|ton cuoi|ton cuoi ky|so ton)$/.test(h)) { m.ton = i; hit++; }
+    });
+    if (m.name !== undefined && hit >= 3 && (!best || hit > best.hit)) best = { r, m, hit };
+  }
+  if (!best) return null;
+  const m = best.m, kieu = m.type !== undefined && m.qty !== undefined ? 1 : m.qIn !== undefined && m.qOut !== undefined ? 2 : 0;
+  if (kieu === 1) { delete m.qIn; delete m.qOut; }
+  return { hdr:best.r, m, kieu };
+}
+function nxSig(name, A, hdr) { return (nxN(name) + '#' + (A[hdr] || []).slice(0, 16).map(nxN).join('|')).replace(/[<>"'&]/g, '').slice(0, 300); }
+function nxSheet(sn, A) {
+  const g = nxGuess(A), S = { name:sn, A, kind:'skip', use:false, hdr:0, cols:{}, kieu:1, mem:false, why:'Không thấy dòng tiêu đề sổ nhập xuất' };
+  if (!g) return S;
+  S.hdr = g.hdr; S.cols = g.m; S.kieu = g.kieu || 1; S.sig = nxSig(sn, A, g.hdr);
+  if (g.m.date !== undefined && g.kieu) { S.kind = 'so'; S.use = true; S.why = ''; }
+  else if (g.m.ton !== undefined && g.m.date === undefined) { S.kind = 'ton'; S.use = true; S.why = ''; }
+  else S.why = g.m.date !== undefined ? 'Có ngày nhưng không có cột Nhập/Xuất' : 'Bảng tổng hợp — không phải sổ';
+  return S;
+}
+function nxApplyMemory() {
+  const M = (NX.info && NX.info.maps) || {};
+  NX.sheets.forEach(S => { const m = S.sig && M[S.sig]; if (m && S.kind === 'so') { S.hdr = m.hdr; S.cols = m.cols; S.kieu = m.kieu; S.mem = true; } });
+}
+// đọc dòng theo cách ghép
+function nxRows(S) {
+  const c = S.cols, out = [], bad = { qty:0, date:0, type:0 }, A = S.A, v = (R, k) => c[k] === undefined ? '' : R[c[k]];
+  for (let r = S.hdr + 1; r < A.length; r++) {
+    const R = A[r] || [], name = String(v(R, 'name') || '').replace(/\s+/g, ' ').trim();
+    if (!name || /^(tong|tong cong|cong)$/.test(nxN(name))) continue;
+    const dt = nxDate(v(R, 'date'));
+    const push = (type, q) => {
+      const qty = typeof q === 'number' ? q : +String(q || '').replace(/\s/g, '').replace(/\.(?=\d{3}(\D|$))/g, '').replace(',', '.');
+      if (!(qty > 0)) { if (String(q).trim() !== '') bad.qty++; else if (S.kieu === 1) bad.qty++; return; }
+      if (!dt) { bad.date++; return; }
+      out.push({ r, d:dt, name, unit:String(v(R, 'unit') || '').trim(), type, qty:Math.round(qty * 1000) / 1000,
+        party:String(v(R, 'party') || '').replace(/\s+/g, ' ').trim(), recv:String(v(R, 'recv') || '').replace(/\s+/g, ' ').trim(), note:String(v(R, 'note') || '').replace(/\s+/g, ' ').trim() });
+    };
+    if (S.kieu === 1) {
+      const t = nxN(v(R, 'type')), type = /^(nhap|n|nhap kho)$|^nhap/.test(t) ? 'nhap' : /^(xuat|x|xuat kho)$|^xuat/.test(t) ? 'xuat' : '';
+      if (!type) { bad.type++; continue; }
+      push(type, v(R, 'qty'));
+    } else {
+      const qi = v(R, 'qIn'), qo = v(R, 'qOut');
+      if (String(qi).trim() !== '') push('nhap', qi);
+      if (String(qo).trim() !== '') push('xuat', qo);
+    }
+  }
+  // sửa ngày bị Excel đảo ngày/tháng: chọn cách đọc nằm giữa 2 ngày chắc chắn gần nhất
+  let fixed = new Set();
+  const sure = out.map(x => x.d.sure ? nxDays(x.d.iso) : null);
+  out.forEach((x, i) => {
+    x.iso = x.d.iso; if (x.d.sure || !x.d.alt) return;
+    let p = null, n = null;
+    for (let j = i - 1; j >= 0; j--) if (sure[j] !== null) { p = sure[j]; break; }
+    for (let j = i + 1; j < out.length; j++) if (sure[j] !== null) { n = sure[j]; break; }
+    const fit = iso => { const t = nxDays(iso); return (p === null || t >= p - 7) && (n === null || t <= n + 7); };
+    if (!fit(x.d.iso) && fit(x.d.alt)) { x.iso = x.d.alt; x.fix = 1; fixed.add(x.d.iso + '>' + x.d.alt); }
+  });
+  return { rows:out, bad, fixed:[...fixed].map(s => s.split('>')) };
+}
+function nxTon(S) {
+  const c = S.cols, out = {};
+  for (let r = S.hdr + 1; r < S.A.length; r++) {
+    const R = S.A[r] || [], name = String(R[c.name] || '').replace(/\s+/g, ' ').trim(), t = R[c.ton];
+    if (!name || t === '' || t === undefined || isNaN(+t)) continue;
+    out[normVN(name)] = { name, ton:Math.round(+t * 1000) / 1000 };
+  }
+  return out;
+}
+// gom toàn bộ: dòng, món, khớp tên
+function nxBuild() {
+  const so = NX.sheets.filter(S => S.kind === 'so' && S.use);
+  const all = [], fixed = [], bad = { qty:0, date:0, type:0 }, per = [];
+  so.forEach(S => { const x = nxRows(S); x.rows.forEach(r => { r.sheet = S.name; all.push(r); }); fixed.push(...x.fixed); Object.keys(bad).forEach(k => bad[k] += x.bad[k]); per.push({ S, n:x.rows.length, nh:x.rows.filter(r => r.type === 'nhap').length, names:new Set(x.rows.map(r => normVN(r.name))).size }); });
+  // khóa dòng: nội dung + thứ tự trùng
+  const occ = {};
+  all.forEach(r => { const base = [r.iso, normVN(r.name), r.type, r.qty, nxN(r.party), nxN(r.recv), nxN(r.note)].join('¦'); occ[base] = (occ[base] || 0) + 1; r.k = nxHash(base + '¦' + occ[base]); });
+  // món
+  const items = db.items.filter(i => i.project === curProj), byN = {}; items.forEach(i => byN[normVN(i.name)] = i);
+  const names = {}; all.forEach(r => { const nk = normVN(r.name); if (!names[nk]) names[nk] = { nk, name:r.name, unit:r.unit, n:0 }; names[nk].n++; if (!names[nk].unit && r.unit) names[nk].unit = r.unit; });
+  const have = [], near = [], neu = [];
+  Object.values(names).forEach(x => {
+    if (byN[x.nk]) { x.item = byN[x.nk]; have.push(x); return; }
+    let b = null, bs = 0; items.forEach(i => { const s = nxDice(x.name, i.name); if (s > bs) { bs = s; b = i; } });
+    if (b && bs >= 0.8) { x.near = b; x.score = bs; near.push(x); } else neu.push(x);
+  });
+  const devs = (db.devices || []).filter(d => d.project === curProj);
+  const devOf = t => { if (!t) return null; const n = normVN(t), c = nxCompact(t); return devs.find(d => normVN(d.name) === n) || devs.find(d => nxCompact(d.name) === c) || null; };
+  const seen = new Set(((NX.info && NX.info.keys) || [])), fresh = all.filter(r => !seen.has(r.k));
+  NX.B = { all, fixed, bad, per, names, have, near, neu, devOf, fresh, dupN:all.length - fresh.length };
+  const unitDiff = have.filter(x => x.unit && x.item.unit && normVN(x.unit) !== normVN(x.item.unit));
+  NX.B.unitDiff = unitDiff;
+  return NX.B;
+}
+function nxItemOf(nk) {                                         // → {itemId} | {tmp}
+  const B = NX.B, x = B.names[nk];
+  if (x.item) return { itemId:x.item.id };
+  if (x.near && NX.dec[nk] !== 0) return { itemId:x.near.id };
+  return { tmp:nk };
+}
+function nxRender() {
+  const b = document.getElementById('dp-nxt-body'); if (!b) return;
+  const T = ['Đọc file', 'Ghép cột', 'Khớp tên', 'Xem trước', 'Chênh lệch'];
+  let h = `<div class="nx-bar">${T.map((t, i) => `<button class="${i + 1 === NX.step ? 'cur' : ''}" onclick="nxGo(${i + 1})"><i class="${i + 1 <= NX.step ? 'on' : ''}"></i><span>${i + 1}. ${t}</span></button>`).join('')}</div>`;
+  h += [nxS1, nxS2, nxS3, nxS4, nxS5][NX.step - 1]();
+  b.innerHTML = h; b.scrollTop = 0;
+}
+function nxGo(n) {
+  if (n > 1 && !NX.sheets.some(S => S.kind === 'so' && S.use)) { toast('Chọn file và ít nhất 1 sheet sổ nhập xuất'); return; }
+  if (n > 2 && NX.step <= 2) { const e = nxCheckMap(); if (e) { toast(e); NX.step = 2; nxRender(); return; } }
+  if (n === 5 && !NX.res) { toast('Nạp xong ở bước 4 mới xem chênh lệch'); return; }
+  if (n >= 3 && n <= 4) nxBuild();
+  NX.step = n; nxRender();
+}
+function nxCheckMap() {
+  for (const S of NX.sheets.filter(S => S.kind === 'so' && S.use)) {
+    const c = S.cols, need = S.kieu === 1 ? ['date', 'name', 'type', 'qty'] : ['date', 'name'];
+    const miss = need.filter(k => c[k] === undefined);
+    if (S.kieu === 2 && c.qIn === undefined && c.qOut === undefined) miss.push('qIn');
+    if (miss.length) return 'Sheet "' + S.name + '": chưa chọn cột ' + miss.map(k => NXF.find(f => f[0] === k)[1]).join(', ');
+  }
+  return '';
+}
+// ---- Bước 1
+function nxS1() {
+  const I = NX.info;
+  let h = `<div class="nx-card"><div class="small" style="color:var(--text2)">Dự án đang chọn (đổi ở đầu màn hình)</div><div style="font-weight:800;font-size:16px;margin:2px 0 10px">${escHtml(curProj)}</div>
+    <label class="vp-chk" style="display:block;text-align:center">📂 ${NX.file ? escHtml(NX.file) + ' · chọn file khác' : 'Chọn file Excel sổ nhập xuất của thủ kho'}<input type="file" accept=".xlsx,.xlsm,.xls" style="display:none" onchange="nxFile(this)"></label></div>`;
+  if (NX.sheets.length) {
+    h += `<div class="nx-card"><div class="nx-t">Sheet trong file</div>${NX.sheets.map((S, i) => `<div class="nx-sh" onclick="nxUse(${i})"><span style="font-size:18px">${S.kind === 'skip' ? '▫️' : S.use ? '☑️' : '⬜'}</span><div style="flex:1;min-width:0"><b>${escHtml(S.name)}</b><small>${S.kind === 'so' ? '📒 Sổ nhập xuất' + (S.mem ? ' · <b style="color:#15803D">đã nhớ cách ghép</b>' : '') : S.kind === 'ton' ? '📊 Bảng tồn — dùng để so chênh lệch ở bước 5' : escHtml(S.why) + ' — bỏ qua'}</small></div></div>`).join('')}</div>`;
+    if (NX.sheets.some(S => S.kind === 'so' && S.use) && !nxCheckMap()) {
+      const B = nxBuild();
+      h += `<div class="nx-card"><div class="nx-t">App đã đọc được</div><div class="nx-g2">${B.per.map(p => `<div class="nx-st"><span>${escHtml(p.S.name)}</span><b>${fmtNum(p.n)} dòng</b><span>${p.names} món · ${fmtNum(p.nh)} nhập · ${fmtNum(p.n - p.nh)} xuất</span></div>`).join('')}</div>
+        ${B.all.length ? `<div class="small mt8" style="margin-top:8px;color:var(--text2)">${nxDmy(B.all.reduce((a, r) => r.iso < a ? r.iso : a, '9999'))}/${B.all.reduce((a, r) => r.iso < a ? r.iso : a, '9999').slice(0, 4)} → ${nxDmy(B.all.reduce((a, r) => r.iso > a ? r.iso : a, ''))}/${B.all.reduce((a, r) => r.iso > a ? r.iso : a, '').slice(0, 4)} · ${new Set(B.all.filter(r => r.type === 'nhap' && r.party).map(r => nxN(r.party))).size} NCC / thầu phụ · ${new Set(B.all.filter(r => r.type === 'xuat' && (r.recv || r.party)).map(r => nxN(r.recv || r.party))).size} nơi nhận</div>` : ''}</div>`;
+      const w = [];
+      if (B.fixed.length) w.push(`• <b>${B.fixed.length} ngày bị Excel đảo ngày/tháng</b> (${B.fixed.slice(0, 3).map(f => nxDmy(f[0]) + ' → <b>' + nxDmy(f[1]) + '</b>').join(', ')}${B.fixed.length > 3 ? ', …' : ''}) — đã sửa theo thứ tự dòng`);
+      if (B.bad.qty) w.push(`• ${B.bad.qty} dòng không có / sai khối lượng → bỏ qua`);
+      if (B.bad.date) w.push(`• ${B.bad.date} dòng không đọc được ngày → bỏ qua`);
+      if (B.bad.type) w.push(`• ${B.bad.type} dòng không ghi Nhập / Xuất → bỏ qua`);
+      const np = B.all.filter(r => r.type === 'nhap' && !r.party).length, nr = B.all.filter(r => r.type === 'xuat' && !r.recv && !r.party).length;
+      if (np || nr) w.push(`• ${np ? np + ' dòng nhập không ghi NCC' : ''}${np && nr ? ' · ' : ''}${nr ? nr + ' dòng xuất không ghi nơi nhận' : ''} → vẫn nạp, để trống`);
+      if (w.length) h += `<div class="nx-warn"><b class="h">⚠ App đã tự xử lý — xem lại</b><br>${w.join('<br>')}</div>`;
+    }
+  }
+  if (!I) h += `<div class="small" style="color:var(--text2);margin-bottom:12px"><span class="spin" style="display:inline-block;width:12px;height:12px;vertical-align:-2px"></span> Đang tải các đợt đã nạp…</div>`;
+  else if (I.err) h += `<div class="nx-warn">⚠ ${escHtml(I.err)} — máy chủ cần bản 5.43.0 (dán Apps Script mới).</div>`;
+  else if (I.batches.length) h += `<div class="nx-card"><div class="nx-t">Các đợt đã nạp · ${escHtml(curProj)}</div>${I.batches.map(x => `<div class="nx-batch"><div style="flex:1;min-width:0"><b>${fmtNum(x.n)} phiếu</b> · ${escHtml(x.at || '')}<div class="small" style="color:var(--text2)">${escHtml(x.file || '')} · ${escHtml(x.by || '')}</div></div><button onclick="nxUndo('${escHtml(x.batch)}',${x.n})">Xóa đợt</button></div>`).join('')}</div>`;
+  h += `<div class="nx-act"><button class="btn-full btn-orange" onclick="nxGo(2)" ${NX.sheets.some(S => S.kind === 'so' && S.use) ? '' : 'disabled style="opacity:.5"'}>Tiếp: Ghép cột ›</button></div>`;
+  return h;
+}
+function nxUse(i) { const S = NX.sheets[i]; if (S.kind === 'skip') return; S.use = !S.use; nxRender(); }
+async function nxUndo(batch, n) {
+  if (!confirm(`Xóa cả đợt nạp này (${n} phiếu)?\nTồn kho các món sẽ trả về như trước khi nạp. Món mới tạo khi nạp vẫn giữ (tồn 0).`)) return;
+  showLoader('Đang xóa đợt nạp...');
+  const r = await api('nxtUndo', { project:curProj, batch }, 120000);
+  hideLoader();
+  if (!r || !r.success) { toast('⚠️ ' + ((r && r.error) || 'Không xóa được')); return; }
+  toast('✅ Đã xóa ' + r.deleted + ' phiếu'); await syncAll(true); nxInfo();
+}
+// ---- Bước 2
+function nxS2() {
+  const so = NX.sheets.filter(S => S.kind === 'so' && S.use); if (NX.tab >= so.length) NX.tab = 0;
+  const S = so[NX.tab], A = S.A, hdr = A[S.hdr] || [], nc = Math.max(...A.slice(S.hdr, S.hdr + 30).map(r => (r || []).length), hdr.length);
+  const sample = i => { const o = []; for (let r = S.hdr + 1; r < A.length && o.length < 3; r++) { const v = (A[r] || [])[i]; if (v !== '' && v !== undefined) o.push(typeof v === 'number' && i === S.cols.date ? (nxDate(v) || {}).iso || v : v); } return o.map(x => /^\d{4}-\d\d-\d\d$/.test(x) ? x.slice(8) + '/' + x.slice(5, 7) + '/' + x.slice(0, 4) : String(x).slice(0, 24)).join(' · '); };
+  const flds = NXF.filter(f => S.kieu === 1 ? f[0] !== 'qIn' && f[0] !== 'qOut' : f[0] !== 'type' && f[0] !== 'qty');
+  const nGuess = flds.filter(f => S.cols[f[0]] !== undefined).length;
+  let h = so.length > 1 ? `<div class="nx-tabs">${so.map((x, i) => `<button class="${i === NX.tab ? 'on' : ''}" onclick="NX.tab=${i};nxRender()">${escHtml(x.name)}</button>`).join('')}</div>` : '';
+  h += `<div class="nx-card"><div class="split"><span class="nx-t" style="margin:0">Ghép cột · ${escHtml(S.name)}</span><span class="small" style="color:#15803D;font-weight:700">${S.mem ? '💾 Đã nhớ từ lần trước' : '✓ Tự đoán ' + nGuess + '/' + flds.length + ' cột'}</span></div>
+    <div class="nx-f" style="border:none"><label>Dòng tiêu đề</label><select onchange="nxHdr(+this.value)">${A.slice(0, 40).map((r, i) => `<option value="${i}" ${i === S.hdr ? 'selected' : ''}>Dòng ${i + 1}${(r || []).some(x => String(x).trim()) ? ' · ' + escHtml((r || []).filter(x => String(x).trim()).slice(0, 3).join(' | ').slice(0, 30)) : ''}</option>`).join('')}</select><span></span></div>
+    <div style="font-size:13px;font-weight:700;margin-top:6px">Kiểu ghi nhập / xuất</div>
+    <div class="nx-k"><button class="${S.kieu === 1 ? 'on' : ''}" onclick="nxKieu(1)">1 cột "Nhập/Xuất" + 1 cột SL</button><button class="${S.kieu === 2 ? 'on' : ''}" onclick="nxKieu(2)">2 cột: SL nhập · SL xuất</button></div>
+    ${flds.map(([k, t, req]) => { const ci = S.cols[k]; return `<div class="nx-f"><label>${t}${req ? '<i> *</i>' : ''}</label><select class="${req && ci === undefined && !(S.kieu === 2 && (k === 'qIn' || k === 'qOut') && (S.cols.qIn !== undefined || S.cols.qOut !== undefined)) ? 'miss' : ''}" onchange="nxSetCol('${k}',this.value)"><option value="">— không có —</option>${Array.from({ length:nc }, (_, i) => `<option value="${i}" ${ci === i ? 'selected' : ''}>${nxCol(i)} · ${escHtml(String(hdr[i] || '').slice(0, 18))}</option>`).join('')}</select><span>${ci === undefined ? '' : escHtml(sample(ci))}</span></div>`; }).join('')}
+    <div class="small" style="color:var(--text2);margin-top:8px;line-height:1.5">App đoán theo tên cột. Sai thì chọn cột khác — cột mẫu bên phải đổi theo để kiểm tra. Dòng nhập: lấy NCC; dòng xuất: lấy Nơi nhận (trống thì lấy cột NCC / đội).</div></div>
+    <div class="info-box" style="margin:0 0 12px">💾 Cách ghép được <b>nhớ cho dự án ${escHtml(curProj)}</b> khi nạp. Lần sau nạp file cùng mẫu → app tự ghép.</div>
+    <div class="nx-act"><button class="btn-full bk" onclick="nxGo(1)">‹ Quay lại</button><button class="btn-full btn-orange" onclick="nxGo(3)">Tiếp: Khớp tên ›</button></div>`;
+  return h;
+}
+const nxCur = () => NX.sheets.filter(S => S.kind === 'so' && S.use)[NX.tab];
+function nxHdr(r) { const S = nxCur(); const g = nxGuess(S.A.slice(r)) ; S.hdr = r; S.sig = nxSig(S.name, S.A, r); if (g && g.hdr === 0) { S.cols = g.m; if (g.kieu) S.kieu = g.kieu; } else S.cols = {}; S.mem = false; nxRender(); }
+function nxKieu(k) { const S = nxCur(); S.kieu = k; S.mem = false; if (k === 2) { delete S.cols.type; } nxRender(); }
+function nxSetCol(k, v) { const S = nxCur(); if (v === '') delete S.cols[k]; else S.cols[k] = +v; S.mem = false; nxRender(); }
+// ---- Bước 3
+function nxS3() {
+  const B = NX.B, catOpt = sel => db.categories.map(c => `<option value="${c.id}" ${c.id === sel ? 'selected' : ''}>${escHtml(c.name)}</option>`).join('');
+  const nDev = B.all.filter(r => r.type === 'xuat' && B.devOf(r.recv || r.party)).length, devN = new Set(B.all.filter(r => r.type === 'xuat').map(r => (B.devOf(r.recv || r.party) || {}).name).filter(Boolean)).size;
+  let h = `<div class="nx-card"><div class="nx-t">Khớp tên vật tư với app</div><div class="nx-g3">
+    <div class="nx-st" style="background:#ECFDF3"><b style="color:#15803D">${B.have.length}</b><span>đã có trong app</span></div>
+    <div class="nx-st" style="background:#EFF6FF"><b style="color:#1D4ED8">${B.neu.length + B.near.filter(x => NX.dec[x.nk] === 0).length}</b><span>món mới → tạo</span></div>
+    <div class="nx-st" style="background:#FFF7ED"><b style="color:#C2410C">${B.near.length}</b><span>gần giống → chọn</span></div></div>
+    ${B.unitDiff.length ? `<div class="small" style="margin-top:8px;color:#92400E">⚠ ${B.unitDiff.length} món khác đơn vị giữa file và app (${B.unitDiff.slice(0, 3).map(x => escHtml(x.name) + ': file ' + escHtml(x.unit) + ' · app ' + escHtml(x.item.unit)).join('; ')}) — phiếu ghi theo đơn vị của app, kiểm tra số lượng.</div>` : ''}</div>`;
+  if (B.near.length) h += `<div class="nx-card"><div class="nx-t">Gần giống — gộp hay tạo mới?</div>${B.near.map((x, i) => { const g = NX.dec[x.nk] !== 0; return `<div class="nx-near"><div style="font-size:13.5px"><b>${escHtml(x.name)}</b> <span class="small" style="color:var(--text2)">(file · ${x.n} dòng)</span></div><div style="font-size:13px;color:var(--text2)">≈ ${escHtml(x.near.name)} (app)</div><div class="b"><button class="${g ? 'on' : ''}" onclick="nxDec(${i},1)">Gộp vào món app</button><button class="${g ? '' : 'on'}" onclick="nxDec(${i},0)">Tạo món mới</button></div></div>`; }).join('')}</div>`;
+  const neu = NX.neuL = B.neu.concat(B.near.filter(x => NX.dec[x.nk] === 0));
+  if (neu.length) { const L = NX.showNew ? neu : neu.slice(0, 12);
+    h += `<div class="nx-card"><div class="nx-t">Món mới sẽ tạo · ${neu.length}</div><div class="small" style="color:var(--text2);margin-bottom:6px">App tự xếp nhóm theo tên — đổi nếu sai.</div>${L.map((x, i) => `<div class="nx-row"><div class="n"><b>${escHtml(x.name)}</b> <span style="color:var(--text2)">· ${escHtml(x.unit || 'Cái')}</span></div><select onchange="nxCat(${i},this.value)">${catOpt(NX.cats[x.nk] || (NX.cats[x.nk] = guessCat(x.name)))}</select></div>`).join('')}
+    ${neu.length > L.length ? `<button class="btn-full" style="margin-top:8px;background:#fff;color:var(--text2);border:1.5px solid var(--border)" onclick="NX.showNew=true;nxRender()">Xem tất cả ${neu.length} món</button>` : ''}</div>`; }
+  h += `<div class="nx-card" style="font-size:13px;line-height:1.5"><b>🚜 Nối vào máy:</b> ${nDev ? `${fmtNum(nDev)} dòng xuất ghi tên trùng ${devN} máy trong app → ghi vào đúng máy (báo cáo tiêu thụ theo máy dùng được).` : 'không có dòng xuất nào trùng tên máy trong app — ghi tên nơi nhận như file.'}</div>
+    <div class="nx-act"><button class="btn-full bk" onclick="nxGo(2)">‹ Quay lại</button><button class="btn-full btn-orange" onclick="nxGo(4)">Tiếp: Xem trước ›</button></div>`;
+  return h;
+}
+function nxDec(i, v) { NX.dec[NX.B.near[i].nk] = v; nxRender(); }
+function nxCat(i, v) { NX.cats[NX.neuL[i].nk] = v; }
+// ---- Bước 4
+function nxS4() {
+  const B = NX.B, F = B.fresh;
+  const mau = F.slice(0, 3).concat(F.slice(-3)).filter((r, i, a) => a.indexOf(r) === i);
+  let h = `<div class="nx-card"><div class="nx-t">Xem trước phiếu sẽ tạo</div>
+    <div class="split" style="font-size:14px;padding:3px 0"><span>Dòng hợp lệ trong file</span><b>${fmtNum(B.all.length)}</b></div>
+    <div class="split" style="font-size:14px;padding:3px 0;color:var(--text2)"><span>Đã nạp lần trước (bỏ qua, không nhân đôi)</span><b>${fmtNum(B.dupN)}</b></div>
+    <div class="split" style="font-size:16px;padding:8px 0 3px;border-top:1px solid var(--border);margin-top:4px;color:#C2410C"><b>Dòng mới sẽ nạp</b><b>${fmtNum(F.length)}</b></div>
+    <div class="small" style="color:var(--text2);line-height:1.5;margin-top:6px">Mỗi dòng → 1 phiếu nhập / xuất đúng ngày, ghi NCC hoặc máy / nơi nhận, ghi chú gốc. Cả đợt xóa được ở bước 1 nếu nạp nhầm. Phiếu có ngày trước lần kiểm kê gần nhất của món sẽ không làm đổi tồn (như ghi bù).</div>
+    ${mau.length ? `<div style="font-size:12.5px;font-weight:700;margin-top:10px">Vài dòng mẫu</div>${mau.map(r => { const dv = r.type === 'xuat' ? B.devOf(r.recv || r.party) : null; return `<div class="nx-row"><span class="d">${nxDmy(r.iso)}${r.fix ? '*' : ''}</span><span>${r.type === 'nhap' ? '📥' : '📤'}</span><span class="n">${escHtml(r.name)} ${r.type === 'nhap' ? '← ' + escHtml(r.party || '—') : '→ ' + (dv ? '🚜 ' + escHtml(dv.name) : escHtml(r.recv || r.party || '—'))}</span><b>${fmtNum(r.qty)} ${escHtml(r.unit)}</b></div>`; }).join('')}` : ''}</div>
+    <div class="nx-act"><button class="btn-full bk" onclick="nxGo(3)">‹ Quay lại</button><button class="btn-full btn-orange" onclick="nxRun()" ${F.length ? '' : 'disabled style="opacity:.5"'}>📥 Nạp ${fmtNum(F.length)} phiếu</button></div>`;
+  if (!F.length && B.all.length) h += `<div class="nx-ok" style="margin-top:12px">Tất cả dòng trong file đã nạp trước đó. <a href="#" onclick="nxGo5();return false">Xem chênh lệch tồn ›</a></div>`;
+  return h;
+}
+async function nxRun() {
+  const B = NX.B, F = B.fresh; if (!F.length) return;
+  if (!navigator.onLine) { toast('📴 Cần có mạng để nạp'); return; }
+  const batch = 'N' + Date.now().toString(36);
+  const dayN = {}, rows = F.map(r => {
+    const n = dayN[r.iso] = (dayN[r.iso] || 0) + 1, sec = 7 * 3600 + n * 7, hh = Math.min(23, Math.floor(sec / 3600)), mi = Math.floor(sec % 3600 / 60), ss = sec % 60;
+    const dv = r.type === 'xuat' ? B.devOf(r.recv || r.party) : null;
+    return Object.assign(nxItemOf(normVN(r.name)), { k:r.k, type:r.type, qty:r.qty, time:`${String(hh).padStart(2, '0')}:${String(mi).padStart(2, '0')}:${String(ss).padStart(2, '0')} ${+r.iso.slice(8)}/${+r.iso.slice(5, 7)}/${r.iso.slice(0, 4)}`,
+      party:r.type === 'nhap' ? r.party : dv ? '' : (r.recv || r.party), thietBi:dv ? dv.name : '', note:r.note });
+  });
+  const tmpNeed = new Set(rows.filter(x => x.tmp).map(x => x.tmp));
+  const newItems = [...tmpNeed].map(nk => { const x = B.names[nk]; return { tmp:nk, name:x.name, unit:x.unit || 'Cái', cat:NX.cats[nk] || guessCat(x.name) }; });
+  const maps = NX.sheets.filter(S => S.kind === 'so' && S.use && S.sig).map(S => ({ sig:S.sig, m:{ hdr:S.hdr, cols:S.cols, kieu:S.kieu } }));
+  const CH = 500, idMap = {}; let added = 0, dup = 0, bad = 0;
+  for (let i = 0; i < rows.length; i += CH) {
+    showLoader(`Đang nạp ${fmtNum(Math.min(i + CH, rows.length))} / ${fmtNum(rows.length)} phiếu...`);
+    const part = rows.slice(i, i + CH).map(x => x.tmp && idMap[x.tmp] ? Object.assign({}, x, { itemId:idMap[x.tmp], tmp:undefined }) : x);
+    const last = i + CH >= rows.length;
+    const r = await api('nxtImport', { project:curProj, batch, file:NX.file, newItems:i === 0 ? newItems : [], rows:part, maps:last ? maps : [], last }, 240000);
+    if (!r || !r.success) { hideLoader(); toast('⚠️ Dừng ở dòng ' + (i + 1) + ': ' + ((r && r.error) || 'mất kết nối') + ' — nạp lại file, app tự bỏ dòng đã nạp'); await syncAll(true); nxInfo(); return; }
+    Object.assign(idMap, r.idMap || {}); added += r.added; dup += r.dup; bad += r.bad;
+  }
+  showLoader('Đang tải lại dữ liệu kho...');
+  await syncAll(true);
+  hideLoader();
+  NX.res = { added, dup, bad, batch };
+  await nxInfoQuiet();
+  nxGo5();
+}
+async function nxInfoQuiet() { const r = await api('nxtInfo', { project:curProj }, 30000); if (r && r.success) NX.info = r; }
+function nxGo5() { if (!NX.res) NX.res = { added:0, dup:NX.B ? NX.B.dupN : 0, bad:0 }; NX.chon = {}; NX.step = 5; nxRender(); }
+// ---- Bước 5
+function nxLech() {
+  const ton = {}; NX.sheets.filter(S => S.kind === 'ton' && S.use).forEach(S => Object.assign(ton, nxTon(S)));
+  const items = db.items.filter(i => i.project === curProj), byN = {}; items.forEach(i => byN[normVN(i.name)] = i);
+  const out = [], seen = new Set();
+  Object.keys(ton).forEach(nk => {
+    let it = byN[nk];
+    if (!it && NX.B && NX.B.names[nk] && NX.B.names[nk].near && NX.dec[nk] !== 0) it = NX.B.names[nk].near;
+    if (!it || seen.has(it.id)) return; seen.add(it.id);
+    const app = Math.round((+it.stock || 0) * 1000) / 1000, f = ton[nk].ton;
+    if (Math.abs(app - f) > 0.0005) out.push({ it, app, f, d:Math.round((f - app) * 1000) / 1000 });
+  });
+  return { list:out, nTon:Object.keys(ton).length, ok:seen.size - out.length };
+}
+function nxS5() {
+  const R = NX.res, L = nxLech();
+  let h = R.added ? `<div class="nx-ok"><b style="color:#15803D">✓ Đã nạp ${fmtNum(R.added)} phiếu.</b>${R.dup ? ' Bỏ qua ' + fmtNum(R.dup) + ' dòng đã có.' : ''}${R.bad ? ' ' + R.bad + ' dòng lỗi bị bỏ.' : ''}</div>` : '';
+  if (!L.nTon) return h + `<div class="nx-card">File không có bảng tồn (cột "Tồn") nên không so được chênh lệch. Xem tồn trong mục Tồn kho.</div><button class="btn-full btn-orange" onclick="closeDp('dp-nxt')">Xong</button>`;
+  h += `<div class="nx-card"><div class="nx-t">${L.list.length ? L.list.length + ' món tồn chưa khớp file' : '✓ Tồn tất cả ' + L.ok + ' món khớp bảng tồn của file'}</div>`;
+  if (L.list.length) {
+    h += `<div class="small" style="color:var(--text2);margin-bottom:6px;line-height:1.5">${L.ok} món đã khớp. Món lệch thường do app có phiếu từ trước hoặc file tính sai. Tích món muốn chỉnh theo file → app tạo phiếu kiểm kê điều chỉnh. Không tích = giữ số trong app.</div>
+      <div class="nx-lech" style="font-weight:800;font-size:11.5px;color:var(--text2);cursor:default"><span class="c"></span><span class="n">Món</span><span class="v">App</span><span class="v">File</span><span class="v">Lệch</span></div>
+      ${L.list.map(x => { const dis = x.f < 0, on = !dis && NX.chon[x.it.id]; return `<div class="nx-lech ${on ? 'on' : ''} ${dis ? 'dis' : ''}" onclick="${dis ? '' : `nxChon(${x.it.id})`}"><span class="c">${dis ? '⛔' : on ? '☑' : '☐'}</span><span class="n">${escHtml(x.it.name)}${dis ? '<br><small style="color:#B42318">file âm — không chỉnh</small>' : ''}</span><span class="v">${fmtNum(x.app)}</span><span class="v">${fmtNum(x.f)}</span><span class="v dd">${x.d > 0 ? '+' : ''}${fmtNum(x.d)}</span></div>`; }).join('')}
+      <div style="display:flex;gap:8px;margin-top:8px"><button class="btn-full" style="background:#fff;color:var(--navy,#0B2545);border:1.5px solid var(--border)" onclick="nxChonAll(1)">Chọn tất cả</button><button class="btn-full" style="background:#fff;color:var(--navy,#0B2545);border:1.5px solid var(--border)" onclick="nxChonAll(0)">Bỏ chọn</button></div>`;
+  }
+  h += `</div>`;
+  const n = Object.keys(NX.chon).length;
+  if (L.list.length) h += `<button class="btn-full btn-orange" onclick="nxAdjust()" ${n ? '' : 'disabled style="opacity:.5"'}>📋 Tạo phiếu kiểm kê cho ${n} món đã chọn</button>`;
+  h += `<button class="btn-full" style="margin-top:8px;background:#fff;color:var(--text2);border:1.5px solid var(--border)" onclick="closeDp('dp-nxt')">Xong</button>`;
+  return h;
+}
+function nxChon(id) { if (NX.chon[id]) delete NX.chon[id]; else NX.chon[id] = 1; nxRender(); }
+function nxChonAll(on) { NX.chon = {}; if (on) nxLech().list.filter(x => x.f >= 0).forEach(x => NX.chon[x.it.id] = 1); nxRender(); }
+async function nxAdjust() {
+  const L = nxLech().list.filter(x => NX.chon[x.it.id] && x.f >= 0); if (!L.length) return;
+  if (!confirm(`Tạo phiếu kiểm kê cho ${L.length} món — tồn trong app sẽ đặt bằng số trong file?`)) return;
+  showLoader('Đang tạo phiếu kiểm kê...');
+  const r = await api('addCount', { items:L.map(x => ({ itemId:x.it.id, qty:x.f })), note:'Kiểm kê theo sổ Excel ' + NX.file, ck:'nx' + Date.now(), clientTime:nowStr() }, 60000);
+  if (!r || !r.success) { hideLoader(); toast('⚠️ ' + ((r && r.error) || 'Không tạo được')); return; }
+  await syncAll(true); hideLoader(); NX.chon = {};
+  toast('✅ Đã kiểm kê ' + L.length + ' món'); nxRender();
+}
 </script>
 <script>// ===== Bộ biểu tượng Phosphor Duotone (MIT) thay emoji — v5.31.9 =====
 (function () {
