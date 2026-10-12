@@ -1,4 +1,5 @@
-// FECON Kho + Thi công - Service Worker v5.40.0
+// FECON Kho + Thi công - Service Worker v5.44.0
+// 5.44.0: Kho — gợi ý tên khi nhập kho thêm 192 vật tư thông dụng (đúng nhóm, đơn vị)
 // 5.40.0: Kho — mượn / cho mượn ngoài công trình (tổ đội · dự án FECON liên kết 2 đầu · đơn vị ngoài), lấy từ công trường, nhãn Cho mượn, bỏ thông tin mượn có duyệt
 // 5.39.0: Thi công — phiếu Hạ kingpost (4 bước, tọa độ tim + hướng, góc xoay, cao độ), bước tiến độ, biên bản 011 tự điền, nạp tọa độ KP
 // 5.38.0: Thi công — QA/QC duyệt ngay trên thẻ Việc; Xe BT 3 bước + cách xe trước; Đăng ký BT giờ xe cuối; Quan trắc so lần trước; Kế hoạch báo máy trùng
@@ -27,7 +28,7 @@
 //  - Mở app: lấy file từ bộ nhớ của bản đang dùng; thiếu file nào mới lấy từ mạng.
 //  - Có sw.js mới trên GitHub: tải sẵn bản mới vào bộ nhớ riêng nhưng KHÔNG đổi bản đang dùng.
 //  - Địa chỉ có ?fresh=... luôn lấy thẳng từ mạng (app dùng để kiểm tra / tải bản mới).
-const VERSION = '5.43.0';
+const VERSION = '5.44.0';
 const APP = 'fecon-app-', META = 'fecon-meta';
 const CORE = ['./', './index.html', './thicong.html', './manifest.json', './icon-192.png', './icon-512.png', './icon-maskable-192.png', './icon-maskable-512.png', './bg-login.jpg'];
 
