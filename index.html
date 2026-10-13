@@ -1776,7 +1776,7 @@ button .pi,.btn .pi,a .pi,.chip .pi,.tag .pi,.badge .pi,.yn .pi,.bnav .pi,.bnav-
 // ============================================================
 // CONFIG
 // ============================================================
-const APP_VERSION = '5.44.3';
+const APP_VERSION = '5.45.0';
 const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbw6Rmi80I7RI3ij2U7RdRF5pYuQTnPrwEmGmUZS5xpxzLwwVynfoFUujZe1lm6HS1ymxw/exec';
 // ============================================================
 
@@ -8292,7 +8292,7 @@ function devEvents(kind) {
   return ev.map(e => {
     const m = String(e.date || '').match(/(\d{4})-(\d{2})-(\d{2})/), at = parseVN(e.at);
     const same = m && at && at.getFullYear() === +m[1] && at.getMonth() + 1 === +m[2] && at.getDate() === +m[3];
-    const tm = same ? `${String(at.getHours()).padStart(2, '0')}:${String(at.getMinutes()).padStart(2, '0')}:00 ` : '';
+    const tm = same ? `${String(at.getHours()).padStart(2, '0')}:${String(at.getMinutes()).padStart(2, '0')}:${String(at.getSeconds()).padStart(2, '0')} ` : '';
     return {...e, _dev:true, id:'dv-' + e.id, type: kind === 'vao' ? 'nhap' : 'xuat', qty:0, datetime: m ? `${tm}${+m[3]}/${+m[2]}/${m[1]}` : String(e.at || '')};
   });
 }
@@ -9600,10 +9600,11 @@ function loanInboxHtml() {
   if (!IN.length && !DR.length) return '';
   const TAG = { new:x => x.kind === 'cho' ? ['🤝 HÀNG MƯỢN ĐẾN', '#0B5CAD', '✓ Nhận ' + fmtNum(x.qty)] : ['📝 DỰ ÁN KHÁC BÁO ĐÃ MƯỢN CỦA BẠN', '#7A4E00', '✓ Xác nhận cho mượn'],
     tra:x => x.kind === 'cho' ? ['↩ ' + x.from + ' ĐÃ NHẬN TRẢ', '#B7791F', '✓ Xác nhận đã trả'] : ['↩ HÀNG TRẢ VỀ', '#B7791F', '✓ Nhận trả ' + fmtNum(x.qty)],
-    bo:() => ['🏷 BỎ THÔNG TIN MƯỢN THEO DỰ ÁN KHÁC', '#5A6A7A', '✓ Xác nhận theo'] };
+    bo:() => ['🏷 BỎ THÔNG TIN MƯỢN THEO DỰ ÁN KHÁC', '#5A6A7A', '✓ Xác nhận theo'],
+    sua:x => ['✏️ ' + x.from + ' ĐỀ NGHỊ SỬA SỐ LƯỢNG', '#6B46C1', '✓ Đồng ý sửa ' + fmtNum(x.old) + ' → ' + fmtNum(x.qty)] };   // v5.45.0
   const c1 = IN.map((x, i) => { const t = TAG[x.k](x); return `<div class="kl-card" style="border-left-color:${t[1]}"><div class="kl-tag" style="color:${t[1]}">${t[0]}</div>
-    <div class="kl-t">${escHtml(x.itemName)} × ${fmtNum(x.qty)} ${escHtml(x.unit)}</div>
-    <div class="kl-s">Từ dự án <b>${escHtml(x.from)}</b> · ${escHtml(x.by || '')} · ${escHtml(x.at || '')}${x.due ? ' · hạn ' + fmtDue(x.due) : ''}${x.note ? '<br>📝 ' + escHtml(x.note) : ''}</div>
+    <div class="kl-t">${escHtml(x.itemName)} × ${x.k === 'sua' ? `<s style="color:var(--text3)">${fmtNum(x.old)}</s> → ${fmtNum(x.qty)}` : fmtNum(x.qty)} ${escHtml(x.unit)}</div>
+    <div class="kl-s">Từ dự án <b>${escHtml(x.from)}</b> · ${escHtml(x.by || '')} · ${escHtml(x.at || '')}${x.due ? ' · hạn ' + fmtDue(x.due) : ''}${x.note ? '<br>📝 ' + (x.k === 'sua' ? 'Lý do: ' : '') + escHtml(x.note) : ''}</div>
     <div class="kl-ab"><button class="btn-full" style="background:#fff;color:var(--text);border:1.5px solid var(--border)" onclick="loanInAct(${i},0)">Từ chối / sai số</button><button class="btn-full" style="background:var(--green)" onclick="loanInAct(${i},1)">${t[2]}</button></div></div>`; }).join('');
   const c2 = DR.map(l => `<div class="kl-card" style="border-left-color:#7A4E00"><div class="kl-tag" style="color:#7A4E00">🏷 CHỜ BẠN DUYỆT · BỎ THÔNG TIN MƯỢN</div>
     <div class="kl-t">${escHtml(l.itemName)} · ${l.itemType === 'tb' ? 'máy' : fmtNum(l.drop.q) + ' / ' + fmtNum(loanRemain(l)) + ' ' + escHtml(l.unit)}</div>
@@ -10171,18 +10172,24 @@ loanInAct = async function (i, ok) {
   if (!ok) { note = (prompt('Lý do từ chối / số thực nhận?') || '').trim(); if (note.length < 3) { if (note) toast('⚠️ Ghi rõ lý do'); return; } }
   if (!navigator.onLine) { toast('📴 Cần có mạng'); return; }
   const base = { project:curProj, src:x.src, k:x.k, hid:x.hid || '', note, cat:loanCatGuess(x.itemName) };
+  let pick = null;                                              // v5.45.0: tên 2 bên ghi khác nhau → chọn đúng vật tư có sẵn trong kho
+  if (ok && x.k === 'new' && typeof loanPickItem === 'function') {
+    const v = await loanPickItem(x); if (v === null) return;
+    if (v !== 'new') { base.itemId = v; pick = db.items.find(t => t.id === v); }
+  }
   showLoader('Đang lưu...');
   let r = await api(ok ? 'loanLinkAccept' : 'loanLinkReject', base);
   hideLoader();
-  if (ok && x.k === 'new' && r && !r.success && /không đủ/i.test(String(r.error || ''))) {
-    const it = db.items.find(t => normVN(t.name) === normVN(x.itemName)), have = it ? +it.stock || 0 : 0;
-    const msg = `Kho trên app chỉ ghi ${fmtNum(have)} ${x.unit} ${x.itemName}, dự án ${x.from} báo mượn ${fmtNum(x.qty)}.\n\n`
-      + `Món này CÓ SẴN ở kho nhưng chưa nhập lên app?\n\nBấm OK: app ghi "Tồn có sẵn – chưa cập nhật lên app" ${fmtNum(Math.max(0, r3(x.qty - Math.max(0, have))))} ${x.unit} rồi xác nhận cho mượn (kho trên app sau đó vẫn đúng thực tế).\nBấm Hủy nếu kho thật sự không có / số sai → dùng "Từ chối / sai số".`;
+  if (ok && (x.k === 'new' || x.k === 'sua') && r && !r.success && /không đủ/i.test(String(r.error || ''))) {
+    const it = pick || db.items.find(t => normVN(t.name) === normVN(x.itemName)), have = it ? +it.stock || 0 : 0, nm = it ? it.name : x.itemName;
+    const need = x.k === 'sua' ? r3(x.qty - x.old) : x.qty;
+    const msg = `Kho trên app chỉ ghi ${fmtNum(have)} ${x.unit} ${nm}, dự án ${x.from} ${x.k === 'sua' ? 'đề nghị cho mượn thêm' : 'báo mượn'} ${fmtNum(need)}.\n\n`
+      + `Món này CÓ SẴN ở kho nhưng chưa nhập lên app?\n\nBấm OK: app ghi "Tồn có sẵn – chưa cập nhật lên app" ${fmtNum(Math.max(0, r3(need - Math.max(0, have))))} ${x.unit} rồi xác nhận (kho trên app sau đó vẫn đúng thực tế).\nBấm Hủy nếu kho thật sự không có / số sai → dùng "Từ chối / sai số".`;
     if (!confirm(msg)) return;
     showLoader('Đang lưu...'); r = await api('loanLinkAccept', Object.assign({}, base, { bu:1 })); hideLoader();
   }
   if (!r || !r.success) { toast('⚠️ ' + ((r && r.error) || 'Không lưu được')); return; }
-  toast(ok ? (r.bu ? `✅ Đã ghi tồn có sẵn ${fmtNum(r.bu)} ${x.unit} + xác nhận cho mượn` : '✅ Đã xác nhận — 2 dự án đã khớp số') : '⛔ Đã báo dự án ' + x.from);
+  toast(!ok ? '⛔ Đã báo dự án ' + x.from : x.k === 'sua' ? `✅ Đã sửa ${fmtNum(x.old)} → ${fmtNum(x.qty)} ${x.unit} ở cả 2 dự án` : r.bu ? `✅ Đã ghi tồn có sẵn ${fmtNum(r.bu)} ${x.unit} + xác nhận cho mượn` : '✅ Đã xác nhận — 2 dự án đã khớp số');
   const k = (db.loanIn || []).indexOf(x); if (k >= 0) db.loanIn.splice(k, 1);   // v5.44.2: thẻ tắt ngay, không chờ đồng bộ
   refreshCurrentView(false);
   await loanResync();
@@ -10214,6 +10221,148 @@ function loanTxnRow(t, home) {
 { const _5EffQty = effQty; effQty = t => t && t._loan ? 0 : _5EffQty(t); }
 // cùng giờ: phiếu mượn – trả nằm trên phiếu "Tồn đầu" ghi kèm (đọc từ trên xuống: cho mượn −200 ← vì trước đó ghi tồn có sẵn +200)
 const byTimeDescL = arr => arr.slice().sort((a, b) => ((parseVN(b.datetime) || 0) - (parseVN(a.datetime) || 0)) || ((LOAN_T[b.type] ? 1 : 0) - (LOAN_T[a.type] ? 1 : 0)) || (+b.id - +a.id));
+</script>
+<script>// ===== v5.45.0 KHO — SỬA SỐ LƯỢNG PHIẾU MƯỢN · CHỌN ĐÚNG VẬT TƯ KHI XÁC NHẬN MƯỢN · GỘP VẬT TƯ TRÙNG =====
+// · Sửa số (loanFix): phiếu đã liên kết + bên kia đã xác nhận → gửi đề nghị, bên kia "Đồng ý sửa" thì sửa cả 2 dự án;
+//   chưa liên kết / chưa xác nhận → sửa ngay. Sửa luôn phiếu kho gốc + tồn kho, có lý do + lịch sử.
+// · Xác nhận mượn từ dự án khác: tên bên kia ghi không trùng tên trong kho → chọn món gần giống (không tạo tên trùng).
+// · Gộp vật tư (Admin): "Đèn pha LED 100W" (tên ghi sai) → "Đèn led ánh sáng trắng 100W"; chuyển hết phiếu, có thể bỏ phiếu "tồn có sẵn" ghi thừa.
+(function () {
+  const st = document.createElement('style');
+  st.textContent = `.k5-opt{display:flex;gap:10px;align-items:center;width:100%;text-align:left;border:1.5px solid var(--border);background:#fff;border-radius:12px;padding:10px 12px;margin-bottom:8px;font-family:inherit;cursor:pointer}
+  .k5-opt b{display:block;font-size:14.5px}.k5-opt small{color:var(--text2);font-size:12.5px}.k5-opt.on{border-color:#6B46C1;background:#F5F0FF}.k5-opt[disabled]{opacity:.45;cursor:not-allowed}
+  .k5-opt .p{margin-left:auto;font-size:12px;font-weight:800;color:#6B46C1;white-space:nowrap}.k5-new{border-style:dashed}
+  .k5-sum{display:grid;grid-template-columns:1fr auto 1fr;gap:8px;align-items:center;margin:8px 0 10px}.k5-sum>div{background:#F5F7FA;border-radius:10px;padding:8px 10px;font-size:13px}.k5-sum b{display:block;font-size:14px}
+  .k5-chk{display:flex;gap:8px;align-items:flex-start;font-size:13.5px;line-height:1.45;margin:6px 0}.k5-chk input{margin-top:3px;width:18px;height:18px}
+  .k5-btn{background:#6B46C1!important}`;
+  document.head.appendChild(st);
+})();
+const k5Sim = (a, b) => Math.max(typeof qlScore === 'function' ? qlScore(a, b) : 0, typeof nxDice === 'function' ? nxDice(a, b) : 0);
+const k5Unit = u => String(u || '').trim().toLowerCase();
+function k5Sheet(html) { k5Close(); const el = document.createElement('div'); el.className = 'kl-sheet-w'; el.id = 'k5-sheet'; el.innerHTML = `<div class="kl-dim" onclick="k5Close()"></div><div class="kl-sheet">${html}</div>`; document.body.appendChild(el); return el; }
+function k5Close() { const el = document.getElementById('k5-sheet'); if (el) el.remove(); if (k5Res) { const f = k5Res; k5Res = null; f(null); } }
+let k5Res = null;
+
+// ---------- chọn đúng vật tư khi xác nhận mượn ----------
+function loanPickItem(x) {
+  const n = normVN(x.itemName);
+  if (db.items.some(i => normVN(i.name) === n)) return Promise.resolve('new');        // trùng tên → máy chủ tự khớp
+  const C = db.items.map(i => [i, k5Sim(x.itemName, i.name)]).filter(z => z[1] >= 0.4).sort((a, b) => b[1] - a[1]).slice(0, 6);
+  if (!C.length) return Promise.resolve('new');
+  return new Promise(res => {
+    k5Sheet(`<div class="kl-h">Món này trong kho bạn tên là gì?</div>
+      <div class="kl-s">Dự án <b>${escHtml(x.from)}</b> ghi: <b>${escHtml(x.itemName)}</b> × ${fmtNum(x.qty)} ${escHtml(x.unit)}<br>Kho bạn có tên gần giống — chọn đúng món để trừ / cộng vào đó, tránh tạo 2 tên cho cùng một món.</div>
+      ${C.map(([i, s]) => { const bad = k5Unit(i.unit) !== k5Unit(x.unit); return `<button type="button" class="k5-opt" ${bad ? 'disabled' : ''} onclick="k5Pick(${i.id})"><div><b>${escHtml(i.name)}</b><small>Tồn ${fmtNum(i.stock)} ${escHtml(i.unit)}${bad ? ' · đơn vị khác (' + escHtml(x.unit) + ') — không chọn được' : ''}</small></div><span class="p">giống ${Math.round(s * 100)}%</span></button>`; }).join('')}
+      <button type="button" class="k5-opt k5-new" onclick="k5Pick('new')"><div><b>➕ Kho chưa có món này</b><small>Tạo tên mới “${escHtml(x.itemName)}”</small></div></button>
+      <div class="kl-ab"><button class="btn-full" style="background:#EEF0F3;color:var(--text)" onclick="k5Close()">Hủy</button></div>`);
+    k5Res = res;
+  });
+}
+function k5Pick(v) { const f = k5Res; k5Res = null; k5Close(); if (f) f(v); }
+
+// ---------- sửa số lượng phiếu mượn ----------
+const loanFixWait = l => (l.history || []).find(h => h.t === 'sua' && h.lk === 'cho');
+function fixOpen(id) {
+  const l = (db.loans || []).find(x => x.id === id); if (!l) return;
+  const u = escHtml(l.unit), used = r3((+l.returned || 0) + (+l.closeQty || 0)), lk = l.link && l.link.st === 'ok';
+  k5Sheet(`<div class="kl-h">✏️ Sửa số lượng</div>
+    <div class="kl-s"><b>${escHtml(l.itemName)}</b> · ${l.kind === 'cho' ? 'cho mượn' : 'đi mượn'} · ${escHtml(l.party)}<br>Đang ghi <b>${fmtNum(l.qty)} ${u}</b>${used ? ` · đã trả / bỏ ${fmtNum(used)}` : ''}</div>
+    <div class="fg"><label>Số lượng đúng (${u})</label><input type="number" inputmode="decimal" id="k5-q" value="${l.qty}" min="${used}"></div>
+    <div class="fg"><label>Lý do (bắt buộc)</label><input type="text" id="k5-why" placeholder="VD: ghi nhầm, thực tế mượn 2 cái"></div>
+    <div class="ct-mhint">${lk ? `Phiếu đã khớp với dự án <b>${escHtml(l.link.p)}</b> → gửi đề nghị sang dự án đó. Số chỉ đổi khi bên kia bấm <b>Đồng ý sửa</b>.` : 'Sửa ngay: phiếu kho gốc + tồn kho tự cập nhật. Lịch sử phiếu mượn ghi lại ai sửa, từ bao nhiêu, lý do.'}</div>
+    <div class="kl-ab"><button class="btn-full" style="background:#EEF0F3;color:var(--text)" onclick="k5Close()">Hủy</button><button class="btn-full kl-pri" onclick="fixSend(${l.id})">${lk ? 'Gửi đề nghị sửa' : 'Sửa số'}</button></div>`);
+}
+async function fixSend(id) {
+  const l = (db.loans || []).find(x => x.id === id); if (!l) return;
+  const q = r3(+(document.getElementById('k5-q')?.value || 0)), why = (document.getElementById('k5-why')?.value || '').trim();
+  const used = r3((+l.returned || 0) + (+l.closeQty || 0));
+  if (!(q > 0) || q < used - 1e-9) { toast(`⚠️ Số lượng phải từ ${fmtNum(Math.max(used, 0.001))} trở lên`); return; }
+  if (Math.abs(q - l.qty) < 1e-9) { toast('⚠️ Số lượng không đổi'); return; }
+  if (why.length < 3) { toast('⚠️ Ghi lý do sửa'); document.getElementById('k5-why')?.focus(); return; }
+  if (!navigator.onLine) { toast('📴 Cần có mạng'); return; }
+  const data = { loanId:l.id, id:newId(), qty:q, reason:why };
+  showLoader('Đang lưu...'); let r = await api('loanFix', data); hideLoader();
+  if (r && !r.success && /không đủ/i.test(String(r.error || ''))) {
+    const it = db.items.find(i => i.id === l.itemId), have = it ? +it.stock || 0 : 0, need = r3(q - l.qty);
+    if (!confirm(`Kho trên app chỉ ghi ${fmtNum(have)} ${l.unit} ${l.itemName}, cần cho mượn thêm ${fmtNum(need)}.\n\nMón này CÓ SẴN ở kho nhưng chưa nhập lên app?\n\nBấm OK: app ghi "Tồn có sẵn – chưa cập nhật lên app" ${fmtNum(Math.max(0, r3(need - Math.max(0, have))))} ${l.unit} rồi sửa số.`)) return;
+    showLoader('Đang lưu...'); r = await api('loanFix', Object.assign(data, { bu:1 })); hideLoader();
+  }
+  if (!r || !r.success) { toast('⚠️ ' + ((r && r.error) || 'Không lưu được')); return; }
+  k5Close(); closeModal('modal-loan');
+  toast(r.pending ? `✏️ Đã gửi đề nghị sửa ${fmtNum(l.qty)} → ${fmtNum(q)} — chờ dự án ${l.link.p} xác nhận` : `✅ Đã sửa ${fmtNum(l.qty)} → ${fmtNum(q)} ${l.unit}`);
+  await loanResync();
+}
+{ const _k5OpenLoan = openLoan; openLoan = function (id) {
+  _k5OpenLoan(id);
+  const l = (db.loans || []).find(x => x.id === id), body = document.getElementById('ml-body'); if (!l || !body) return;
+  const u = escHtml(l.unit), w = loanFixWait(l), sua = (l.history || []).filter(h => h.t === 'sua' && h.lk !== 'cho');
+  let add = '';
+  if (w) add += `<div class="note-lk warn">✏️ Chờ dự án <b>${escHtml(l.link ? l.link.p : '')}</b> xác nhận sửa <b>${fmtNum(w.old)} → ${fmtNum(w.q)} ${u}</b> · ${escHtml(w.note || '')}<br><small>${escHtml(w.by || '')} · ${escHtml(w.at || '')}</small></div>`;
+  const tc = (l.history || []).filter(h => h.t === 'sua' && h.lk === 'tc');
+  if (sua.length) add += `<div class="grp-label">Sửa số lượng</div><div class="kv-box" style="padding:2px 14px">${sua.map(h => `<div class="ln-hist"><div>${h.lk === 'tc' ? '⛔' : '✏️'}</div><div style="flex:1">${h.lk === 'tc' ? 'Bị từ chối: ' : ''}${fmtNum(h.old)} → <b>${fmtNum(h.q)}</b> ${u}<small>📝 ${escHtml(h.note || '')}${h.lkNote ? ' · ' + escHtml(h.lkNote) : ''} · ${escHtml(h.by || '')} · ${escHtml(h.at || '')}</small></div></div>`).join('')}</div>`;
+  if (add) body.insertAdjacentHTML('beforeend', add);
+  if (l.itemType === 'vt' && l.status === 'open' && hp('k_loan') && db.loanV2 && !w) {
+    const b = document.createElement('button'); b.className = 'btn-full'; b.id = 'k5-fix-btn';
+    b.style.cssText = 'background:#fff;color:#6B46C1;border:1.5px solid #CDBEF0;margin-top:10px'; b.textContent = '✏️ Sửa số lượng (ghi nhầm)'; b.onclick = () => fixOpen(l.id);
+    const cb = document.getElementById('ml-close-btn'); if (cb && cb.parentNode) cb.parentNode.insertBefore(b, cb); else body.appendChild(b);
+  }
+}; }
+
+// ---------- gộp vật tư trùng (Admin) ----------
+const k5Bu = t => t.type === 'nhap' && t.supplierOrReceiver === 'Tồn đầu' && /chưa cập nhật lên app/.test(String(t.note || ''));
+let k5M = { from:0, to:0, q:'' };
+function mergeOpen(fromId) {
+  const A = db.items.find(i => i.id === fromId); if (!A) return;
+  k5M = { from:fromId, to:0, q:'' };
+  closeModal('modal-edit-vattu');
+  k5Sheet(`<div class="kl-h">🔗 Gộp vật tư trùng</div>
+    <div class="kl-s">Gộp <b>${escHtml(A.name)}</b> (tồn ${fmtNum(A.stock)} ${escHtml(A.unit)}) <b>vào</b> món nào? Dùng khi 2 tên là <b>cùng một loại vật tư</b>, chỉ ghi sai / thiếu tên.</div>
+    <div class="fg"><input type="text" id="k5-mq" placeholder="🔎 Tìm tên khác…" oninput="k5M.q=this.value;k5MList()"></div>
+    <div id="k5-ml"></div>
+    <div class="kl-ab"><button class="btn-full" style="background:#EEF0F3;color:var(--text)" onclick="k5Close()">Hủy</button></div>`);
+  k5MList();
+}
+function k5MList() {
+  const A = db.items.find(i => i.id === k5M.from), el = document.getElementById('k5-ml'); if (!A || !el) return;
+  const q = normVN(k5M.q), L = db.items.filter(i => i.id !== A.id && (!q || normVN(i.name).includes(q))).map(i => [i, k5Sim(A.name, i.name)]).sort((a, b) => b[1] - a[1]).slice(0, 8);
+  el.innerHTML = L.map(([i, s]) => { const bad = k5Unit(i.unit) !== k5Unit(A.unit); return `<button type="button" class="k5-opt" ${bad ? 'disabled' : ''} onclick="mergeStep2(${i.id})"><div><b>${escHtml(i.name)}</b><small>Tồn ${fmtNum(i.stock)} ${escHtml(i.unit)}${bad ? ' · đơn vị khác — không gộp được' : ''}</small></div>${s >= 0.3 ? `<span class="p">giống ${Math.round(s * 100)}%</span>` : ''}</button>`; }).join('') || '<div class="kl-s">Không có món nào</div>';
+}
+function mergeStep2(toId) {
+  const A = db.items.find(i => i.id === k5M.from), B = db.items.find(i => i.id === toId); if (!A || !B) return;
+  k5M.to = toId;
+  const TA = db.transactions.filter(t => t.itemId === A.id), bu = TA.filter(k5Bu), buQ = bu.reduce((s, t) => s + (+t.qty || 0), 0), u = escHtml(B.unit);
+  const LA = (db.loans || []).filter(l => l.itemType === 'vt' && l.itemId === A.id).length;
+  k5Sheet(`<div class="kl-h">🔗 Xác nhận gộp</div>
+    <div class="k5-sum"><div>Tên sai / thiếu<b>${escHtml(A.name)}</b>tồn ${fmtNum(A.stock)} ${u} · ${TA.length} phiếu${LA ? ' · ' + LA + ' phiếu mượn' : ''}</div><div style="background:none;font-size:20px">→</div><div>Giữ lại<b>${escHtml(B.name)}</b>tồn ${fmtNum(B.stock)} ${u}</div></div>
+    ${bu.length ? `<label class="k5-chk"><input type="checkbox" id="k5-bu" checked><span>Bỏ ${bu.length} phiếu <b>"Tồn có sẵn – chưa cập nhật lên app"</b> (${fmtNum(buQ)} ${u}) của tên sai — vì đồ thật ra đã có trong <b>${escHtml(B.name)}</b>. Bỏ chọn nếu đó là đồ khác chưa nhập.</span></label>` : ''}
+    <div class="kl-s" id="k5-after"></div>
+    <label class="k5-chk"><input type="checkbox" id="k5-same"><span>Tôi xác nhận đây là <b>CÙNG MỘT LOẠI vật tư</b>, chỉ ghi sai / thiếu tên.</span></label>
+    <div class="fg"><label>Lý do (bắt buộc)</label><input type="text" id="k5-mwhy" placeholder="VD: Nhà hát ghi sai tên đèn khi báo mượn"></div>
+    <div class="ct-mhint">Mọi phiếu nhập / xuất / mượn / phiếu yêu cầu của tên sai chuyển sang <b>${escHtml(B.name)}</b>, tên sai bị xóa. Không hoàn tác được.</div>
+    <div class="kl-ab"><button class="btn-full" style="background:#EEF0F3;color:var(--text)" onclick="mergeOpen(${A.id})">‹ Chọn lại</button><button class="btn-full kl-pri k5-btn" onclick="mergeSend()">🔗 Gộp</button></div>`);
+  const upd = () => { const drop = document.getElementById('k5-bu')?.checked; document.getElementById('k5-after').innerHTML = `Sau khi gộp: <b>${escHtml(B.name)}</b> tồn <b>${fmtNum(r3(+B.stock + +A.stock - (drop ? buQ : 0)))} ${u}</b>`; };
+  document.getElementById('k5-bu')?.addEventListener('change', upd); upd();
+}
+async function mergeSend() {
+  const A = db.items.find(i => i.id === k5M.from), B = db.items.find(i => i.id === k5M.to); if (!A || !B) return;
+  if (!document.getElementById('k5-same')?.checked) { toast('⚠️ Đánh dấu xác nhận cùng một loại vật tư'); return; }
+  const why = (document.getElementById('k5-mwhy')?.value || '').trim(); if (why.length < 3) { toast('⚠️ Ghi lý do gộp'); return; }
+  if (!navigator.onLine) { toast('📴 Cần có mạng'); return; }
+  showLoader('Đang gộp...');
+  const r = await api('mergeItems', { fromId:A.id, toId:B.id, reason:why, dropBu:document.getElementById('k5-bu')?.checked ? 1 : '' });
+  hideLoader();
+  if (!r || !r.success) { toast('⚠️ ' + ((r && r.error) || 'Không gộp được')); return; }
+  k5Close(); toast(`✅ Đã gộp vào ${B.name} · tồn ${fmtNum(r.stock)} ${B.unit}`);
+  await loanResync();
+}
+{ const _k5Edit = editVatTu; editVatTu = function (id) {
+  const r = _k5Edit(id);
+  const del = document.getElementById('ev-del-btn');
+  if (del && !document.getElementById('ev-merge-btn')) del.insertAdjacentHTML('beforebegin', '<button class="btn-ok" id="ev-merge-btn" style="background:#6B46C1;flex:1">🔗 Gộp</button>');
+  const mb = document.getElementById('ev-merge-btn');
+  if (mb) { mb.style.display = role === 'ADM' && db.loanV2 && db.items.length > 1 ? '' : 'none'; mb.onclick = () => mergeOpen(id); }
+  return r;
+}; }
 </script>
 <script>// ===== Bộ biểu tượng Phosphor Duotone (MIT) thay emoji — v5.31.9 =====
 (function () {

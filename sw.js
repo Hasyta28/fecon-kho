@@ -1,4 +1,5 @@
-// FECON Kho + Thi công - Service Worker v5.44.3
+// FECON Kho + Thi công - Service Worker v5.45.0
+// 5.45.0: Kho — sửa số lượng phiếu mượn (bên kia xác nhận), chọn đúng vật tư khi xác nhận mượn, gộp vật tư trùng tên
 // 5.44.3: Kho — Tổng quan + Lịch sử nhập / xuất hiện phiếu cho mượn / nhận trả / đi mượn / trả lại
 // 5.44.2: Kho — bấm Xác nhận cho mượn / Duyệt thì thẻ trên Tổng quan tắt ngay
 // 5.44.1: Kho — sửa nút xác nhận, máy vào, giải động máy, nhãn vị trí, xác nhận cho mượn khi kho thiếu, vật tư mới bắt buộc nhóm + đơn vị
@@ -31,7 +32,7 @@
 //  - Mở app: lấy file từ bộ nhớ của bản đang dùng; thiếu file nào mới lấy từ mạng.
 //  - Có sw.js mới trên GitHub: tải sẵn bản mới vào bộ nhớ riêng nhưng KHÔNG đổi bản đang dùng.
 //  - Địa chỉ có ?fresh=... luôn lấy thẳng từ mạng (app dùng để kiểm tra / tải bản mới).
-const VERSION = '5.44.3';
+const VERSION = '5.45.0';
 const APP = 'fecon-app-', META = 'fecon-meta';
 const CORE = ['./', './index.html', './thicong.html', './manifest.json', './icon-192.png', './icon-512.png', './icon-maskable-192.png', './icon-maskable-512.png', './bg-login.jpg'];
 
