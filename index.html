@@ -1776,7 +1776,7 @@ button .pi,.btn .pi,a .pi,.chip .pi,.tag .pi,.badge .pi,.yn .pi,.bnav .pi,.bnav-
 // ============================================================
 // CONFIG
 // ============================================================
-const APP_VERSION = '5.44.1';
+const APP_VERSION = '5.44.3';
 const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbw6Rmi80I7RI3ij2U7RdRF5pYuQTnPrwEmGmUZS5xpxzLwwVynfoFUujZe1lm6HS1ymxw/exec';
 // ============================================================
 
@@ -2503,7 +2503,7 @@ function renderHistTab(c, type) {
   if (F === 'ct') txns = txns.filter(t => t.thangCT);                // v5.30: thẳng ra công trường
   else if (type === 'xuat' && F !== 'all') txns = txns.filter(t => xuatF === 'pyc' ? isPycRef(t.refId) : !isPycRef(t.refId) && !t.thangCT);
   const dev = curProj !== 'all' && F === 'all' ? devEvents(type === 'nhap' ? 'vao' : 'ra') : [];   // v5.29: máy vào / ra
-  const nPh = txns.length; txns = txns.concat(dev);
+  const nPh = txns.length; txns = txns.concat(dev, F === 'all' ? filtTxns().filter(t => LOAN_T[t.type] && (LOAN_T[t.type] > 0) === (type === 'nhap')).map(t => ({...t, _loan:1})) : []);
   const fchip = (k, l) => `<div class="chip ${F === k ? 'on' : ''}" onclick="${type}F='${k}';goTab('ls${type}')">${l}</div>`;
   const hasCt = filtTxns().some(t => t.thangCT);
   const lbl = type === 'nhap' ? 'phiếu nhập' : 'phiếu xuất';
@@ -2610,7 +2610,7 @@ function renderHome(c) {
   const catItems = cats.find(([c]) => c.id === homeCat)?.[1] || [];
   const units = unitGroups(catItems);
   if (!homeUnit || !units.some(([u]) => u === homeUnit)) homeUnit = units[0]?.[0] || null;
-  const recent = byTimeDesc(txns.filter(t => !LOAN_T[t.type]).concat(curProj !== 'all' && typeof devEvents === 'function' ? devEvents('vao').concat(devEvents('ra')) : [])).slice(0, 6);   // v5.44.1: có cả máy vào / ra
+  const recent = byTimeDescL(txns.concat(curProj !== 'all' && typeof devEvents === 'function' ? devEvents('vao').concat(devEvents('ra')) : [])).slice(0, 6);   // v5.44.1: có cả máy vào / ra
 
   c.innerHTML = `${reqHomeHtml()}
     <div class="act-grid need-tk">
@@ -2665,6 +2665,7 @@ function renderHome(c) {
       <div class="card">
         ${recent.length === 0 ? `<div class="empty-state"><div class="e-ico">📭</div><p>Chưa có giao dịch</p></div>`
         : recent.map(t => {
+          if (LOAN_T[t.type]) return loanTxnRow(t, 1);   // v5.44.3: cho mượn / nhận trả / đi mượn / trả lại
           if (t._dev) return devEvRow(t).replace('class="row-item"', 'class="txn-row" style="cursor:pointer"');
           const it = db.items.find(i => i.id === t.itemId);
           const dc = t.type === 'dieuchinh';
@@ -10037,6 +10038,7 @@ async function nxAdjust() {
 // (7) nhận máy giải động: tìm đúng máy P.QLTB theo mã kế toán / mã P.QLTB / tên → mở thẳng Máy vào công trường
 // (8) xác nhận cho dự án khác mượn khi kho trên app thiếu → ghi tồn có sẵn phần thiếu rồi cho mượn
 // (9) vật tư mới bắt buộc chọn nhóm + đơn vị
+// 5.44.2: bấm Xác nhận cho mượn / Duyệt → thẻ trên Tổng quan tắt ngay (trước phải tự tải lại)
 (function () {
   const st = document.createElement('style');
   st.textContent = `.badge-kho{background:#E7F0FA;color:#0B5CAD}.btn-blue2{background:#0B5CAD}.fn-auto{color:#C2410C;font-size:12.5px;font-weight:700;margin-top:4px}
@@ -10181,8 +10183,37 @@ loanInAct = async function (i, ok) {
   }
   if (!r || !r.success) { toast('⚠️ ' + ((r && r.error) || 'Không lưu được')); return; }
   toast(ok ? (r.bu ? `✅ Đã ghi tồn có sẵn ${fmtNum(r.bu)} ${x.unit} + xác nhận cho mượn` : '✅ Đã xác nhận — 2 dự án đã khớp số') : '⛔ Đã báo dự án ' + x.from);
-  await syncAll(true);
+  const k = (db.loanIn || []).indexOf(x); if (k >= 0) db.loanIn.splice(k, 1);   // v5.44.2: thẻ tắt ngay, không chờ đồng bộ
+  refreshCurrentView(false);
+  await loanResync();
 };
+// v5.44.2: syncAll không vẽ lại màn → thẻ chờ xác nhận / chờ duyệt vẫn hiện sau khi bấm. Đồng bộ (đợi lượt đang chạy) rồi vẽ lại.
+async function loanResync() {
+  let done = await syncAll(true);
+  for (let n = 0; !done && syncing && n < 8; n++) { await new Promise(r => setTimeout(r, 1000)); done = await syncAll(true); }
+  refreshCurrentView(false);
+}
+if (typeof dropDecide === 'function') { const _5DropDecide = dropDecide; dropDecide = async function (id, ok) { await _5DropDecide(id, ok); await loanResync(); }; }
+
+// ---------- 5.44.3: phiếu mượn – trả hiện trong Tổng quan + Lịch sử nhập / xuất ----------
+// Trước: Tổng quan chỉ hiện phiếu "Tồn đầu +200" (ghi khi xác nhận cho mượn), phiếu cho mượn −200 bị ẩn → tưởng cho mượn mà cộng kho.
+const LOAN_LBL = { chomuon:'🔁 Cho mượn', nhantra:'↩ Nhận trả', dimuon:'🤝 Đi mượn', tralai:'↩ Trả lại' };
+function loanTxnRow(t, home) {
+  const it = itemById(t.itemId), unit = it?.unit || t.unit || '', sg = LOAN_T[t.type] || 0;
+  return `<div class="${home ? 'txn-row' : 'row-item'}" onclick="openTxn(${t.id})" style="cursor:pointer">
+    <div class="txn-ico ${sg > 0 ? 'in' : 'out'}">${sg > 0 ? '📥' : '📤'}</div>
+    <div style="flex:1;min-width:0">
+      <div class="txn-name">${escHtml(it?.name || t.itemName || '?')}</div>
+      <div class="txn-sub"><b style="color:${sg > 0 ? 'var(--green)' : 'var(--red)'}">${LOAN_LBL[t.type] || t.type}</b>${t.supplierOrReceiver ? ' · ' + escHtml(t.supplierOrReceiver) : ''} · ${escHtml(t.datetime || '')}</div>
+      ${!home && t.createdByName ? `<div class="txn-sub">👤 ${escHtml(t.createdByName)}</div>` : ''}
+    </div>
+    <div style="flex-shrink:0;margin-left:8px"><span class="txn-badge ${sg > 0 ? 'badge-in' : 'badge-out'}">${sg > 0 ? '+' : '-'}${fmtNum(+t.qty || 0)} ${escHtml(unit)}</span></div>
+  </div>`;
+}
+{ const _5TxnRow = txnRow; txnRow = t => t && LOAN_T[t.type] ? loanTxnRow(t) : _5TxnRow(t); }
+{ const _5EffQty = effQty; effQty = t => t && t._loan ? 0 : _5EffQty(t); }
+// cùng giờ: phiếu mượn – trả nằm trên phiếu "Tồn đầu" ghi kèm (đọc từ trên xuống: cho mượn −200 ← vì trước đó ghi tồn có sẵn +200)
+const byTimeDescL = arr => arr.slice().sort((a, b) => ((parseVN(b.datetime) || 0) - (parseVN(a.datetime) || 0)) || ((LOAN_T[b.type] ? 1 : 0) - (LOAN_T[a.type] ? 1 : 0)) || (+b.id - +a.id));
 </script>
 <script>// ===== Bộ biểu tượng Phosphor Duotone (MIT) thay emoji — v5.31.9 =====
 (function () {
