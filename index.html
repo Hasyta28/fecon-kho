@@ -1776,7 +1776,7 @@ button .pi,.btn .pi,a .pi,.chip .pi,.tag .pi,.badge .pi,.yn .pi,.bnav .pi,.bnav-
 // ============================================================
 // CONFIG
 // ============================================================
-const APP_VERSION = '5.45.0';
+const APP_VERSION = '5.46.1';
 const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbw6Rmi80I7RI3ij2U7RdRF5pYuQTnPrwEmGmUZS5xpxzLwwVynfoFUujZe1lm6HS1ymxw/exec';
 // ============================================================
 
@@ -3380,12 +3380,12 @@ async function doXuat() {
   if (!ctQtyOk(item, qty)) return;                                        // v5.35: kiểm đúng nơi lấy (kho / công trường)
   if (!(await askIfDupTxn('xuat', item, qty))) return;               // v5.28.1: vừa xuất cùng vật tư, cùng số lượng → hỏi lại
   const devObj = db.devices.find(x => x.name === dev);                     // v5.20: xuất dầu cho máy có đồng hồ → bắt buộc giờ máy
-  let mr = {meter:'', meterNote:''};
+  let mr = {meter:'', meterNote:'', fillAt:fillAtRead('fx')};
   if (devObj && isDieselItem(item) && mUnit(devObj) !== 'none') { if (!document.getElementById('fx-mbox')) { fxMeterUpdate(); toast('⚠️ Nhập ' + mLbl(devObj).toLowerCase() + ' hiện tại'); return; } mr = meterRead('fx', devObj); if (!mr) return; }
   const _ct = fxCtVal(item); ctApply(item, {type:'xuat', ct:_ct, qty});          // v5.35
   const txn = {id:newId(), type:'xuat', ct:_ct, itemId, itemName:item.name, qty, unit:item.unit, project:proj,
     supplierOrReceiver:window.fxRecvO || document.getElementById('fx-note').value,
-    thietBi:dev, note:document.getElementById('fx-note').value, datetime:nowStr(), createdByName:me?.name||'', meter:mr.meter, meterNote:mr.meterNote};
+    thietBi:dev, note:document.getElementById('fx-note').value, datetime:mr.fillAt ? mr.fillAt : nowStr(), createdByName:me?.name||'', meter:mr.meter, meterNote:mr.meterNote, fillAt:mr.fillAt || ''};
   withAdminTime(txn, 'fx-time');
   db.transactions.push(txn);
   addLog('Xuất kho', `${qty} ${item.unit} ${item.name}${dev?' → '+dev:''} — ${proj}`);
@@ -4204,7 +4204,7 @@ function renderDevicesList() {
                 <div class="ri-name">${escHtml(d.name)}</div>${d.maQL || +d.ngoaiDM === 1 ? `<div>${qlBadge(d)}</div>` : ''}
                 <div class="ri-sub">${d.type==='own'?'Công ty':'Thuê ngoài' + (d.donVi ? ' (' + escHtml(d.donVi) + ')' : '')} · ${fmtNum(totalFuel)} Lít dầu · ${repairs.length} lần sửa</div>
                 ${mUnit(d) !== 'none' ? (() => { const lm = lastMeter(d); return lm !== null && lm !== undefined ? `<div class="ri-sub">⏱ ${mLbl(d)} ${fmtNum(lm)}${d.inDate ? ' · vào ' + d.inDate.split('-').reverse().join('/') : ''}${d.outDate ? ' · ra ' + d.outDate.split('-').reverse().join('/') : ''}</div>` : ''; })() : ''}
-                <div class="dev-by">${d.addedBy ? 'Thêm bởi ' + escHtml(d.addedBy) + (d.addedAt ? ' · ' + escHtml(String(d.addedAt).replace(/^\d{1,2}:\d{2}(:\d{2})?\s*/, '')) : '') : 'Chưa rõ người thêm'}</div>
+                ${devStartLine(d)}<div class="dev-by">${d.addedBy ? 'Thêm bởi ' + escHtml(d.addedBy) + (d.addedAt ? ' · ' + escHtml(String(d.addedAt).replace(/^\d{1,2}:\d{2}(:\d{2})?\s*/, '')) : '') : 'Chưa rõ người thêm'}</div>
               </div>
             </div>
             <div class="ri-right">
@@ -4254,21 +4254,7 @@ function renderDeviceDetail(id) {
           <div class="ds-label">Lít dầu đã dùng</div>
         </div>
       </div>
-      ${totalFuel > 0 ? `
-      <div style="margin-top:12px;background:var(--bg);border-radius:8px;padding:10px 12px">
-        <div style="font-size:12px;color:var(--text3);font-weight:700;margin-bottom:4px">SO SÁNH ĐỊNH MỨC</div>
-        ${(() => {
-          const txnsByDay = {};
-          txnsD.forEach(t => { const m=(t.datetime||'').match(/\d{1,2}\/\d{1,2}\/\d{4}/); const d2=m?m[0]:'?'; txnsByDay[d2]=(txnsByDay[d2]||0)+effQty(t); });
-          const days = Object.keys(txnsByDay).length||1;
-          const avgPerDay = totalFuel/days;
-          const targetPerDay = d.fuelRate*8; // 8 hours/day
-          const diff = avgPerDay - targetPerDay;
-          return `<div style="font-size:14.5px;font-weight:600;color:${diff>0?'var(--red)':'var(--green)'}">
-            TB ${fmtNum(Math.round(avgPerDay))} L/ngày ${diff>0?'⬆️ Vượt định mức '+fmtNum(Math.round(diff))+' L':'✅ Trong định mức'}
-          </div>`;
-        })()}
-      </div>` : ''}
+      ${fuelNormHtml(d)}
       ${devLoanHtml(d)}
       ${d.plate ? `<div style="margin-top:8px;font-size:14.5px;color:var(--text2)">🔖 Số hiệu: <b>${d.plate}</b></div>` : ''}
       ${d.note ? `<div style="margin-top:6px;font-size:13px;color:var(--text3)">${d.note}</div>` : ''}
@@ -4367,7 +4353,8 @@ async function saveDevice() {
     addLog('Sửa thiết bị', name);
   } else {
     const mu = document.getElementById('ad-meter-unit').value, im = document.getElementById('ad-in-meter').value;
-    if (mu !== 'none' && im === '') { toast('⚠️ Nhập ' + (mu === 'km' ? 'số km' : 'giờ máy') + ' lúc vào công trình'); return; }
+    if (false && mu !== 'none' && im === '') {   // v5.46
+ toast('⚠️ Nhập ' + (mu === 'km' ? 'số km' : 'giờ máy') + ' lúc vào công trình'); return; }
     let maQL = document.getElementById('ad-maql').value, ngoaiDM = '';            // v5.29: theo danh mục P.QLTB hay ngoài danh mục
     const qx = qlByMa(maQL); if (!qx || vnNorm(qx.name) !== vnNorm(name)) maQL = '';
     if (maQL && qlDevHere(maQL)) { toast('⚠️ Máy này đang ở dự án từ ngày ' + fmtDMY(qlDevHere(maQL).inDate)); return; }
@@ -6786,7 +6773,7 @@ function reqIssue() {
   if (!send.some(v => v > 0)) { toast('⚠️ Nhập số thực gửi'); return; }
   const md = reqMeterDev(r); let mr = {meter:'', meterNote:''};
   if (md) { mr = meterRead('rq', md); if (!mr) return; }
-  return reqAction('issueReq', {id:curReqId, send, meter:mr.meter, meterNote:mr.meterNote}, '🚚 Đã giao hàng, đã trừ tồn kho và tạo phiếu xuất', true);
+  return reqAction('issueReq', {id:curReqId, send, meter:mr.meter, meterNote:mr.meterNote, fillAt:mr.fillAt || ''}, '🚚 Đã giao hàng, đã trừ tồn kho và tạo phiếu xuất', true);
 }
 function reqReject() {
   const v = (document.getElementById('req-rej')?.value || '').trim();
@@ -7394,7 +7381,7 @@ let listLimit = {nhap:100, xuat:100, dieuchinh:100};
 // ===== v5.18.0: CHỨC DANH & PHÂN QUYỀN (Admin cài trong app) =====
 const PERM_UI = [
   ['Màn hình được thấy', [['v_pyc','Phiếu yêu cầu',''],['v_home','Tổng quan',''],['v_nhap','Phiếu nhập (xem)',''],['v_xuat','Phiếu xuất (xem)',''],['v_ton','Tồn kho (số lượng)',''],['v_baocao','Báo cáo',''],['v_stat','Thống kê dự án đang làm','Chi phí, tiến độ của dự án được giao'],['v_all','Tổng hợp các dự án','Xem mọi dự án, so sánh, chi phí nhiều dự án'],['v_ver','Xem nội dung cập nhật phiên bản','Thông báo đầy đủ, chi tiết từng bản, lịch sử cập nhật']]],
-  ['Kho', [['k_nhap','Lập phiếu nhập',''],['k_xuat','Lập phiếu xuất (xuất thẳng)',''],['k_edit','Sửa / điều chỉnh phiếu',''],['k_kk','Kiểm kê',''],['k_dm','Thêm, sửa tên + nhóm vật tư / thiết bị','Đổi đơn vị và xóa: chỉ Admin'],['k_copy','Chép vật tư từ dự án khác',''],['k_bomuon','Duyệt bỏ thông tin mượn','Mặc định CHT, CHP, P.QLTB'],['k_loan','Cho mượn / trả dụng cụ',''],['k_meter','Ghi giờ máy thiết bị','Khi xuất dầu, vào / kết thúc công trình'],['k_thang','Nhập thẳng ra công trường','Phiếu nhập có 2 ô 📦 Vào kho / 🏗 Thẳng ra công trường (nhập + xuất cùng lúc, tồn không đổi)']]],
+  ['Kho', [['k_nhap','Lập phiếu nhập',''],['k_xuat','Lập phiếu xuất (xuất thẳng)',''],['k_edit','Sửa / điều chỉnh phiếu',''],['k_kk','Kiểm kê',''],['k_dm','Thêm, sửa tên + nhóm vật tư / thiết bị','Đổi đơn vị và xóa: chỉ Admin'],['k_copy','Chép vật tư từ dự án khác',''],['k_bomuon','Duyệt bỏ thông tin mượn','Mặc định CHT, CHP, P.QLTB'],['k_hd','Ghi ngày máy bắt đầu hoạt động','Mặc định PP / TP QLTB — bật thêm cho cán bộ QLTB'],['k_loan','Cho mượn / trả dụng cụ',''],['k_meter','Ghi giờ máy thiết bị','Khi xuất dầu, vào / kết thúc công trình'],['k_thang','Nhập thẳng ra công trường','Phiếu nhập có 2 ô 📦 Vào kho / 🏗 Thẳng ra công trường (nhập + xuất cùng lúc, tồn không đổi)']]],
   ['Giá & chi phí', [['g_view','Xem giá, chi phí',''],['g_price','Sửa bảng giá',''],['g_prog','Cập nhật tiến độ thi công','']]],
   ['Phiếu yêu cầu', [['y_tao','Tạo phiếu',''],['y_bs','Xin bổ sung ngoài định mức',''],['y_duyet','Duyệt phiếu',''],['y_giao','Giao hàng theo phiếu (kho)',''],['y_nhan','Xác nhận nhận hàng',''],['y_xem','Xem mọi phiếu của dự án','Tắt = chỉ thấy phiếu của mình']]],
   ['Xuất file', [['x_nxt','Xuất Excel NXT',''],['x_pyc','Xuất báo cáo phiếu YC','']]],
@@ -7533,11 +7520,12 @@ function lastMeter(d) { return meterLog(d).last; }
 function meterBoxHtml(pfx, d) {
   const last = lastMeter(d);
   return `<div class="mt-box" id="${pfx}-mbox">
-    <div class="mt-h"><b>${mUnit(d) === 'km' ? 'Số km hiện tại' : 'Số đồng hồ giờ máy'} <span style="color:var(--red)">*</span></b><span>${last !== null && last !== undefined ? 'Lần trước: ' + fmtNum(last) + ' ' + mSfx(d) : 'Chưa có số trước'}</span></div>
+    <div class="mt-h"><b>${mUnit(d) === 'km' ? 'Số km hiện tại' : 'Số đồng hồ giờ máy'} </b><span>${last !== null && last !== undefined ? 'Lần trước: ' + fmtNum(last) + ' ' + mSfx(d) : 'Chưa có số trước'}</span></div>
     <input type="number" inputmode="decimal" id="${pfx}-meter" placeholder="Đọc số trên đồng hồ" oninput="meterCheck('${pfx}',${d.id})">
-    <div class="mt-msg" id="${pfx}-mmsg">Bắt buộc nhập số đồng hồ</div>
+    <div class="mt-msg" id="${pfx}-mmsg" style="color:#C2410C">⚠️ Chưa có giờ máy — bổ sung trong 7 ngày (chi tiết máy)</div>
     <label class="mt-ck"><input type="checkbox" id="${pfx}-broken" onchange="meterCheck('${pfx}',${d.id})"> Đồng hồ hỏng / không đọc được</label>
     <input id="${pfx}-breason" placeholder="Lý do (bắt buộc), VD: mặt đồng hồ vỡ" style="display:none">
+    ${fillAtHtml(pfx)}
     <label class="mt-ck"><input type="checkbox" id="${pfx}-reset" onchange="meterCheck('${pfx}',${d.id})"> Đồng hồ đã thay, tính lại từ số này</label>
   </div>`;
 }
@@ -7548,11 +7536,11 @@ function meterCheck(pfx, devId) {
   g('breason').style.display = broken ? '' : 'none'; g('meter').style.display = broken ? 'none' : '';
   let ok = false, msg = '', bad = false;
   if (broken) { ok = !!(g('breason').value || '').trim() || true; msg = ''; }
-  else if (raw === '') msg = 'Bắt buộc nhập số đồng hồ';
+  else if (raw === '') { ok = true; msg = '⚠️ Chưa có giờ máy — bổ sung trong 7 ngày (chi tiết máy)'; }   // v5.46
   else if (isNaN(v) || v < 0) { msg = 'Số không hợp lệ'; bad = true; }
   else if (last !== null && last !== undefined && v < last && !reset) { msg = `Nhỏ hơn lần trước (${fmtNum(last)}). Kiểm tra lại, hoặc tích "Đồng hồ đã thay"`; bad = true; }
   else { ok = true; msg = last !== null && last !== undefined && !reset ? `Chạy ${fmtNum(Math.round((v - last) * 10) / 10)} ${mSfx(d)} từ lần đổ trước` : 'OK'; }
-  const m = g('mmsg'); m.textContent = msg; m.style.color = ok ? 'var(--green)' : 'var(--red)';
+  const m = g('mmsg'); m.textContent = msg; m.style.color = raw === '' && !broken ? '#C2410C' : ok ? 'var(--green)' : 'var(--red)';
   g('meter').style.borderColor = bad ? 'var(--red)' : '';
   return ok;
 }
@@ -7566,7 +7554,7 @@ function meterRead(pfx, d) {
     return {meter:'', meterNote:'Đồng hồ hỏng: ' + why};
   }
   if (!meterCheck(pfx, d.id)) { toast('⚠️ ' + (document.getElementById(pfx + '-mmsg').textContent || 'Nhập giờ máy')); return null; }
-  return {meter:+g('meter').value, meterNote:g('reset').checked ? 'Đồng hồ đã thay' : ''};
+  return {meter:g('meter').value === '' ? '' : +g('meter').value, meterNote:g('reset').checked && g('meter').value !== '' ? 'Đồng hồ đã thay' : '', fillAt:fillAtRead(pfx)};
 }
 function fxMeterUpdate() {
   const wrap = document.getElementById('fx-mwrap'); if (!wrap) return;
@@ -7591,7 +7579,7 @@ function deviceMeterHtml(d) {
     </div>
     <div class="mt-hist"><div class="mt-hr mt-hh"><span>Ngày</span><span>${mLbl(d)}</span><span>Chạy</span><span>${u === 'h' ? 'Lít/giờ' : 'Lít'}</span>${role === 'ADM' ? '<span></span>' : ''}</div>
       ${L.list.slice().reverse().slice(0, 40).map(x => `<div class="mt-hr"><span>${escHtml(x.date || '')}<small>${x.kind === 'in' ? 'Vào công trình' + (x.by ? ' · ' + escHtml(x.by) : '') : x.kind === 'out' ? 'Kết thúc' : escHtml((x.by || '') + (x.qty ? ' · ' + fmtNum(x.qty) + ' L' : '') + (x.kind === 'broken' ? ' · đồng hồ hỏng' : x.kind === 'reset' ? ' · đồng hồ đã thay' : ''))}</small></span>
-        <b>${x.m !== null ? fmtNum(x.m) : '—'}</b><span>${x.run ? '+' + fmtNum(x.run) : ''}</span>
+        <b>${x.m !== null ? fmtNum(x.m) : meterAddBtn(d, x)}</b><span>${x.run ? '+' + fmtNum(x.run) : ''}</span>
         <b style="color:${x.lph && d.fuelRate && x.lph > d.fuelRate ? 'var(--red)' : 'var(--green)'}">${u === 'h' ? (x.lph ? fmtNum(Math.round(x.lph * 10) / 10) : '') : (x.qty ? fmtNum(x.qty) : '')}</b>${role === 'ADM' ? (x.id ? `<button class="mt-ed" onclick="devMeterEdit(${d.id},${x.id})" aria-label="Sửa giờ máy">✏️</button>` : '<span></span>') : ''}</div>`).join('') || '<div class="pyc-empty">Chưa có lần ghi nào</div>'}
     </div>${meterCloseBtn(d)}${role === 'ADM' ? `<div class="mt-alog" id="dev-alog-${d.id}"><b>🔒 Nhật ký sửa của Admin</b> <small>(chỉ Admin thấy)</small><div class="pyc-empty">Đang tải…</div></div>` : ''}</div>`;
 }
@@ -7609,7 +7597,8 @@ async function devClose(id) {
   const d = db.devices.find(x => x.id === id); if (!d) return;
   const date = document.getElementById('dc-date-' + id).value, mEl = document.getElementById('dc-m-' + id), m = mEl ? mEl.value : '';
   if (!date) { toast('⚠️ Chọn ngày kết thúc'); return; }
-  if (mEl && m === '') { toast('⚠️ Nhập ' + mLbl(d).toLowerCase() + ' lúc kết thúc'); return; }
+  if (false && mEl && m === '') {   // v5.46
+ toast('⚠️ Nhập ' + mLbl(d).toLowerCase() + ' lúc kết thúc'); return; }
   const last = lastMeter(d); if (mEl && last !== null && last !== undefined && +m < last && !confirm(`Số ${fmtNum(+m)} nhỏ hơn lần ghi trước (${fmtNum(last)}). Vẫn lưu?`)) return;
   showLoader('Đang lưu...'); const r = await api('closeDevice', {id, outDate:date, outMeter:m}); hideLoader();
   if (!r || !r.success) { toast('⚠️ ' + ((r && r.error) || 'Không lưu được')); return; }
@@ -8253,7 +8242,8 @@ async function doNhapMay() {
   const x = fnDev; if (!x) return;
   const date = document.getElementById('fn-dv-date').value, unit = document.getElementById('fn-dv-unit').value, mv = document.getElementById('fn-dv-meter').value;
   if (!date) { toast('⚠️ Chọn ngày vào công trường'); return; }
-  if (unit !== 'none' && mv === '') { toast('⚠️ Nhập ' + (unit === 'km' ? 'số km' : 'số đồng hồ giờ máy') + ' lúc vào'); return; }
+  if (false && unit !== 'none' && mv === '') {   // v5.46: được bỏ trống, bổ sung sau
+ toast('⚠️ Nhập ' + (unit === 'km' ? 'số km' : 'số đồng hồ giờ máy') + ' lúc vào'); return; }
   const here = qlDevHere(x.ma); if (here) { toast(`⚠️ Máy này đang ở dự án từ ngày ${fmtDMY(here.inDate)} — không nhập trùng`); return; }
   const note = document.getElementById('fn-note').value.trim(), type = document.getElementById('fn-dv-type').value, meter = mv === '' ? '' : +mv;
   const donVi = type === 'hire' ? document.getElementById('fn-dv-dvi').value.trim() : '';
@@ -9219,8 +9209,9 @@ async function gdExport() {
     L.forEach((r, i) => {
       row++; const st = gdState(r), dv = gdDev(r), last = (r.hist || []).slice(-1)[0];
       const real = st === 'done' ? (last && last.date) : st === 'out' ? String(dv.outDate).slice(0, 10) : '';
-      const note = (r.hist || []).map(h => (r.grp === 'may' ? '' : h.q + ' ' + r.unit + ' ') + gdHLbl(h) + (h.date ? ' (' + gdDmy(h.date) + ')' : '')).join('; ')
+      let note = (r.hist || []).map(h => (r.grp === 'may' ? '' : h.q + ' ' + r.unit + ' ') + gdHLbl(h) + (h.date ? ' (' + gdDmy(h.date) + ')' : '')).join('; ')
         || (st === 'out' ? 'Máy đã rời công trình' : (gdDue(r) !== null && gdDue(r) < 0 ? 'Chưa giải động · quá hạn ' + (-gdDue(r)) + ' ngày' : 'Chưa giải động') + (r.note && !/^chua giai dong$/.test(normVN(r.note)) ? ' · ' + r.note : ''));
+      if (r.grp === 'may' && dv && typeof devStartTxt === 'function') { const st = devStartTxt(dv); if (st) note = note ? note + ' · ' + st : st; }   // v5.46: ngày bắt đầu hoạt động vào Ghi chú (giữ mẫu BM05)
       const v = [i + 1, r.ma ? (isNaN(+r.ma) ? r.ma : +r.ma) : '', r.name, '', r.unit, r.qty, dmy(r.inDate), dmy(r.dueDate), dmy(real), note];
       const R = ws.getRow(row); v.forEach((x, k) => { const c = R.getCell(k + 1); c.value = x === '' ? null : x; c.border = B; c.font = { name:F }; c.alignment = { vertical:'middle', wrapText:k === 2 || k === 9, horizontal:[0, 4, 5, 6, 7, 8].includes(k) ? 'center' : 'left' }; if (x instanceof Date) c.numFmt = 'dd/mm/yyyy'; });
       ws.mergeCells(`C${row}:D${row}`);
@@ -10217,7 +10208,7 @@ function loanTxnRow(t, home) {
     <div style="flex-shrink:0;margin-left:8px"><span class="txn-badge ${sg > 0 ? 'badge-in' : 'badge-out'}">${sg > 0 ? '+' : '-'}${fmtNum(+t.qty || 0)} ${escHtml(unit)}</span></div>
   </div>`;
 }
-{ const _5TxnRow = txnRow; txnRow = t => t && LOAN_T[t.type] ? loanTxnRow(t) : _5TxnRow(t); }
+{ const _5TxnRow = txnRow; txnRow = t => t && LOAN_T[t.type] ? loanTxnRow(t) : _5TxnRow(t); }   // loanTxnRow gọi theo tên → bản bọc 5.45.1 có hiệu lực
 { const _5EffQty = effQty; effQty = t => t && t._loan ? 0 : _5EffQty(t); }
 // cùng giờ: phiếu mượn – trả nằm trên phiếu "Tồn đầu" ghi kèm (đọc từ trên xuống: cho mượn −200 ← vì trước đó ghi tồn có sẵn +200)
 const byTimeDescL = arr => arr.slice().sort((a, b) => ((parseVN(b.datetime) || 0) - (parseVN(a.datetime) || 0)) || ((LOAN_T[b.type] ? 1 : 0) - (LOAN_T[a.type] ? 1 : 0)) || (+b.id - +a.id));
@@ -10362,6 +10353,247 @@ async function mergeSend() {
   const mb = document.getElementById('ev-merge-btn');
   if (mb) { mb.style.display = role === 'ADM' && db.loanV2 && db.items.length > 1 ? '' : 'none'; mb.onclick = () => mergeOpen(id); }
   return r;
+}; }
+
+// v5.45.1: dòng "sửa số phiếu mượn" (SL có dấu) — hiện đúng dấu + nhãn ✏️
+{ const _k5Row = loanTxnRow; loanTxnRow = function (t, home) {
+  if (!/^Sửa số phiếu mượn/.test(String(t.note || '')) && +t.qty >= 0) return _k5Row(t, home);
+  const it = itemById(t.itemId), unit = it?.unit || t.unit || '', sg = (LOAN_T[t.type] || 0) * (+t.qty < 0 ? -1 : 1), m = String(t.note || '').match(/(\S+→\S+?):/);
+  return `<div class="${home ? 'txn-row' : 'row-item'}" onclick="openTxn(${t.id})" style="cursor:pointer">
+    <div class="txn-ico ${sg > 0 ? 'in' : 'out'}">✏️</div>
+    <div style="flex:1;min-width:0">
+      <div class="txn-name">${escHtml(it?.name || t.itemName || '?')}</div>
+      <div class="txn-sub"><b style="color:#6B46C1">✏️ Sửa số ${t.type === 'chomuon' ? 'cho mượn' : 'đi mượn'}${m ? ' ' + escHtml(m[1]) : ''}</b>${t.supplierOrReceiver ? ' · ' + escHtml(t.supplierOrReceiver) : ''} · ${escHtml(t.datetime || '')}</div>
+      ${!home && t.createdByName ? `<div class="txn-sub">👤 ${escHtml(t.createdByName)}</div>` : ''}
+    </div>
+    <div style="flex-shrink:0;margin-left:8px"><span class="txn-badge ${sg > 0 ? 'badge-in' : 'badge-out'}">${sg > 0 ? '+' : '-'}${fmtNum(Math.abs(+t.qty || 0))} ${escHtml(unit)}</span></div>
+  </div>`;
+}; }
+</script>
+<script>// ===== v5.46.0 KHO — GIỜ MÁY KHÔNG BẮT BUỘC · NGÀY MÁY BẮT ĐẦU HOẠT ĐỘNG · ĐỊNH MỨC DẦU THỰC TẾ =====
+// · Giờ máy lúc vào / ra / cấp dầu được bỏ trống; thủ kho bổ sung trong 7 ngày (quá hạn: Admin).
+// · Giờ cấp dầu thực tế: thủ kho lùi tối đa 24 giờ (máy chủ kiểm lại).
+// · Ngày bắt đầu hoạt động: P.QLTB ghi (quyền k_hd); lần cấp dầu đầu tiên chỉ để tham khảo.
+// · Định mức thực tế = TB 3 khoảng gần nhất hợp lệ: có giờ máy → theo giờ máy; không → giờ giữa 2 lần cấp (máy chạy 24/24, khoảng ≤ 48 giờ).
+//   Khoảng vượt TB quá 20% → cảnh báo, không đưa vào TB. Lít của khoảng = lít cấp ở đầu khoảng.
+(function () {
+  const st = document.createElement('style');
+  st.textContent = `.mt-add{border:1.5px solid #C2410C;background:#FFF4EC;color:#C2410C;border-radius:8px;padding:2px 7px;font-size:12px;font-weight:800;cursor:pointer;font-family:inherit}
+  .fn-box{background:#F7F9FC;border:1px solid var(--border);border-radius:12px;padding:10px 12px;margin-top:12px}.fn-box h4{margin:0 0 6px;font-size:12px;color:var(--text3);letter-spacing:.3px}
+  .fn-row{display:flex;justify-content:space-between;gap:8px;font-size:14px;padding:3px 0}.fn-row b{white-space:nowrap}.fn-warn{font-size:13px;color:#B42318;padding:3px 0;line-height:1.45}
+  .ds-start{background:#F2F7FF;border:1px solid #C9DCF5;border-radius:12px;padding:10px 12px;margin-bottom:12px;font-size:14px;line-height:1.5}.ds-start .t{display:flex;justify-content:space-between;align-items:center;gap:8px}
+  .ds-start button{border:1.5px solid var(--primary);background:#fff;color:var(--primary);border-radius:9px;padding:5px 10px;font-weight:700;font-size:13px;cursor:pointer;font-family:inherit}
+  .md-h{font-size:12px;font-weight:800;color:var(--text2);text-transform:uppercase;letter-spacing:.3px;margin:14px 2px 6px}`;
+  document.head.appendChild(st);
+})();
+const p2 = n => String(n).padStart(2, '0');
+const dmy = d => `${p2(d.getDate())}/${p2(d.getMonth() + 1)}/${d.getFullYear()}`;
+const isoDmy = s => { const m = String(s || '').match(/^(\d{4})-(\d{2})-(\d{2})/); return m ? `${m[3]}/${m[2]}/${m[1]}` : ''; };
+const daysSince = iso => { const m = String(iso || '').match(/^(\d{4})-(\d{2})-(\d{2})/); return m ? Math.floor((Date.now() - new Date(+m[1], m[2] - 1, +m[3]).getTime()) / 864e5) : null; };
+const canMeterAdd = () => role === 'ADM' || hp('k_xuat') || hp('k_meter');
+const canDevStart = () => role === 'ADM' || hp('k_hd');
+
+// ---------- giờ cấp dầu thực tế ----------
+function fillAtHtml(pfx) {
+  const now = new Date(), min = new Date(now.getTime() - 24 * 36e5), iso = d => `${isoDay(d)}T${p2(d.getHours())}:${p2(d.getMinutes())}`;
+  return `<div class="fg" style="margin:8px 0 4px"><label>Giờ cấp dầu thực tế <small style="font-weight:500;color:var(--text3);text-transform:none">· nhập muộn thì sửa lại, lùi tối đa 24 giờ</small></label>
+    <input type="datetime-local" id="${pfx}-fill" value="${iso(now)}" data-def="${iso(now)}" min="${iso(min)}" max="${iso(now)}"></div>`;
+}
+function fillAtRead(pfx) {
+  const el = document.getElementById(pfx + '-fill'); if (!el || !el.value || el.value === el.dataset.def) return '';
+  let d = new Date(el.value); if (isNaN(d)) return '';
+  const lo = Date.now() - 24 * 36e5 + 60e3;
+  if (d.getTime() < lo) { d = new Date(lo); toast('⚠️ Giờ cấp dầu chỉ lùi được 24 giờ — đã lấy mốc sớm nhất cho phép'); }
+  if (d.getTime() > Date.now()) d = new Date();
+  return `${p2(d.getHours())}:${p2(d.getMinutes())}:00 ${d.getDate()}/${d.getMonth() + 1}/${d.getFullYear()}`;
+}
+{ const _f = fxMeterUpdate; fxMeterUpdate = function () {        // máy không có đồng hồ vẫn có ô giờ cấp thực tế (để tính định mức 24/24)
+  _f(); const wrap = document.getElementById('fx-mwrap'); if (!wrap || wrap.innerHTML) return;
+  const it = db.items.find(i => i.id === +document.getElementById('fx-item').value), d = db.devices.find(x => x.name === document.getElementById('fx-device').value);
+  if (it && d && isDieselItem(it)) wrap.innerHTML = `<div class="mt-box" id="fx-fbox">${fillAtHtml('fx')}</div>`;
+}; }
+
+// ---------- bổ sung giờ máy sau ----------
+const fuelTxnAge = t => { const d = parseVN(t.datetime); return d ? (Date.now() - d.getTime()) / 864e5 : 99; };
+function meterAddBtn(d, x) {
+  if (x.kind !== 'fuel' || !x.id || !canMeterAdd()) return '—';
+  const t = db.transactions.find(z => z.id === x.id); if (!t || isBrokenNote(t.meterNote)) return '—';
+  if (role !== 'ADM' && fuelTxnAge(t) > 7) return '<span title="Quá 7 ngày — nhờ Admin">—</span>';
+  return `<button class="mt-add" onclick="event.stopPropagation();devMeterAdd(${d.id},${x.id})">＋ Giờ máy</button>`;
+}
+async function devMeterAdd(devId, txnId) {
+  const d = db.devices.find(x => x.id === devId), t = db.transactions.find(x => x.id === txnId); if (!d || !t) return;
+  const L = meterLog(d).list, k = L.findIndex(x => x.id === txnId);
+  let lo = null, hi = null;
+  for (let j = k - 1; j >= 0; j--) { if (L[j].kind === 'reset') break; if (L[j].m !== null && L[j].m !== undefined) { lo = L[j].m; break; } }
+  for (let j = k + 1; j < L.length; j++) { if (L[j].kind === 'reset') break; if (L[j].m !== null && L[j].m !== undefined) { hi = L[j].m; break; } }
+  const v = prompt(`${mLbl(d)} lúc cấp ${fmtNum(effQty(t))} L dầu · ${t.datetime}\n${lo !== null ? 'Lần trước: ' + fmtNum(lo) : 'Chưa có số trước'}${hi !== null ? ' · lần sau: ' + fmtNum(hi) : ''}`, '');
+  if (v === null || String(v).trim() === '') return;
+  const m = +String(v).replace(',', '.');
+  if (isNaN(m) || m < 0) { toast('⚠️ Số không hợp lệ'); return; }
+  if (lo !== null && m < lo) { toast(`⚠️ Nhỏ hơn lần trước (${fmtNum(lo)})`); return; }
+  if (hi !== null && m > hi) { toast(`⚠️ Lớn hơn lần sau (${fmtNum(hi)})`); return; }
+  if (!navigator.onLine) { toast('📴 Cần có mạng'); return; }
+  showLoader('Đang lưu...'); const r = await api('setTxnMeter', { id:txnId, meter:m }); hideLoader();
+  if (!r || !r.success) { toast('⚠️ ' + ((r && r.error) || 'Không lưu được')); return; }
+  t.meter = m; saveLocal(); toast('✅ Đã bổ sung ' + mLbl(d).toLowerCase());
+  if (document.getElementById('dp-device')?.classList.contains('show')) renderDeviceDetail(devId);
+  if (document.getElementById('dp-mdau')?.classList.contains('show')) mdRender();
+}
+
+// ---------- ngày bắt đầu hoạt động (P.QLTB ghi · lần cấp dầu đầu tiên để tham khảo) ----------
+function devFuels(d) {                                          // các lần cấp dầu của máy từ lần vào công trường hiện tại
+  const m = String(d.inDate || '').match(/^(\d{4})-(\d{2})-(\d{2})/), since = m ? new Date(+m[1], m[2] - 1, +m[3]).getTime() : 0;
+  return db.transactions.filter(t => t.type === 'xuat' && t.thietBi === d.name && isDieselItem(itemById(t.itemId) || { name:t.itemName }))
+    .map(t => { const dt = parseVN(t.datetime); return { t, at:dt ? dt.getTime() : 0, q:effQty(t), m:t.meter === '' || t.meter === undefined || t.meter === null || isNaN(+t.meter) ? null : +t.meter, rs:isResetNote(t.meterNote) }; })
+    .filter(x => x.at >= since).sort((a, b) => a.at - b.at);
+}
+const devFirstFuel = d => { const F = devFuels(d); return F.length ? new Date(F[0].at) : null; };
+function devStartTxt(d) {                                       // dùng cho Ghi chú BM05
+  if (!d) return '';
+  if (d.startDate) return 'Bắt đầu hoạt động ' + isoDmy(d.startDate);
+  const f = devFirstFuel(d); return f ? 'Cấp dầu lần đầu ' + dmy(f) + ' (tham khảo)' : '';
+}
+const devIdle = d => !d.outDate && !d.startDate && !devFirstFuel(d) && (daysSince(d.inDate) ?? 0) >= 7;
+function devStartLine(d) {
+  if (d.outDate) return '';
+  if (d.startDate) return `<div class="ri-sub">🚀 Hoạt động từ ${isoDmy(d.startDate)}</div>`;
+  const f = devFirstFuel(d), n = daysSince(d.inDate);
+  if (f) return `<div class="ri-sub">⛽ Cấp dầu lần đầu ${dmy(f)} · chưa ghi ngày hoạt động</div>`;
+  return n !== null ? `<div class="ri-sub" style="color:${n >= 7 ? '#C2410C' : 'var(--text2)'}">⏳ Chưa hoạt động · vào ${n} ngày${d.type === 'hire' && n >= 7 ? ' · thuê ngoài – đang tính tiền' : ''}</div>` : '';
+}
+function devStartHtml(d) {
+  const f = devFirstFuel(d), n = daysSince(d.inDate);
+  const ref = f ? `⛽ Cấp dầu lần đầu: <b>${dmy(f)}</b> <small>(tham khảo)</small>` : `⛽ Chưa cấp dầu lần nào${n !== null ? ' · vào công trường ' + n + ' ngày' : ''}${d.type === 'hire' && n >= 7 ? ' · <b style="color:#C2410C">thuê ngoài – đang tính tiền</b>' : ''}`;
+  return `<div class="ds-start"><div class="t"><div>🚀 Ngày bắt đầu hoạt động: ${d.startDate ? `<b>${isoDmy(d.startDate)}</b>${d.startBy ? ` <small style="color:var(--text3)">· ${escHtml(d.startBy)} ghi</small>` : ''}` : '<b style="color:var(--text3)">chưa ghi</b>'}</div>
+    ${canDevStart() && !d.outDate ? `<button onclick="devStartEdit(${d.id})">${d.startDate ? 'Sửa' : 'Ghi ngày'}</button>` : ''}</div><div style="color:var(--text2);font-size:13px">${ref}</div></div>`;
+}
+function devStartEdit(id) {
+  const d = db.devices.find(x => x.id === id); if (!d) return;
+  const f = devFirstFuel(d), def = d.startDate || (f ? isoDay(f) : isoDay(new Date()));
+  k5Sheet(`<div class="kl-h">🚀 Ngày máy bắt đầu hoạt động</div>
+    <div class="kl-s"><b>${escHtml(d.name)}</b><br>Vào công trường: ${isoDmy(d.inDate) || '—'}${f ? ' · cấp dầu lần đầu: ' + dmy(f) : ''}</div>
+    <div class="fg"><label>Ngày bắt đầu hoạt động</label><input type="date" id="k6-sd" value="${def}" min="${String(d.inDate || '').slice(0, 10)}" max="${isoDay(new Date())}"></div>
+    <div class="kl-ab">${d.startDate ? `<button class="btn-full" style="background:#fff;color:var(--red);border:1.5px solid var(--border)" onclick="devStartSave(${id},1)">Xóa</button>` : `<button class="btn-full" style="background:#EEF0F3;color:var(--text)" onclick="k5Close()">Hủy</button>`}<button class="btn-full kl-pri" onclick="devStartSave(${id})">Lưu</button></div>`);
+}
+async function devStartSave(id, clear) {
+  const d = db.devices.find(x => x.id === id); if (!d) return;
+  const v = clear ? '' : (document.getElementById('k6-sd')?.value || '');
+  if (!clear && !v) { toast('⚠️ Chọn ngày'); return; }
+  if (v && d.inDate && v < String(d.inDate).slice(0, 10)) { toast('⚠️ Trước ngày vào công trường'); return; }
+  if (!navigator.onLine) { toast('📴 Cần có mạng'); return; }
+  showLoader('Đang lưu...'); const r = await api('setDevStart', { id, date:v }); hideLoader();
+  if (!r || !r.success) { toast('⚠️ ' + ((r && r.error) || 'Không lưu được')); return; }
+  d.startDate = v; d.startBy = v ? (me?.name || '') : ''; saveLocal(); k5Close();
+  toast(v ? '✅ Đã ghi ngày bắt đầu hoạt động ' + isoDmy(v) : 'Đã xóa ngày bắt đầu hoạt động');
+  renderDeviceDetail(id); if (typeof renderDevicesList === 'function' && document.getElementById('dp-devices-list-body')) renderDevicesList();
+}
+{ const _rdd = renderDeviceDetail; renderDeviceDetail = function (id) {   // ngày bắt đầu hoạt động: đầu trang chi tiết máy
+  _rdd(id); const d = db.devices.find(x => x.id === id), b = document.getElementById('dp-device-body'); if (d && b) b.insertAdjacentHTML('afterbegin', devStartHtml(d));
+}; }
+{ const _rd = devReopen; devReopen = async function (id) { await _rd(id); const d = db.devices.find(x => x.id === id); if (d && !d.outDate) { d.startDate = ''; d.startBy = ''; saveLocal(); } }; }
+
+// ---------- định mức dầu thực tế ----------
+function fuelStats(d) {
+  if (mUnit(d) === 'km') return null;
+  const F = devFuels(d), iv = [];
+  for (let i = 0; i + 1 < F.length; i++) {
+    const a = F[i], b = F[i + 1]; let h = null, how = '';
+    if (mUnit(d) === 'h' && a.m !== null && b.m !== null && !b.rs && b.m > a.m) { h = b.m - a.m; how = 'gio'; }
+    else { const dh = (b.at - a.at) / 36e5; if (dh > 0.5 && dh <= 48) { h = dh; how = '24'; } }
+    if (h && a.q > 0) iv.push({ a, b, L:a.q, h, how, r:a.q / h });
+  }
+  const ok = [];
+  iv.forEach(x => {
+    const B = ok.slice(-3);
+    if (B.length === 3) { const base = B.reduce((s, y) => s + y.L, 0) / B.reduce((s, y) => s + y.h, 0); x.base = base; if (x.r > base * 1.2) { x.flag = true; x.pct = Math.round((x.r / base - 1) * 100); return; } }
+    ok.push(x);
+  });
+  const T = ok.slice(-3), avg = T.length === 3 ? T.reduce((s, y) => s + y.L, 0) / T.reduce((s, y) => s + y.h, 0) : null;
+  const hows = new Set(T.map(x => x.how));
+  return { F, iv, ok:ok.length, avg, how:hows.size > 1 ? 'kết hợp giờ máy + 24/24' : hows.has('gio') ? 'theo giờ máy' : 'theo 24/24', flags:iv.filter(x => x.flag) };
+}
+const r1 = v => fmtNum(Math.round(v * 10) / 10);
+const atTxt = x => { const d = new Date(x.at); return `${p2(d.getHours())}:${p2(d.getMinutes())} ${p2(d.getDate())}/${p2(d.getMonth() + 1)}`; };
+function fuelNormHtml(d) {
+  const S = fuelStats(d); if (!S || !S.F.length) return '';
+  const recent = S.flags.filter(x => Date.now() - x.b.at <= 30 * 864e5).slice(-3).reverse();
+  const hi = S.avg && d.fuelRate && S.avg > d.fuelRate * 1.2;
+  return `<div class="fn-box"><h4>⛽ ĐỊNH MỨC DẦU</h4>
+    <div class="fn-row"><span>Định mức P.QLTB</span><b>${fmtNum(d.fuelRate || 0)} L/h</b></div>
+    <div class="fn-row"><span>Thực tế TB 3 lần <small style="color:var(--text3)">· ${S.avg ? S.how : 'đang thu thập'}</small></span><b style="color:${hi ? 'var(--red)' : 'var(--green)'}">${S.avg ? r1(S.avg) + ' L/h' : `${Math.min(S.ok, 3)}/3`}</b></div>
+    ${hi ? `<div class="fn-warn">Cao hơn định mức P.QLTB ${Math.round((S.avg / d.fuelRate - 1) * 100)}%</div>` : ''}
+    ${recent.map(x => `<div class="fn-warn">⚠️ ${atTxt(x.a)} → ${atTxt(x.b)}: ${fmtNum(x.L)} L / ${r1(x.h)} giờ = <b>${r1(x.r)} L/h</b>, vượt ${x.pct}% so với TB ${r1(x.base)}</div>`).join('')}
+    ${!S.avg ? `<div style="font-size:12.5px;color:var(--text3)">Cần 3 khoảng giữa các lần cấp dầu (có giờ máy, hoặc cách nhau ≤ 48 giờ khi máy chạy 24/24).</div>` : ''}</div>`;
+}
+
+// ---------- Tổng quan: máy & dầu cần xử lý ----------
+const projDevs = () => db.devices.filter(d => curProj === 'all' || !d.project || d.project === curProj);
+function mdData() {
+  const D = projDevs(), miss = [], over = [], idle = D.filter(devIdle);
+  D.forEach(d => {
+    if (mUnit(d) !== 'none' && !d.outDate) devFuels(d).forEach(x => { if (x.m === null && !isBrokenNote(x.t.meterNote) && (role === 'ADM' || fuelTxnAge(x.t) <= 7)) miss.push({ d, x }); });
+    const S = fuelStats(d); if (S) S.flags.filter(x => Date.now() - x.b.at <= 7 * 864e5).forEach(x => over.push({ d, x }));
+  });
+  return { miss, over, idle };
+}
+function mdHomeHtml() {
+  if (!(canMeterAdd() || canDevStart())) return '';
+  const M = mdData(), n = M.miss.length + M.over.length + M.idle.length; if (!n) return '';
+  const parts = [M.over.length ? `<b style="color:#B42318">${M.over.length} lần vượt định mức</b>` : '', M.miss.length ? `${M.miss.length} lần cấp dầu chưa có giờ máy` : '', M.idle.length ? `${M.idle.length} máy vào ≥ 7 ngày chưa hoạt động` : ''].filter(Boolean);
+  return `<div class="ct-home" style="border-left-color:#C2410C" onclick="openDp('dp-mdau')"><div class="ct-hi">⛽</div><div style="flex:1"><b>Máy &amp; dầu cần xem</b><div>${parts.join(' · ')}</div></div><span class="alert-chevron">›</span></div>`;
+}
+(function () {
+  document.body.insertAdjacentHTML('beforeend', `<div class="detail-page" id="dp-mdau"><div class="detail-header"><button class="back-btn" onclick="closeDp('dp-mdau')">‹</button><div class="detail-title">⛽ Máy &amp; dầu cần xem</div></div><div class="detail-body" id="dp-mdau-body"></div></div>`);
+})();
+function mdRender() {
+  const B = document.getElementById('dp-mdau-body'); if (!B) return;
+  const M = mdData(), row = (d, sub, right) => `<div class="row-item" onclick="openDeviceDetail(${d.id})"><div style="flex:1;min-width:0"><div class="txn-name">${escHtml(d.name)}</div><div class="txn-sub">${sub}</div></div>${right ? `<div style="flex-shrink:0;margin-left:8px">${right}</div>` : ''}</div>`;
+  B.innerHTML = (M.over.length ? `<div class="md-h">⚠️ Vượt định mức thực tế > 20% (7 ngày qua)</div><div class="card">${M.over.map(({ d, x }) => row(d, `${atTxt(x.a)} → ${atTxt(x.b)} · ${fmtNum(x.L)} L / ${r1(x.h)} giờ = <b>${r1(x.r)} L/h</b> · TB ${r1(x.base)}`, `<span class="txn-badge badge-out">+${x.pct}%</span>`)).join('')}</div>` : '')
+    + (M.miss.length ? `<div class="md-h">⏱ Cấp dầu chưa có giờ máy (bổ sung trong 7 ngày)</div><div class="card">${M.miss.map(({ d, x }) => row(d, `${escHtml(x.t.datetime || '')} · ${fmtNum(x.q)} L · ${fuelTxnAge(x.t) > 7 ? 'quá 7 ngày — Admin bổ sung' : 'còn ' + Math.max(1, Math.ceil(7 - fuelTxnAge(x.t))) + ' ngày'}`, `<button class="mt-add" onclick="event.stopPropagation();devMeterAdd(${d.id},${x.t.id})">＋ Giờ máy</button>`)).join('')}</div>` : '')
+    + (M.idle.length ? `<div class="md-h">⏳ Máy vào ≥ 7 ngày chưa hoạt động</div><div class="card">${M.idle.map(d => row(d, `Vào ${isoDmy(d.inDate)} · ${daysSince(d.inDate)} ngày · chưa cấp dầu${d.type === 'hire' ? ' · <b style="color:#C2410C">thuê ngoài – đang tính tiền</b>' : ''}`, canDevStart() ? `<button class="mt-add" style="border-color:var(--primary);color:var(--primary);background:#fff" onclick="event.stopPropagation();devStartEdit(${d.id})">Ghi ngày</button>` : '')).join('')}</div>` : '')
+    || '<div class="empty-state"><p>✅ Không có việc cần xem</p></div>';
+}
+DP_RENDER['dp-mdau'] = () => mdRender();
+{ const _h = renderHome; renderHome = function (c) { _h(c); const h = mdHomeHtml(); if (h) c.insertAdjacentHTML('afterbegin', h); }; }
+
+// ===== v5.46.1: đổi / gỡ mã P.QLTB (máy, vật tư) · đổi tên máy giữ lịch sử dầu =====
+const canQlMap = () => role === 'ADM' || hp('k_dm');
+async function qlUnmap(kind, id) {
+  const o = (kind === 'may' ? db.devices : db.items).find(z => z.id === id); if (!o || !o.maQL) return;
+  const why = (prompt(`Gỡ mã ${o.maQL} khỏi "${o.name}" → ${kind === 'may' ? 'ngoài danh mục P.QLTB' : 'không thuộc P.QLTB'}.\nLý do (bắt buộc):`, '') || '').trim();
+  if (why.length < 3) { if (why) toast('⚠️ Ghi rõ lý do'); return; }
+  const old = o.maQL; o.maQL = ''; o.ngoaiDM = kind === 'may' ? 1 : 2;
+  showLoader('Đang lưu...'); const r = await push('upsert', { table:kind === 'may' ? 'devices' : 'items', rows:[Object.assign({}, o, { qlWhy:why })] }); hideLoader();
+  if (r === 'rejected') { o.maQL = old; o.ngoaiDM = ''; return; }
+  toast(`✕ Đã gỡ mã ${old}`);
+  if (kind === 'may') { if (document.getElementById('dp-device')?.classList.contains('show')) renderDeviceDetail(id); }
+  else if (document.getElementById('modal-edit-vattu')?.style.display === 'flex') editVatTu(id);
+}
+{ const _rdd = renderDeviceDetail; renderDeviceDetail = function (id) {   // nút Đổi mã / Gỡ mã trong ô Danh mục P.QLTB của máy
+  _rdd(id); const d = db.devices.find(x => x.id === id), box = document.querySelector('#dp-device-body .ql-dev'); if (!d || !box || !canQlMap()) return;
+  const btns = d.maQL ? `<div style="display:flex;gap:8px;margin-top:8px"><button class="ql-link" onclick="qmOther('may',${id})">🔗 Đổi mã</button><button class="ql-link" style="color:var(--red);border-color:#F3C2C2" onclick="qlUnmap('may',${id})">✕ Gỡ mã · ngoài danh mục</button></div>`
+    : !box.querySelector('.ql-link') ? `<button class="ql-link" onclick="qmOther('may',${id})">🔗 Gắn mã P.QLTB</button>` : '';
+  const ev = [...box.children].find(e => /Lịch sử vào/.test(e.textContent || '') && e.classList.contains('ql-dev-h'));
+  if (btns) { if (ev) ev.insertAdjacentHTML('beforebegin', btns); else box.insertAdjacentHTML('beforeend', btns); }
+}; }
+{ const _ql = qmLink; qmLink = async function (kind, id, ma) {      // gắn / đổi mã xong thì vẽ lại chi tiết máy / vật tư đang mở
+  await _ql(kind, id, ma);
+  if (kind === 'may' && document.getElementById('dp-device')?.classList.contains('show')) renderDeviceDetail(id);
+}; }
+{ const _ev = editVatTu; editVatTu = function (id) {               // vật tư: thêm "Gỡ mã"
+  const r = _ev(id); const it = db.items.find(i => i.id === id), box = document.getElementById('ev-ql');
+  if (it && it.maQL && box && canQlMap() && !box.querySelector('.k6-unmap')) box.insertAdjacentHTML('beforeend', `<button class="k6-unmap" style="color:var(--red)" onclick="qlUnmap('vt',${id})">✕ Gỡ mã</button>`);
+  return r;
+}; }
+{ const _sd = saveDevice; saveDevice = async function () {           // đổi tên máy → phiếu cấp dầu / phiếu yêu cầu trên máy đổi theo (máy chủ đổi bản gốc)
+  const id = +document.getElementById('ad-id').value, d = id ? db.devices.find(x => x.id === id) : null, old = d ? d.name : '';
+  await _sd();
+  if (d && old && d.name !== old) {
+    db.transactions.forEach(t => { if (t.thietBi === old) t.thietBi = d.name; });
+    (db.reqs || []).forEach(r => { if (r.may === old) r.may = d.name; });
+    saveLocal(); if (currentDeviceId === id) renderDeviceDetail(id);
+  }
 }; }
 </script>
 <script>// ===== Bộ biểu tượng Phosphor Duotone (MIT) thay emoji — v5.31.9 =====
