@@ -1776,7 +1776,7 @@ button .pi,.btn .pi,a .pi,.chip .pi,.tag .pi,.badge .pi,.yn .pi,.bnav .pi,.bnav-
 // ============================================================
 // CONFIG
 // ============================================================
-const APP_VERSION = '5.44.0';
+const APP_VERSION = '5.44.1';
 const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbw6Rmi80I7RI3ij2U7RdRF5pYuQTnPrwEmGmUZS5xpxzLwwVynfoFUujZe1lm6HS1ymxw/exec';
 // ============================================================
 
@@ -2610,7 +2610,7 @@ function renderHome(c) {
   const catItems = cats.find(([c]) => c.id === homeCat)?.[1] || [];
   const units = unitGroups(catItems);
   if (!homeUnit || !units.some(([u]) => u === homeUnit)) homeUnit = units[0]?.[0] || null;
-  const recent = byTimeDesc(txns.filter(t => !LOAN_T[t.type])).slice(0, 6);
+  const recent = byTimeDesc(txns.filter(t => !LOAN_T[t.type]).concat(curProj !== 'all' && typeof devEvents === 'function' ? devEvents('vao').concat(devEvents('ra')) : [])).slice(0, 6);   // v5.44.1: có cả máy vào / ra
 
   c.innerHTML = `${reqHomeHtml()}
     <div class="act-grid need-tk">
@@ -2665,6 +2665,7 @@ function renderHome(c) {
       <div class="card">
         ${recent.length === 0 ? `<div class="empty-state"><div class="e-ico">📭</div><p>Chưa có giao dịch</p></div>`
         : recent.map(t => {
+          if (t._dev) return devEvRow(t).replace('class="row-item"', 'class="txn-row" style="cursor:pointer"');
           const it = db.items.find(i => i.id === t.itemId);
           const dc = t.type === 'dieuchinh';
           const who = dc ? (t.reason || '') : t.type==='xuat' ? (t.thietBi || t.supplierOrReceiver) : t.supplierOrReceiver;
@@ -3098,7 +3099,7 @@ function renderNhap(c) {
         <select id="fn-proj" disabled><option>${escHtml(curProj)}</option></select>
       </div>
       <div class="fg" id="fn-cat-row"><label>Nhóm vật tư</label>
-        <select id="fn-cat" onchange="fillNhapItems()">
+        <select id="fn-cat"><option value="">— Chọn nhóm —</option>
           ${db.categories.map(cat=>`<option value="${cat.id}">${cat.icon} ${cat.name}</option>`).join('')}
         </select>
       </div>
@@ -3131,7 +3132,7 @@ function renderNhap(c) {
       <div class="fg-row" id="fn-qty-row">
         <div class="fg"><label>Số lượng</label><input type="number" id="fn-qty" placeholder="0" min="0.1" step="0.1" inputmode="decimal"></div>
         <div class="fg"><label>Đơn vị</label><input type="text" id="fn-unit" readonly style="background:var(--bg)" placeholder="—">
-          <select id="fn-unit-sel" style="display:none">${UNITS.map(u=>`<option>${u}</option>`).join('')}</select></div>
+          <select id="fn-unit-sel" style="display:none"><option value="">— Chọn —</option>${UNITS.map(u=>`<option>${u}</option>`).join('')}</select></div>
       </div>
       <div class="fg" id="fn-ncc-row"><label>Nhà cung cấp</label><input type="text" id="fn-ncc" placeholder="Tên nhà cung cấp"></div>
       <div class="fg" id="fn-giao-row" style="display:none"><label>Giao cho (không bắt buộc)</label><input type="text" id="fn-giao" placeholder="Tổ đội / hạng mục nhận…"></div>
@@ -7602,7 +7603,7 @@ function meterCloseBtn(d) {
          ${mUnit(d) !== 'none' ? `<div class="fg"><label>${mLbl(d)} lúc kết thúc</label><input type="number" inputmode="decimal" id="dc-m-${d.id}"></div>` : ''}</div>
          <button class="btn-full" style="background:var(--red)" onclick="devClose(${d.id})">Xác nhận kết thúc</button></div>`;
 }
-function devCloseOpen(id) { const el = document.getElementById('dc-close-' + id); el.style.display = ''; const i = document.getElementById('dc-date-' + id); if (i && !i.value) i.value = new Date().toISOString().slice(0, 10); }
+function devCloseOpen(id) { const el = document.getElementById('dc-close-' + id); el.style.display = ''; const i = document.getElementById('dc-date-' + id); if (i && !i.value) i.value = isoDay(new Date()); }
 async function devClose(id) {
   const d = db.devices.find(x => x.id === id); if (!d) return;
   const date = document.getElementById('dc-date-' + id).value, mEl = document.getElementById('dc-m-' + id), m = mEl ? mEl.value : '';
@@ -7620,7 +7621,7 @@ async function devReopen(id) {
   showLoader('Đang lưu...'); const r = await api('closeDevice', {id, reopen:1}); hideLoader();
   if (!r || !r.success) { toast('⚠️ ' + ((r && r.error) || 'Không lưu được')); return; }
   d.outDate = ''; d.outMeter = '';
-  (db.devlog = db.devlog || []).push({id:'L' + Date.now(), deviceId:d.id, deviceName:d.name, maQL:d.maQL || '', kind:'vao', date:new Date().toISOString().slice(0, 10), meter:'', project:curProj, by:me?.name || '', at:nowStr(), _local:1});
+  (db.devlog = db.devlog || []).push({id:'L' + Date.now(), deviceId:d.id, deviceName:d.name, maQL:d.maQL || '', kind:'vao', date:isoDay(new Date()), meter:'', project:curProj, by:me?.name || '', at:nowStr(), _local:1});
   saveLocal(); toast('✅ Đã mở lại'); renderDeviceDetail(id); renderDevicesList();
 }
 function adMeterUnit() {
@@ -7638,7 +7639,7 @@ function openAddDevice() {
   if (!qlOn()) qltbLoad();
   document.getElementById('ad-fuel').value = 20;
   document.getElementById('ad-meter-unit').value = 'h';
-  document.getElementById('ad-in-date').value = new Date().toISOString().slice(0, 10);
+  document.getElementById('ad-in-date').value = isoDay(new Date());
   adMeterUnit();
   document.getElementById('modal-device-title').textContent = '🏗️ Thêm máy / Thiết bị';
   document.getElementById('ad-del-btn').style.display = 'none';
@@ -8227,7 +8228,7 @@ function fnSetDev(x) {
     <small>📚 ${escHtml(x.ma)} · ${escHtml(dc.name)}${x.plate ? ' · ' + escHtml(x.plate) : ''}</small>${qlOwnTag(x)}
     ${left ? `<small style="color:var(--orange);font-weight:700">Máy đã ở dự án này trước đây (rời ngày ${fmtDMY(left.outDate)}) — lưu sẽ ghi máy vào lại</small>` : ''}</div>
     <button class="mv-x" onclick="fnSetDev(null);comboClear('fn',true)">Chọn lại</button>`;
-  document.getElementById('fn-dv-date').value = new Date().toISOString().slice(0, 10);
+  document.getElementById('fn-dv-date').value = isoDay(new Date());
   document.getElementById('fn-dv-type').value = qlHire(x) ? 'hire' : 'own';
   document.getElementById('fn-dv-dvi').value = qlHire(x) ? (x.ncc || x.donVi || '') : '';
   fnDevType();
@@ -9321,6 +9322,7 @@ function ctSub(it) {                                                 // dòng ph
   if (!ctTrack(it) && !ctSite(it)) return `Tồn: ${fmtNum(it.stock)} ${escHtml(it.unit)}`;
   if (ctTot(it) <= 0) {                                              // v5.35.1: tổng 0 → nói rõ đã đi đâu
     const sg = ctSuggest(it); if (sg > 0.0005) return `App tính còn ${fmtNum(sg)} ${escHtml(it.unit)} ở công trường — Menu → Ở công trường để xác nhận`;
+    const lo = loanOutQty(it); if (lo > 0) return `Kho ${fmtNum(it.stock)} · 🔁 đang cho mượn ${fmtNum(lo)} ${escHtml(it.unit)}`;   // v5.44.1
     const g = ctGone(it); return g ? `Không còn ở dự án · lần cuối: ${escHtml(g.txt)}` : `Mới có tên, chưa có phiếu nhập`;
   }
   return `Kho ${fmtNum(it.stock)} · 🏗 Ở CT ${fmtNum(ctSite(it))} · <b>Tổng ${fmtNum(ctTot(it))}</b> ${escHtml(it.unit)}`;
@@ -9334,8 +9336,12 @@ function ctBadge(it) {                                               // null = d
   const lo = loanOutQty(it);
   if (lo > 0 && ctTot(it) <= 0) return ['badge-ct', '🔁 Cho mượn ' + fmtNum(lo)];
   if (ctTot(it) > 0 && loanInQty(it) >= ctTot(it) - 1e-9) return ['badge-loanin', '🤝 Đồ mượn'];
-  if (ctSite(it) > 0) return +it.stock <= 0 ? ['badge-ct', '🏗 Ở công trường'] : null;
-  if (!ctTrack(it) || ctTot(it) > 0) return null;
+  if (ctSite(it) > 0 || (ctTrack(it) && ctTot(it) > 0)) {            // v5.44.1: đồ theo dõi ở CT → ghi NƠI ĐANG Ở, không ghi "Đủ hàng"
+    if (isLow(it)) return ['badge-out', 'Sắp hết'];
+    const k = +it.stock || 0, s = ctSite(it);
+    return s <= 0 ? ['badge-kho', '📦 Trong kho'] : k <= 0 ? ['badge-ct', '🏗 Ở công trường'] : ['badge-ct', `📦 ${fmtNum(k)} · 🏗 ${fmtNum(s)}`];
+  }
+  if (!ctTrack(it)) return null;
   // v5.35.1: thiết bị / vật tư phụ trợ không có "hết hàng" — nói rõ vì sao tổng = 0
   if (ctSuggest(it) > 0.0005) return ['badge-ct', '⏳ Chờ xác nhận ở CT'];
   const g = ctGone(it);
@@ -10022,6 +10028,161 @@ async function nxAdjust() {
   await syncAll(true); hideLoader(); NX.chon = {};
   toast('✅ Đã kiểm kê ' + L.length + ' món'); nxRender();
 }
+</script>
+<script>// ===== v5.44.1 KHO — sửa lỗi người dùng báo 12–13/10/2026 =====
+// (1) nút lưu phiếu nhập đúng màu + chữ theo chế độ, không còn nút xám trông như bị khóa
+// (2) màn Máy vào công trường ẩn ô "Ngày giờ phiếu" (không dùng)
+// (5) nhãn vị trí ở danh sách vật tư → kho_ct.js ctBadge · (3)(4) → patch_5441.py
+// (6) món trong danh sách xuất thẳng tự chọn "🏗 Thẳng ra công trường" (đổi được)
+// (7) nhận máy giải động: tìm đúng máy P.QLTB theo mã kế toán / mã P.QLTB / tên → mở thẳng Máy vào công trường
+// (8) xác nhận cho dự án khác mượn khi kho trên app thiếu → ghi tồn có sẵn phần thiếu rồi cho mượn
+// (9) vật tư mới bắt buộc chọn nhóm + đơn vị
+(function () {
+  const st = document.createElement('style');
+  st.textContent = `.badge-kho{background:#E7F0FA;color:#0B5CAD}.btn-blue2{background:#0B5CAD}.fn-auto{color:#C2410C;font-size:12.5px;font-weight:700;margin-top:4px}
+  .fn-need{border-color:#E5484D!important;box-shadow:0 0 0 3px rgba(229,72,77,.15)}`;
+  document.head.appendChild(st);
+})();
+const $5 = id => document.getElementById(id);
+
+// ---------- (1)(2) nút lưu ----------
+function fnBtnSync() {
+  const btn = $5('fn-save'); if (!btn) return;
+  const L = typeof fnLMode === 'string' ? fnLMode : 'kho', on = thangOn() && !fnDev;
+  let t, c;
+  if (L === 'di') { t = fnDev ? '🤝 Xác nhận mượn máy' : '🤝 Xác nhận mượn'; c = 'btn-blue2'; }
+  else if (L === 'nhan') { t = '↩ Xác nhận nhận trả'; c = 'btn-green'; }
+  else if (L === 've') { t = '↩ Xác nhận về kho'; c = 'btn-green'; }
+  else if (fnDev) { t = '🏗 Xác nhận máy vào công trường'; c = 'btn-orange'; }
+  else if (on && fnMode === 'ct') { t = '🏗 Xác nhận nhập + xuất thẳng'; c = 'btn-orange'; }
+  else { t = '✅ Xác nhận nhập kho'; c = 'btn-green'; }
+  btn.innerHTML = t; btn.className = 'btn-full ' + c;
+  const tm = $5('fn-time'), fg = tm && tm.closest('.fg'); if (fg) fg.style.display = fnDev ? 'none' : '';
+}
+
+// ---------- (6) danh sách xuất thẳng → chọn sẵn ----------
+let fnModeAuto = false;
+const fnInThang = () => {
+  const n = ($5('fn-item-txt')?.value || '').trim();
+  return !!n && thangOn() && !fnDev && (db.thangDS || []).some(x => thangNorm(x) === thangNorm(n));
+};
+fnSetMode = function (m) { fnModeAuto = false; fnMode = m; fnModeUpdate(); };
+const _5FnModeUpdate = fnModeUpdate;
+fnModeUpdate = function () {
+  if (typeof fnLMode !== 'string' || fnLMode === 'kho') {
+    const inDS = fnInThang();
+    if (inDS && !fnMode) { fnMode = 'ct'; fnModeAuto = true; }
+    else if (!inDS && fnModeAuto) { fnMode = ''; fnModeAuto = false; }
+  }
+  if (fnModeAuto) fnFillFromCat();
+  _5FnModeUpdate();
+  const h = $5('fn-ct-hint');
+  if (h) { if (fnModeAuto && fnMode === 'ct') { h.textContent = 'Tự chọn vì món này nằm trong danh sách xuất thẳng — bấm 📦 Vào kho nếu hôm nay cất vào kho'; h.className = 'ct-hint fn-auto'; } else if (h.classList.contains('fn-auto')) { h.textContent = ''; h.className = 'ct-hint'; } }
+  fnBtnSync();
+};
+const _5FnSetDev = fnSetDev;
+fnSetDev = function (x) { const r = _5FnSetDev(x); fnBtnSync(); return r; };
+if (typeof fnSetL === 'function') { const _5FnSetL = fnSetL; fnSetL = function (m) { const r = _5FnSetL(m); fnBtnSync(); return r; }; }
+const _5RenderNhap = renderNhap;
+renderNhap = function (c) { fnModeAuto = false; _5RenderNhap(c); fnBtnSync(); };
+
+// ---------- (7) máy giải động → P.QLTB ----------
+const DEV_TS = {}; (typeof DEV_FILE !== 'undefined' ? DEV_FILE : []).forEach(a => { if (a[2]) DEV_TS[a[3]] = String(a[2]); });
+qlFind = function (q, kind, limit) {                            // tìm được cả theo mã kế toán / mã tài sản (VD 110130)
+  const toks = vnNorm(q).split(/\s+/).filter(Boolean); if (!toks.length) return [];
+  return qlList().filter(x => (!kind || x.kind === kind) && toks.every(t => vnNorm(x.name + ' ' + x.ma + ' ' + (x.tenCT || '') + ' ' + (x.tenLoai || '') + ' ' + (x.maKT || '') + ' ' + (DEV_TS[x.ma] || '')).includes(t))).slice(0, limit || 30);
+};
+function gdQL(x) {                                              // dòng máy giải động → mục máy P.QLTB (null nếu không chắc)
+  const m = String(x.ma || '').trim();
+  let q = m ? qlByMa(m) : null;
+  if (!q && m) q = qlList().find(y => y.kind === 'may' && String(y.maKT || '').split(/[\s,;]+/).includes(m)) || null;
+  if (!q && m) {
+    const f = (typeof DEV_FILE !== 'undefined' ? DEV_FILE : []).find(a => String(a[2]) === m);
+    if (f) q = qlByMa(f[3]) || { kind:'may', ma:f[3], name:f[0], cat:f[1], meterUnit:f[4] || 'h', unit:'Máy' };
+  }
+  if (!q && x.name) { let best = null, bs = 0; qlList().forEach(y => { if (y.kind !== 'may') return; const s = qlScore(x.name, y.name); if (s > bs) { bs = s; best = y; } }); if (bs >= 0.6) q = best; }
+  return q;
+}
+const _5GdIncPick = gdIncPick;
+gdIncPick = function (gdId, hid) {
+  const x = GD.inc.find(y => String(y.gdId) === String(gdId) && String(y.hid) === String(hid));
+  if (!x || x.grp !== 'may') return _5GdIncPick(gdId, hid);
+  if (curTab !== 'nhap') goTab('nhap');
+  setTimeout(() => {
+    const q = gdQL(x);
+    if (q && qlDevHere(q.ma)) { toast(`⚠️ ${q.name} đang ở dự án từ ngày ${fmtDMY(qlDevHere(q.ma).inDate)} — không nhập trùng`); return; }
+    if (q) { comboHide('fn'); fnSetDev(q); fnGdSet(x); fnBtnSync(); return; }
+    toast('Không tìm thấy máy này trong danh mục P.QLTB — gõ tên máy rồi chọn trong nhóm 📚 Danh mục P.QLTB');
+    $5('fn-item-txt').value = x.name; _gdComboInput('fn'); fnGdSet(x);
+  }, 60);
+};
+const _5DoNhapMay = doNhapMay;
+doNhapMay = function () {                                       // máy chọn tay từ P.QLTB vẫn nối được với dòng giải động (khớp qua mã kế toán)
+  if (!fnGD && fnDev && fnDev.ma) { const x = gdIncOpen().find(y => y.grp === 'may' && (String(y.ma) === String(fnDev.ma) || (gdQL(y) || {}).ma === fnDev.ma)); if (x) fnGD = x; }
+  return _5DoNhapMay();
+};
+
+// ---------- (9) vật tư mới: bắt buộc nhóm + đơn vị ----------
+const _5DoNhap = doNhap;
+doNhap = function () {
+  const L = typeof fnLMode === 'string' ? fnLMode : 'kho';
+  if (!fnDev && (L === 'kho' || L === 'di')) {
+    const name = ($5('fn-item-txt')?.value || '').trim(), id = +($5('fn-item')?.value || 0);
+    const isNew = name && !db.items.some(i => i.id === id || normVN(i.name) === normVN(name)) && !(L === 'di' && db.devices.some(d => normVN(d.name) === normVN(name)));
+    if (isNew) {
+      const cat = $5('fn-cat'), us = $5('fn-unit-sel');
+      [cat, us].forEach(e => e && e.classList.remove('fn-need'));
+      if (cat && !cat.value) { cat.classList.add('fn-need'); cat.scrollIntoView({ block:'center', behavior:'smooth' }); toast('⚠️ Vật tư mới — chọn Nhóm vật tư'); return; }
+      if (us && !us.value) { us.classList.add('fn-need'); us.scrollIntoView({ block:'center', behavior:'smooth' }); toast('⚠️ Vật tư mới — chọn Đơn vị'); return; }
+    }
+  }
+  return _5DoNhap();
+};
+document.addEventListener('change', e => { if (e.target && (e.target.id === 'fn-cat' || e.target.id === 'fn-unit-sel')) e.target.classList.remove('fn-need'); });
+
+function catInfo(name) {                                       // nhóm + đơn vị theo danh mục chung (phụ trợ / vật tư thông dụng)
+  const n = normVN(name);
+  const p = (typeof PT_CAT !== 'undefined' ? PT_CAT : []).find(x => normVN(x.name) === n); if (p) return { cat:GD_CAT[p.grp] || 'tbPhuTro', unit:p.unit };
+  const v = (typeof VT_CAT !== 'undefined' ? VT_CAT : []).find(x => normVN(x.name) === n); if (v) return { cat:v.grp, unit:v.unit };
+  return null;
+}
+function fnFillFromCat() {                                      // tên mới gõ tay / chọn từ danh sách xuất thẳng → điền sẵn nhóm + đơn vị nếu biết
+  const name = ($5('fn-item-txt')?.value || '').trim(); if (!name || db.items.some(i => normVN(i.name) === normVN(name))) return;
+  const ci = catInfo(name); if (!ci) return;
+  const cs = $5('fn-cat'), us = $5('fn-unit-sel');
+  if (cs && [...cs.options].some(o => o.value === ci.cat)) cs.value = ci.cat;
+  if (us && ci.unit && !us.value) { if (![...us.options].some(o => o.value === ci.unit)) us.insertAdjacentHTML('beforeend', `<option>${escHtml(ci.unit)}</option>`); us.value = ci.unit; }
+}
+const _5ComboPickDS = comboPickDS;
+comboPickDS = function (name) { _5ComboPickDS(name); fnFillFromCat(); };
+
+// ---------- (8) xác nhận cho dự án khác mượn khi kho trên app thiếu ----------
+function loanCatGuess(name) {                                   // nhóm cho vật tư app tự tạo bên cho mượn
+  const n = normVN(name), ok = id => (db.categories || []).some(c => c.id === id);
+  const ci = catInfo(name); if (ci && ok(ci.cat)) return ci.cat;
+  const g = /^(dau|nhot|mo bo|xang)\b/.test(n) ? 'nhienLieu' : /^(thep|sat)\b/.test(n) ? 'thep' : /^(que han|day han|da cat|da mai)\b/.test(n) ? 'han' : /^(den|bong den|cap dien|day dien|aptomat)\b/.test(n) ? 'dien' : '';
+  return g && ok(g) ? g : '';
+}
+loanInAct = async function (i, ok) {
+  const x = (db.loanIn || [])[i]; if (!x) return;
+  let note = '';
+  if (!ok) { note = (prompt('Lý do từ chối / số thực nhận?') || '').trim(); if (note.length < 3) { if (note) toast('⚠️ Ghi rõ lý do'); return; } }
+  if (!navigator.onLine) { toast('📴 Cần có mạng'); return; }
+  const base = { project:curProj, src:x.src, k:x.k, hid:x.hid || '', note, cat:loanCatGuess(x.itemName) };
+  showLoader('Đang lưu...');
+  let r = await api(ok ? 'loanLinkAccept' : 'loanLinkReject', base);
+  hideLoader();
+  if (ok && x.k === 'new' && r && !r.success && /không đủ/i.test(String(r.error || ''))) {
+    const it = db.items.find(t => normVN(t.name) === normVN(x.itemName)), have = it ? +it.stock || 0 : 0;
+    const msg = `Kho trên app chỉ ghi ${fmtNum(have)} ${x.unit} ${x.itemName}, dự án ${x.from} báo mượn ${fmtNum(x.qty)}.\n\n`
+      + `Món này CÓ SẴN ở kho nhưng chưa nhập lên app?\n\nBấm OK: app ghi "Tồn có sẵn – chưa cập nhật lên app" ${fmtNum(Math.max(0, r3(x.qty - Math.max(0, have))))} ${x.unit} rồi xác nhận cho mượn (kho trên app sau đó vẫn đúng thực tế).\nBấm Hủy nếu kho thật sự không có / số sai → dùng "Từ chối / sai số".`;
+    if (!confirm(msg)) return;
+    showLoader('Đang lưu...'); r = await api('loanLinkAccept', Object.assign({}, base, { bu:1 })); hideLoader();
+  }
+  if (!r || !r.success) { toast('⚠️ ' + ((r && r.error) || 'Không lưu được')); return; }
+  toast(ok ? (r.bu ? `✅ Đã ghi tồn có sẵn ${fmtNum(r.bu)} ${x.unit} + xác nhận cho mượn` : '✅ Đã xác nhận — 2 dự án đã khớp số') : '⛔ Đã báo dự án ' + x.from);
+  await syncAll(true);
+};
 </script>
 <script>// ===== Bộ biểu tượng Phosphor Duotone (MIT) thay emoji — v5.31.9 =====
 (function () {
