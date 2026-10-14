@@ -1776,7 +1776,7 @@ button .pi,.btn .pi,a .pi,.chip .pi,.tag .pi,.badge .pi,.yn .pi,.bnav .pi,.bnav-
 // ============================================================
 // CONFIG
 // ============================================================
-const APP_VERSION = '5.46.1';
+const APP_VERSION = '5.47.0';
 const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbw6Rmi80I7RI3ij2U7RdRF5pYuQTnPrwEmGmUZS5xpxzLwwVynfoFUujZe1lm6HS1ymxw/exec';
 // ============================================================
 
@@ -10595,6 +10595,597 @@ async function qlUnmap(kind, id) {
     saveLocal(); if (currentDeviceId === id) renderDeviceDetail(id);
   }
 }; }
+</script>
+<script>// ===== v5.47.0 KHO — Ô NHẬP / XUẤT NHANH =====
+// Một lệnh (gõ hoặc nói) nhiều món → app tự tách thành đúng loại phiếu có sẵn → bảng xem trước → lưu cả lệnh một lần (máy chủ qkBatch).
+// Quy tắc gõ: động từ đầu dòng; các món cách nhau dấu phẩy hoặc xuống dòng; dòng / món không có động từ dùng động từ phía trước.
+//   Vào: nhập · nhận · vào · về · mua        Ra: xuất · ra · đưa · cấp · phát · giao
+//   cho <dự án / đơn vị> mượn · mượn của <…> · nhận trả · trả lại · trả <bên cho thuê> · chuyển <dự án> · về Kho Đồng Nai · về kho (từ công trường)
+// Không tự thêm tồn đầu: kho / công trường không đủ thì dòng đó đỏ, không lưu được.
+
+// ---------- (S11) Danh mục: Bentonite → Tấn · cóc nối → Bộ · thép cây → Cây · thêm Tank chứa nước ----------
+(function () {
+  if (typeof VT_CAT !== 'undefined') VT_CAT.forEach(x => {
+    const n = normVN(x.name);
+    if (n === 'bentonite') x.unit = 'Tấn';
+    else if (/^coc (noi|cho)/.test(n)) x.unit = 'Bộ';
+    else if (/^thep cb\d{3}-v d\d+$/.test(n)) x.unit = 'Cây';
+  });
+  if (typeof PT_CAT !== 'undefined' && !PT_CAT.some(x => normVN(x.name) === 'tank chua nuoc')) PT_CAT.push({ name:'Tank chứa nước', unit:'Cái', grp:'tb' });
+})();
+
+// ---------- đọc lệnh ----------
+const Q5_UNIT = { tan:'Tấn', kg:'Kg', cay:'Cây', bo:'Bộ', cai:'Cái', chiec:'Cái', tam:'Tấm', m:'Mét', met:'Mét', lit:'Lít', l:'Lít', cuon:'Cuộn',
+  thung:'Thùng', phuy:'Phuy', bao:'Bao', cont:'Cont', ong:'Ống', m3:'M3', m2:'M2', soi:'Sợi', thanh:'Thanh', doi:'Đôi', hop:'Hộp', goi:'Gói',
+  chai:'Chai', xo:'Xô', vien:'Viên', con:'Con', bich:'Bịch', khoi:'M3' };
+const Q5_CONV = { 'tan>kg':1000, 'kg>tan':0.001 };
+const Q5_MACHINE = /^(cau|may|xe|lu|xuc|dao|ben|robot)\b/;
+const q5n = s => normVN(String(s || '').replace(/[()]/g, ' '));
+
+// "1.200" = 1200 · "1,5" = 1,5
+function q5Num(t) {
+  t = String(t);
+  if (/^\d{1,3}(\.\d{3})+$/.test(t)) return +t.replace(/\./g, '');
+  return +t.replace(',', '.');
+}
+// phi(d32) · phi 32 · ø32 · đê 32 · d 32 → D32
+function q5Dia(s) {
+  return String(s).replace(/(^|\s)(?:phi|fi|đk|dk|đê|đường kính)\s*\(?\s*[dD]?\s*(\d{2,4})\s*\)?/gi, '$1D$2').replace(/[øØφ]\s*\(?\s*(\d{2,4})\s*\)?/g, 'D$1')
+    .replace(/\b[dD]\s*\(?\s*(\d{2,4})\b\)?/g, 'D$1').replace(/\s+/g, ' ').trim();
+}
+// Số đọc bằng chữ (giọng nói) → chữ số: "một nghìn hai trăm" → 1200 · "ba mươi hai" → 32 · "phi ba hai" → phi 32 (so sánh có dấu: "tấm", "từ" không bị hiểu là số)
+const Q5_W = { 'không':0, 'một':1, 'mốt':1, 'hai':2, 'ba':3, 'bốn':4, 'tư':4, 'năm':5, 'lăm':5, 'sáu':6, 'bảy':7, 'bẩy':7, 'tám':8, 'chín':9 };
+const Q5_M = new Set(['mươi','mười','trăm','nghìn','ngàn','triệu','linh','lẻ','rưỡi']);
+function q5WordsNum(toks) {
+  let value = 0, group = 0, last = '', lastD = null, elH = false, elT = false;
+  toks.forEach(w => {
+    if (w in Q5_W) {
+      const d = Q5_W[w];
+      if (last === 'nghìn' || last === 'ngàn' || last === 'triệu') { group = d * 100; elH = true; }
+      else if (last === 'trăm') { group += d * 10; elT = true; }
+      else if (last === 'mươi' || last === 'mười' || last === 'linh' || last === 'lẻ') group += d;
+      else if (lastD !== null) group = group * 10 + d;
+      else group += d;
+      lastD = d; last = 'd'; return;
+    }
+    if (w === 'mươi') { if (!elT && lastD !== null) group += lastD * 9; elT = false; }
+    else if (w === 'mười') group += 10;
+    else if (w === 'trăm') { if (!elH) group = lastD !== null ? group - lastD + lastD * 100 : group + 100; elH = false; }
+    else if (w === 'nghìn' || w === 'ngàn') { value += (group || 1) * 1000; group = 0; }
+    else if (w === 'triệu') { value += (group || 1) * 1e6; group = 0; }
+    else if (w === 'rưỡi') { if (last === 'nghìn' || last === 'ngàn') value += 500; else if (last === 'trăm') group += 50; else group += 0.5; }
+    last = w; lastD = null;
+  });
+  return value + group;
+}
+function q5Spoken(text) {
+  const parts = String(text || '').normalize('NFC').split(/\s+/).filter(Boolean), out = [];
+  for (let i = 0; i < parts.length;) {
+    const w = parts[i].toLowerCase();
+    if (w in Q5_W || (Q5_M.has(w) && w !== 'linh' && w !== 'lẻ' && w !== 'rưỡi')) {
+      const run = []; while (i < parts.length && ((parts[i].toLowerCase() in Q5_W) || Q5_M.has(parts[i].toLowerCase()))) run.push(parts[i++].toLowerCase());
+      out.push(String(q5WordsNum(run)));
+    } else out.push(parts[i++]);
+  }
+  return out.join(' ');
+}
+
+// Động từ đầu đoạn → loại phiếu. Trả về {v, party, h, dest, rest}
+function q5Verb(seg) {
+  const s = seg.trim(), n = q5n(s);
+  const cut = re => { const m = n.match(re); return m ? { m, rest: s.slice(m[0].length).trim() } : null; };
+  const grab = (m, i) => { if (!m || !m[i]) return ''; const st = n.indexOf(m[i]); return s.substr(st, m[i].length).trim(); };
+  let r;
+  if ((r = cut(/^cho\s+muon\s+(.+?)\s+(?=\d)/))) return { v:'loanCho', party:grab(r.m, 1), rest:r.rest };
+  if ((r = cut(/^cho\s+(.+?)\s+muon\b/))) return { v:'loanCho', party:grab(r.m, 1), rest:r.rest };
+  if ((r = cut(/^(?:di\s+)?muon(?:\s+cua)?\s+(.+?)\s+(?=\d)/))) return { v:'loanDi', party:grab(r.m, 1), rest:r.rest };
+  if ((r = cut(/^nhan\s+tra(?:\s+(?:tu|cua))?\s*(.*?)\s*(?=\d)/))) return { v:'retCho', party:grab(r.m, 1), rest:r.rest };
+  if ((r = cut(/^tra\s+lai(?:\s+cho)?\s*(.*?)\s*(?=\d)/))) return { v:'retDi', party:grab(r.m, 1), rest:r.rest };
+  if ((r = cut(/^(?:xuat\s+)?ve\s+(?:kho\s+)?(?:fecon\s+)?dong\s+nai\b/))) return { v:'outNgoai', h:'kho', dest:'', rest:r.rest };
+  if ((r = cut(/^(?:xuat\s+)?chuyen\s+(?:sang\s+)?(?:du\s+an\s+)?(.+?)\s+(?=\d)/))) return { v:'outNgoai', h:'da', dest:grab(r.m, 1), rest:r.rest };
+  if ((r = cut(/^tra\s+(?:ve\s+)?(?:ben\s+cho\s+thue|nha\s+cung\s+cap|ncc)?\s*(.*?)\s*(?=\d)/))) return { v:'tra', dest:grab(r.m, 1), rest:r.rest };
+  if ((r = cut(/^(?:xuat\s+)?ra\s+khoi\s+(?:cong\s+(?:trinh|truong)|ct)\b/))) return { v:'outNgoai', h:'khac', dest:'', rest:r.rest };
+  if ((r = cut(/^(?:nhap\s+)?ve\s+kho\b(?!\s+(?:fecon\s+)?dong\s+nai)/))) return { v:'veKho', rest:r.rest };
+  if ((r = cut(/^(?:nhap|nhan|vao|ve|mua)\b/))) return { v:'in', rest:r.rest };
+  if ((r = cut(/^(?:xuat|ra|dua|cap|phat|giao)\b/))) return { v:'out', rest:r.rest };
+  return null;
+}
+// "2 tank bent" · "32 tấn bentonite" · "1200 thép phi(d32)" · "tank bent 2"
+function q5Item(txt) {
+  let s = q5Dia(txt).replace(/^[\s:.\-–]+/, '');
+  let qty = null, unitTxt = '', name = s;
+  const m = s.match(/^(\d+(?:[.,]\d+)*)\s*(\S+)?\s*(.*)$/);
+  if (m) {
+    qty = q5Num(m[1]);
+    const u = normVN(m[2] || '');
+    if (Q5_UNIT[u]) { unitTxt = Q5_UNIT[u]; name = m[3]; } else name = [m[2], m[3]].filter(Boolean).join(' ');
+  } else {
+    const m2 = s.match(/^(.*?)\s+(\d+(?:[.,]\d+)*)\s*(\S+)?$/);
+    if (m2) { name = m2[1]; qty = q5Num(m2[2]); const u = normVN(m2[3] || ''); if (Q5_UNIT[u]) unitTxt = Q5_UNIT[u]; }
+  }
+  name = String(name || '').replace(/[.,;]+$/, '').trim();
+  return { qty, unitTxt, name };
+}
+// Tách lệnh thành các đoạn: theo dòng, rồi theo dấu phẩy (không tách "1,5")
+function q5Segments(text) {
+  const out = [];
+  String(text || '').normalize('NFC').split(/\r?\n/).forEach((line, li) => {
+    let raw = line.replace(/^\s*(?:\d{1,2}:\d{2}|[-•*]+)\s*/, '').trim();
+    const pre = raw.match(/^([^:\d]{2,30}):\s+(.+)$/); if (pre) raw = pre[2];          // "A.Kiên: nhập …" (dán từ Zalo)
+    if (!raw) return;
+    raw.replace(/(\d),(\d)/g, '$1\u0001$2').split(/\s*(?:;|\+|,|\s+và\s+(?=\d))\s*/).map(p => p.replace(/\u0001/g, ','))
+      .forEach(p => { if (p && p.trim()) out.push({ line:li + 1, text:p.trim(), full:line.trim() }); });
+  });
+  return out;
+}
+
+// ---------- tìm vật tư / máy ----------
+const q5Kho = () => db.items.filter(i => curProj === 'all' || !i.project || i.project === curProj);
+function q5Cands(name, unitTxt) {
+  let toks = qTokens(q5Dia(name)).filter(t => !QK_STOP.has(t) || isCode(t));
+  if (toks.includes('bent') && /^(Tấn|Kg|Bao)$/.test(unitTxt)) toks = toks.map(t => t === 'bent' ? 'bentonite' : t);
+  const kho = qkBest(toks, q5Kho(), x => x.name).map(r => ({ src:'kho', id:r.x.id, name:r.x.name, unit:r.x.unit, cat:r.x.cat, s:r.s, x:r.x }));
+  const have = new Set(q5Kho().map(i => normVN(i.name)));
+  const cat = qkBest(toks, (PT_CAT || []).map(p => ({ name:p.name, unit:p.unit, cat:GD_CAT[p.grp] || 'tbPhuTro' }))
+      .concat((typeof VT_CAT !== 'undefined' ? VT_CAT : []).map(v => ({ name:v.name, unit:v.unit, cat:v.grp }))).filter(c => !have.has(normVN(c.name))), x => x.name)
+    .map(r => ({ src:'cat', id:'c:' + r.x.name, name:r.x.name, unit:r.x.unit, cat:r.x.cat, s:r.s - 0.02 }));
+  return { toks, list:kho.concat(cat).filter(r => r.s >= 0.5).sort((a, b) => b.s - a.s).slice(0, 6) };
+}
+function q5Machine(name) {
+  const devs = projDevs().filter(d => devActive(d)), left = projDevs().filter(d => !devActive(d));
+  const toks = qTokens(name);
+  const act = qkBest(toks, devs, x => x.name).filter(r => r.s >= 0.6);
+  const ql = qlOn() ? qlList().filter(x => x.kind === 'may').map(x => ({ x, s:qlScore(name, x.name) })).filter(r => r.s >= 0.5).sort((a, b) => b.s - a.s).slice(0, 5) : [];
+  return { act, left, ql };
+}
+const q5Track = r => /^(tbPhuTro|vtPhuTro)$/.test(String(r.cat || '')) || (r.src === 'kho' && typeof ctTrack === 'function' && ctTrack(r.x));
+
+// ---------- lệnh → các dòng phiếu ----------
+let Q5 = { rows:[], cmd:'', err:'', busy:false };
+function q5Build(text) {
+  const segs = q5Segments(text), rows = [];
+  let ctx = null, srcByLine = {};
+  segs.forEach(sg => {
+    let t = sg.text;
+    const from = q5n(t).match(/\s+tu\s+(.{2,40})$/);
+    if (from) { const k = q5n(t).lastIndexOf(from[0]); srcByLine[sg.line] = t.slice(k + 1).replace(/^từ\s+/i, '').trim(); t = t.slice(0, k).trim(); }
+    let vb = q5Verb(t);
+    if (vb) ctx = vb; else if (ctx) vb = Object.assign({}, ctx, { rest:t });
+    const R = { line:sg.line, seg:sg.text, full:sg.full, on:true, warns:[], errs:[], ncc:srcByLine[sg.line] || '', price:'', due:'', kg:'', alts:[] };
+    if (!vb) { Object.assign(R, { kind:'in', qty:null, name:t, unitTxt:'' }); R.noVerb = 1; rows.push(R); return; }
+    const it = q5Item(vb.rest);
+    Object.assign(R, { kind:vb.v, party:vb.party || '', h:vb.h || '', dest:vb.dest || '', qty:it.qty, unitTxt:it.unitTxt, name:it.name });
+    let recv = '';
+    const cm = q5n(R.name).match(/\s+cho\s+(.{2,60})$/);                        // "cấp 400 lít dầu cho khoan Sany" → người / máy nhận
+    if (cm && (R.kind === 'out')) { const k = q5n(R.name).lastIndexOf(cm[0]); recv = R.name.slice(k).replace(/^\s*cho\s+/i, '').trim(); R.name = R.name.slice(0, k).trim(); }
+    R.recv = recv;
+    rows.push(R);
+  });
+  rows.forEach(q5Resolve);
+  return rows;
+}
+// Gán vật tư / máy + loại phiếu cụ thể cho 1 dòng
+function q5Resolve(R) {
+  const isMach = Q5_MACHINE.test(q5n(R.name));
+  const C = q5Cands(R.name, R.unitTxt);
+  R.alts = Q5_NEEDKHO[R.kind] || R.kind === 'tra' ? C.list.filter(a => a.src === 'kho') : C.list; R.itemKey = '';
+  // vật tư đã có trong kho được ưu tiên hơn tên trong danh mục (khớp ≥ 0,6 và không kém tên tốt nhất quá 0,15); chỉ bắt chọn khi 2 món gần bằng điểm
+  const best = R.alts.length ? R.alts[0].s : 0, kho = R.alts.filter(a => a.src === 'kho' && a.s >= Math.max(0.6, best - 0.15)), pool = kho.length ? kho : R.alts;
+  R.alts = kho.concat(R.alts.filter(a => !kho.includes(a)));
+  const top = pool[0], tie = pool.filter(a => a !== top && a.s >= top.s - 0.03 && a.s < 1);
+  if (top && !tie.length) R.itemKey = top.id;
+  // máy cơ sở: chữ đầu là cẩu / máy / xe… hoặc không khớp vật tư nào mà khớp máy
+  if ((R.kind === 'in' || R.kind === 'out' || R.kind === 'outNgoai' || R.kind === 'tra') && (isMach || !top || top.s < 0.6)) {
+    const M = q5Machine(R.name);
+    if (R.kind === 'in' && (isMach || M.ql.length) && !(top && top.s >= 0.8)) {
+      R.kind = 'devIn'; R.qlAlts = M.ql.map(r => r.x); R.qlMa = M.ql[0] && M.ql[0].s >= 0.6 ? M.ql[0].x.ma : ''; R.devType = R.qlMa ? '' : '';
+      R.leftDev = R.qlMa ? (qlDevLeft(R.qlMa) || null) : null; R.devName = R.name;
+    } else if (R.kind !== 'in' && M.act.length && !(top && top.s >= 0.8 && top.src === 'kho')) {
+      if (R.kind === 'tra') R.h = 'thue';
+      R.kind = 'devOut'; R.devId = M.act[0].x.id; R.devAlts = M.act.map(r => r.x);
+    }
+  }
+  if (R.kind === 'tra') {                                                    // "trả …": có phiếu đi mượn đang mở → trả lại; không → trả bên cho thuê (ra khỏi CT)
+    const it = q5ItemOf(R), L = it ? projLoans().filter(l => l.status === 'open' && l.kind === 'di' && +l.itemId === +it.id && loanRemain(l) > 0) : [];
+    if (L.length) { R.kind = 'retDi'; } else { R.kind = 'outNgoai'; R.h = 'thue'; }
+  }
+  if (R.kind === 'in') R.mode = top && q5Track(top) && thangOn() ? 'ct' : 'kho';    // thiết bị / vật tư phụ trợ → thẳng ra công trường
+  if (R.kind === 'out') R.mode = top && q5Track(top) ? 'ra' : 'use';
+  if (R.kind === 'out' && R.recv) { const dv = qkBest(qTokens(R.recv), projDevs().filter(d => devActive(d)), x => x.name)[0]; R.thietBi = dv && dv.s >= 0.45 ? dv.x.name : ''; if (R.thietBi) R.mode = 'use'; }
+  if (R.kind === 'outNgoai') R.from = 'kho';
+  q5Check(R);
+}
+const q5Cap = s => { s = String(s || '').trim(); return s.charAt(0).toUpperCase() + s.slice(1); };
+const q5Pick = R => R.alts.find(a => a.id === R.itemKey) || null;
+const q5ItemOf = R => { const p = q5Pick(R); return p && p.src === 'kho' ? p.x : null; };
+const q5Unit = R => { const p = q5Pick(R); return p ? p.unit : (R.newUnit || R.unitTxt || ''); };
+
+// ---------- kiểm từng dòng + chạy thử tồn kho theo thứ tự ----------
+const q5r3 = v => Math.round((+v || 0) * 1000) / 1000;
+const Q5_NEEDKHO = { out:1, outNgoai:1, loanCho:1, retCho:1, retDi:1, veKho:1 };
+function q5Check(R) {
+  R.errs = []; R.warns = []; R.conv = '';
+  if (!R.on) return;
+  if (R.kind === 'outNgoai' && !R.fromUser) R.from = 'kho';
+  if (R.noVerb) { R.errs.push('Không rõ nhập hay xuất — chọn loại phiếu'); }
+  if (R.kind === 'devIn') {
+    if (!R.qlMa && R.devType !== 'hire') R.errs.push('Máy chưa khớp mã P.QLTB — chọn mã hoặc "Thuê ngoài"');
+    if (R.devType === 'hire' && !String(R.donVi || '').trim()) R.errs.push('Máy thuê ngoài: ghi đơn vị cho thuê');
+    if (R.qlMa && qlDevHere(R.qlMa)) R.errs.push('Máy này đang ở dự án — không nhập trùng');
+    return;
+  }
+  if (R.kind === 'devOut') { if (!R.devId) R.errs.push('Không tìm thấy máy đang ở công trường'); return; }
+  const p = q5Pick(R);
+  if (!(R.qty > 0)) R.errs.push('Chưa có số lượng');
+  if (!p) R.errs.push(R.alts.length > 1 ? 'Chọn đúng loại bên dưới' : R.alts.length ? 'Chọn vật tư' : (Q5_NEEDKHO[R.kind] ? 'Không có trong kho' : 'Chưa có trong danh mục — nhập tên, nhóm, đơn vị'));
+  else if (p.src !== 'kho' && Q5_NEEDKHO[R.kind]) R.errs.push('"' + p.name + '" chưa có trong kho — không xuất được');
+  if (!p && !Q5_NEEDKHO[R.kind] && R.alts.length === 0) {
+    if (String(R.newName || R.name).trim().length >= 2 && R.newCat && R.newUnit) R.errs = R.errs.filter(e => !/danh mục/.test(e));
+  }
+  // đơn vị
+  const u = q5Unit(R);
+  if (p && R.unitTxt && normVN(R.unitTxt) !== normVN(p.unit)) {
+    const k = Q5_CONV[normVN(R.unitTxt) + '>' + normVN(p.unit)];
+    if (k && R.qty > 0) { R.conv = `${fmtNum(R.qty)} ${R.unitTxt} = ${fmtNum(q5r3(R.qty * k))} ${p.unit}`; }
+    else R.warns.push(`Lệnh ghi "${R.unitTxt}", kho tính theo "${p.unit}" — kiểm tra số lượng`);
+  }
+  if (R.kind === 'loanCho' || R.kind === 'loanDi') {
+    if (String(R.party || '').trim().length < 2) R.errs.push(R.kind === 'loanCho' ? 'Ghi rõ cho ai mượn' : 'Ghi rõ mượn của ai');
+    if (R.kind === 'loanCho' && !R.due) R.warns.push('Chưa có hạn trả');
+  }
+  if (R.kind === 'retCho' || R.kind === 'retDi') {
+    const L = q5Loans(R); if (!L.length) R.errs.push('Không có phiếu ' + (R.kind === 'retCho' ? 'cho mượn' : 'đi mượn') + ' đang mở cho món này');
+    else if (!R.loanId || !L.some(l => l.id === R.loanId)) R.loanId = L[0].id;
+  }
+  if (R.kind === 'outNgoai' && R.h === 'da' && !q5Proj(R.dest)) R.errs.push('Chọn dự án nhận');
+  if (R.kind === 'outNgoai' && R.h === 'thue' && !R.dest) R.warns.push('Chưa ghi trả cho bên nào');
+  if (p && /^Cây$/i.test(p.unit) && R.qty > 0 && !R.kgTouched) { const kg = q5SteelKg(p.name, q5Qty(R)); R.kg = kg ? '≈ ' + fmtNum(kg) : ''; }
+}
+function q5Qty(R) {                                                            // số lượng theo đơn vị kho
+  const p = q5Pick(R); if (!p || !R.unitTxt) return +R.qty || 0;
+  const k = Q5_CONV[normVN(R.unitTxt) + '>' + normVN(p.unit)]; return k ? q5r3(R.qty * k) : +R.qty || 0;
+}
+function q5SteelKg(name, n) {                                                  // thép cây D32 x 11,7m → 6,31 kg/m × 11,7 m × số cây
+  const m = q5n(name).match(/d(\d{2})\b.*?x\s*(\d+(?:[.,]\d+)?)\s*m\b/); if (!m || !n) return 0;
+  const d = +m[1], L = +m[2].replace(',', '.'); return Math.round(n * L * d * d / 162.2);
+}
+const q5Proj = s => { const n = normVN(String(s || '').replace(/^dự án\s+/i, '')); return n ? (db.allProjects || []).find(p => normVN(p) === n || normVN(p).includes(n)) || '' : ''; };
+function q5Loans(R) {
+  const it = q5ItemOf(R); if (!it) return [];
+  const kind = R.kind === 'retCho' ? 'cho' : 'di', pn = normVN(R.party || '');
+  const L = projLoans().filter(l => l.status === 'open' && l.kind === kind && l.itemType === 'vt' && +l.itemId === +it.id && loanRemain(l) > 0);
+  return pn ? L.filter(l => normVN(l.party).includes(pn)).concat(L.filter(l => !normVN(l.party).includes(pn))) : L;
+}
+function q5Simulate(rows) {                                                    // tồn kho / ở công trường sau từng dòng (giống máy chủ)
+  const st = {}, S = it => st[it.id] || (st[it.id] = { k:+it.stock || 0, c:ctSite(it) });
+  rows.forEach(R => {
+    if (!R.on || R.errs.length) return;
+    const it = q5ItemOf(R); if (!it) return;
+    const q = q5Qty(R), x = S(it), need = (lbl, have) => R.errs.push(`${lbl} còn ${fmtNum(have)} ${it.unit}, thiếu ${fmtNum(q5r3(q - have))} ${it.unit}`);
+    if (R.kind === 'out' || R.kind === 'loanCho' || R.kind === 'retDi') { if (q > x.k + 1e-9) need('Kho', x.k); else { x.k = q5r3(x.k - q); if (R.kind === 'out' && R.mode === 'ra') x.c = q5r3(x.c + q); } }
+    else if (R.kind === 'outNgoai') {
+      if (R.from === 'ct') { if (q > x.c + 1e-9) need('Ở công trường', x.c); else x.c = q5r3(x.c - q); }
+      else if (q > x.k + 1e-9) { if (ctTrack(it) && q <= x.c + 1e-9) { R.from = 'ct'; x.c = q5r3(x.c - q); R.warns.push('Kho không đủ → lấy từ số ở công trường'); } else need('Kho', x.k); }
+      else x.k = q5r3(x.k - q);
+    }
+    else if (R.kind === 'veKho') { if (q > x.c + 1e-9) need('Ở công trường', x.c); else { x.c = q5r3(x.c - q); x.k = q5r3(x.k + q); } }
+    else if (R.kind === 'in' && R.mode === 'ct') x.c = q5r3(x.c + q);
+    else if (R.kind === 'in' || R.kind === 'loanDi' || R.kind === 'retCho') x.k = q5r3(x.k + q);
+  });
+}
+function q5Recheck() { Q5.rows.forEach(R => { if (R.on) q5Check(R); else { R.errs = []; R.warns = []; } }); q5Simulate(Q5.rows); }
+
+// ---------- giao diện: ô lệnh trên Tổng quan ----------
+const Q5_LS = 'fecon_qk547_draft';
+function q5BoxHtml() {
+  let draft = ''; try { draft = localStorage.getItem(Q5_LS) || ''; } catch (e) {}
+  return `<div class="q5-box need-tk" id="q5-box">
+    <div class="q5-h"><span class="q5-ic" aria-hidden="true">⚡</span><label for="q5-text">Nhập / Xuất nhanh</label></div>
+    <textarea id="q5-text" rows="3" placeholder="VD: nhập 2 tank bent, 1 tank đất, 32 tấn bentonite&#10;xuất 1000 bộ cóc d20" oninput="q5Draft(this.value)">${escHtml(draft)}</textarea>
+    <div class="q5-hint">Động từ đầu dòng · các món cách nhau dấu phẩy hoặc xuống dòng</div>
+    <div class="q5-bar"><button type="button" class="q5-btn" id="q5-mic" onclick="q5Mic()">🎤 Nói</button><button type="button" class="q5-btn" onclick="q5Paste()">📋 Dán</button><button type="button" class="q5-btn q5-go" onclick="q5Open()">Tách phiếu ›</button></div>
+  </div>`;
+}
+function q5Draft(v) { try { if (v) localStorage.setItem(Q5_LS, v); else localStorage.removeItem(Q5_LS); } catch (e) {} }
+function q5Mount(c) {
+  if (!can('tk') || !curProj || curProj === 'all') return;
+  c.querySelectorAll('.qk-entry').forEach(e => e.remove());
+  const g = c.querySelector('.act-grid'); if (!g || document.getElementById('q5-box')) return;
+  g.insertAdjacentHTML('beforebegin', q5BoxHtml());
+}
+{ const _q5Home = renderHome; renderHome = function (c) { _q5Home(c); try { q5Mount(c); } catch (e) {} }; }
+openQuick = function () { goTab('home'); setTimeout(() => { const t = document.getElementById('q5-text'); if (t) { t.focus(); t.scrollIntoView({ block:'center' }); } }, 120); };
+
+async function q5Paste() {
+  try { const t = await navigator.clipboard.readText(); if (t) { const el = document.getElementById('q5-text'); el.value = (el.value ? el.value.replace(/\s*$/, '\n') : '') + t; q5Draft(el.value); } }
+  catch (e) { toast('Nhấn giữ vào ô lệnh rồi chọn "Dán"'); document.getElementById('q5-text').focus(); }
+}
+let q5Rec = null;
+function q5Mic() {
+  const SR = window.SpeechRecognition || window.webkitSpeechRecognition, el = document.getElementById('q5-text'), btn = document.getElementById('q5-mic');
+  if (!SR) { toast('🎤 Máy này chưa hỗ trợ nút Nói — chạm vào ô lệnh rồi bấm biểu tượng micro trên bàn phím'); el.focus(); return; }
+  if (q5Rec) { q5Rec.stop(); return; }
+  try { q5Rec = new SR(); } catch (e) { toast('🎤 Không mở được micro — dùng micro trên bàn phím'); el.focus(); return; }
+  q5Rec.lang = 'vi-VN'; q5Rec.interimResults = true; q5Rec.continuous = false;
+  const base = el.value ? el.value.replace(/\s*$/, '\n') : '';
+  q5Rec.onresult = e => { el.value = base + [...e.results].map(r => r[0].transcript).join(' '); };
+  q5Rec.onend = () => { q5Rec = null; btn.textContent = '🎤 Nói'; btn.classList.remove('on'); const tail = el.value.slice(base.length); if (tail.trim()) el.value = base + q5Spoken(tail); q5Draft(el.value); };
+  q5Rec.onerror = e => { toast(e.error === 'not-allowed' ? '⚠️ Chưa cho phép dùng micro — hoặc dùng micro trên bàn phím' : '⚠️ Không nghe rõ, thử lại hoặc dùng micro trên bàn phím'); };
+  btn.textContent = '⏺ Đang nghe… (bấm để dừng)'; btn.classList.add('on');
+  try { q5Rec.start(); } catch (e) { q5Rec = null; btn.textContent = '🎤 Nói'; btn.classList.remove('on'); toast('🎤 Dùng micro trên bàn phím'); }
+}
+
+// ---------- bảng xem trước ----------
+const Q5_KINDS = [['in-kho','Nhập kho'],['in-ct','Nhập thẳng ra công trường'],['out-use','Xuất dùng'],['out-ra','Xuất ra công trường'],['outNgoai','Ra khỏi công trình'],
+  ['veKho','Về kho từ công trường'],['loanCho','Cho mượn'],['loanDi','Đi mượn'],['retCho','Nhận trả (hàng cho mượn)'],['retDi','Trả lại (hàng đi mượn)'],['devIn','Máy vào công trường'],['devOut','Máy rời công trường']];
+const q5KindKey = R => R.kind === 'in' ? 'in-' + (R.mode || 'kho') : R.kind === 'out' ? 'out-' + (R.mode || 'use') : R.kind;
+const Q5_BADGE = { 'in-kho':['NHẬP KHO','in'], 'in-ct':['NHẬP · THẲNG CÔNG TRƯỜNG','in'], 'out-use':['XUẤT DÙNG','out'], 'out-ra':['XUẤT RA CÔNG TRƯỜNG','out'],
+  outNgoai:['RA KHỎI CÔNG TRÌNH','out'], veKho:['VỀ KHO TỪ CÔNG TRƯỜNG','in'], loanCho:['CHO MƯỢN','loan'], loanDi:['ĐI MƯỢN','loan'], retCho:['NHẬN TRẢ','loan'],
+  retDi:['TRẢ LẠI','loan'], devIn:['MÁY VÀO CÔNG TRƯỜNG','dev'], devOut:['MÁY RỜI CÔNG TRƯỜNG','dev'] };
+const Q5_H = [['thue','Trả bên cho thuê / NCC'],['da','Chuyển dự án'],['kho','Về Kho FECON Đồng Nai'],['hong','Hư hỏng / thanh lý'],['khac','Khác']];
+
+function q5Open() {
+  const el = document.getElementById('q5-text'), text = el ? el.value : '';
+  if (!text.trim()) { toast('⚠️ Gõ hoặc nói lệnh trước'); el && el.focus(); return; }
+  Q5 = { rows:q5Build(text), cmd:text.trim(), err:'', busy:false };
+  if (!Q5.rows.length) { toast('Không tìm thấy món nào trong lệnh'); return; }
+  q5Simulate(Q5.rows);
+  openDp('dp-quick');
+  const t = document.querySelector('#dp-quick .detail-title'); if (t) t.textContent = '⚡ Xem trước · ' + Q5.rows.length + ' dòng';
+  q5Render();
+}
+function q5Render() {
+  const b = document.getElementById('dp-quick-body'); if (!b) return;
+  const R = Q5.rows, on = R.filter(r => r.on), red = on.filter(r => r.errs.length).length;
+  const cnt = {}; on.forEach(r => { const g = Q5_BADGE[q5KindKey(r)][1]; cnt[g] = (cnt[g] || 0) + 1; });
+  const CL = { in:['nhập','#E6F4EC','#17703D'], out:['xuất','#FDEEE6','#A8410F'], loan:['mượn / trả','#EDE7F6','#4B2E83'], dev:['máy','#E3ECF7','#003F7D'] };
+  b.innerHTML = `<div class="q5-pv">
+    ${Q5.err ? `<div class="q5-errbox">⛔ ${escHtml(Q5.err)}</div>` : ''}
+    <div class="q5-chips">${Object.keys(CL).filter(k => cnt[k]).map(k => `<span style="background:${CL[k][1]};color:${CL[k][2]}">${cnt[k]} ${CL[k][0]}</span>`).join('')}</div>
+    <div class="q5-leg"><span><i style="background:#E8A300"></i>Còn thiếu, để trống vẫn lưu</span><span><i style="background:#D93025"></i>Phải sửa hoặc bỏ dòng</span></div>
+    ${R.map((r, i) => q5RowHtml(r, i)).join('')}
+    <div class="q5-foot">
+      ${red ? `<div class="q5-red">${red} dòng đỏ cần sửa hoặc bỏ dòng</div>` : ''}
+      <button type="button" class="btn-full ${red || !on.length ? '' : 'btn-orange'}" ${red || !on.length || Q5.busy ? 'disabled' : ''} onclick="q5Save()">${Q5.busy ? 'Đang lưu…' : 'Lưu ' + on.length + ' phiếu'}</button>
+      <div class="q5-note">Lưu cả lệnh một lần: một dòng sai thì không lưu dòng nào. Mỗi phiếu ghi kèm nguyên văn lệnh.</div>
+    </div></div>`;
+}
+function q5RowHtml(R, i) {
+  const k = q5KindKey(R), bd = Q5_BADGE[k], p = q5Pick(R), it = q5ItemOf(R);
+  const cls = !R.on ? ' off' : R.errs.length ? ' bad' : '';
+  const inp = (key, lbl, val, opt) => `<label class="q5-f${opt && opt.warn ? ' warn' : ''}">${lbl}<input ${opt && opt.type ? `type="${opt.type}"` : ''} value="${escHtml(val || '')}" onchange="q5Set(${i},'${key}',this.value)"${opt && opt.ph ? ` placeholder="${escHtml(opt.ph)}"` : ''}></label>`;
+  let body = '';
+  if (R.kind === 'devIn') {
+    const ql = R.qlMa ? qlByMa(R.qlMa) : null;
+    body += `<div class="q5-name">${escHtml(ql ? ql.name : R.devName || R.name)}</div><div class="q5-sub">Máy cơ sở${ql ? ' · mã ' + escHtml(ql.ma) : ''}${R.leftDev ? ' · đã từng ở dự án → ghi máy vào lại' : ''}</div>`;
+    if (R.qlAlts && R.qlAlts.length > 1 || !R.qlMa) body += `<div class="q5-chiprow">${(R.qlAlts || []).map(x => `<button type="button" class="${x.ma === R.qlMa ? 'on' : ''}" onclick="q5Set(${i},'qlMa','${escHtml(x.ma)}')">${escHtml(x.name)}</button>`).join('')}<button type="button" class="${R.devType === 'hire' ? 'on' : ''}" onclick="q5Set(${i},'devType','hire')">Thuê ngoài</button></div>`;
+    if (R.devType === 'hire') body += inp('donVi', 'Đơn vị cho thuê', R.donVi, { warn:!R.donVi });
+  } else if (R.kind === 'devOut') {
+    const d = db.devices.find(x => x.id === R.devId);
+    body += `<div class="q5-name">${escHtml(d ? d.name : R.name)}</div><div class="q5-sub">Máy cơ sở · ghi rời công trường hôm nay</div>`;
+    if ((R.devAlts || []).length > 1) body += `<div class="q5-chiprow">${R.devAlts.map(x => `<button type="button" class="${x.id === R.devId ? 'on' : ''}" onclick="q5Set(${i},'devId',${x.id})">${escHtml(x.name)}</button>`).join('')}</div>`;
+  } else {
+    const unit = q5Unit(R);
+    body += `<div class="q5-top"><span class="q5-name">${escHtml(p ? p.name : R.name || '?')}</span><span class="q5-q"><input type="number" inputmode="decimal" value="${R.qty ?? ''}" aria-label="Số lượng" onchange="q5Set(${i},'qty',this.value)"> ${escHtml(R.unitTxt || unit)}</span></div>`;
+    body += `<div class="q5-sub">${p ? escHtml(vtCatName(p.cat) || '') + (p.src === 'kho' ? ' · trong kho: ' + fmtNum(it.stock) + ' ' + escHtml(it.unit) + (ctTrack(it) ? ' · ở CT: ' + fmtNum(ctSite(it)) : '') : ' · vật tư mới (theo danh mục)') : 'Bạn gõ: "' + escHtml(R.name) + '"'}${R.conv ? ' · ' + escHtml(R.conv) : ''}</div>`;
+    if (R.alts.length > 1 || (!p && R.alts.length)) body += `<div class="q5-chiprow">${R.alts.map(a => `<button type="button" class="${a.id === R.itemKey ? 'on' : ''}" onclick="q5Set(${i},'itemKey','${escHtml(String(a.id))}')">${escHtml(a.name)}${a.src === 'cat' ? ' ＋' : ''}</button>`).join('')}</div>`;
+    if (!R.alts.length && !Q5_NEEDKHO[R.kind] && R.kind !== 'loanCho') {
+      body += `<div class="q5-g2">${inp('newName', 'Tên vật tư mới', R.newName || R.name)}<label class="q5-f">Đơn vị<select onchange="q5Set(${i},'newUnit',this.value)"><option value="">— Chọn —</option>${UNITS.map(u => `<option ${u === (R.newUnit || '') ? 'selected' : ''}>${u}</option>`).join('')}</select></label></div>
+        <label class="q5-f">Nhóm<select onchange="q5Set(${i},'newCat',this.value)"><option value="">— Chọn —</option>${(db.categories || CATEGORIES).map(c => `<option value="${c.id}" ${c.id === R.newCat ? 'selected' : ''}>${escHtml(c.name)}</option>`).join('')}</select></label>`;
+    }
+    if (R.kind === 'in') body += R.mode === 'ct' ? inp('ncc', 'Nguồn (từ đâu)', R.ncc, { warn:!R.ncc, ph:'Nhà cung cấp hoặc dự án' })
+      : `<div class="q5-g2">${inp('ncc', 'Nhà cung cấp (không bắt buộc)', R.ncc)}${inp('price', 'Đơn giá (không bắt buộc)', R.price, { type:'text' })}</div>`;
+    if (p && /^Cây$/i.test(p.unit) && R.kind === 'in') body += inp('kg', 'Khối lượng kg (gợi ý, không bắt buộc)', R.kg);
+    if (R.kind === 'out' && (R.recv || R.mode === 'use')) body += inp('recv', R.mode === 'use' ? 'Người / máy nhận' : 'Giao cho', R.recv) + (R.thietBi ? `<div class="q5-sub">Máy nhận: <b>${escHtml(R.thietBi)}</b></div>` : '');
+    if (R.kind === 'loanCho' || R.kind === 'loanDi') {
+      const pj = q5Proj(R.party);
+      body += inp('party', R.kind === 'loanCho' ? 'Cho ai mượn' : 'Mượn của ai', R.party) + (pj ? `<div class="q5-sub">↔ Dự án FECON <b>${escHtml(pj)}</b> — bên kia nhận thông báo để xác nhận</div>` : '');
+      if (R.kind === 'loanCho') body += inp('due', 'Hạn trả', R.due, { type:'date', warn:!R.due });
+    }
+    if (R.kind === 'retCho' || R.kind === 'retDi') {
+      const L = q5Loans(R);
+      if (L.length) body += `<label class="q5-f">Phiếu mượn<select onchange="q5Set(${i},'loanId',+this.value)">${L.map(l => `<option value="${l.id}" ${l.id === R.loanId ? 'selected' : ''}>${escHtml(l.party)} · còn ${fmtNum(loanRemain(l))} ${escHtml(l.unit)}</option>`).join('')}</select></label>`;
+    }
+    if (R.kind === 'outNgoai') {
+      body += `<div class="q5-chiprow">${Q5_H.map(([h, l]) => `<button type="button" class="${h === R.h ? 'on' : ''}" onclick="q5Set(${i},'h','${h}')">${l}</button>`).join('')}</div>`;
+      if (R.h === 'da') body += `<label class="q5-f${q5Proj(R.dest) ? '' : ' warn'}">Dự án nhận<select onchange="q5Set(${i},'dest',this.value)"><option value="">— Chọn —</option>${(db.allProjects || []).filter(x => x !== curProj).map(x => `<option ${x === q5Proj(R.dest) ? 'selected' : ''}>${escHtml(x)}</option>`).join('')}</select></label>`;
+      else if (R.h !== 'kho') body += inp('dest', R.h === 'thue' ? 'Trả cho bên nào' : 'Ghi rõ', R.dest, { warn:!R.dest });
+      if (it && gdRowOfItem(it)) body += `<div class="q5-sub">Có trong danh sách giải động → tự đánh dấu đã giải động</div>`;
+    }
+  }
+  const msgs = R.on ? R.errs.map(e => `<div class="q5-e">${escHtml(e)}</div>`).join('') + R.warns.map(w => `<div class="q5-w">${escHtml(w)}</div>`).join('') : '';
+  return `<div class="q5-card${cls}">
+    <div class="q5-hd"><input type="checkbox" ${R.on ? 'checked' : ''} aria-label="Chọn dòng ${i + 1}" onchange="q5Set(${i},'on',this.checked)">
+      <select class="q5-kind q5-${bd[1]}" aria-label="Loại phiếu" onchange="q5Kind(${i},this.value)">${Q5_KINDS.map(([v, l]) => `<option value="${v}" ${v === k ? 'selected' : ''}>${l}</option>`).join('')}</select></div>
+    ${body}${msgs}
+    ${R.on && R.errs.length && Q5_NEEDKHO[R.kind] && p ? `<div class="q5-g2"><button type="button" class="q5-mini" onclick="q5Focus(${i})">Sửa số lượng</button><button type="button" class="q5-mini" onclick="q5Set(${i},'on',false)">Bỏ dòng này</button></div>` : ''}
+    <div class="q5-src">Lệnh: “${escHtml(R.seg)}”</div>
+  </div>`;
+}
+function q5Focus(i) { const c = document.querySelectorAll('#dp-quick-body .q5-card')[i]; const q = c && c.querySelector('.q5-q input'); if (q) { q.focus(); q.select(); } }
+function q5Set(i, key, v) {
+  const R = Q5.rows[i]; if (!R) return;
+  if (key === 'qty') v = v === '' ? null : q5Num(v);
+  if (key === 'kg') R.kgTouched = 1;
+  if (key === 'devType' && R.devType === 'hire') v = '';
+  if (key === 'qlMa') { R.devType = ''; R.leftDev = qlDevLeft(v) || null; }
+  R[key] = v;
+  if (key === 'recv') { const dv = v ? qkBest(qTokens(v), projDevs().filter(d => devActive(d)), x => x.name)[0] : null; R.thietBi = dv && dv.s >= 0.45 ? dv.x.name : ''; }
+  q5Recheck(); q5Render();
+}
+function q5Kind(i, v) {
+  const R = Q5.rows[i]; if (!R) return;
+  R.noVerb = 0;
+  if (v.startsWith('in-')) { R.kind = 'in'; R.mode = v.slice(3); }
+  else if (v.startsWith('out-')) { R.kind = 'out'; R.mode = v.slice(4); }
+  else { R.kind = v; if (v === 'outNgoai') { R.h = R.h || 'thue'; R.from = 'kho'; } }
+  if (v === 'devIn' && !R.qlAlts) { const M = q5Machine(R.name); R.qlAlts = M.ql.map(r => r.x); R.qlMa = M.ql[0] && M.ql[0].s >= 0.6 ? M.ql[0].x.ma : ''; R.devName = R.name; }
+  if (v === 'devOut' && !R.devAlts) { const M = q5Machine(R.name); R.devAlts = M.act.map(r => r.x); R.devId = M.act[0] ? M.act[0].x.id : 0; }
+  q5Recheck(); q5Render();
+}
+
+// ---------- lưu ----------
+function q5Ids() { const used = new Set(); return () => { let id = newId(); while (used.has(id)) id++; used.add(id); return id; }; }
+function q5Ops() {
+  const nid = q5Ids(), ops = [], after = [], now = nowStr(), today = isoDay(new Date());
+  Q5.rows.forEach(R => {
+    if (!R.on) return;
+    const lineTag = '⚡ Lệnh: “' + R.seg + '”';
+    const note = x => [x, R.price ? 'Đơn giá ' + R.price : '', R.kg ? 'KL ' + R.kg + ' kg' : '', lineTag].filter(Boolean).join(' · ').slice(0, 400);
+    if (R.kind === 'devIn') {
+      const ql = R.qlMa ? qlByMa(R.qlMa) : null;
+      if (R.leftDev) { ops.push({ k:'devIn', line:R.line, d:{ id:R.leftDev.id, reopen:1, inDate:today, inMeter:'', note:'Máy vào lại công trường · ' + lineTag } }); return; }
+      const f = ql ? DEV_FILE.find(a => a[3] === ql.ma) : null, cat = (ql && ql.cat) || (/^cau\b/.test(q5n(R.name)) ? 'mayCau' : 'khac');
+      const dev = { id:nid(), name: ql ? ql.name : q5Cap(R.devName || R.name), cat, type: R.devType === 'hire' ? 'hire' : (ql && qlHire(ql) ? 'hire' : 'own'), fuelRate: devCatOf(cat).fuel || 20,
+        plate: (ql && ql.plate) || '', note: (ql ? 'Mã TS: ' + ql.ma + '\n' : '') + lineTag, project:curProj, meterUnit: (f && f[4]) || 'h', inDate:today, inMeter:'', outDate:'', outMeter:'',
+        addedBy:me?.name || '', addedAt:now, maQL: ql ? ql.ma : '', ngoaiDM: ql ? '' : 1, donVi: R.devType === 'hire' ? String(R.donVi || '').trim() : (ql ? (ql.ncc || ql.donVi || '') : '') };
+      if (dev.type === 'hire' && !dev.donVi) dev.donVi = 'Thuê ngoài';
+      ops.push({ k:'dev', line:R.line, d:dev }); return;
+    }
+    if (R.kind === 'devOut') {
+      ops.push({ k:'devOut', line:R.line, d:{ id:R.devId, outDate:today, outMeter:'', note:lineTag } });
+      const d = db.devices.find(x => x.id === R.devId), g = d && gdRowOfDev(d);
+      if (g && R.h) after.push(() => push('gdOut', { project:curProj, gdId:g.id, id:'h' + nid(), q:Math.max(1, gdLeft(g)), h:R.h, dest:R.dest, date:today }));
+      return;
+    }
+    const p = q5Pick(R); let it = q5ItemOf(R);
+    if (!it) {                                                                // vật tư mới (danh mục hoặc tự khai)
+      const name = p ? p.name : q5Cap(R.newName || R.name);
+      it = { id:nid(), name, cat: p ? p.cat : R.newCat, unit: p ? p.unit : R.newUnit, stock:0, minStock:0, project:curProj, maQL:'', ngoaiDM:'' };
+      ops.push({ k:'item', line:R.line, d:it });
+    }
+    const q = q5Qty(R), base = { itemId:it.id, itemName:it.name, qty:q, unit:it.unit, project:curProj, datetime:now, createdByName:me?.name || '' };
+    if (R.kind === 'in' && R.mode === 'ct') {
+      const n = nid(), x = nid();
+      ops.push({ k:'thang', line:R.line, d:{ nhap:{ ...base, id:n, type:'nhap', supplierOrReceiver:R.ncc || '', note:note(''), thangCT:x }, xuat:{ ...base, id:x, type:'xuat', supplierOrReceiver:'', note:'', thangCT:n, ct: q5Track(p || {}) ? 'ra' : '' } } });
+    } else if (R.kind === 'in') ops.push({ k:'txn', line:R.line, d:{ ...base, id:nid(), type:'nhap', supplierOrReceiver:R.ncc || '', note:note('') } });
+    else if (R.kind === 'veKho') ops.push({ k:'txn', line:R.line, d:{ ...base, id:nid(), type:'nhap', ct:'ve', supplierOrReceiver:'Công trường', note:note('Từ công trường về kho') } });
+    else if (R.kind === 'out') {
+      ops.push({ k:'txn', line:R.line, d:{ ...base, id:nid(), type:'xuat', ct: R.mode === 'ra' ? 'ra' : '', supplierOrReceiver: R.thietBi ? '' : (R.recv || ''), thietBi: R.thietBi || '', note:note('') } });
+    } else if (R.kind === 'outNgoai') {
+      const dest = R.h === 'da' ? q5Proj(R.dest) : R.dest, g = gdRowOfItem(it), lbl = (g ? 'Giải động → ' : 'Ra khỏi công trình → ') + gdDestLbl(R.h, dest);
+      const id = nid();
+      ops.push({ k:'txn', line:R.line, d:{ ...base, id, type:'xuat', ct: R.from === 'ct' ? 'ctra' : 'ngoai', supplierOrReceiver:gdDestLbl(R.h, dest), note:note(lbl) } });
+      if (g) after.push(() => push('gdOut', { project:curProj, gdId:g.id, id:'h' + id, q, h:R.h, dest, date:today, txn:id }));
+    } else if (R.kind === 'loanCho' || R.kind === 'loanDi') {
+      const pj = q5Proj(R.party), party = pj ? 'Dự án ' + pj : String(R.party).trim();
+      ops.push({ k:'loan', line:R.line, d:{ id:nid(), kind: R.kind === 'loanCho' ? 'cho' : 'di', itemType:'vt', itemId:it.id, qty:q, txnId:nid(), party, ptype: pj ? 'da' : 'dv',
+        linkP: pj || '', phone:'', dueDate: R.kind === 'loanCho' ? (R.due || '') : '', note:note(''), project:curProj, datetime:now } });
+    } else if (R.kind === 'retCho' || R.kind === 'retDi') ops.push({ k:'ret', line:R.line, d:{ loanId:R.loanId, id:nid(), qty:q, note:note(''), datetime:now } });
+  });
+  return { ops, after };
+}
+const Q5_HIST = 'fecon_qk547_hist';
+function q5Hist() { try { return JSON.parse(localStorage.getItem(Q5_HIST) || '[]'); } catch (e) { return []; } }
+async function q5Save() {
+  if (Q5.busy) return;
+  q5Recheck();
+  if (Q5.rows.some(r => r.on && r.errs.length)) { q5Render(); toast('⚠️ Còn dòng đỏ'); return; }
+  if (!navigator.onLine) { toast('📴 Cần có mạng để lưu cả lệnh một lần — lệnh vẫn giữ trong ô'); return; }
+  // (S10) nhập trùng hàng dự án khác đang cho mượn, chờ xác nhận → bắt buộc chọn 1 trong 2
+  for (const R of Q5.rows.filter(r => r.on && r.kind === 'in')) {
+    const m = q5LoanMatch(q5Pick(R) ? q5Pick(R).name : R.name);
+    if (m < 0) continue;
+    const a = await q5AskLoan(m); if (!a) return;
+    if (a === 'ok') { R.on = false; await loanInAct(m, 1); q5Recheck(); q5Render(); if (!Q5.rows.some(r => r.on)) { closeDp('dp-quick'); q5Clear(); return; } }
+    else { const r = await api('loanLinkReject', { project:curProj, src:a.x.src, k:a.x.k, hid:a.x.hid || '', note:'Nhập thường, không phải hàng mượn: ' + a.why }); if (!r || !r.success) { toast('⚠️ ' + ((r && r.error) || 'Không đóng được thẻ chờ')); return; } }
+  }
+  const key = normVN(Q5.cmd), last = q5Hist().find(h => h.k === key && Date.now() - h.at < 600000);
+  if (last) { const hm = new Date(last.at).toTimeString().slice(0, 5); if (!(await askDup(`Lệnh này vừa lưu lúc ${hm}. Lưu thêm một lần nữa?`, 'Đúng, lưu thêm'))) return; }
+  const { ops, after } = q5Ops();
+  if (!ops.length) return;
+  Q5.busy = true; Q5.err = ''; q5Render(); showLoader('Đang lưu ' + ops.length + ' phiếu...');
+  const r = await api('qkBatch', { project:curProj, cmd:Q5.cmd.slice(0, 300), ck:'q' + newId(), ops }, 60000);
+  hideLoader(); Q5.busy = false;
+  if (!r || !r.success) {
+    let e = (r && r.error) || 'Không lưu được';
+    if (/không hợp lệ: qkBatch/.test(e)) e = 'Máy chủ chưa cập nhật bản 5.47.0 — nhờ Admin dán Apps Script mới';
+    Q5.err = e; q5Render(); toast('⚠️ ' + e);
+    if (r && r.partial) { await syncAll(true); refreshCurrentView(false); }
+    return;
+  }
+  try { localStorage.setItem(Q5_HIST, JSON.stringify([{ k:key, at:Date.now() }].concat(q5Hist()).slice(0, 10))); } catch (e) {}
+  after.forEach(f => { try { f(); } catch (e) {} });
+  const n = r.saved || ops.length;
+  closeDp('dp-quick'); q5Clear();
+  toast(`✅ Đã lưu ${n} phiếu`);
+  await syncAll(true); refreshCurrentView(false);
+}
+function q5Clear() { const el = document.getElementById('q5-text'); if (el) el.value = ''; q5Draft(''); Q5 = { rows:[], cmd:'', err:'', busy:false }; }
+
+// ---------- (S10) hàng mượn đang chờ xác nhận ----------
+function q5LoanMatch(name) {                                                  // chỉ số thẻ trong db.loanIn, -1 nếu không có
+  if (!hp('k_loan')) return -1;
+  const IN = db.loanIn || [], toks = qTokens(q5Dia(name || ''));
+  let best = -1, bs = 0;
+  IN.forEach((x, i) => {
+    if (!((x.k === 'new' && x.kind === 'cho') || (x.k === 'tra' && x.kind !== 'cho'))) return;
+    const s = normVN(x.itemName) === normVN(name) ? 1 : qkScore(toks, x.itemName);
+    if (s >= 0.6 && s > bs) { bs = s; best = i; }
+  });
+  return best;
+}
+function q5AskLoan(i) {
+  const x = (db.loanIn || [])[i];
+  return new Promise(res => {
+    document.getElementById('q5-sheet')?.remove();
+    document.body.insertAdjacentHTML('beforeend', `<div class="kl-sheet-w" id="q5-sheet"><div class="kl-dim"></div><div class="kl-sheet" role="dialog" aria-labelledby="q5s-t">
+      <div class="kl-h" id="q5s-t">Có phiếu mượn đang chờ bạn xác nhận</div>
+      <div class="note-lk"><b>${escHtml(x.from)} ${x.k === 'tra' ? 'trả lại' : 'cho bạn mượn'} ${fmtNum(x.qty)} ${escHtml(x.unit)} ${escHtml(x.itemName)}</b><br>Gửi ${escHtml(x.at || '')} · chưa xác nhận</div>
+      <div class="kl-s">Hàng bạn đang nhập có phải là hàng này không? Chọn một trong hai để lưu tiếp.</div>
+      <button type="button" class="btn-full kl-pri" id="q5s-ok">Xác nhận phiếu mượn<br><small style="font-weight:500">Ghi nhập kho theo phiếu mượn · ${escHtml(x.from)} được báo đã nhận</small></button>
+      <div class="q5-alt"><button type="button" class="btn-full" id="q5s-no" style="background:#fff;color:var(--text);border:1.5px solid var(--border)">Nhập thường và đóng thẻ chờ<br><small style="font-weight:500">Không tính là hàng mượn · ${escHtml(x.from)} được báo</small></button>
+      <label class="q5-f">Lý do (bắt buộc khi chọn cách này)<input id="q5s-why" placeholder="VD: hàng mua mới, không phải hàng mượn"></label></div>
+      <button type="button" class="q5-cancel" id="q5s-back">Quay lại sửa lệnh (chưa lưu gì)</button>
+    </div></div>`);
+    const done = v => { document.getElementById('q5-sheet')?.remove(); res(v); };
+    document.getElementById('q5s-ok').onclick = () => done('ok');
+    document.getElementById('q5s-back').onclick = () => done(null);
+    document.getElementById('q5s-no').onclick = () => { const w = document.getElementById('q5s-why').value.trim(); if (w.length < 3) { toast('⚠️ Ghi lý do'); document.getElementById('q5s-why').focus(); return; } done({ x, why:w }); };
+  });
+}
+// Phiếu nhập thường (ô Nhập kho) cũng hỏi như trên
+{ const _q5DoNhap = doNhap; doNhap = async function () {
+  try {
+    if (!fnDev && (typeof fnLMode === 'undefined' || fnLMode === 'kho')) {
+      const name = (document.getElementById('fn-item-txt')?.value || '').trim(), m = name ? q5LoanMatch(name) : -1;
+      if (m >= 0) {
+        const a = await q5AskLoan(m); if (!a) return;
+        if (a === 'ok') { await loanInAct(m, 1); goTab('home'); return; }
+        if (!navigator.onLine) { toast('📴 Cần có mạng'); return; }
+        const r = await api('loanLinkReject', { project:curProj, src:a.x.src, k:a.x.k, hid:a.x.hid || '', note:'Nhập thường, không phải hàng mượn: ' + a.why });
+        if (!r || !r.success) { toast('⚠️ ' + ((r && r.error) || 'Không đóng được thẻ chờ')); return; }
+      }
+    }
+  } catch (e) {}
+  return _q5DoNhap.apply(this, arguments);
+}; }
+
+(function () {
+  const css = `.q5-box{background:#fff;border-radius:14px;padding:12px;margin:12px 14px 4px;border:2px solid var(--orange);box-shadow:0 1px 3px rgba(26,35,50,.08)}
+.q5-h{display:flex;align-items:center;gap:6px;font-weight:800;font-size:15.5px;margin-bottom:8px}.q5-ic{color:var(--orange)}
+#q5-text{width:100%;box-sizing:border-box;border:1.5px solid var(--border);border-radius:10px;padding:9px 11px;font-size:15px;line-height:1.45;font-family:inherit;background:#FAFBFC;resize:vertical;min-height:70px}
+.q5-hint{font-size:12px;color:var(--text2);margin:6px 2px 8px}.q5-bar{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+.q5-btn{min-height:44px;border-radius:10px;border:1.5px solid var(--primary);background:#fff;color:var(--primary);font-weight:700;font-size:14px}.q5-btn.on{background:#FDECEA;border-color:var(--red);color:var(--red)}
+.q5-go{background:var(--orange);border-color:var(--orange);color:#fff}
+.q5-pv{padding:12px 14px 30px}.q5-chips{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:8px}.q5-chips span{font-size:12.5px;font-weight:700;padding:5px 10px;border-radius:999px}
+.q5-leg{display:flex;gap:14px;font-size:12px;color:var(--text2);margin-bottom:10px}.q5-leg i{display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:5px;vertical-align:-1px}
+.q5-card{background:#fff;border-radius:12px;padding:11px 12px;margin-bottom:10px;box-shadow:0 1px 3px rgba(26,35,50,.08);border:2px solid transparent}.q5-card.bad{border-color:#D93025}.q5-card.off{opacity:.5}
+.q5-hd{display:flex;align-items:center;gap:8px;margin-bottom:6px}.q5-hd input{width:20px;height:20px}
+.q5-kind{font-size:12px;font-weight:800;border-radius:6px;padding:4px 6px;border:none;max-width:80%}.q5-in{background:#E6F4EC;color:#17703D}.q5-out{background:#FDEEE6;color:#A8410F}.q5-loan{background:#EDE7F6;color:#4B2E83}.q5-dev{background:#E3ECF7;color:#003F7D}
+.q5-top{display:flex;justify-content:space-between;align-items:center;gap:8px}.q5-name{font-size:15.5px;font-weight:800;display:block}.q5-q{white-space:nowrap;font-weight:800}.q5-q input{width:84px;font-size:15px;font-weight:800;text-align:right;border:1px solid var(--border);border-radius:8px;padding:5px 6px}
+.q5-sub{font-size:12px;color:var(--text2);margin:3px 0}.q5-chiprow{display:flex;flex-wrap:wrap;gap:6px;margin:6px 0}.q5-chiprow button{font-size:12.5px;padding:7px 10px;border-radius:8px;border:1px solid #C9D2DC;background:#fff;color:var(--text)}
+.q5-chiprow button.on{border:2px solid var(--primary);background:#E3ECF7;color:#003F7D;font-weight:700}
+.q5-f{display:flex;flex-direction:column;gap:3px;font-size:12.5px;color:var(--text2);margin:6px 0}.q5-f input,.q5-f select{border:1px solid var(--border);border-radius:8px;padding:8px 9px;font-size:14px;background:#fff}
+.q5-f.warn{color:#7A5200;font-weight:600}.q5-f.warn input,.q5-f.warn select{border:1.5px solid #E8A300;background:#FFF7E0}
+.q5-g2{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}.q5-e{background:#FDECEA;color:#A1281D;border-radius:8px;padding:7px 9px;font-size:13px;font-weight:700;margin-top:6px}
+.q5-w{background:#FFF7E0;color:#7A5200;border-radius:8px;padding:6px 9px;font-size:12.5px;margin-top:6px}.q5-mini{min-height:38px;border-radius:8px;border:1px solid #A1281D;background:#fff;color:#A1281D;font-weight:700;font-size:13px;margin-top:6px}
+.q5-src{font-size:11.5px;color:var(--text3, #8A93A0);margin-top:6px}.q5-foot{position:sticky;bottom:0;background:#fff;border-radius:12px;padding:10px 12px;box-shadow:0 -2px 8px rgba(26,35,50,.08)}
+.q5-foot .btn-full{margin:0}.q5-foot .btn-full[disabled]{background:#C9D2DC;color:#4A5565}.q5-red{color:#A1281D;font-weight:700;font-size:13px;margin-bottom:6px}.q5-note{font-size:12px;color:var(--text2);margin-top:6px}
+.q5-errbox{background:#FDECEA;color:#A1281D;border-radius:10px;padding:10px 12px;font-weight:700;font-size:13.5px;margin-bottom:10px}
+.q5-alt{border:1px solid var(--border);border-radius:12px;padding:8px;margin-top:10px}.q5-alt .btn-full{margin:0}.q5-cancel{display:block;width:100%;margin-top:10px;background:none;border:none;color:var(--text2);font-size:13px;text-decoration:underline;min-height:40px}`;
+  const st = document.createElement('style'); st.textContent = css; document.head.appendChild(st);
+})();
 </script>
 <script>// ===== Bộ biểu tượng Phosphor Duotone (MIT) thay emoji — v5.31.9 =====
 (function () {

@@ -1,4 +1,5 @@
-// FECON Kho + Thi công - Service Worker v5.46.1
+// FECON Kho + Thi công - Service Worker v5.47.0
+// 5.47.0: Kho — ô Nhập / Xuất nhanh (một lệnh gõ / nói → tự tách phiếu, xem trước, lưu một lần), hỏi khi nhập trùng hàng mượn đang chờ
 // 5.46.1: Kho — đổi / gỡ mã P.QLTB cho máy + vật tư, đổi tên máy giữ lịch sử dầu
 // 5.46.0: Kho — giờ máy không bắt buộc (bổ sung sau), giờ cấp dầu thực tế, ngày máy bắt đầu hoạt động, định mức dầu thực tế
 // 5.45.1: Kho — sửa số phiếu mượn hiện thành 1 dòng riêng trong lịch sử
@@ -35,7 +36,7 @@
 //  - Mở app: lấy file từ bộ nhớ của bản đang dùng; thiếu file nào mới lấy từ mạng.
 //  - Có sw.js mới trên GitHub: tải sẵn bản mới vào bộ nhớ riêng nhưng KHÔNG đổi bản đang dùng.
 //  - Địa chỉ có ?fresh=... luôn lấy thẳng từ mạng (app dùng để kiểm tra / tải bản mới).
-const VERSION = '5.46.1';
+const VERSION = '5.47.0';
 const APP = 'fecon-app-', META = 'fecon-meta';
 const CORE = ['./', './index.html', './thicong.html', './manifest.json', './icon-192.png', './icon-512.png', './icon-maskable-192.png', './icon-maskable-512.png', './bg-login.jpg'];
 
