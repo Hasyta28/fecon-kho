@@ -1776,7 +1776,7 @@ button .pi,.btn .pi,a .pi,.chip .pi,.tag .pi,.badge .pi,.yn .pi,.bnav .pi,.bnav-
 // ============================================================
 // CONFIG
 // ============================================================
-const APP_VERSION = '5.49.0';
+const APP_VERSION = '5.49.1';
 const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbw6Rmi80I7RI3ij2U7RdRF5pYuQTnPrwEmGmUZS5xpxzLwwVynfoFUujZe1lm6HS1ymxw/exec';
 // ============================================================
 
@@ -11776,6 +11776,79 @@ async function p9DelGo(i) {
 .p9-bb{display:grid;grid-template-columns:1fr 1.4fr;gap:10px;margin-top:14px}.p9-bb button{min-height:50px;border-radius:12px;font-weight:800;font-size:15.5px}
 .p9-c{border:1.5px solid var(--border);background:#fff;color:var(--text)}.p9-ok{border:none;background:var(--primary);color:#fff}.p9-ok.red{background:#C92A2A}
 .p9-closed{background:#EDF1F4;color:#3D4A5C;border-left:4px solid #5C7080;border-radius:10px;margin:10px 14px 0;padding:10px 12px;font-size:13.5px;line-height:1.45}`;
+  const st = document.createElement('style'); st.textContent = css; document.head.appendChild(st);
+})();
+</script>
+<script>// ===== v5.49.1 KHO — ĐƠN VỊ TÍNH DO ADMIN QUẢN LÝ =====
+// UNITS (danh sách gốc trong mã) được sửa tại chỗ theo danh sách máy chủ (db.units). Chưa lưu lần nào → danh sách gốc + 10 đơn vị bổ sung.
+// Ô Nhập / Xuất nhanh KHÔNG đọc thêm đơn vị mới (vd "5 ống siêu âm" vẫn là tên "ống siêu âm"), tránh hiểu nhầm tên vật tư thành đơn vị.
+const U9_ADD = ['Ống', 'Bao', 'Bình', 'Chiếc', 'Cặp', 'Bó', 'Lô', 'Xe', 'Chuyến', 'Ca'];
+const U9_BASE = UNITS.slice().concat(U9_ADD.filter(x => !UNITS.includes(x)));
+let u9Key = '';
+function u9Apply() {
+  const L = (db && Array.isArray(db.units) && db.units.length) ? db.units.map(x => String(x).replace(/＆/g, '&')) : U9_BASE;
+  const k = L.join('|'); if (k === u9Key) return; u9Key = k;
+  UNITS.length = 0; L.forEach(x => UNITS.push(x));
+  try { if (typeof fillStaticSelects === 'function' && document.getElementById('ev-unit')) fillStaticSelects(); } catch (e) {}
+}
+{ const _u9AS = applyServer; applyServer = function (r) {
+  const ck = typeof q8CatsKey !== 'undefined' ? q8CatsKey : '';
+  const out = _u9AS.apply(this, arguments);
+  try { if (typeof q8CatsKey !== 'undefined' && q8CatsKey !== ck && typeof fillStaticSelects === 'function') fillStaticSelects(); } catch (e) {}   // 5.48: đổi tên nhóm → ô chọn nhóm ở Sửa vật tư cũng đổi
+  try { if (r && 'units' in r) { db.units = Array.isArray(r.units) ? r.units : null; u9Apply(); } } catch (e) {}
+  return out;
+}; }
+u9Apply();
+
+// ---------- màn Đơn vị (mở từ Danh mục vật tư) ----------
+let U9 = null;
+function u9Open() {
+  if (role !== 'ADM') return;
+  U9 = { list: UNITS.slice(), dirty: !Array.isArray(db.units) };
+  const miss = [...new Set((db.items || []).map(i => String(i.unit || '').trim()).filter(u => u && !U9.list.some(x => normVN(x) === normVN(u))))];
+  if (miss.length) { U9.list = U9.list.concat(miss); U9.dirty = true; }      // đơn vị vật tư đang dùng mà danh sách chưa có → thêm vào
+  openDp('dp-units'); u9Render();
+}
+function u9Used() { const m = {}; (db.items || []).forEach(i => { const k = normVN(i.unit || ''); if (k) m[k] = (m[k] || 0) + 1; }); return m; }
+function u9Render() {
+  const b = $9('dp-units-body'); if (!b || !U9) return;
+  const used = u9Used();
+  b.innerHTML = `<div class="u9">
+    <div class="info-box" style="margin-bottom:10px">Dùng chung mọi dự án. Thủ kho chỉ chọn trong danh sách này. Đơn vị đang có vật tư dùng không bỏ được. Bấm ↑ để đưa lên trên (hay dùng thì để đầu).</div>
+    <div class="q8-add"><input id="u9-new" placeholder="＋ Đơn vị mới, vd: Ống" maxlength="20" onkeydown="if(event.key==='Enter')u9Add()"><button type="button" class="btn-full btn-orange" onclick="u9Add()">Thêm</button></div>
+    ${U9.list.map((u, i) => { const n = used[normVN(u)] || 0; return `<div class="u9-r"><b>${escHtml(u)}</b><span class="u9-n">${n ? n + ' vật tư' : ''}</span>
+      <button type="button" class="u9-b" aria-label="Đưa lên" ${i ? '' : 'disabled'} onclick="u9Up(${i})">↑</button>
+      ${n ? '<span class="u9-b" style="visibility:hidden">✕</span>' : `<button type="button" class="u9-b" aria-label="Bỏ" onclick="U9.list.splice(${i},1);U9.dirty=true;u9Render()">✕</button>`}</div>`; }).join('')}
+    <div class="q8-foot" style="grid-template-columns:1fr"><button type="button" class="btn-full btn-orange" onclick="u9Save()" ${U9.dirty ? '' : 'disabled'}>💾 Lưu đơn vị (${U9.list.length})</button></div>
+  </div>`;
+}
+function u9Up(i) { if (i < 1) return; const x = U9.list.splice(i, 1)[0]; U9.list.splice(i - 1, 0, x); U9.dirty = true; u9Render(); }
+function u9Add() {
+  const el = $9('u9-new'); let n = (el.value || '').replace(/\s+/g, ' ').trim();
+  if (!n) { el.focus(); return; }
+  n = n.charAt(0).toUpperCase() + n.slice(1);
+  if (U9.list.some(x => normVN(x) === normVN(n))) { toast('⚠️ Đã có đơn vị "' + n + '"'); return; }
+  U9.list.push(n); U9.dirty = true; u9Render(); $9('u9-new')?.focus();
+}
+async function u9Save() {
+  if (!U9) return;
+  if (!navigator.onLine) { toast('📴 Cần có mạng'); return; }
+  showLoader('Đang lưu đơn vị…'); const r = await api('setUnits', { list: U9.list }, 30000); hideLoader();
+  if (!r || !r.success) { toast('⚠️ ' + ((r && r.error) || 'Không lưu được') + (/không hợp lệ/.test((r && r.error) || '') ? ' — máy chủ chưa lên 5.49.1' : '')); return; }
+  db.units = r.units; u9Key = ''; u9Apply(); saveLocal(); U9 = { list: UNITS.slice(), dirty:false }; u9Render();
+  toast('✅ Đã lưu ' + UNITS.length + ' đơn vị — mọi máy dùng chung');
+}
+{ const _u9DR = q8DmRender; q8DmRender = function () {
+  const r = _u9DR.apply(this, arguments);
+  try { const ib = document.querySelector('#dp-dm-body .info-box'); if (ib && !document.getElementById('u9-btn')) ib.insertAdjacentHTML('afterend', `<button type="button" id="u9-btn" class="u9-open" onclick="u9Open()">📏 Đơn vị tính <small>${UNITS.length} đơn vị</small><b>›</b></button>`); } catch (e) {}
+  return r;
+}; }
+(function () {
+  document.body.insertAdjacentHTML('beforeend', `<div class="detail-page" id="dp-units"><div class="detail-header"><button class="back-btn" onclick="closeDp('dp-units');if(typeof Q8D!=='undefined'&&Q8D)q8DmRender()">‹</button><div class="detail-title">📏 Đơn vị tính</div></div><div class="detail-body" id="dp-units-body"></div></div>`);
+  const css = `.u9{padding:2px 0 30px}.u9-r{display:flex;align-items:center;gap:8px;padding:8px 0;border-bottom:1px solid #EEF1F5}.u9-r b{flex:1;font-size:15px}
+.u9-n{font-size:12px;color:var(--text2)}.u9-b{min-width:38px;min-height:36px;border:1px solid var(--border);border-radius:8px;background:#fff;font-weight:800;color:var(--text2)}.u9-b[disabled]{opacity:.3}
+.u9-open{width:100%;display:flex;align-items:center;gap:8px;min-height:46px;padding:0 14px;margin:0 0 10px;border:1.5px solid var(--border);border-radius:12px;background:#fff;font:inherit;font-weight:700;font-size:15px;color:var(--text);text-align:left}
+.u9-open small{flex:1;font-weight:500;color:var(--text2)}.u9-open b{color:var(--text3,#8A93A0)}`;
   const st = document.createElement('style'); st.textContent = css; document.head.appendChild(st);
 })();
 </script>
