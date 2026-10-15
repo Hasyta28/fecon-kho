@@ -1776,7 +1776,7 @@ button .pi,.btn .pi,a .pi,.chip .pi,.tag .pi,.badge .pi,.yn .pi,.bnav .pi,.bnav-
 // ============================================================
 // CONFIG
 // ============================================================
-const APP_VERSION = '5.49.2';
+const APP_VERSION = '5.49.3';
 const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbw6Rmi80I7RI3ij2U7RdRF5pYuQTnPrwEmGmUZS5xpxzLwwVynfoFUujZe1lm6HS1ymxw/exec';
 // ============================================================
 
@@ -11676,7 +11676,6 @@ function p9Sheet(html) {
 const p9Close0 = () => $9('p9-sheet')?.remove();
 async function p9Rename(i) {
   const p = P9.list[i]; if (!p) return;
-  if (P9.kho && p.name === P9.kho) { toast('⚠️ "' + P9.kho + '" là kho bãi công ty (Giải động dùng tên này) — không đổi tên được'); return; }
   p9Sheet(`<div class="kl-h">Đổi tên dự án</div>
     <div class="p9-l">Tên cũ</div><div class="p9-in ro">${escHtml(p.name)}</div>
     <div class="p9-l">Tên mới</div><input class="p9-in" id="p9-new" value="${escHtml(p.name)}" maxlength="100">
