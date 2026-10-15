@@ -1776,7 +1776,7 @@ button .pi,.btn .pi,a .pi,.chip .pi,.tag .pi,.badge .pi,.yn .pi,.bnav .pi,.bnav-
 // ============================================================
 // CONFIG
 // ============================================================
-const APP_VERSION = '5.47.0';
+const APP_VERSION = '5.47.1';
 const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbw6Rmi80I7RI3ij2U7RdRF5pYuQTnPrwEmGmUZS5xpxzLwwVynfoFUujZe1lm6HS1ymxw/exec';
 // ============================================================
 
@@ -10877,24 +10877,41 @@ function q5Recheck() { Q5.rows.forEach(R => { if (R.on) q5Check(R); else { R.err
 
 // ---------- giao diện: ô lệnh trên Tổng quan ----------
 const Q5_LS = 'fecon_qk547_draft';
-function q5BoxHtml() {
+// v5.47.1: ô nằm DƯỚI 2 ô Nhập kho / Xuất kho, thu gọn thành 1 thanh "⚡ Nhập / Xuất nhanh ▾" (viền dưới cam);
+// bấm bất kỳ chỗ nào trên thanh → bảng trượt xuống (ô lệnh + Nói · Dán · Tách phiếu), không có dòng chú thích.
+// Còn lệnh chưa lưu → tự mở sẵn. Lưu xong → xóa ô, tự đóng.
+function q5BoxHtml(open) {
   let draft = ''; try { draft = localStorage.getItem(Q5_LS) || ''; } catch (e) {}
-  return `<div class="q5-box need-tk" id="q5-box">
-    <div class="q5-h"><span class="q5-ic" aria-hidden="true">⚡</span><label for="q5-text">Nhập / Xuất nhanh</label></div>
-    <textarea id="q5-text" rows="3" placeholder="VD: nhập 2 tank bent, 1 tank đất, 32 tấn bentonite&#10;xuất 1000 bộ cóc d20" oninput="q5Draft(this.value)">${escHtml(draft)}</textarea>
-    <div class="q5-hint">Động từ đầu dòng · các món cách nhau dấu phẩy hoặc xuống dòng</div>
-    <div class="q5-bar"><button type="button" class="q5-btn" id="q5-mic" onclick="q5Mic()">🎤 Nói</button><button type="button" class="q5-btn" onclick="q5Paste()">📋 Dán</button><button type="button" class="q5-btn q5-go" onclick="q5Open()">Tách phiếu ›</button></div>
+  const o = open || !!draft.trim();
+  return `<div class="q5-box need-tk${o ? ' q5-on' : ''}" id="q5-box">
+    <button type="button" class="q5-head" id="q5-head" aria-expanded="${o}" aria-controls="q5-panel" onclick="q5Toggle()">
+      <span class="q5-ic" aria-hidden="true">⚡</span><span class="q5-ttl">Nhập / Xuất nhanh</span><span class="q5-chev" aria-hidden="true">▾</span></button>
+    <div class="q5-panel" id="q5-panel"><div class="q5-wrap">
+      <textarea id="q5-text" rows="4" aria-label="Lệnh nhập / xuất" placeholder="nhập 2 tank bent, 32 tấn bentonite&#10;xuất 1000 bộ cóc d20" oninput="q5Draft(this.value)">${escHtml(draft)}</textarea>
+      <div class="q5-bar"><button type="button" class="q5-btn" id="q5-mic" onclick="q5Mic()">🎤 Nói</button><button type="button" class="q5-btn" onclick="q5Paste()">📋 Dán</button><button type="button" class="q5-btn q5-go" onclick="q5Open()">Tách phiếu ›</button></div>
+    </div></div>
   </div>`;
 }
 function q5Draft(v) { try { if (v) localStorage.setItem(Q5_LS, v); else localStorage.removeItem(Q5_LS); } catch (e) {} }
+function q5Toggle(force) {
+  const box = document.getElementById('q5-box'); if (!box) return;
+  const open = force === undefined ? !box.classList.contains('q5-on') : !!force;
+  box.classList.toggle('q5-on', open);
+  document.getElementById('q5-head')?.setAttribute('aria-expanded', open);
+  if (open) {
+    const t = document.getElementById('q5-text');
+    setTimeout(() => { try { t.focus({ preventScroll:true }); } catch (e) { t.focus(); } box.scrollIntoView({ block:'start', behavior:'smooth' }); }, 220);   // chờ bảng trượt xong rồi cuộn, để bàn phím không che
+  } else if (q5Rec) q5Rec.stop();
+}
 function q5Mount(c) {
   if (!can('tk') || !curProj || curProj === 'all') return;
-  c.querySelectorAll('.qk-entry').forEach(e => e.remove());
-  const g = c.querySelector('.act-grid'); if (!g || document.getElementById('q5-box')) return;
-  g.insertAdjacentHTML('beforebegin', q5BoxHtml());
+  const old = c.querySelector('.qk-entry'), g = c.querySelector('.act-grid');
+  if (document.getElementById('q5-box')) { old && old.remove(); return; }
+  if (old) { old.insertAdjacentHTML('beforebegin', q5BoxHtml()); old.remove(); }      // đúng chỗ nút "Tạo phiếu nhanh" cũ
+  else if (g) g.insertAdjacentHTML('afterend', q5BoxHtml());
 }
 { const _q5Home = renderHome; renderHome = function (c) { _q5Home(c); try { q5Mount(c); } catch (e) {} }; }
-openQuick = function () { goTab('home'); setTimeout(() => { const t = document.getElementById('q5-text'); if (t) { t.focus(); t.scrollIntoView({ block:'center' }); } }, 120); };
+openQuick = function () { goTab('home'); setTimeout(() => q5Toggle(true), 150); };
 
 async function q5Paste() {
   try { const t = await navigator.clipboard.readText(); if (t) { const el = document.getElementById('q5-text'); el.value = (el.value ? el.value.replace(/\s*$/, '\n') : '') + t; q5Draft(el.value); } }
@@ -11161,11 +11178,27 @@ function q5AskLoan(i) {
   return _q5DoNhap.apply(this, arguments);
 }; }
 
+// v5.47.1: bài hướng dẫn trong nút "?" (thay cho dòng chú thích đã bỏ)
+if (typeof GUIDES !== 'undefined' && !GUIDES.some(g => g.id === 'nhanh')) GUIDES.splice(GUIDES.findIndex(g => g.id === 'nhap') + 1 || GUIDES.length, 0, { id:'nhanh', g:'Kho', t:'Nhập / Xuất nhanh — một lệnh, nhiều phiếu', p:'', s:[
+  'Tổng quan → bấm thanh "⚡ Nhập / Xuất nhanh" (dưới 2 ô Nhập kho / Xuất kho) → bảng mở ra.',
+  'Gõ hoặc bấm 🎤 Nói. Động từ đứng đầu dòng: nhập · nhận · vào · về | xuất · ra · đưa · cấp | cho <dự án> mượn · mượn của <…> · nhận trả · trả lại · trả <bên cho thuê> · chuyển <dự án> · về Kho Đồng Nai · về kho (từ công trường).',
+  'Nhiều món: cách nhau dấu phẩy hoặc xuống dòng. Dòng không có động từ dùng động từ dòng trên. VD: "nhập 2 tank bent, 32 tấn bentonite" rồi xuống dòng "xuất 1000 bộ cóc d20".',
+  'phi 32, phi(d32), d32 đều hiểu là D32. "32 tấn" tự đổi sang đơn vị kho đang dùng. Thêm "từ <nơi>" cuối dòng để ghi nguồn.',
+  'Bấm "Tách phiếu ›" → bảng xem trước: mỗi dòng ghi loại phiếu (đổi được ở ô trên cùng thẻ). Vàng = còn thiếu, để trống vẫn lưu. Đỏ = phải sửa hoặc bỏ tích dòng đó.',
+  'Thiết bị / vật tư phụ trợ (tank, gàu, ống vách, tole…) khi nhập tự chọn thẳng ra công trường. Kho không đủ hàng → dòng đỏ, không lưu được.',
+  'Bấm "Lưu" → lưu cả lệnh một lần (một dòng sai thì không lưu dòng nào). Mỗi phiếu ghi kèm nguyên văn lệnh. Cần có mạng; mất mạng thì lệnh vẫn giữ trong ô.',
+  'Nhập hàng mà dự án khác đang cho mượn chờ xác nhận → app bắt chọn: Xác nhận phiếu mượn, hoặc Nhập thường và đóng thẻ chờ (ghi lý do).'] });
+if (typeof helpFor === 'function') { const _q5hf = helpFor; helpFor = function (w) { return w === 'dp-quick' ? 'nhanh' : _q5hf(w); }; }
+
 (function () {
-  const css = `.q5-box{background:#fff;border-radius:14px;padding:12px;margin:12px 14px 4px;border:2px solid var(--orange);box-shadow:0 1px 3px rgba(26,35,50,.08)}
-.q5-h{display:flex;align-items:center;gap:6px;font-weight:800;font-size:15.5px;margin-bottom:8px}.q5-ic{color:var(--orange)}
-#q5-text{width:100%;box-sizing:border-box;border:1.5px solid var(--border);border-radius:10px;padding:9px 11px;font-size:15px;line-height:1.45;font-family:inherit;background:#FAFBFC;resize:vertical;min-height:70px}
-.q5-hint{font-size:12px;color:var(--text2);margin:6px 2px 8px}.q5-bar{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+  const css = `.q5-box{background:#fff;border-radius:14px;margin:12px 14px 4px;border:1px solid var(--border);border-bottom:4px solid var(--orange);box-shadow:0 1px 3px rgba(26,35,50,.08);overflow:hidden}
+.q5-head{width:100%;min-height:56px;display:flex;align-items:center;gap:10px;padding:0 16px;background:#fff;border:none;text-align:left;font:inherit;color:var(--text);cursor:pointer}
+.q5-ic{color:var(--orange);font-size:18px}.q5-ttl{flex:1;font-weight:800;font-size:16.5px}.q5-chev{color:var(--orange);font-size:20px;font-weight:900;transition:transform .25s}
+.q5-box.q5-on .q5-chev{transform:rotate(180deg)}
+.q5-panel{display:grid;grid-template-rows:0fr;transition:grid-template-rows .25s ease}.q5-box.q5-on .q5-panel{grid-template-rows:1fr}.q5-wrap{overflow:hidden;padding:0 12px;visibility:hidden;transition:visibility 0s .25s}.q5-box.q5-on .q5-wrap{padding:0 12px 12px;visibility:visible;transition:none}
+#q5-text{width:100%;box-sizing:border-box;border:2px solid var(--primary);border-radius:10px;padding:9px 11px;font-size:16px;line-height:1.45;font-family:inherit;background:#fff;resize:vertical;min-height:96px;margin-bottom:10px}
+#q5-text::placeholder{color:#9AA3AF}
+.q5-bar{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
 .q5-btn{min-height:44px;border-radius:10px;border:1.5px solid var(--primary);background:#fff;color:var(--primary);font-weight:700;font-size:14px}.q5-btn.on{background:#FDECEA;border-color:var(--red);color:var(--red)}
 .q5-go{background:var(--orange);border-color:var(--orange);color:#fff}
 .q5-pv{padding:12px 14px 30px}.q5-chips{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:8px}.q5-chips span{font-size:12.5px;font-weight:700;padding:5px 10px;border-radius:999px}
