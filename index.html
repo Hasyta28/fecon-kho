@@ -1776,7 +1776,7 @@ button .pi,.btn .pi,a .pi,.chip .pi,.tag .pi,.badge .pi,.yn .pi,.bnav .pi,.bnav-
 // ============================================================
 // CONFIG
 // ============================================================
-const APP_VERSION = '5.47.1';
+const APP_VERSION = '5.48.0';
 const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbw6Rmi80I7RI3ij2U7RdRF5pYuQTnPrwEmGmUZS5xpxzLwwVynfoFUujZe1lm6HS1ymxw/exec';
 // ============================================================
 
@@ -2494,13 +2494,14 @@ const goHome = () => goTab(isLeadRole() ? 'lead' : hp('v_home') ? 'home' : 'pyc'
 // Đếm phiếu lập hôm nay
 function todayCount(type) {
   const n = new Date();
-  return filtTxns().filter(t => { if (t.type !== type) return false; const d = parseVN(t.datetime);
+  return filtTxns().filter(t => { if (t.type !== type || (type === 'xuat' && t.thangCT)) return false; const d = parseVN(t.datetime);
     return d && d.getDate() === n.getDate() && d.getMonth() === n.getMonth() && d.getFullYear() === n.getFullYear(); }).length;
 }
 function renderHistTab(c, type) {
   let txns = filtTxns().filter(t => t.type === type);
   const F = type === 'nhap' ? nhapF : xuatF;
   if (F === 'ct') txns = txns.filter(t => t.thangCT);                // v5.30: thẳng ra công trường
+  else if (type === 'xuat' && F === 'all') txns = txns.filter(t => !t.thangCT);     // v5.48
   else if (type === 'xuat' && F !== 'all') txns = txns.filter(t => xuatF === 'pyc' ? isPycRef(t.refId) : !isPycRef(t.refId) && !t.thangCT);
   const dev = curProj !== 'all' && F === 'all' ? devEvents(type === 'nhap' ? 'vao' : 'ra') : [];   // v5.29: máy vào / ra
   const nPh = txns.length; txns = txns.concat(dev, F === 'all' ? filtTxns().filter(t => LOAN_T[t.type] && (LOAN_T[t.type] > 0) === (type === 'nhap')).map(t => ({...t, _loan:1})) : []);
@@ -2610,7 +2611,7 @@ function renderHome(c) {
   const catItems = cats.find(([c]) => c.id === homeCat)?.[1] || [];
   const units = unitGroups(catItems);
   if (!homeUnit || !units.some(([u]) => u === homeUnit)) homeUnit = units[0]?.[0] || null;
-  const recent = byTimeDescL(txns.concat(curProj !== 'all' && typeof devEvents === 'function' ? devEvents('vao').concat(devEvents('ra')) : [])).slice(0, 6);   // v5.44.1: có cả máy vào / ra
+  const recent = byTimeDescL(txns.filter(t => !(t.type === 'xuat' && t.thangCT)).concat(curProj !== 'all' && typeof devEvents === 'function' ? devEvents('vao').concat(devEvents('ra')) : [])).slice(0, 6);   // v5.44.1: có cả máy vào / ra
 
   c.innerHTML = `${reqHomeHtml()}
     <div class="act-grid need-tk">
@@ -2670,7 +2671,7 @@ function renderHome(c) {
           const it = db.items.find(i => i.id === t.itemId);
           const dc = t.type === 'dieuchinh';
           const who = dc ? (t.reason || '') : t.type==='xuat' ? (t.thietBi || t.supplierOrReceiver) : t.supplierOrReceiver;
-          const lbl = (dc ? 'Điều chỉnh' : t.type==='nhap' ? 'Nhập' : 'Xuất') + (t.thangCT ? ' · 🏗 Thẳng CT' : '') + ctTagTxt(t);
+          const lbl = (dc ? 'Điều chỉnh' : t.type==='nhap' ? 'Nhập' : 'Xuất') + (t.thangCT ? ' · 🏗 Thẳng ra công trường' : '') + ctTagTxt(t);
           return `<div class="txn-row" onclick="openTxn(${t.id})" style="cursor:pointer">
             <div class="txn-ico ${dc?'adj':t.type==='nhap'?'in':'out'}">${dc?'⚖️':t.type==='nhap'?'📥':'📤'}</div>
             <div style="flex:1;min-width:0">
@@ -2913,7 +2914,7 @@ function txnRow(t) {
   const fixed = !dc && adjMap()[t.id];
   const sign = dc ? (t.qty > 0 ? '+' : '') : t.type === 'nhap' ? '+' : '-';
   const pr = t.type === 'xuat' && isPycRef(t.refId) ? (db.reqs || []).find(r => r.id === t.refId) : null;
-  const xTag = ctTagHtml(t) ? ctTagHtml(t) + (t.type === 'xuat' && isPycRef(t.refId) ? `<div class="txn-sub"><span class="pyc-tag">📝 Theo ${escHtml(t.refId)}</span></div>` : '') : t.thangCT ? `<div class="txn-sub"><span class="pyc-tag ct">🏗 Thẳng CT</span></div>` : t.type !== 'xuat' ? '' : isPycRef(t.refId)
+  const xTag = ctTagHtml(t) ? ctTagHtml(t) + (t.type === 'xuat' && isPycRef(t.refId) ? `<div class="txn-sub"><span class="pyc-tag">📝 Theo ${escHtml(t.refId)}</span></div>` : '') : t.thangCT ? `<div class="txn-sub"><span class="pyc-tag ct">🏗 Thẳng ra công trường</span></div>` : t.type !== 'xuat' ? '' : isPycRef(t.refId)
     ? `<div class="txn-sub"><span class="pyc-tag">📝 Theo ${escHtml(t.refId)}</span>${pr && pr.duyet === 'chua' ? '<span class="pyc-tag warn">⚠️ CHT/CHP chưa duyệt</span>' : ''}</div>`
     : `<div class="txn-sub"><span class="pyc-tag gray">Xuất thẳng</span></div>`;
   return `<div class="row-item" onclick="openTxn(${t.id})">
@@ -3647,23 +3648,23 @@ function buildDailyReport() {
   const txns = filtTxns().filter(same);
   const group = type => {
     const g = {};
-    txns.filter(t => t.type === type).forEach(t => {
+    txns.filter(t => t.type === type && !(type === 'xuat' && t.thangCT)).forEach(t => {
       const it = db.items.find(i => i.id === t.itemId), k = t.itemId;
       g[k] = g[k] || {name: it?.name || t.itemName, unit: it?.unit || t.unit || '', q: 0, n: 0, who: new Set()};
-      g[k].q += effQty(t); g[k].n++;
+      g[k].q += effQty(t); g[k].n++; if (t.thangCT) g[k].ct = 1;
       const w = type === 'xuat' ? (t.thietBi || t.supplierOrReceiver) : t.supplierOrReceiver; if (w) g[k].who.add(w);
     });
     return Object.values(g).sort((a, b) => b.n - a.n);
   };
   const lines = (arr, sign) => {
-    const out = arr.slice(0, 15).map(x => ` • ${x.name}: ${sign}${fmtNum(Math.round(x.q * 100) / 100)} ${x.unit}${x.who.size ? ' (' + [...x.who].slice(0, 3).join(', ') + (x.who.size > 3 ? '…' : '') + ')' : ''}`);
+    const out = arr.slice(0, 15).map(x => ` • ${x.name}${x.ct ? ' (thẳng CT)' : ''}: ${sign}${fmtNum(Math.round(x.q * 100) / 100)} ${x.unit}${x.who.size ? ' (' + [...x.who].slice(0, 3).join(', ') + (x.who.size > 3 ? '…' : '') + ')' : ''}`);
     if (arr.length > 15) out.push(` • … và ${arr.length - 15} vật tư khác`);
     return out;
   };
   const nh = group('nhap'), xu = group('xuat'), dcs = txns.filter(t => t.type === 'dieuchinh'), low = db.items.filter(isLow);
   const L = [`📊 BÁO CÁO KHO NGÀY ${D}/${M}/${Y}`, `🏗 ${curProj === 'all' ? db.projects.join(', ') : curProj}`, ''];
   L.push(`📥 NHẬP: ${txns.filter(t => t.type === 'nhap').length} phiếu`); L.push(...(nh.length ? lines(nh, '+') : [' • Không có']));
-  L.push(''); L.push(`📤 XUẤT: ${txns.filter(t => t.type === 'xuat').length} phiếu`); L.push(...(xu.length ? lines(xu, '-') : [' • Không có']));
+  L.push(''); L.push(`📤 XUẤT: ${txns.filter(t => t.type === 'xuat' && !t.thangCT).length} phiếu`); L.push(...(xu.length ? lines(xu, '-') : [' • Không có']));
   if (dcs.length) {
     L.push(''); L.push(`⚖️ ĐIỀU CHỈNH: ${dcs.length} phiếu`);
     dcs.slice(0, 10).forEach(t => { const it = db.items.find(i => i.id === t.itemId); L.push(` • ${it?.name || t.itemName}: ${t.qty > 0 ? '+' : ''}${fmtNum(t.qty)} ${it?.unit || t.unit || ''} — ${t.reason || ''}`); });
@@ -11217,6 +11218,379 @@ if (typeof helpFor === 'function') { const _q5hf = helpFor; helpFor = function (
 .q5-foot .btn-full{margin:0}.q5-foot .btn-full[disabled]{background:#C9D2DC;color:#4A5565}.q5-red{color:#A1281D;font-weight:700;font-size:13px;margin-bottom:6px}.q5-note{font-size:12px;color:var(--text2);margin-top:6px}
 .q5-errbox{background:#FDECEA;color:#A1281D;border-radius:10px;padding:10px 12px;font-weight:700;font-size:13.5px;margin-bottom:10px}
 .q5-alt{border:1px solid var(--border);border-radius:12px;padding:8px;margin-top:10px}.q5-alt .btn-full{margin:0}.q5-cancel{display:block;width:100%;margin-top:10px;background:none;border:none;color:var(--text2);font-size:13px;text-decoration:underline;min-height:40px}`;
+  const st = document.createElement('style'); st.textContent = css; document.head.appendChild(st);
+})();
+</script>
+<script>// ===== v5.48.0 KHO — PHIẾU NHẬP GỌN · DANH MỤC VẬT TƯ CHUNG · NHÓM VẬT TƯ =====
+// Danh mục (Admin, dùng chung mọi dự án): [tên, nhóm, đơn vị, 'k' vào kho | 't' thẳng ra công trường].
+//   Tên khớp đúng, hoặc tên vật tư BẮT ĐẦU BẰNG tên trong danh mục ("Thép" → "Thép cây D32 x 11,7m").
+//   Chưa lưu lần nào → app tự dựng mặc định (9 tên xuất thẳng cũ + danh mục phụ trợ + 192 tên thông dụng + tên trong kho).
+//   Chỉ dùng cho vật tư MỚI (nhóm, đơn vị) và để tự chọn Vào kho / Thẳng — không đổi nhóm của vật tư đã có.
+// Nhóm vật tư: Admin đổi tên, thêm nhóm, chọn biểu tượng (bộ biểu tượng nét mảnh của app). Nhóm có vật tư không xoá được.
+const $8 = id => document.getElementById(id);
+const Q8_LOCK = ['tbPhuTro', 'vtPhuTro', 'khac'];
+const Q8_SVG = ['dau', 'nhot', 'mo', 'thep', 'cocNoi', 'ongSieuAm', 'capNang', 'gau', 'han', 'dien', 'ongNuoc', 'bhld', 'vatLieu', 'dungCu', 'khacVT', 'mayBom'].filter(k => typeof ICONS !== 'undefined' && ICONS[k]);
+const Q8_PAL = [['#E8590C', '#FFF1E8'], ['#1864AB', '#E7F0FB'], ['#0B7285', '#E3F5F7'], ['#5F3DC4', '#F0ECFC'], ['#2B8A3E', '#E9F7EC'], ['#C92A2A', '#FDECEC'], ['#8B6B3E', '#F6EFE4'], ['#5C7080', '#EDF1F4']];
+const Q8_THANG0 = ['Thép', 'Bentonite', 'Xi măng', 'Cát', 'Đá 40x40', 'Cừ Larsen', 'Cừ tràm', 'Cừ tường vây', 'Ống siêu âm'];
+const q8N = s => normVN(String(s || '').replace(/[×*]/g, 'x'));
+const q8Track = c => /^(tbPhuTro|vtPhuTro)$/.test(String(c || ''));
+const q8Ico = (c, sz) => c ? `<span class="q8-ic" style="background:${c.bg || '#EDF1F4'};color:${c.color || '#5C7080'}${sz ? `;width:${sz}px;height:${sz}px` : ''}">${(typeof ICONS !== 'undefined' && ICONS[c.svg]) || ''}</span>` : '';
+
+// ---------- nhóm vật tư ----------
+let q8CatsKey = '';
+function q8ApplyCats(list) {
+  if (!Array.isArray(list) || !list.length) return;
+  const key = JSON.stringify(list); if (key === q8CatsKey) return; q8CatsKey = key;
+  const byId = {}; CATEGORIES.forEach(c => byId[c.id] = c);
+  const next = list.map((x, i) => {
+    const c = byId[x.id] || { id:x.id, icon:'', svg:'khacVT', color:Q8_PAL[i % Q8_PAL.length][0], bg:Q8_PAL[i % Q8_PAL.length][1] };
+    c.name = String(x.name).replace(/＆/g, '&'); if (x.svg && ICONS[x.svg]) c.svg = x.svg; if (x.color) c.color = x.color; if (x.bg) c.bg = x.bg;
+    return c;
+  });
+  CATEGORIES.length = 0;
+  next.filter(c => c.id !== 'khac').concat(next.filter(c => c.id === 'khac')).forEach(c => CATEGORIES.push(c));
+  db.categories = CATEGORIES;
+}
+const q8CatsSync = () => { try { if (db && Array.isArray(db.cats)) q8ApplyCats(db.cats); } catch (e) {} };
+
+// ---------- danh mục vật tư ----------
+let q8Def = null, q8DefK = '', q8Idx = null, q8IdxSrc = null;
+function q8DefaultDM() {
+  const thang = (Array.isArray(db.thangDS) ? db.thangDS : Q8_THANG0).map(x => q8N(x)).filter(Boolean);
+  const inThang = n => { const k = q8N(n); return thang.some(t => k === t || k.startsWith(t + ' ')); };
+  const map = new Map(), add = (n, c, u, m) => {
+    const k = q8N(n); if (!k) return;
+    const o = map.get(k);
+    if (o) { if (!o[1] && c) o[1] = c; if (!o[2] && u) o[2] = u; return; }
+    map.set(k, [String(n).trim(), c || '', u || '', m || (inThang(n) || q8Track(c) ? 't' : 'k')]);
+  };
+  (Array.isArray(db.thangDS) ? db.thangDS : Q8_THANG0).forEach(n => add(n, '', '', 't'));
+  (typeof PT_CAT !== 'undefined' ? PT_CAT : []).forEach(p => add(p.name, GD_CAT[p.grp] || 'tbPhuTro', p.unit));
+  (typeof VT_CAT !== 'undefined' ? VT_CAT : []).forEach(v => add(v.name, v.grp, v.unit));
+  (db.items || []).forEach(i => add(i.name, i.cat, i.unit));
+  return [...map.values()];
+}
+function q8DM() {
+  if (Array.isArray(db.dmVT)) return db.dmVT;
+  const k = (db.items || []).length + '|' + (db.thangDS || []).length;
+  if (!q8Def || q8DefK !== k) { q8Def = q8DefaultDM(); q8DefK = k; }
+  return q8Def;
+}
+function q8Find(name) {                                        // khớp đúng tên, không thì tên dài nhất mà tên vật tư bắt đầu bằng
+  const L = q8DM(), k = q8N(name); if (!k) return null;
+  if (q8IdxSrc !== L) { q8Idx = L.map(e => q8N(e[0])); q8IdxSrc = L; }
+  let best = null, bl = 0;
+  for (let i = 0; i < L.length; i++) {
+    const ek = q8Idx[i]; if (!ek) continue;
+    if (ek === k) return L[i];
+    if (ek.length > bl && k.startsWith(ek + ' ')) { best = L[i]; bl = ek.length; }
+  }
+  return best;
+}
+{ const _q8CI = catInfo; catInfo = function (name) { const e = q8Find(name); if (e && e[1]) return { cat:e[1], unit:e[2] || '' }; return _q8CI(name); }; }
+const q8Mode = (name, cat) => { const e = q8Find(name); return e ? e[3] : q8Track(cat) ? 't' : 'k'; };
+
+// ---------- đồng bộ máy chủ ----------
+{ const _q8AS = applyServer; applyServer = function (r) {
+  const out = _q8AS.apply(this, arguments);
+  try {
+    if (r && 'cats' in r) { db.cats = Array.isArray(r.cats) ? r.cats : null; q8CatsSync(); }
+    if (r && r.dmRev !== undefined) { if (!r.dmRev) db.dmVT = null; else if (Array.isArray(r.dm)) db.dmVT = r.dm; db.dmRev = r.dmRev || ''; }
+  } catch (e) {}
+  return out;
+}; }
+{ const _q8Inc = syncInc; syncInc = function () { const inc = _q8Inc.apply(this, arguments); if (db.dmRev && Array.isArray(db.dmVT)) inc.dmRev = db.dmRev; return inc; }; }
+
+// ---------- PHIẾU NHẬP GỌN ----------
+let q8Auto = false, q8Deb = null;
+function q8Title() {
+  const t = $8('fn-title'); if (!t || t.querySelector('.q8-proj')) return;
+  t.insertAdjacentHTML('beforeend', `<span class="q8-proj">${escHtml(curProj || '')}</span>`);
+}
+function q8Form() {
+  if (!$8('fn-title') || $8('q8-cat')) return;
+  q8Title();
+  const pj = $8('fn-proj'); if (pj) pj.closest('.fg').classList.add('q8-hide');
+  $8('fn-cat-row')?.classList.add('q8-hide');
+  $8('fn-hint')?.insertAdjacentHTML('afterend', '<div id="q8-cat" class="q8-catrow"></div>');
+  const qr = $8('fn-qty-row'), ct = $8('fn-ct-box'); if (qr && ct) ct.parentNode.insertBefore(qr, ct);
+  const save = $8('fn-save');
+  if (save) {
+    save.insertAdjacentHTML('beforebegin', `<div class="q8-more" id="q8-more"><button type="button" class="q8-morebtn" id="q8-morebtn" aria-expanded="false" onclick="q8More()"><span>Thêm thông tin</span><small id="q8-msum"></small><b aria-hidden="true">▾</b></button><div class="q8-morebody" id="q8-morebody"></div></div>`);
+    const body = $8('q8-morebody');
+    ['fn-ncc-row', 'fn-giao-row'].forEach(id => { const e = $8(id); if (e) body.appendChild(e); });
+    [$8('fn-note'), $8('fn-time')].forEach(el => { const fg = el && el.closest('.fg'); if (fg) body.appendChild(fg); });
+    const ph = $8('fn-photo-row'); if (ph) body.appendChild(ph);
+    body.addEventListener('input', q8MoreSum);
+  }
+  const inp = $8('fn-item-txt');
+  if (inp) { const go = () => { clearTimeout(q8Deb); q8Deb = setTimeout(q8Fill, 220); }; inp.addEventListener('input', go); inp.addEventListener('blur', () => setTimeout(q8Fill, 260)); }
+  ['fn-unit-sel', 'fn-cat'].forEach(id => $8(id)?.addEventListener('change', e => { e.target.dataset.q8user = 1; q8Fill(); }));
+  q8Fill();
+}
+function q8More(open) {
+  const m = $8('q8-more'); if (!m) return;
+  const on = open === undefined ? !m.classList.contains('q8-on') : !!open;
+  m.classList.toggle('q8-on', on); $8('q8-morebtn')?.setAttribute('aria-expanded', on);
+  q8MoreSum();
+}
+function q8MoreSum() {
+  const s = $8('q8-msum'); if (!s) return;
+  const v = id => ($8(id)?.value || '').trim(), n = (typeof formPhotos !== 'undefined' && formPhotos.fn) ? formPhotos.fn.length : 0;
+  const parts = [v('fn-ncc') ? 'NCC' : '', v('fn-giao') ? 'giao cho' : '', v('fn-note') ? 'ghi chú' : '', n ? n + ' ảnh' : ''].filter(Boolean);
+  s.textContent = parts.join(' · ');
+}
+function q8Fill() {
+  const box = $8('q8-cat'); if (!box) return;
+  const name = ($8('fn-item-txt')?.value || '').trim(), lm = typeof fnLMode === 'string' ? fnLMode : 'kho';
+  if (!name || fnDev || (lm !== 'kho' && lm !== 'di')) { box.innerHTML = ''; fnModeUpdate(); return; }
+  const it = db.items.find(i => normVN(i.name) === normVN(name)), cs = $8('fn-cat'), us = $8('fn-unit-sel');
+  if (!it && cs) {                                             // vật tư mới: nhóm + đơn vị theo danh mục
+    const e = q8Find(name);
+    const ci = typeof catInfo === 'function' ? catInfo(name) : null, free = el => !el.dataset.q8user && (!el.value || el.value === el.dataset.q8auto);
+    const c1 = e && e[1] && [...cs.options].some(o => o.value === e[1]) ? e[1] : (ci && ci.cat) || '';
+    if (free(cs)) { cs.value = c1; cs.dataset.q8auto = c1; }
+    const u = (e && e[2]) || (ci && ci.unit) || '';
+    if (us && u && free(us)) { if (![...us.options].some(o => o.value === u)) us.insertAdjacentHTML('beforeend', `<option>${escHtml(u)}</option>`); us.value = u; us.dataset.q8auto = u; }
+  }
+  const cid = it ? it.cat : (cs ? cs.value : ''), c = cid ? catOf(cid) : null;
+  box.innerHTML = it ? `<span class="q8-chip ro">${q8Ico(c, 22)}${escHtml(c.name)}</span>`
+    : `<button type="button" class="q8-chip${cid ? '' : ' need'}" onclick="q8PickCat()">${cid ? q8Ico(c, 22) + escHtml(c.name) : 'Chọn nhóm'} <b aria-hidden="true">▾</b></button>`;
+  const h = $8('fn-hint'); if (h) h.classList.toggle('q8-hide', !it || /Vật tư mới/.test(h.textContent));
+  fnModeUpdate();
+}
+function q8PickCat(onPick) {
+  const cur = onPick ? '' : ($8('fn-cat')?.value || '');
+  $8('q8-sheet')?.remove();
+  document.body.insertAdjacentHTML('beforeend', `<div class="kl-sheet-w" id="q8-sheet"><div class="kl-dim" onclick="document.getElementById('q8-sheet').remove()"></div><div class="kl-sheet q8-sheet" role="dialog" aria-label="Chọn nhóm vật tư">
+    <div class="kl-h">Chọn nhóm vật tư</div>
+    ${CATEGORIES.map(c => `<button type="button" class="q8-it${c.id === cur ? ' on' : ''}" data-id="${c.id}">${q8Ico(c, 36)}<span>${escHtml(c.name)}</span>${c.id === cur ? '<b>✓</b>' : ''}</button>`).join('')}
+  </div></div>`);
+  document.querySelectorAll('#q8-sheet .q8-it').forEach(b => b.onclick = () => {
+    const id = b.dataset.id; $8('q8-sheet')?.remove();
+    if (onPick) return onPick(id);
+    const cs = $8('fn-cat'); if (!cs) return;
+    cs.value = id; cs.dataset.q8user = 1; cs.classList.remove('fn-need'); q8Fill();
+  });
+}
+{ const _q8RN = renderNhap; renderNhap = function (c) { q8Auto = false; q8CatsSync(); _q8RN.apply(this, arguments); try { q8Form(); } catch (e) { console.error(e); } }; }
+{ const _q8SD = fnSetDev; fnSetDev = function (x) { const r = _q8SD.apply(this, arguments); try { q8Title(); q8Fill(); } catch (e) {} return r; }; }
+if (typeof fnSetL === 'function') { const _q8SL = fnSetL; fnSetL = function (m) { const r = _q8SL.apply(this, arguments); try { document.querySelectorAll('#fn-lbody .ct-mhint').forEach(e => e.classList.toggle('q8-hide', m === 'kho')); q8Fill(); } catch (e) {} return r; }; }
+{ const _q8MU = fnModeUpdate; fnModeUpdate = function () {
+  try {
+    const name = ($8('fn-item-txt')?.value || '').trim(), lm = typeof fnLMode === 'string' ? fnLMode : 'kho';
+    if (thangOn() && !fnDev && lm === 'kho') {
+      if (!name) { if (q8Auto) { fnMode = ''; q8Auto = false; } }
+      else if (!fnMode || q8Auto) {
+        const it = db.items.find(i => normVN(i.name) === normVN(name));
+        fnMode = q8Mode(name, it ? it.cat : ($8('fn-cat')?.value || '')) === 't' ? 'ct' : 'kho'; q8Auto = true;
+      }
+    }
+    fnModeAuto = false;                                          // tắt cách chọn cũ theo "Danh sách xuất thẳng" (đã gộp vào danh mục)
+  } catch (e) {}
+  _q8MU.apply(this, arguments);
+  const h = $8('fn-ct-hint'); if (h) { h.textContent = ''; h.className = 'ct-hint'; }
+}; }
+fnSetMode = function (m) { q8Auto = false; fnModeAuto = false; fnMode = m; fnModeUpdate(); };
+
+// ---------- ô Nhập / Xuất nhanh dùng chung danh mục ----------
+function q5Cands(name, unitTxt) {
+  let toks = qTokens(q5Dia(name)).filter(t => !QK_STOP.has(t) || isCode(t));
+  if (toks.includes('bent') && /^(Tấn|Kg|Bao)$/.test(unitTxt)) toks = toks.map(t => t === 'bent' ? 'bentonite' : t);
+  const kho = qkBest(toks, q5Kho(), x => x.name).map(r => ({ src:'kho', id:r.x.id, name:r.x.name, unit:r.x.unit, cat:r.x.cat, s:r.s, x:r.x }));
+  const have = new Set(q5Kho().map(i => normVN(i.name)));
+  const cat = qkBest(toks, q8DM().filter(e => e[1] && e[2] && !have.has(normVN(e[0]))).map(e => ({ name:e[0], unit:e[2], cat:e[1] })), x => x.name)
+    .map(r => ({ src:'cat', id:'c:' + r.x.name, name:r.x.name, unit:r.x.unit, cat:r.x.cat, s:r.s - 0.02 }));
+  return { toks, list:kho.concat(cat).filter(r => r.s >= 0.5).sort((a, b) => b.s - a.s).slice(0, 6) };
+}
+function q8ModeR(R) { const p = q5Pick(R); return q8Mode(p ? p.name : R.name, p ? p.cat : '') === 't' ? 'ct' : 'kho'; }
+{ const _q8R = q5Resolve; q5Resolve = function (R) { _q8R(R); if (R.kind === 'in' && thangOn() && !R.modeUser) { R.mode = q8ModeR(R); q5Check(R); } }; }
+{ const _q8K = q5Kind; q5Kind = function (i, v) { const R = Q5.rows[i]; if (R) R.modeUser = 1; return _q8K(i, v); }; }
+{ const _q8S = q5Set; q5Set = function (i, key, v) { const R = Q5.rows[i]; if (R && key === 'itemKey') { R.itemKey = v; if (R.kind === 'in' && thangOn() && !R.modeUser) R.mode = q8ModeR(R); } return _q8S(i, key, v); }; }
+
+// ---------- ADMIN: DANH MỤC VẬT TƯ ----------
+let Q8D = null;
+async function q8DmOpen() {
+  if (role !== 'ADM') return;
+  openDp('dp-dm');
+  const b = $8('dp-dm-body'); b.innerHTML = '<div class="empty-state" style="padding:40px 0">Đang tải danh mục…</div>';
+  const base = (Array.isArray(db.dmVT) ? db.dmVT : q8DefaultDM()).map(e => [e[0], e[1] || '', e[2] || '', e[3] === 't' ? 't' : 'k', 0]);
+  const seen = new Set(base.map(e => q8N(e[0]))), extra = [];
+  if (navigator.onLine) {
+    try {
+      const r = await api('itemCatalog', {}, 25000);
+      (r && r.items || []).forEach(x => { const k = q8N(x.name); if (!k || seen.has(k)) return; seen.add(k);
+        const t = Array.isArray(db.dmVT) ? q8Mode(x.name, x.cat) : (q8Track(x.cat) ? 't' : 'k'); extra.push([x.name, x.cat || '', x.unit || '', t, 1]); });
+    } catch (e) {}
+  }
+  Q8D = { rows: base.concat(extra), q:'', f:'all', page:1, dirty: !Array.isArray(db.dmVT) || extra.length > 0, fresh: extra.length };
+  q8DmRender();
+}
+function q8DmView() {
+  const q = q8N(Q8D.q), f = Q8D.f;
+  return Q8D.rows.map((r, i) => [r, i]).filter(([r]) => (!q || q8N(r[0]).includes(q)) &&
+    (f === 'all' || (f === 't' && r[3] === 't') || (f === 'k' && r[3] === 'k') || (f === 'nocat' && !r[1]) || (f === 'new' && r[4]) || f === r[1]));
+}
+function q8DmRender() {
+  const b = $8('dp-dm-body'); if (!b || !Q8D) return;
+  const R = Q8D.rows, V = q8DmView(), show = V.slice(0, Q8D.page * 80);
+  const cnt = k => R.filter(r => k === 't' ? r[3] === 't' : k === 'k' ? r[3] === 'k' : k === 'nocat' ? !r[1] : k === 'new' ? r[4] : true).length;
+  const chip = (k, l) => `<button type="button" class="q8-f${Q8D.f === k ? ' on' : ''}" onclick="Q8D.f='${k}';Q8D.page=1;q8DmRender()">${l}</button>`;
+  b.innerHTML = `<div class="q8-dm">
+    <div class="info-box" style="margin-bottom:10px">Dùng chung mọi dự án. Tên ngắn như "Thép" áp cho mọi tên bắt đầu bằng "Thép". Chỉ áp cho lần nhập sau — nhóm, đơn vị của vật tư đã có giữ nguyên.</div>
+    <input type="search" class="q8-q" placeholder="Tìm tên vật tư…" value="${escHtml(Q8D.q)}" oninput="Q8D.q=this.value;Q8D.page=1;clearTimeout(window.__q8t);window.__q8t=setTimeout(q8DmList,200)">
+    <div class="q8-fs">${chip('all', 'Tất cả ' + R.length)}${chip('t', 'Thẳng CT ' + cnt('t'))}${chip('k', 'Vào kho ' + cnt('k'))}${cnt('nocat') ? chip('nocat', 'Chưa có nhóm ' + cnt('nocat')) : ''}${cnt('new') ? chip('new', 'Mới thêm ' + cnt('new')) : ''}</div>
+    <div class="q8-fs sc">${CATEGORIES.map(c => chip(c.id, escHtml(c.name))).join('')}</div>
+    <div class="q8-add"><input id="q8-newname" placeholder="＋ Thêm tên vật tư…"><button type="button" class="btn-full btn-orange" onclick="q8DmAdd()">Thêm</button></div>
+    <div class="q8-hd"><span>TÊN · NHÓM · ĐƠN VỊ</span><span>KHI NHẬP</span></div>
+    <div id="q8-dmlist">${q8DmRows(show)}</div>
+    ${V.length > show.length ? `<button type="button" class="q8-moreb" onclick="Q8D.page++;q8DmRender()">Xem thêm ${V.length - show.length} tên</button>` : ''}
+    <div class="q8-foot"><button type="button" class="btn-full" style="background:#fff;color:var(--primary);border:1.5px solid var(--primary)" onclick="q8DmExcel()">⬇ Xuất Excel</button>
+      <button type="button" class="btn-full btn-orange" onclick="q8DmSave()" ${Q8D.dirty ? '' : 'disabled'}>💾 Lưu danh mục</button></div>
+  </div>`;
+}
+function q8DmList() { const l = $8('q8-dmlist'); if (!l) return q8DmRender(); q8DmRender(); const q = document.querySelector('#dp-dm-body .q8-q'); if (q) { q.focus(); q.setSelectionRange(q.value.length, q.value.length); } }
+function q8DmRows(list) {
+  if (!list.length) return '<div class="empty-state" style="padding:24px 0">Không có tên nào</div>';
+  return list.map(([r, i]) => { const c = r[1] ? CATEGORIES.find(x => x.id === r[1]) : null;
+    return `<div class="q8-r"><div class="q8-rl"><div class="q8-rn">${escHtml(r[0])}${r[4] ? ' <span class="q8-new">mới</span>' : ''}</div>
+      <div class="q8-rs"><button type="button" class="q8-rc${c ? '' : ' need'}" onclick="q8DmCat(${i})">${c ? escHtml(c.name) : 'Chưa có nhóm'} ▾</button> · <select class="q8-ru" aria-label="Đơn vị" onchange="q8DmSet(${i},2,this.value)"><option value="">—</option>${[...new Set(UNITS.concat(r[2] ? [r[2]] : []))].map(u => `<option ${u === r[2] ? 'selected' : ''}>${escHtml(u)}</option>`).join('')}</select>
+      <button type="button" class="q8-x" aria-label="Bỏ tên này" onclick="q8DmDel(${i})">✕</button></div></div>
+      <div class="q8-tg" role="group" aria-label="Khi nhập"><button type="button" class="${r[3] === 'k' ? 'k' : ''}" onclick="q8DmSet(${i},3,'k')">Kho</button><button type="button" class="${r[3] === 't' ? 't' : ''}" onclick="q8DmSet(${i},3,'t')">Thẳng</button></div></div>`; }).join('');
+}
+function q8DmSet(i, k, v) { const r = Q8D.rows[i]; if (!r) return; r[k] = v; Q8D.dirty = true; q8DmRender(); }
+function q8DmCat(i) { q8PickCat(id => q8DmSet(i, 1, id)); }
+function q8DmDel(i) { Q8D.rows.splice(i, 1); Q8D.dirty = true; q8DmRender(); }
+function q8DmAdd() {
+  const el = $8('q8-newname'), n = (el.value || '').replace(/\s+/g, ' ').trim();
+  if (n.length < 2) { toast('⚠️ Gõ tên vật tư'); el.focus(); return; }
+  if (Q8D.rows.some(r => q8N(r[0]) === q8N(n))) { toast('⚠️ Tên đã có trong danh mục'); return; }
+  const e = q8Find(n);
+  Q8D.rows.unshift([n, e ? e[1] : '', e ? e[2] : '', e ? e[3] : 'k', 1]); Q8D.dirty = true; Q8D.q = ''; Q8D.f = 'all'; Q8D.page = 1; q8DmRender();
+}
+async function q8DmSave() {
+  if (!Q8D) return;
+  if (!navigator.onLine) { toast('📴 Cần có mạng'); return; }
+  const list = Q8D.rows.map(r => [r[0], r[1], r[2], r[3]]);
+  showLoader('Đang lưu danh mục…');
+  const r = await api('setDanhMuc', { list }, 60000); hideLoader();
+  if (!r || !r.success) { toast('⚠️ ' + ((r && r.error) || 'Không lưu được')); return; }
+  db.dmVT = list; db.dmRev = r.dmRev; q8IdxSrc = null; saveLocal();
+  Q8D.rows.forEach(x => x[4] = 0); Q8D.dirty = false; q8DmRender();
+  toast(`✅ Đã lưu danh mục ${fmtNum(r.count)} tên — mọi máy dùng chung`);
+}
+async function q8DmExcel() {
+  if (!Q8D) return;
+  showLoader('Đang tạo file Excel…');
+  if (!(await ensureExcelJS())) { hideLoader(); toast('⚠️ Không tải được công cụ Excel — cần có mạng'); return; }
+  const wb = new ExcelJS.Workbook(), ws = wb.addWorksheet('Danh mục vật tư');
+  ws.columns = [{ header:'Tên vật tư', width:42 }, { header:'Nhóm', width:26 }, { header:'Đơn vị', width:10 }, { header:'Khi nhập', width:22 }];
+  ws.getRow(1).font = { bold:true };
+  Q8D.rows.forEach(r => ws.addRow([r[0], r[1] ? (CATEGORIES.find(c => c.id === r[1]) || {}).name || r[1] : '', r[2], r[3] === 't' ? 'Thẳng ra công trường' : 'Vào kho']));
+  const buf = await wb.xlsx.writeBuffer(); hideLoader();
+  const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([buf], { type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' }));
+  a.download = 'Danh_muc_vat_tu_FECON.xlsx'; document.body.appendChild(a); a.click(); setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 4000);
+  toast('✅ Đã xuất file ' + a.download);
+}
+
+// ---------- ADMIN: NHÓM VẬT TƯ ----------
+let Q8C = null;
+function q8CatsOpen() {
+  if (role !== 'ADM') return;
+  Q8C = { list: CATEGORIES.map(c => ({ id:c.id, name:c.name, svg:c.svg, color:c.color, bg:c.bg })), dirty:false };
+  openDp('dp-cats'); q8CatsRender();
+}
+function q8CatsRender() {
+  const b = $8('dp-cats-body'); if (!b || !Q8C) return;
+  const n = id => (db.items || []).filter(i => i.cat === id).length;
+  b.innerHTML = `<div class="q8-dm">
+    <div class="info-box" style="margin-bottom:10px">Đổi tên không ảnh hưởng vật tư đã có. Nhóm còn vật tư (ở bất kỳ dự án nào) không xoá được. Bấm biểu tượng để đổi.</div>
+    ${Q8C.list.map((c, i) => `<div class="q8-cr">
+      <button type="button" class="q8-cico" aria-label="Đổi biểu tượng" onclick="q8CatIcon(${i})">${q8Ico(c, 40)}</button>
+      <input class="q8-cn" value="${escHtml(c.name)}" aria-label="Tên nhóm" oninput="Q8C.list[${i}].name=this.value;Q8C.dirty=true;q8CatsBtn()">
+      <span class="q8-cc">${n(c.id) ? n(c.id) + ' món' : ''}</span>
+      ${Q8_LOCK.includes(c.id) || n(c.id) ? '<span class="q8-x" style="visibility:hidden">✕</span>' : `<button type="button" class="q8-x" aria-label="Xoá nhóm" onclick="Q8C.list.splice(${i},1);Q8C.dirty=true;q8CatsRender()">✕</button>`}</div>`).join('')}
+    <div class="q8-foot"><button type="button" class="btn-full" style="background:#fff;color:var(--primary);border:1.5px solid var(--primary)" onclick="q8CatAdd()">＋ Thêm nhóm</button>
+      <button type="button" class="btn-full btn-orange" id="q8-cats-save" onclick="q8CatsSave()" ${Q8C.dirty ? '' : 'disabled'}>💾 Lưu</button></div>
+  </div>`;
+}
+function q8CatsBtn() { const s = $8('q8-cats-save'); if (s) s.disabled = !Q8C.dirty; }
+function q8CatAdd() {
+  const i = Q8C.list.length, p = Q8_PAL[i % Q8_PAL.length];
+  Q8C.list.splice(Math.max(0, Q8C.list.findIndex(c => c.id === 'khac')), 0, { id:'n' + Date.now().toString(36), name:'', svg:'khacVT', color:p[0], bg:p[1] });
+  Q8C.dirty = true; q8CatsRender();
+  const ins = document.querySelectorAll('#dp-cats-body .q8-cn'); const el = [...ins].find(x => !x.value); if (el) el.focus();
+}
+function q8CatIcon(i) {
+  $8('q8-sheet')?.remove();
+  const c = Q8C.list[i];
+  document.body.insertAdjacentHTML('beforeend', `<div class="kl-sheet-w" id="q8-sheet"><div class="kl-dim" onclick="document.getElementById('q8-sheet').remove()"></div><div class="kl-sheet q8-sheet" role="dialog" aria-label="Chọn biểu tượng">
+    <div class="kl-h">Biểu tượng cho "${escHtml(c.name || 'nhóm mới')}"</div>
+    <div class="q8-icg">${Q8_SVG.map(k => `<button type="button" data-k="${k}" class="${k === c.svg ? 'on' : ''}" aria-label="${k}">${q8Ico({ svg:k, color:c.color, bg:c.bg }, 44)}</button>`).join('')}</div>
+    <div class="q8-icg">${Q8_PAL.map((p, j) => `<button type="button" data-p="${j}" aria-label="Màu ${j + 1}"><span class="q8-sw" style="background:${p[1]};border-color:${p[0]}"></span></button>`).join('')}</div>
+  </div></div>`);
+  document.querySelectorAll('#q8-sheet [data-k]').forEach(b => b.onclick = () => { c.svg = b.dataset.k; Q8C.dirty = true; $8('q8-sheet').remove(); q8CatsRender(); });
+  document.querySelectorAll('#q8-sheet [data-p]').forEach(b => b.onclick = () => { const p = Q8_PAL[+b.dataset.p]; c.color = p[0]; c.bg = p[1]; Q8C.dirty = true; $8('q8-sheet').remove(); q8CatsRender(); });
+}
+async function q8CatsSave() {
+  if (!Q8C) return;
+  const bad = Q8C.list.find(c => String(c.name || '').trim().length < 2); if (bad) { toast('⚠️ Ghi tên nhóm (ít nhất 2 chữ)'); return; }
+  if (!navigator.onLine) { toast('📴 Cần có mạng'); return; }
+  showLoader('Đang lưu nhóm…');
+  const r = await api('setCats', { list: Q8C.list.map(c => ({ id:c.id, name:c.name.trim(), svg:c.svg, color:c.color, bg:c.bg })) }, 30000); hideLoader();
+  if (!r || !r.success) { toast('⚠️ ' + ((r && r.error) || 'Không lưu được')); return; }
+  db.cats = r.cats; q8CatsKey = ''; q8CatsSync(); saveLocal(); Q8C.dirty = false; q8CatsOpen();
+  toast('✅ Đã lưu nhóm vật tư');
+}
+
+// ---------- biểu tượng nét thay emoji (Tồn kho, các bảng chọn) ----------
+CATEGORIES.forEach(c => { c.icon = ''; });
+{ const _q8RT = renderTon; renderTon = function (c) {
+  const r = _q8RT.apply(this, arguments);
+  try { (c || document).querySelectorAll('.chip[onclick^="setTonFilter"]').forEach(ch => {
+    const id = (ch.getAttribute('onclick').match(/'([^']+)'/) || [])[1], cat = id && id !== 'all' && CATEGORIES.find(x => x.id === id);
+    if (cat) { ch.classList.add('q8-tchip'); ch.insertAdjacentHTML('afterbegin', q8Ico(cat, 22)); }
+  }); } catch (e) {}
+  return r;
+}; }
+
+// ---------- menu + trang ----------
+(function () {
+  const old = [...document.querySelectorAll('.sidebar-item.need-admin')].find(e => /Tên vật tư gợi ý thêm/.test(e.textContent));
+  const html = '<div class="sidebar-item need-admin" onclick="closeSidebar();setTimeout(q8DmOpen,300)"><span class="sidebar-item-ico">📚</span>Danh mục vật tư</div>'
+    + '<div class="sidebar-item need-admin" onclick="closeSidebar();setTimeout(q8CatsOpen,300)"><span class="sidebar-item-ico">🏷</span>Nhóm vật tư</div>';
+  if (old) { old.insertAdjacentHTML('afterend', html); old.style.display = 'none'; }
+  else document.querySelector('.sidebar-item.need-admin')?.insertAdjacentHTML('beforebegin', html);
+  const page = (id, t) => `<div class="detail-page" id="${id}"><div class="detail-header"><button class="back-btn" onclick="closeDp('${id}')">‹</button><div class="detail-title">${t}</div></div><div class="detail-body" id="${id}-body"></div></div>`;
+  document.body.insertAdjacentHTML('beforeend', page('dp-dm', '📚 Danh mục vật tư') + page('dp-cats', '🏷 Nhóm vật tư'));
+  q8CatsSync();
+  const css = `.q8-hide{display:none!important}
+#fn-ct-box .ct-mode small{display:none}#fn-ct-hint,#fn-ct-info{display:none!important}
+#fn-title{display:flex;align-items:center;gap:8px}.q8-proj{margin-left:auto;font-size:13px;font-weight:800;color:var(--primary);background:#E3ECF7;border-radius:999px;padding:4px 12px;white-space:nowrap;max-width:45%;overflow:hidden;text-overflow:ellipsis}
+.q8-catrow{margin:6px 0 2px}.q8-chip{display:inline-flex;align-items:center;gap:8px;min-height:40px;padding:4px 12px 4px 4px;border-radius:999px;border:1.5px solid var(--border);background:#fff;font-size:14px;font-weight:700;color:var(--text)}
+.q8-chip.ro{border-color:transparent;background:#F5F7FA}.q8-chip.need{border-color:#E8A300;background:#FFF7E0;color:#7A5200;padding-left:14px}.q8-chip b{color:var(--text3,#8A93A0);font-size:12px}
+.q8-tchip{display:inline-flex;align-items:center;gap:6px;padding-left:5px}.q8-tchip .q8-ic{border-radius:7px}.q8-ic{display:inline-flex;align-items:center;justify-content:center;width:30px;height:30px;border-radius:9px;flex-shrink:0}.q8-ic svg{width:62%;height:62%}
+.q8-more{border:1.5px solid var(--border);border-radius:12px;margin:4px 0 12px;overflow:hidden;background:#fff}
+.q8-morebtn{width:100%;min-height:48px;display:flex;align-items:center;gap:8px;padding:0 14px;background:#fff;border:none;font:inherit;font-weight:700;font-size:15px;color:var(--text);text-align:left}
+.q8-morebtn small{flex:1;font-weight:500;color:var(--text2);font-size:12.5px}.q8-morebtn b{color:var(--text3,#8A93A0);transition:transform .2s}.q8-more.q8-on .q8-morebtn b{transform:rotate(180deg)}
+.q8-morebody{display:none;padding:0 12px 4px}.q8-more.q8-on .q8-morebody{display:block}
+.q8-sheet{max-height:80vh;overflow:auto}.q8-it{display:flex;align-items:center;gap:12px;width:100%;min-height:54px;padding:6px 8px;border:none;border-bottom:1px solid #EEF1F5;background:#fff;font:inherit;font-size:15.5px;font-weight:600;text-align:left;color:var(--text)}
+.q8-it.on{background:#FFF4EC;border-radius:10px}.q8-it b{margin-left:auto;color:#C2410C}
+.q8-dm{padding:2px 0 30px}.q8-rc{max-width:140px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.q8-q{width:100%;box-sizing:border-box;border:1.5px solid var(--border);border-radius:12px;padding:11px 12px;font-size:15px}
+.q8-fs{display:flex;gap:6px;flex-wrap:wrap;margin:8px 0}.q8-fs.sc{flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none;padding-bottom:2px}.q8-fs.sc::-webkit-scrollbar{display:none}.q8-f{flex-shrink:0;font-size:12.5px;padding:6px 10px;border-radius:999px;border:1px solid #C9D2DC;background:#fff;color:var(--text);font-weight:600}.q8-f.on{background:var(--primary);color:#fff;border-color:var(--primary)}
+.q8-add{display:flex;gap:8px;margin:6px 0 4px}.q8-add input{flex:1;border:1.5px solid var(--border);border-radius:10px;padding:9px 10px;font-size:14.5px}.q8-add .btn-full{width:auto;margin:0;padding:0 16px;min-height:42px}
+.q8-hd{display:flex;justify-content:space-between;font-size:11px;font-weight:800;color:var(--text3,#8A93A0);margin:10px 0 2px}
+.q8-r{display:flex;align-items:center;gap:8px;padding:9px 0;border-bottom:1px solid #EEF1F5}.q8-rl{flex:1;min-width:0}.q8-rn{font-weight:700;font-size:14.5px;word-break:break-word}
+.q8-rs{display:flex;align-items:center;gap:4px;flex-wrap:nowrap;font-size:12px;color:var(--text2);margin-top:3px}.q8-rc{border:none;background:#F1F3F5;border-radius:6px;padding:3px 8px;font-size:12px;color:var(--text);font-weight:600}.q8-rc.need{background:#FFF7E0;color:#7A5200}
+.q8-ru{font-size:12px;border:1px solid var(--border);border-radius:6px;padding:2px 4px;background:#fff}.q8-x{border:none;background:none;color:var(--text3,#8A93A0);font-size:14px;min-width:32px;min-height:32px}
+.q8-new{font-size:10.5px;font-weight:800;color:var(--primary);background:#E3ECF7;border-radius:4px;padding:1px 5px}
+.q8-tg{display:grid;grid-template-columns:1fr 1fr;border:1.5px solid var(--border);border-radius:10px;overflow:hidden;flex-shrink:0;width:104px}.q8-tg button{border:none;background:#fff;font-size:12.5px;font-weight:800;min-height:38px;color:var(--text2)}
+.q8-tg button.k{background:#E6F4EC;color:#17703D}.q8-tg button.t{background:#FFF4EC;color:#C2410C}
+.q8-moreb{width:100%;min-height:44px;margin:10px 0;border:1.5px dashed var(--border);border-radius:10px;background:#fff;font-weight:700;color:var(--primary)}
+.q8-foot{position:sticky;bottom:0;display:grid;grid-template-columns:1fr 1fr;gap:8px;background:var(--bg);padding:10px 0 0}.q8-foot .btn-full{margin:0}.q8-foot .btn-full[disabled]{opacity:.5}
+.q8-cr{display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid #EEF1F5}.q8-cico{border:none;background:none;padding:0}.q8-cn{flex:1;min-width:0;border:1.5px solid var(--border);border-radius:10px;padding:9px 10px;font-size:14.5px}.q8-cc{font-size:12px;color:var(--text2);white-space:nowrap}
+.q8-icg{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin:10px 0}.q8-icg button{border:2px solid transparent;border-radius:12px;background:#fff;padding:6px;display:flex;justify-content:center}.q8-icg button.on{border-color:#F26522}
+.q8-sw{display:block;width:40px;height:40px;border-radius:10px;border:3px solid}`;
   const st = document.createElement('style'); st.textContent = css; document.head.appendChild(st);
 })();
 </script>
