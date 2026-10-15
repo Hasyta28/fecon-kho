@@ -1,4 +1,5 @@
-// FECON Kho + Thi công - Service Worker v5.48.0
+// FECON Kho + Thi công - Service Worker v5.49.0
+// 5.49.0: Kho — Quản lý dự án (Admin): đổi tên dự án ở mọi bảng, đóng / mở lại dự án (chỉ xem), xoá dự án trống
 // 5.48.0: Kho — phiếu nhập gọn (Thêm thông tin), Danh mục vật tư chung (nhóm · đơn vị · Kho/Thẳng tự chọn), Nhóm vật tư (Admin), cặp thẳng công trường hiện 1 dòng
 // 5.47.1: Kho — ô Nhập / Xuất nhanh về dưới 2 ô Nhập / Xuất, thu gọn thành 1 thanh (bấm → bảng trượt xuống), bài hướng dẫn trong nút ?
 // 5.47.0: Kho — ô Nhập / Xuất nhanh (một lệnh gõ / nói → tự tách phiếu, xem trước, lưu một lần), hỏi khi nhập trùng hàng mượn đang chờ
@@ -38,7 +39,7 @@
 //  - Mở app: lấy file từ bộ nhớ của bản đang dùng; thiếu file nào mới lấy từ mạng.
 //  - Có sw.js mới trên GitHub: tải sẵn bản mới vào bộ nhớ riêng nhưng KHÔNG đổi bản đang dùng.
 //  - Địa chỉ có ?fresh=... luôn lấy thẳng từ mạng (app dùng để kiểm tra / tải bản mới).
-const VERSION = '5.48.0';
+const VERSION = '5.49.0';
 const APP = 'fecon-app-', META = 'fecon-meta';
 const CORE = ['./', './index.html', './thicong.html', './manifest.json', './icon-192.png', './icon-512.png', './icon-maskable-192.png', './icon-maskable-512.png', './bg-login.jpg'];
 

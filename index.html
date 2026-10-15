@@ -1325,7 +1325,7 @@ button .pi,.btn .pi,a .pi,.chip .pi,.tag .pi,.badge .pi,.yn .pi,.bnav .pi,.bnav-
     <div class="sidebar-divider need-ql"></div>
     <div class="sidebar-label need-ql">Quản lý</div>
     <div class="sidebar-item need-admin" onclick="openDpSb('dp-members')"><span class="sidebar-item-ico">👥</span>Thành viên<span class="sb-badge" id="sb-pend" style="display:none">0</span></div>
-    <div class="sidebar-item need-admin" onclick="openModal('modal-add-proj')"><span class="sidebar-item-ico">🏢</span>Thêm dự án</div>
+    <div class="sidebar-item need-admin" onclick="closeSidebar();setTimeout(pjOpen,300)"><span class="sidebar-item-ico">🏢</span>Quản lý dự án</div>
     <div class="sidebar-item need-admin" onclick="openDpSb('dp-history-log')"><span class="sidebar-item-ico">📋</span>Nhật ký hoạt động</div>
     <div class="sidebar-item need-admin" onclick="purgeItemsUI()"><span class="sidebar-item-ico">🗑</span>Xóa danh mục vật tư dự án</div>
     <div class="sidebar-item need-admin" onclick="closeSidebar();setTimeout(openBackup,300)"><span class="sidebar-item-ico">💾</span>Sao lưu dữ liệu</div>
@@ -1776,7 +1776,7 @@ button .pi,.btn .pi,a .pi,.chip .pi,.tag .pi,.badge .pi,.yn .pi,.bnav .pi,.bnav-
 // ============================================================
 // CONFIG
 // ============================================================
-const APP_VERSION = '5.48.0';
+const APP_VERSION = '5.49.0';
 const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbw6Rmi80I7RI3ij2U7RdRF5pYuQTnPrwEmGmUZS5xpxzLwwVynfoFUujZe1lm6HS1ymxw/exec';
 // ============================================================
 
@@ -1873,7 +1873,7 @@ const ROLE_NAME = new Proxy({}, {get:(t, k) => { if (typeof k !== 'string') retu
 const roleTag = code => { const r = ROLES[code]; return r ? `<span class="rtag"><b>${escHtml(r.abbr)}</b><small>${escHtml(r.name)}</small></span>` : escHtml(code || ''); };
 const RANK_OLD = {xem:1, ld:1, ktv:1, chp:1, cht:1, tk:2, ql:3, admin:4};
 // v5.18: quyền theo chức danh (máy chủ gửi me.perm). Trước lần đồng bộ đầu (còn vai trò cũ) dùng tạm bậc cũ
-const hp = k => { if (role === 'ADM') return true; if (me && me.perm) return !!me.perm[k];
+const hp = k => { if (typeof pjRO === 'function' && pjRO(k)) return false; if (role === 'ADM') return true; if (me && me.perm) return !!me.perm[k];
   return k === 'v_all' ? ['admin','ld'].includes(role) : k.startsWith('v_') ? true : (RANK_OLD[role] || 0) >= 2; };
 const isLeadRole = () => me && me.perm ? me.group === 'g6' : role === 'ld';
 const allProjRole = r => r === 'ADM' || r === 'QL' || !!(ROLES[r] && ROLES[r].perm && ROLES[r].perm.v_all);
@@ -4581,7 +4581,7 @@ function renderMemberProjects() {
   const all = allProjRole(r);
   document.querySelectorAll('#mm-projs input').forEach(i => { if (i.checked) mmProjects.add(i.value); else mmProjects.delete(i.value); });
   document.getElementById('mm-projs').innerHTML = allProjects.length ? allProjects.map(p => `<label><input type="checkbox" value="${escHtml(p)}" ${all || mmProjects.has(p) ? 'checked' : ''} ${all ? 'disabled' : ''}> ${escHtml(p)}</label>`).join('')
-    : '<div class="proj-note">Chưa có dự án nào — thêm ở Menu → Thêm dự án</div>';
+    : '<div class="proj-note">Chưa có dự án nào — thêm ở Menu → Quản lý dự án</div>';
   document.getElementById('mm-proj-note').textContent = all ? `${ROLE_NAME[r]} luôn thấy và làm việc được với tất cả dự án.` : 'Chỉ thấy và làm việc với kho của các dự án được tích. Không thấy dự án khác.';
 }
 const checkedProjects = () => [...document.querySelectorAll('#mm-projs input:checked:not(:disabled)')].map(i => i.value);
@@ -11591,6 +11591,191 @@ CATEGORIES.forEach(c => { c.icon = ''; });
 .q8-cr{display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid #EEF1F5}.q8-cico{border:none;background:none;padding:0}.q8-cn{flex:1;min-width:0;border:1.5px solid var(--border);border-radius:10px;padding:9px 10px;font-size:14.5px}.q8-cc{font-size:12px;color:var(--text2);white-space:nowrap}
 .q8-icg{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin:10px 0}.q8-icg button{border:2px solid transparent;border-radius:12px;background:#fff;padding:6px;display:flex;justify-content:center}.q8-icg button.on{border-color:#F26522}
 .q8-sw{display:block;width:40px;height:40px;border-radius:10px;border:3px solid}`;
+  const st = document.createElement('style'); st.textContent = css; document.head.appendChild(st);
+})();
+</script>
+<script>// ===== v5.49.0 KHO — QUẢN LÝ DỰ ÁN: đổi tên · đóng / mở lại · xoá dự án trống =====
+// Máy chủ: projAdmin (số liệu) · projRename (đổi tên mọi bảng, nhớ tên cũ) · projDelete (chỉ dự án trống) · projClose (đóng / mở lại).
+// Dự án đã đóng: app tắt quyền ghi (hp → pjRO), hiện dải "Đã đóng — chỉ xem"; máy chủ cũng chặn mọi lệnh ghi.
+const $9 = id => document.getElementById(id);
+function pjIsClosed(p) { return !!(db && db.projClosed && db.projClosed[p || curProj]); }
+function pjRO(k) { return !!curProj && pjIsClosed(curProj) && /^(k_|t_ghi|t_qt)/.test(String(k || '')); }
+
+// ---------- đồng bộ: dự án đã đóng + tên cũ → tên mới ----------
+{ const _p9AS = applyServer; applyServer = function (r) {
+  try {
+    if (r && r.projAlias && typeof r.projAlias === 'object') {     // dữ liệu lưu trên máy theo tên cũ → chuyển sang tên mới
+      Object.keys(r.projAlias).forEach(o => {
+        const n = r.projAlias[o], ko = LS_DB + '|' + o, kn = LS_DB + '|' + n;
+        try { const v = localStorage.getItem(ko); if (v !== null) { if (localStorage.getItem(kn) === null) localStorage.setItem(kn, v); localStorage.removeItem(ko); } } catch (e) {}
+        (outbox || []).forEach(op => { if (op && op.data && op.data.project === o) op.data.project = n; });
+      });
+    }
+  } catch (e) {}
+  const out = _p9AS.apply(this, arguments);
+  try { if (r && 'projClosed' in r) db.projClosed = r.projClosed || {}; } catch (e) {}
+  return out;
+}; }
+{ const _p9PS = updateProjSel; updateProjSel = function () {
+  const r = _p9PS.apply(this, arguments);
+  try { document.querySelectorAll('#proj-sel option').forEach(o => { if (pjIsClosed(o.value)) o.textContent = '🔒 ' + o.value + ' (đã đóng)'; }); } catch (e) {}
+  return r;
+}; }
+{ const _p9RV = refreshCurrentView; refreshCurrentView = function () {
+  const r = _p9RV.apply(this, arguments);
+  try { p9Banner(); } catch (e) {}
+  return r;
+}; }
+function p9Banner() {
+  const mb = $9('main-body'); if (!mb) return;
+  mb.querySelector('.p9-closed')?.remove();
+  if (!curProj || !pjIsClosed(curProj)) return;
+  const c = db.projClosed[curProj] || {};
+  mb.insertAdjacentHTML('afterbegin', `<div class="p9-closed">🔒 Dự án <b>${escHtml(curProj)}</b> đã đóng${c.at ? ' (' + escHtml(String(c.at).split(' ').pop()) + ')' : ''} — chỉ xem, không lập phiếu</div>`);
+}
+{ const _p9GT = goTab; goTab = function () { const r = _p9GT.apply(this, arguments); try { p9Banner(); } catch (e) {} return r; }; }
+
+// ---------- màn Quản lý dự án ----------
+let P9 = null;
+async function pjOpen() {
+  if (role !== 'ADM') return;
+  openDp('dp-proj');
+  const b = $9('dp-proj-body');
+  b.innerHTML = '<div class="empty-state" style="padding:40px 0">Đang tải danh sách dự án…</div>';
+  if (!navigator.onLine) { b.innerHTML = '<div class="empty-state" style="padding:40px 0">📴 Cần có mạng</div>'; return; }
+  const r = await api('projAdmin', {}, 60000);
+  if (!r || !r.success) { b.innerHTML = `<div class="empty-state" style="padding:40px 0">⚠️ ${escHtml((r && r.error) || 'Không tải được')}${/không hợp lệ/.test((r && r.error) || '') ? '<br>Máy chủ chưa lên 5.49.0 — Admin dán Apps Script mới' : ''}</div>`; return; }
+  P9 = r; p9Render();
+}
+function p9Render() {
+  const b = $9('dp-proj-body'); if (!b || !P9) return;
+  const fm = n => fmtNum(n || 0);
+  const card = (p, i) => {
+    const empty = !p.rows, cl = !!p.closed;
+    const st = empty ? 'Chưa có dữ liệu'
+      : [fm(p.items) + ' vật tư', fm(p.txns) + ' phiếu', p.loansOpen ? fm(p.loansOpen) + ' phiếu mượn chưa trả' : '', p.devOn ? fm(p.devOn) + ' máy ở công trường' : '', p.users ? p.users + ' người' : ''].filter(Boolean).join(' · ');
+    const tag = cl ? `<span class="p9-tag off">đã đóng ${escHtml(String(p.closed.at || '').split(' ').pop())}</span>` : empty ? '<span class="p9-tag emp">trống</span>' : '<span class="p9-tag on">đang chạy</span>';
+    return `<div class="p9-pj${cl ? ' cl' : ''}"><div class="p9-h"><b>${escHtml(p.name)}</b>${tag}${p.name === curProj ? '<span class="p9-cur">đang mở</span>' : ''}</div>
+      <div class="p9-st">${st}${cl ? ' · chỉ xem' : ''}</div>
+      <div class="p9-bt"><button type="button" onclick="p9Rename(${i})">✏️ Đổi tên</button>
+        ${cl ? `<button type="button" onclick="p9Reopen(${i})">↩ Mở lại</button>` : `<button type="button" onclick="p9Close(${i})">📦 Đóng</button>`}
+        <button type="button" class="${empty ? 'red' : 'off'}" ${empty ? '' : 'disabled'} onclick="p9Del(${i})">🗑 Xoá</button></div></div>`;
+  };
+  const L = P9.list.map((p, i) => [p, i]), on = L.filter(([p]) => !p.closed), off = L.filter(([p]) => p.closed);
+  b.innerHTML = `<div class="p9">
+    <div class="p9-sec">ĐANG CHẠY · ${on.length}</div>${on.map(([p, i]) => card(p, i)).join('')}
+    ${off.length ? `<div class="p9-sec">ĐÃ ĐÓNG · ${off.length}</div>${off.map(([p, i]) => card(p, i)).join('')}` : ''}
+    <button type="button" class="btn-full btn-orange" style="margin-top:14px" onclick="openModal('modal-add-proj')">＋ Thêm dự án</button>
+    <div class="p9-note">Xoá chỉ bật khi dự án trống (nút mờ = còn dữ liệu). Dự án đã làm xong nên Đóng, không xoá — giữ số liệu để đối chiếu.</div>
+  </div>`;
+}
+function p9Sheet(html) {
+  $9('p9-sheet')?.remove();
+  document.body.insertAdjacentHTML('beforeend', `<div class="kl-sheet-w" id="p9-sheet"><div class="kl-dim" onclick="document.getElementById('p9-sheet').remove()"></div><div class="kl-sheet p9-sh" role="dialog">${html}</div></div>`);
+}
+const p9Close0 = () => $9('p9-sheet')?.remove();
+async function p9Rename(i) {
+  const p = P9.list[i]; if (!p) return;
+  if (P9.kho && p.name === P9.kho) { toast('⚠️ "' + P9.kho + '" là kho bãi công ty (Giải động dùng tên này) — không đổi tên được'); return; }
+  p9Sheet(`<div class="kl-h">Đổi tên dự án</div>
+    <div class="p9-l">Tên cũ</div><div class="p9-in ro">${escHtml(p.name)}</div>
+    <div class="p9-l">Tên mới</div><input class="p9-in" id="p9-new" value="${escHtml(p.name)}" maxlength="100">
+    <div id="p9-dry" class="p9-g" style="display:none"></div>
+    <div class="p9-bb"><button type="button" class="p9-c" onclick="p9Close0()">Huỷ</button><button type="button" class="p9-ok" id="p9-go" onclick="p9RenameGo(${i})">Xem trước</button></div>`);
+  const el = $9('p9-new'); el.focus(); el.select();
+  el.oninput = () => { const d = $9('p9-dry'); d.style.display = 'none'; d.dataset.ok = ''; $9('p9-go').textContent = 'Xem trước'; };
+}
+async function p9RenameGo(i) {
+  const p = P9.list[i], to = ($9('p9-new').value || '').replace(/\s+/g, ' ').trim(), dry = $9('p9-dry');
+  if (to.length < 2) { toast('⚠️ Gõ tên mới'); return; }
+  if (to === p.name) { toast('⚠️ Tên mới giống tên cũ'); return; }
+  if (!navigator.onLine) { toast('📴 Cần có mạng'); return; }
+  if (!dry.dataset.ok) {                                          // bước 1: xem trước số dòng sẽ đổi
+    showLoader('Đang đếm dữ liệu…'); const r = await api('projRename', { from:p.name, to, dry:1 }, 60000); hideLoader();
+    if (!r || !r.success) { toast('⚠️ ' + ((r && r.error) || 'Không kiểm được')); return; }
+    dry.innerHTML = `<b>Sẽ đổi cùng lúc:</b><br>${r.rows.length ? r.rows.map(x => escHtml(x.label) + ' ' + fmtNum(x.n)).join(' · ') : 'Chưa có dữ liệu'}${r.users ? ' · ' + r.users + ' tài khoản được giao' : ''}
+      <div class="p9-w">Máy chủ sao lưu trước khi đổi. Điện thoại còn phiếu chưa gửi (mất mạng) vẫn gửi được — máy chủ tự hiểu tên cũ.</div>`;
+    dry.style.display = ''; dry.dataset.ok = '1'; $9('p9-go').textContent = 'Đổi tên'; return;
+  }
+  showLoader('Đang sao lưu và đổi tên…'); const r = await api('projRename', { from:p.name, to }, 300000); hideLoader();
+  if (!r || !r.success) { toast('⚠️ ' + ((r && r.error) || 'Không đổi được')); return; }
+  p9Close0();
+  p9AfterRename(r.from, r.to);
+  toast(`✅ Đã đổi "${r.from}" → "${r.to}" (${fmtNum(r.total)} dòng)`);
+  await syncAll(true); refreshCurrentView(false); pjOpen();
+}
+function p9AfterRename(o, n) {
+  try { const ko = LS_DB + '|' + o, v = localStorage.getItem(ko); if (v !== null) { localStorage.setItem(LS_DB + '|' + n, v); localStorage.removeItem(ko); } } catch (e) {}
+  (outbox || []).forEach(op => { if (op && op.data && op.data.project === o) op.data.project = n; });
+  db.projects = (db.projects || []).map(p => p === o ? n : p);
+  if (db.projClosed && db.projClosed[o]) { db.projClosed[n] = db.projClosed[o]; delete db.projClosed[o]; }
+  if (curProj === o) { curProj = n; try { localStorage.setItem(LS_CUR, n); } catch (e) {} }
+  saveLocal(); updateProjSel();
+}
+function p9Close(i) {
+  const p = P9.list[i]; if (!p) return;
+  const pend = [p.stockN ? `${fmtNum(p.stockN)} vật tư còn tồn (tổng ${fmtNum(p.stockQ)})` : '', p.loansOpen ? `${fmtNum(p.loansOpen)} phiếu mượn chưa trả` : '', p.devOn ? `${fmtNum(p.devOn)} máy chưa ghi rời công trường` : ''].filter(Boolean);
+  p9Sheet(`<div class="kl-h">Đóng dự án ${escHtml(p.name)}?</div>
+    <div class="p9-tx">Sau khi đóng:<br>• Ẩn khỏi danh sách chọn dự án của thủ kho, chỉ huy trưởng…<br>• Không lập phiếu mới, không sửa phiếu cũ<br>• Báo cáo, Sổ NXT, Tổng hợp dự án vẫn xem được (Admin, GĐ / PGĐ công ty, GĐ dự án, P.QLTB)<br>• Admin mở lại được bất cứ lúc nào</div>
+    ${pend.length ? `<div class="p9-red"><b>Còn tồn đọng — nên xử lý trước:</b><br>• ${pend.join('<br>• ')}</div>` : ''}
+    <div class="p9-l">Gõ tên dự án để xác nhận</div><input class="p9-in" id="p9-cf" placeholder="${escHtml(p.name)}" autocomplete="off">
+    <div class="p9-bb"><button type="button" class="p9-c" onclick="p9Close0()">Huỷ</button><button type="button" class="p9-ok red" onclick="p9CloseGo(${i})">${pend.length ? 'Vẫn đóng' : 'Đóng dự án'}</button></div>`);
+  $9('p9-cf').focus();
+}
+async function p9CloseGo(i) {
+  const p = P9.list[i], cf = ($9('p9-cf').value || '').trim();
+  if (cf !== p.name) { toast('⚠️ Gõ đúng tên dự án: ' + p.name); $9('p9-cf').focus(); return; }
+  if (!navigator.onLine) { toast('📴 Cần có mạng'); return; }
+  showLoader('Đang đóng dự án…'); const r = await api('projClose', { name:p.name, confirm:cf }, 30000); hideLoader();
+  if (!r || !r.success) { toast('⚠️ ' + ((r && r.error) || 'Không đóng được')); return; }
+  p9Close0(); db.projClosed = Object.assign({}, db.projClosed, { [p.name]: { at:'', by:me && me.name } });
+  toast('🔒 Đã đóng dự án ' + p.name); await syncAll(true); refreshCurrentView(false); updateProjSel(); pjOpen();
+}
+async function p9Reopen(i) {
+  const p = P9.list[i]; if (!p) return;
+  if (!navigator.onLine) { toast('📴 Cần có mạng'); return; }
+  showLoader('Đang mở lại…'); const r = await api('projClose', { name:p.name, open:1 }, 30000); hideLoader();
+  if (!r || !r.success) { toast('⚠️ ' + ((r && r.error) || 'Không mở lại được')); return; }
+  if (db.projClosed) delete db.projClosed[p.name];
+  toast('↩ Đã mở lại dự án ' + p.name); await syncAll(true); refreshCurrentView(false); updateProjSel(); pjOpen();
+}
+async function p9Del(i) {
+  const p = P9.list[i]; if (!p || p.rows) return;
+  p9Sheet(`<div class="kl-h">Xoá dự án trống "${escHtml(p.name)}"?</div>
+    <div class="p9-tx">Dự án chưa có dữ liệu nào. Xoá xong không lấy lại được (tạo lại bằng Thêm dự án).${p.users ? `<br>Bỏ dự án này khỏi ${p.users} tài khoản đang được giao.` : ''}</div>
+    <div class="p9-bb"><button type="button" class="p9-c" onclick="p9Close0()">Huỷ</button><button type="button" class="p9-ok red" onclick="p9DelGo(${i})">Xoá</button></div>`);
+}
+async function p9DelGo(i) {
+  const p = P9.list[i];
+  if (!navigator.onLine) { toast('📴 Cần có mạng'); return; }
+  showLoader('Đang xoá…'); const r = await api('projDelete', { name:p.name }, 30000); hideLoader();
+  if (!r || !r.success) { toast('⚠️ ' + ((r && r.error) || 'Không xoá được')); return; }
+  p9Close0(); db.projects = (db.projects || []).filter(x => x !== p.name);
+  try { localStorage.removeItem(LS_DB + '|' + p.name); } catch (e) {}
+  toast('🗑 Đã xoá dự án ' + p.name);
+  if (curProj === p.name) { await switchProject(db.projects[0]); } else { await syncAll(true); updateProjSel(); }
+  pjOpen();
+}
+{ const _p9SP = saveProj; saveProj = async function () { const r = await _p9SP.apply(this, arguments); try { if ($9('dp-proj')?.classList.contains('show')) pjOpen(); } catch (e) {} return r; }; }
+
+(function () {
+  document.body.insertAdjacentHTML('beforeend', `<div class="detail-page" id="dp-proj"><div class="detail-header"><button class="back-btn" onclick="closeDp('dp-proj')">‹</button><div class="detail-title">🏢 Quản lý dự án</div></div><div class="detail-body" id="dp-proj-body"></div></div>`);
+  const css = `.p9{padding:2px 0 30px}.p9-sec{font-size:12px;font-weight:800;color:var(--text3,#8A93A0);margin:14px 2px 6px;letter-spacing:.03em}
+.p9-pj{background:#fff;border-radius:14px;padding:12px 14px;margin-bottom:10px;border:1px solid #E8ECF0}.p9-pj.cl{background:#FAFBFC}
+.p9-h{display:flex;align-items:center;gap:8px;flex-wrap:wrap}.p9-h b{font-size:16.5px;word-break:break-word}
+.p9-tag{font-size:11px;font-weight:800;border-radius:6px;padding:2px 7px}.p9-tag.on{background:#E6F4EC;color:#17703D}.p9-tag.emp{background:#FFF7E0;color:#7A5200}.p9-tag.off{background:#EDF1F4;color:#5C7080}
+.p9-cur{font-size:11px;font-weight:700;color:var(--primary)}.p9-st{font-size:12.5px;color:var(--text2);margin:6px 0 10px;line-height:1.5}
+.p9-bt{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}.p9-bt button{min-height:42px;border:1.5px solid var(--border);border-radius:10px;background:#fff;font-size:13.5px;font-weight:700;color:var(--primary)}
+.p9-bt button.red{color:#C92A2A}.p9-bt button.off{color:#B8C0CA;border-style:dashed}
+.p9-note{font-size:12px;color:var(--text3,#8A93A0);margin-top:10px;line-height:1.5}
+.p9-sh{max-height:86vh;overflow:auto}.p9-l{font-size:12px;font-weight:800;color:var(--text2);margin:12px 0 6px;text-transform:uppercase}
+.p9-in{display:block;width:100%;box-sizing:border-box;border:1.5px solid var(--border);border-radius:12px;padding:12px 14px;font-size:16px;background:#fff}.p9-in.ro{color:var(--text3,#8A93A0);background:#F5F7FA}
+.p9-g{background:#F5F7FA;border-radius:12px;padding:10px 12px;font-size:13.5px;line-height:1.6;margin-top:12px}
+.p9-w{background:#FFF7E0;border:1px solid #F0C36D;border-radius:10px;padding:8px 10px;margin-top:8px;font-size:12.5px}
+.p9-tx{font-size:14px;line-height:1.65;margin-top:6px}.p9-red{background:#FDECEC;border:1px solid #F1A8A8;border-radius:12px;padding:10px 12px;font-size:13.5px;line-height:1.6;margin:10px 0}
+.p9-bb{display:grid;grid-template-columns:1fr 1.4fr;gap:10px;margin-top:14px}.p9-bb button{min-height:50px;border-radius:12px;font-weight:800;font-size:15.5px}
+.p9-c{border:1.5px solid var(--border);background:#fff;color:var(--text)}.p9-ok{border:none;background:var(--primary);color:#fff}.p9-ok.red{background:#C92A2A}
+.p9-closed{background:#EDF1F4;color:#3D4A5C;border-left:4px solid #5C7080;border-radius:10px;margin:10px 14px 0;padding:10px 12px;font-size:13.5px;line-height:1.45}`;
   const st = document.createElement('style'); st.textContent = css; document.head.appendChild(st);
 })();
 </script>
