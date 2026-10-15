@@ -1776,7 +1776,7 @@ button .pi,.btn .pi,a .pi,.chip .pi,.tag .pi,.badge .pi,.yn .pi,.bnav .pi,.bnav-
 // ============================================================
 // CONFIG
 // ============================================================
-const APP_VERSION = '5.49.1';
+const APP_VERSION = '5.49.2';
 const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbw6Rmi80I7RI3ij2U7RdRF5pYuQTnPrwEmGmUZS5xpxzLwwVynfoFUujZe1lm6HS1ymxw/exec';
 // ============================================================
 
@@ -10682,7 +10682,7 @@ function q5Verb(seg) {
   if ((r = cut(/^(?:di\s+)?muon(?:\s+cua)?\s+(.+?)\s+(?=\d)/))) return { v:'loanDi', party:grab(r.m, 1), rest:r.rest };
   if ((r = cut(/^nhan\s+tra(?:\s+(?:tu|cua))?\s*(.*?)\s*(?=\d)/))) return { v:'retCho', party:grab(r.m, 1), rest:r.rest };
   if ((r = cut(/^tra\s+lai(?:\s+cho)?\s*(.*?)\s*(?=\d)/))) return { v:'retDi', party:grab(r.m, 1), rest:r.rest };
-  if ((r = cut(/^(?:xuat\s+)?ve\s+(?:kho\s+)?(?:fecon\s+)?dong\s+nai\b/))) return { v:'outNgoai', h:'kho', dest:'', rest:r.rest };
+  if ((r = cut(/^(?:xuat\s+)?ve\s+(?:kho\s+)?(?:fecon\s+|fcs\s+)?(?:dong\s+nai|bien\s+hoa|cong\s+ty)\b/))) return { v:'outNgoai', h:'kho', dest:'', rest:r.rest };
   if ((r = cut(/^(?:xuat\s+)?chuyen\s+(?:sang\s+)?(?:du\s+an\s+)?(.+?)\s+(?=\d)/))) return { v:'outNgoai', h:'da', dest:grab(r.m, 1), rest:r.rest };
   if ((r = cut(/^tra\s+(?:ve\s+)?(?:ben\s+cho\s+thue|nha\s+cung\s+cap|ncc)?\s*(.*?)\s*(?=\d)/))) return { v:'tra', dest:grab(r.m, 1), rest:r.rest };
   if ((r = cut(/^(?:xuat\s+)?ra\s+khoi\s+(?:cong\s+(?:trinh|truong)|ct)\b/))) return { v:'outNgoai', h:'khac', dest:'', rest:r.rest };
@@ -11782,11 +11782,12 @@ async function p9DelGo(i) {
 <script>// ===== v5.49.1 KHO — ĐƠN VỊ TÍNH DO ADMIN QUẢN LÝ =====
 // UNITS (danh sách gốc trong mã) được sửa tại chỗ theo danh sách máy chủ (db.units). Chưa lưu lần nào → danh sách gốc + 10 đơn vị bổ sung.
 // Ô Nhập / Xuất nhanh KHÔNG đọc thêm đơn vị mới (vd "5 ống siêu âm" vẫn là tên "ống siêu âm"), tránh hiểu nhầm tên vật tư thành đơn vị.
-const U9_ADD = ['Ống', 'Bao', 'Bình', 'Chiếc', 'Cặp', 'Bó', 'Lô', 'Xe', 'Chuyến', 'Ca'];
+const U9_ADD = ['Ống', 'Bao', 'Bình', 'Chiếc', 'Cặp', 'Bó', 'Lô', 'Xe', 'Chuyến', 'Ca', 'Quả', 'Đoạn', 'Búa', 'Giá', 'Đầu'];   // 5.49.2: + Quả, Đoạn, Búa, Giá, Đầu (sổ kho Biên Hòa)
 const U9_BASE = UNITS.slice().concat(U9_ADD.filter(x => !UNITS.includes(x)));
 let u9Key = '';
 function u9Apply() {
-  const L = (db && Array.isArray(db.units) && db.units.length) ? db.units.map(x => String(x).replace(/＆/g, '&')) : U9_BASE;
+  const L = ((db && Array.isArray(db.units) && db.units.length) ? db.units.map(x => String(x).replace(/＆/g, '&')) : U9_BASE).slice();
+  ((db && db.items) || []).forEach(i => { const u = String(i.unit || '').trim(); if (u && !L.some(x => normVN(x) === normVN(u))) L.push(u); });   // 5.49.2: đơn vị vật tư đang dùng (vd nạp từ Excel) luôn có trong ô chọn
   const k = L.join('|'); if (k === u9Key) return; u9Key = k;
   UNITS.length = 0; L.forEach(x => UNITS.push(x));
   try { if (typeof fillStaticSelects === 'function' && document.getElementById('ev-unit')) fillStaticSelects(); } catch (e) {}
@@ -11795,7 +11796,8 @@ function u9Apply() {
   const ck = typeof q8CatsKey !== 'undefined' ? q8CatsKey : '';
   const out = _u9AS.apply(this, arguments);
   try { if (typeof q8CatsKey !== 'undefined' && q8CatsKey !== ck && typeof fillStaticSelects === 'function') fillStaticSelects(); } catch (e) {}   // 5.48: đổi tên nhóm → ô chọn nhóm ở Sửa vật tư cũng đổi
-  try { if (r && 'units' in r) { db.units = Array.isArray(r.units) ? r.units : null; u9Apply(); } } catch (e) {}
+  try { if (r && 'units' in r) db.units = Array.isArray(r.units) ? r.units : null; u9Apply(); } catch (e) {}
+  try { if (r && r.gdKho) { if (typeof GD !== 'undefined') GD.kho = r.gdKho; const q = (typeof Q5_H !== 'undefined') && Q5_H.find(x => x[0] === 'kho'); if (q) q[1] = 'Về ' + r.gdKho; } } catch (e) {}   // 5.49.2: tên kho công ty
   return out;
 }; }
 u9Apply();
