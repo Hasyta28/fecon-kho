@@ -1,4 +1,6 @@
-// FECON Kho + Thi công - Service Worker v5.49.3
+// FECON Kho + Thi công - Service Worker v5.50.0
+// 5.50.0: Kho — Báo hỏng vật tư / thiết bị phụ trợ (Thẻ kho): để chờ · đang sửa · sửa xong · thanh lý; chuyển hàng hỏng sang dự án / kho công ty
+// 5.49.4: Kho — ô tìm kiếm ở Phiếu nhập / Phiếu xuất; Thẻ kho từng vật tư (Tồn kho → 📒 Thẻ kho)
 // 5.49.3: Kho — sửa: nút Đổi tên trên app còn chặn kho công ty (máy chủ 5.49.2 đã cho đổi)
 // 5.49.2: Kho — kho công ty đổi tên được (Kho FECON Đồng Nai → Kho Biên Hòa), ô nhanh hiểu "về kho Biên Hòa / công ty", đơn vị thêm Quả, Đoạn, Búa, Giá, Đầu
 // 5.49.1: Kho — đơn vị tính do Admin thêm / bỏ / xếp (Danh mục vật tư → Đơn vị tính); thêm sẵn Ống, Bao, Bình, Chiếc, Cặp, Bó, Lô, Xe, Chuyến, Ca
@@ -42,7 +44,7 @@
 //  - Mở app: lấy file từ bộ nhớ của bản đang dùng; thiếu file nào mới lấy từ mạng.
 //  - Có sw.js mới trên GitHub: tải sẵn bản mới vào bộ nhớ riêng nhưng KHÔNG đổi bản đang dùng.
 //  - Địa chỉ có ?fresh=... luôn lấy thẳng từ mạng (app dùng để kiểm tra / tải bản mới).
-const VERSION = '5.49.3';
+const VERSION = '5.50.0';
 const APP = 'fecon-app-', META = 'fecon-meta';
 const CORE = ['./', './index.html', './thicong.html', './manifest.json', './icon-192.png', './icon-512.png', './icon-maskable-192.png', './icon-maskable-512.png', './bg-login.jpg'];
 

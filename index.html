@@ -1776,7 +1776,7 @@ button .pi,.btn .pi,a .pi,.chip .pi,.tag .pi,.badge .pi,.yn .pi,.bnav .pi,.bnav-
 // ============================================================
 // CONFIG
 // ============================================================
-const APP_VERSION = '5.49.3';
+const APP_VERSION = '5.50.0';
 const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbw6Rmi80I7RI3ij2U7RdRF5pYuQTnPrwEmGmUZS5xpxzLwwVynfoFUujZe1lm6HS1ymxw/exec';
 // ============================================================
 
@@ -11713,7 +11713,7 @@ function p9AfterRename(o, n) {
 }
 function p9Close(i) {
   const p = P9.list[i]; if (!p) return;
-  const pend = [p.stockN ? `${fmtNum(p.stockN)} vật tư còn tồn (tổng ${fmtNum(p.stockQ)})` : '', p.loansOpen ? `${fmtNum(p.loansOpen)} phiếu mượn chưa trả` : '', p.devOn ? `${fmtNum(p.devOn)} máy chưa ghi rời công trường` : ''].filter(Boolean);
+  const pend = [p.stockN ? `${fmtNum(p.stockN)} vật tư còn tồn (tổng ${fmtNum(p.stockQ)})` : '', p.loansOpen ? `${fmtNum(p.loansOpen)} phiếu mượn chưa trả` : '', p.devOn ? `${fmtNum(p.devOn)} máy chưa ghi rời công trường` : '', p.hongOpen ? `${fmtNum(p.hongOpen)} món hàng hỏng chưa xử lý (chuyển về kho công ty / gửi sửa / thanh lý — xem Thẻ kho)` : ''].filter(Boolean);
   p9Sheet(`<div class="kl-h">Đóng dự án ${escHtml(p.name)}?</div>
     <div class="p9-tx">Sau khi đóng:<br>• Ẩn khỏi danh sách chọn dự án của thủ kho, chỉ huy trưởng…<br>• Không lập phiếu mới, không sửa phiếu cũ<br>• Báo cáo, Sổ NXT, Tổng hợp dự án vẫn xem được (Admin, GĐ / PGĐ công ty, GĐ dự án, P.QLTB)<br>• Admin mở lại được bất cứ lúc nào</div>
     ${pend.length ? `<div class="p9-red"><b>Còn tồn đọng — nên xử lý trước:</b><br>• ${pend.join('<br>• ')}</div>` : ''}
@@ -11850,6 +11850,382 @@ async function u9Save() {
 .u9-n{font-size:12px;color:var(--text2)}.u9-b{min-width:38px;min-height:36px;border:1px solid var(--border);border-radius:8px;background:#fff;font-weight:800;color:var(--text2)}.u9-b[disabled]{opacity:.3}
 .u9-open{width:100%;display:flex;align-items:center;gap:8px;min-height:46px;padding:0 14px;margin:0 0 10px;border:1.5px solid var(--border);border-radius:12px;background:#fff;font:inherit;font-weight:700;font-size:15px;color:var(--text);text-align:left}
 .u9-open small{flex:1;font-weight:500;color:var(--text2)}.u9-open b{color:var(--text3,#8A93A0)}`;
+  const st = document.createElement('style'); st.textContent = css; document.head.appendChild(st);
+})();
+</script>
+<script>// ===== v5.49.4 KHO — Ô TÌM KIẾM Ở PHIẾU NHẬP / PHIẾU XUẤT · THẺ KHO TỪNG VẬT TƯ =====
+// Tìm: tên vật tư, NCC / người nhận, ghi chú (mã SCxxx), số phiếu, người lập, máy, ngày — không dấu cũng được.
+// Thẻ kho: Tồn kho → nút "📒 Thẻ kho" ở mỗi vật tư → mọi phiếu của món đó, tồn trong kho sau từng phiếu (tính ngược từ tồn hiện tại).
+const $h = id => document.getElementById(id);
+const H9Q = { nhap:'', xuat:'' };
+let h9In = '';
+function h9Text(t) {
+  const it = typeof itemById === 'function' ? itemById(t.itemId) : null;
+  return [it && it.name, ...Object.values(t).filter(v => typeof v === 'string' || typeof v === 'number')].join(' ');
+}
+function h9Match(t, q) { const k = normVN(h9Text(t)); return normVN(q).split(/\s+/).filter(Boolean).every(w => k.includes(w)); }
+{ const _h9TL = renderTxnList; renderTxnList = function (txns, type) {
+  if (h9In && h9In === type && H9Q[type]) { const all = txns.length; txns = txns.filter(t => h9Match(t, H9Q[type])); h9Cnt = [txns.length, all]; }
+  return _h9TL.call(this, txns, type);
+}; }
+let h9Cnt = null;
+{ const _h9HT = renderHistTab; renderHistTab = function (c, type) {
+  h9In = type; h9Cnt = null;
+  try { _h9HT.apply(this, arguments); } finally { h9In = ''; }
+  try {
+    const head = c.querySelector('.hist-head'); if (!head) return;
+    head.insertAdjacentHTML('afterend', `<div class="h9-s">${searchBox('h9-q-' + type, H9Q[type], 'Tìm tên, NCC / người nhận, ghi chú, mã SC, số phiếu…', 'h9Set_' + type)}</div>`);
+    if (H9Q[type] && h9Cnt) { const b = head.querySelector('b'); if (b) b.textContent = `Tìm thấy ${fmtNum(h9Cnt[0])} / ${fmtNum(h9Cnt[1])} ${type === 'nhap' ? 'phiếu nhập' : 'phiếu xuất'}`; }
+    if (H9Q[type] && h9Cnt && !h9Cnt[0]) { const card = c.querySelector('.empty-state p'); if (card) card.textContent = 'Không có phiếu khớp "' + H9Q[type] + '"'; }
+  } catch (e) {}
+}; }
+function h9Set(type, v) {
+  H9Q[type] = v; listLimit[type] = 100;
+  goTab('ls' + type);
+  const el = $h('h9-q-' + type); if (el) { el.focus(); try { el.setSelectionRange(el.value.length, el.value.length); } catch (e) {} }
+}
+let h9Deb = null;
+function h9Set_nhap(v) { clearTimeout(h9Deb); h9Deb = setTimeout(() => h9Set('nhap', v), v ? 250 : 0); }
+function h9Set_xuat(v) { clearTimeout(h9Deb); h9Deb = setTimeout(() => h9Set('xuat', v), v ? 250 : 0); }
+
+// ---------- THẺ KHO ----------
+let TK9 = 0;
+function tk9Delta(t) {                                             // Δ tồn TRONG KHO của 1 phiếu (giống cách app cộng trừ tồn)
+  if (t.type === 'kiemke') return typeof kkDelta === 'function' ? kkDelta(t) : 0;
+  if (typeof ctFx === 'function') return ctFx(t)[0];
+  const q = +t.qty || 0; return t.type === 'nhap' ? q : t.type === 'xuat' ? -q : t.type === 'dieuchinh' ? q : (LOAN_T[t.type] || 0) * q;
+}
+function tk9Open(id) {
+  const it = db.items.find(i => i.id === id); if (!it) return;
+  TK9 = id; openDp('dp-thekho'); tk9Render();
+}
+function tk9Render() {
+  const b = $h('dp-thekho-body'), it = db.items.find(i => i.id === TK9); if (!b || !it) return;
+  const T = db.transactions.filter(t => t.itemId === it.id && t.project === it.project)
+    .map(t => ({ t, d: (parseVN(t.datetime) || new Date(0)).getTime() }))
+    .sort((a, b2) => a.d - b2.d || (+a.t.id) - (+b2.t.id)).map(x => x.t);
+  let bal = +it.stock || 0; const after = {};                        // tính ngược: tồn sau phiếu cuối = tồn hiện tại
+  for (let i = T.length - 1; i >= 0; i--) { after[T[i].id] = Math.round(bal * 1000) / 1000; bal -= tk9Delta(T[i]); }
+  const start = Math.round(bal * 1000) / 1000;
+  const nIn = T.filter(t => tk9Delta(t) > 0).reduce((s, t) => s + tk9Delta(t), 0), nOut = T.filter(t => tk9Delta(t) < 0).reduce((s, t) => s - tk9Delta(t), 0);
+  const neg = T.filter(t => after[t.id] < 0).length;
+  const site = typeof ctSite === 'function' ? ctSite(it) : 0;
+  b.innerHTML = `<div class="tk9">
+    <div class="tk9-h"><b>${escHtml(it.name)}</b><span>${escHtml(it.unit || '')} · ${escHtml(curProj)}</span></div>
+    <div class="tk9-g"><div><small>Tồn đầu (suy ra)</small><b>${fmtNum(start)}</b></div><div><small>Tổng vào</small><b class="in">+${fmtNum(Math.round(nIn * 1000) / 1000)}</b></div>
+      <div><small>Tổng ra</small><b class="out">−${fmtNum(Math.round(nOut * 1000) / 1000)}</b></div><div><small>Tồn trong kho</small><b class="${+it.stock < 0 ? 'neg' : ''}">${fmtNum(+it.stock || 0)}</b></div></div>
+    ${site ? `<div class="tk9-n">🏗 Ở công trường: <b>${fmtNum(site)} ${escHtml(it.unit || '')}</b> (không tính trong cột tồn kho bên dưới)</div>` : ''}
+    ${start ? `<div class="tk9-w">⚠️ Tồn đầu suy ra = ${fmtNum(start)}: tồn hiện tại không khớp đủ với các phiếu trên app (phiếu tồn đầu / kiểm kê / dữ liệu cũ). Kiểm kê để chốt lại.</div>` : ''}
+    ${neg ? `<div class="tk9-w red">🔻 ${neg} phiếu làm tồn trong kho xuống ÂM — xem các dòng đỏ: thường do thiếu phiếu nhập, nhập trùng / xuất trùng, hoặc chưa có tồn đầu kỳ.</div>` : ''}
+    <div class="tk9-l">${T.length ? T.slice().reverse().map(t => `<div class="tk9-r${after[t.id] < 0 ? ' neg' : ''}">${txnRow(t)}<div class="tk9-b">Tồn sau phiếu: <b>${fmtNum(after[t.id])}</b>${tk9Delta(t) ? '' : ' <span>(không đổi tồn trong kho)</span>'}</div></div>`).join('')
+      : '<div class="empty-state" style="padding:30px 0"><p>Chưa có phiếu nào</p></div>'}</div>
+    <div class="tk9-n" style="margin-top:10px">Bấm vào phiếu để xem chi tiết${can('admin') ? ', sửa hoặc xoá' : ''}. Mới nhất ở trên.</div>
+  </div>`;
+}
+{ const _tk9Rows = renderTonRows; renderTonRows = function (items) {
+  const html = _tk9Rows.apply(this, arguments);
+  if (!Array.isArray(items) || !items.length) return html;
+  let k = 0;
+  return html.replace(/<div class="progress-item"/g, m => { const it = items[k++]; return it ? `${m} data-iid="${it.id}"` : m; })
+    .replace(/(<div class="progress-item"[^>]*data-iid="(\d+)"[^>]*>)/g, (m, open, id) => `${open}<button type="button" class="tk9-btn" onclick="event.stopPropagation();tk9Open(${id})">📒 Thẻ kho</button>`);
+}; }
+(function () {
+  document.body.insertAdjacentHTML('beforeend', `<div class="detail-page" id="dp-thekho"><div class="detail-header"><button class="back-btn" onclick="closeDp('dp-thekho')">‹</button><div class="detail-title">📒 Thẻ kho</div></div><div class="detail-body" id="dp-thekho-body"></div></div>`);
+  const css = `.h9-s{padding:0 14px 10px}
+.progress-item{position:relative}.tk9-btn{float:right;margin:-2px 0 6px 8px;border:1.5px solid var(--border);background:#fff;border-radius:999px;padding:4px 10px;font-size:12.5px;font-weight:700;color:var(--primary);min-height:32px}
+.tk9{padding:2px 0 30px}.tk9-h{display:flex;flex-direction:column;gap:2px;margin-bottom:10px}.tk9-h b{font-size:17px}.tk9-h span{font-size:12.5px;color:var(--text2)}
+.tk9-g{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px;margin-bottom:8px}.tk9-g div{background:#fff;border:1px solid var(--border);border-radius:10px;padding:8px 6px;text-align:center}
+.tk9-g small{display:block;font-size:11px;color:var(--text2);line-height:1.2}.tk9-g b{font-size:16px}.tk9-g b.in{color:var(--green)}.tk9-g b.out{color:#C2410C}.tk9-g b.neg{color:var(--red)}
+.tk9-n{font-size:12.5px;color:var(--text2);margin:4px 0}.tk9-w{background:#FFF7E0;border:1px solid #F0C36D;border-radius:10px;padding:8px 10px;font-size:12.5px;margin:6px 0;line-height:1.5}.tk9-w.red{background:#FDECEC;border-color:#F1A8A8}
+.tk9-l{background:#fff;border-radius:14px;overflow:hidden;margin-top:8px}.tk9-r{border-bottom:1px solid #EEF1F5}.tk9-r .row-item{border-bottom:none}.tk9-b{font-size:12.5px;color:var(--text2);padding:0 14px 8px 62px}.tk9-b span{color:var(--text3,#8A93A0)}
+.tk9-r.neg{background:#FFF5F5}.tk9-r.neg .tk9-b b{color:var(--red)}`;
+  const st = document.createElement('style'); st.textContent = css; document.head.appendChild(st);
+})();
+{ const _tk9RV = refreshCurrentView; refreshCurrentView = function () { const r = _tk9RV.apply(this, arguments); try { if ($h('dp-thekho')?.classList.contains('show')) tk9Render(); } catch (e) {} return r; }; }
+try { DP_RENDER['dp-thekho'] = () => tk9Render(); } catch (e) {}   // sửa / xoá phiếu (Admin) → thẻ kho đang mở tự vẽ lại
+</script>
+<script>// ===== v5.50.0 KHO — BÁO HỎNG VẬT TƯ / THIẾT BỊ PHỤ TRỢ =====
+// Máy chủ: hongAdd / hongSet / hongMove · getAll trả db.hong (bản ghi của dự án).
+// cho = hỏng để chờ · sua = đang sửa · xong = sửa xong · bo = thanh lý (có phiếu xuất) · di = chuyển đi.
+// Thẻ kho: ô Đang hỏng / Dùng được, nút 🔧 Báo hỏng, danh sách đang hỏng (Gửi sửa · Sửa xong · Không sửa được), lịch sử hỏng.
+const HG_OPEN = { cho:1, sua:1 }, HG_DAYS = 30;
+const $g = id => document.getElementById(id);
+const hgR3 = v => Math.round((+v || 0) * 1000) / 1000;
+function hgOf(it) {
+  if (!it) return [];
+  return (db.hong || []).filter(o => o.itemId !== '' && o.itemId !== undefined && o.itemId !== null ? String(o.itemId) === String(it.id) : normVN(o.itemName) === normVN(it.name));
+}
+const hgOpenOf = it => hgOf(it).filter(o => HG_OPEN[o.state]);
+const hgQty = (it, loc) => hgR3(hgOpenOf(it).filter(o => !loc || o.loc === loc).reduce((s, o) => s + (+o.qty || 0), 0));
+const hgUse = it => hgR3((+it.stock || 0) + (typeof ctSite === 'function' ? ctSite(it) : 0) - hgQty(it));
+function hgSince(o) {                                               // từ lúc vào tình trạng hiện tại
+  const h = (o.hist || []).slice().reverse().find(x => x.t === o.state || (o.state === 'cho' && (x.t === 'add' || x.t === 'den' || x.t === 'tach')));
+  const d = parseVN((h && h.at) || o.upd || o.at); return d ? Math.floor((Date.now() - d.getTime()) / 864e5) : 0;
+}
+const hgLate = o => o.state === 'sua' && hgSince(o) > HG_DAYS;
+const hgLoc = o => o.loc === 'ct' ? 'ở công trường' : 'trong kho';
+{ const _hgAS = applyServer; applyServer = function (r) { const out = _hgAS.apply(this, arguments); try { if (r && 'hong' in r) db.hong = Array.isArray(r.hong) ? r.hong : []; } catch (e) {} return out; }; }
+
+// ---------- Tồn kho: dòng "🔧 x hỏng · y dùng được" ----------
+function hgDecorate() {
+  document.querySelectorAll('#ton-list .progress-item[data-iid]').forEach(el => {
+    if (el.querySelector('.hg-ton')) return;
+    const it = db.items.find(i => String(i.id) === el.dataset.iid); if (!it) return;
+    const L = hgOpenOf(it); if (!L.length) return;
+    const ch = hgR3(L.filter(o => o.state === 'cho').reduce((s, o) => s + o.qty, 0)), su = hgR3(L.filter(o => o.state === 'sua').reduce((s, o) => s + o.qty, 0));
+    el.insertAdjacentHTML('beforeend', `<div class="hg-ton${L.some(hgLate) ? ' late' : ''}">🔧 ${fmtNum(hgR3(ch + su))} hỏng (${[ch ? fmtNum(ch) + ' để chờ' : '', su ? fmtNum(su) + ' đang sửa' : ''].filter(Boolean).join(' · ')}) · <b>${fmtNum(Math.max(0, hgUse(it)))} dùng được</b></div>`);
+  });
+}
+{ const _hgRT = renderTon; renderTon = function () { const r = _hgRT.apply(this, arguments); try { hgDecorate(); } catch (e) {} return r; }; }
+{ const _hgTQ = setTonQ; setTonQ = function () { const r = _hgTQ.apply(this, arguments); try { hgDecorate(); } catch (e) {} return r; }; }
+
+// ---------- Thẻ kho ----------
+{ const _hgTK = tk9Render; tk9Render = function () {
+  const r = _hgTK.apply(this, arguments);
+  try { hgTk(); } catch (e) { console.error(e); }
+  return r;
+}; }
+function hgTk() {
+  const b = $g('dp-thekho-body'), it = db.items.find(i => i.id === TK9); if (!b || !it) return;
+  const g = b.querySelector('.tk9-g'); if (!g) return;
+  const open = hgOpenOf(it), shut = hgOf(it).filter(o => !HG_OPEN[o.state]).slice(-20).reverse(), n = hgQty(it), canW = can('tk');
+  const act = o => canW ? `<div class="hg-act">${o.state === 'cho' ? `<button type="button" onclick="hgAct('${o.id}','sua')">🔧 Gửi sửa</button>` : ''}<button type="button" class="ok" onclick="hgAct('${o.id}','xong')">✅ Sửa xong</button><button type="button" class="no" onclick="hgAct('${o.id}','bo')">🗑 Không sửa được</button></div>` : '';
+  const ph = o => hgPh(o.id).length;
+  const row = o => `<div class="hg-r${hgLate(o) ? ' late' : ''}"><div class="hg-t"><b>${fmtNum(o.qty)} ${escHtml(o.unit || it.unit)}</b> · ${hgLoc(o)} · <span class="hg-s ${o.state}">${o.state === 'sua' ? '🔧 Đang sửa' : '⏸ Để chờ'}</span></div>
+    <div class="hg-d">${escHtml(o.reason || '')}${o.where ? ' · sửa tại ' + escHtml(o.where) : ''}${o.from ? ' · chuyển từ ' + escHtml(String(o.from).split(' · ')[0]) : ''}${ph(o) ? ` · <a onclick="hgPhotos('${o.id}')">📷 ${ph(o)} ảnh</a>` : ''} · ${hgSince(o)} ngày${hgLate(o) ? ' <b>— quá ' + HG_DAYS + ' ngày, quyết sửa tiếp hay thanh lý</b>' : ''}</div>${act(o)}</div>`;
+  const lbl = { xong:'✅ Sửa xong', bo:'🗑 Thanh lý', di:'🚚 Chuyển đi' };
+  g.insertAdjacentHTML('afterend', `<div class="hg-box">
+    <div class="hg-g"><div><small>🔧 Đang hỏng</small><b class="${n ? 'bad' : ''}">${fmtNum(n)}</b></div><div><small>✅ Dùng được</small><b class="ok">${fmtNum(Math.max(0, hgUse(it)))}</b></div></div>
+    ${canW ? `<button type="button" class="hg-btn" onclick="hgOpen()">🔧 Báo hỏng</button>` : ''}
+    ${open.length ? `<div class="hg-sec">ĐANG HỎNG · ${fmtNum(n)}</div>${open.map(row).join('')}` : ''}
+    ${shut.length ? `<details class="hg-old"><summary>Lịch sử hỏng (${shut.length})</summary>${shut.map(o => `<div class="hg-d">${lbl[o.state] || o.state} · ${fmtNum(o.qty)} ${escHtml(o.unit || '')} · ${escHtml(o.reason || '')}${o.where ? ' · ' + escHtml(o.where) : ''} · ${escHtml(String(o.upd || o.at || '').split(' ').pop())}</div>`).join('')}</details>` : ''}
+  </div>`);
+}
+const hgPh = id => (db.photos || []).filter(p => String(p.txnId) === String(id));
+async function hgPhotos(id) {                                           // xem lần lượt ảnh báo hỏng
+  for (const p of hgPh(id)) {
+    if (typeof photoMem !== 'undefined' && photoMem[p.id]) { openViewer(photoMem[p.id]); return; }
+    if (p.fileId && navigator.onLine) { showLoader('Đang tải ảnh…'); const r = await api('getPhoto', { fileId:p.fileId }, 60000); hideLoader(); if (r && r.success) { photoMem[p.id] = r.data; openViewer(r.data); return; } }
+  }
+  toast('Ảnh chưa tải lên xong — thử lại sau');
+}
+function hgSheet(html) { $g('hg-sheet')?.remove(); document.body.insertAdjacentHTML('beforeend', `<div class="kl-sheet-w" id="hg-sheet"><div class="kl-dim" onclick="hgClose()"></div><div class="kl-sheet hg-sh" role="dialog">${html}</div></div>`); }
+function hgClose() { $g('hg-sheet')?.remove(); }
+let HGF = null;
+function hgOpen() {
+  const it = db.items.find(i => i.id === TK9); if (!it) return;
+  const site = typeof ctSite === 'function' ? ctSite(it) : 0, ctOk = typeof ctOn === 'function' && ctOn() && (site > 0 || (typeof ctTrack === 'function' && ctTrack(it)));
+  const freeK = hgR3((+it.stock || 0) - hgQty(it, 'kho')), freeC = hgR3(site - hgQty(it, 'ct'));
+  HGF = { kind:'sua', st:'cho', loc: freeK > 0 || !ctOk ? 'kho' : 'ct', freeK, freeC, ctOk };
+  formPhotos.hg = [];
+  hgSheet(`<div class="kl-h">🔧 Báo hỏng · ${escHtml(it.name)}</div>
+    <div class="hg-two" id="hg-k"><button type="button" data-k="sua" class="on" onclick="hgK('sua')">🔧 Hỏng có thể sửa<small>tồn giữ nguyên</small></button><button type="button" data-k="bo" onclick="hgK('bo')">🗑 Hỏng không sửa được<small>trừ khỏi ${ctOk ? 'kho / công trường' : 'kho'}</small></button></div>
+    <div id="hg-st-w"><div class="hg-l">Tình trạng</div><div class="hg-two sm" id="hg-st"><button type="button" data-s="cho" class="on" onclick="hgS('cho')">⏸ Để chờ, chưa sửa</button><button type="button" data-s="sua" onclick="hgS('sua')">🔧 Đang sửa</button></div></div>
+    <div class="hg-row"><div><div class="hg-l">Số lượng (${escHtml(it.unit)})</div><input class="hg-in" id="hg-q" type="number" inputmode="decimal" value="1" min="0"></div>
+      ${ctOk ? `<div><div class="hg-l">Đang ở</div><select class="hg-in" id="hg-loc" onchange="HGF.loc=this.value;hgFree()"><option value="kho" ${HGF.loc === 'kho' ? 'selected' : ''}>Trong kho</option><option value="ct" ${HGF.loc === 'ct' ? 'selected' : ''}>Công trường</option></select></div>` : ''}</div>
+    <div class="hg-free" id="hg-free"></div>
+    <div class="hg-l">Hỏng gì (bắt buộc)</div><input class="hg-in" id="hg-r" maxlength="300" placeholder="VD: thủng đáy, gãy chân, cháy mô tơ">
+    <div id="hg-w-w" style="display:none"><div class="hg-l">Sửa ở đâu (không bắt buộc)</div><input class="hg-in" id="hg-w" maxlength="120" placeholder="VD: Cơ khí Hoa Vinh / tự sửa tại công trường"></div>
+    <div class="hg-l">Ảnh (bắt buộc)</div><div class="ph-row" id="hg-ph"></div><input type="file" id="hg-ph-in" accept="image/*" multiple hidden onchange="addFormPhotos('hg',this)">
+    <div class="hg-bb"><button type="button" class="hg-c" onclick="hgClose()">Huỷ</button><button type="button" class="hg-ok" id="hg-go" onclick="hgSave()">Lưu báo hỏng</button></div>`);
+  renderFormPhotos('hg'); hgFree();
+}
+function hgK(k) { HGF.kind = k; document.querySelectorAll('#hg-k button').forEach(b => b.classList.toggle('on', b.dataset.k === k)); $g('hg-st-w').style.display = k === 'sua' ? '' : 'none'; $g('hg-w-w').style.display = k === 'sua' && HGF.st === 'sua' ? '' : 'none'; $g('hg-go').textContent = k === 'bo' ? 'Lưu & trừ khỏi ' + (HGF.loc === 'ct' ? 'công trường' : 'kho') : 'Lưu báo hỏng'; $g('hg-go').classList.toggle('red', k === 'bo'); }
+function hgS(s) { HGF.st = s; document.querySelectorAll('#hg-st button').forEach(b => b.classList.toggle('on', b.dataset.s === s)); $g('hg-w-w').style.display = s === 'sua' ? '' : 'none'; }
+function hgFree() { const it = db.items.find(i => i.id === TK9), f = HGF.loc === 'ct' ? HGF.freeC : HGF.freeK, el = $g('hg-free'); if (el && it) el.textContent = `${HGF.loc === 'ct' ? 'Ở công trường' : 'Trong kho'} còn ${fmtNum(Math.max(0, f))} ${it.unit} chưa báo hỏng`; if (HGF.kind === 'bo') hgK('bo'); }
+async function hgSave() {
+  const it = db.items.find(i => i.id === TK9); if (!it || !HGF) return;
+  const q = hgR3($g('hg-q').value), reason = ($g('hg-r').value || '').trim(), free = HGF.loc === 'ct' ? HGF.freeC : HGF.freeK;
+  if (!(q > 0)) { toast('⚠️ Nhập số lượng'); $g('hg-q').focus(); return; }
+  if (q > free + 1e-9) { toast(`⚠️ ${HGF.loc === 'ct' ? 'Ở công trường' : 'Trong kho'} chỉ còn ${fmtNum(Math.max(0, free))} ${it.unit} chưa báo hỏng`); return; }
+  if (reason.length < 3) { toast('⚠️ Ghi rõ hỏng gì'); $g('hg-r').focus(); return; }
+  if (!formPhotos.hg.length) { toast('⚠️ Chụp ít nhất 1 ảnh'); return; }
+  if (!navigator.onLine) { toast('📴 Cần có mạng để báo hỏng'); return; }
+  const id = String(newId()), st = HGF.kind === 'bo' ? 'bo' : HGF.st;
+  showLoader('Đang lưu…');
+  const r = await api('hongAdd', { project:curProj, id, itemId:it.id, qty:q, loc:HGF.loc, state:st, reason, where:st === 'sua' ? ($g('hg-w').value || '').trim() : '', txnId:id + '1' }, 30000);
+  hideLoader();
+  if (!r || !r.success) { toast('⚠️ ' + ((r && r.error) || 'Không lưu được') + (/không hợp lệ: hongAdd/.test((r && r.error) || '') ? ' — máy chủ chưa lên 5.50.0' : '')); return; }
+  const photos = formPhotos.hg.slice(); formPhotos.hg = []; hgClose();
+  await queuePhotos(id, photos);
+  toast(st === 'bo' ? `🗑 Đã ghi hỏng – thanh lý ${fmtNum(q)} ${it.unit}` : `🔧 Đã báo hỏng ${fmtNum(q)} ${it.unit} — ${st === 'sua' ? 'đang sửa' : 'để chờ'}`);
+  await syncAll(true); refreshCurrentView(false); tk9Render();
+}
+function hgAct(id, act) {
+  const o = (db.hong || []).find(x => String(x.id) === String(id)); if (!o) return;
+  const T = { sua:'🔧 Gửi sửa', xong:'✅ Sửa xong', bo:'🗑 Không sửa được – thanh lý' }[act];
+  hgSheet(`<div class="kl-h">${T}</div><div class="hg-d" style="margin:2px 0 8px">${escHtml(o.itemName)} · ${fmtNum(o.qty)} ${escHtml(o.unit || '')} ${hgLoc(o)} · ${escHtml(o.reason || '')}</div>
+    ${o.qty > 1 ? `<div class="hg-l">Số lượng</div><input class="hg-in" id="hga-q" type="number" inputmode="decimal" value="${o.qty}" max="${o.qty}">` : ''}
+    ${act === 'sua' ? `<div class="hg-l">Sửa ở đâu</div><input class="hg-in" id="hga-w" maxlength="120" placeholder="VD: Cơ khí Hoa Vinh / tự sửa tại công trường">` : ''}
+    ${act === 'bo' ? `<div class="hg-l">Lý do không sửa được</div><input class="hg-in" id="hga-n" maxlength="300" value="${escHtml(o.reason || '')}"><div class="hg-free">Trừ ngay khỏi ${o.loc === 'ct' ? 'công trường' : 'kho'} — phiếu xuất "Hư hỏng – thanh lý".</div>` : ''}
+    <div class="hg-bb"><button type="button" class="hg-c" onclick="hgClose()">Huỷ</button><button type="button" class="hg-ok${act === 'bo' ? ' red' : ''}" onclick="hgActGo('${o.id}','${act}')">${act === 'bo' ? 'Thanh lý' : act === 'xong' ? 'Sửa xong' : 'Gửi sửa'}</button></div>`);
+}
+async function hgActGo(id, act) {
+  const o = (db.hong || []).find(x => String(x.id) === String(id)); if (!o) return;
+  const q = $g('hga-q') ? hgR3($g('hga-q').value) : o.qty;
+  if (!(q > 0) || q > o.qty + 1e-9) { toast('⚠️ Số lượng từ 1 đến ' + fmtNum(o.qty)); return; }
+  const note = $g('hga-n') ? $g('hga-n').value.trim() : '';
+  if (act === 'bo' && note.length < 3) { toast('⚠️ Ghi lý do'); return; }
+  if (!navigator.onLine) { toast('📴 Cần có mạng'); return; }
+  const nid = String(newId());
+  showLoader('Đang lưu…');
+  const r = await api('hongSet', { id:o.id, act, qty:q, where:$g('hga-w') ? $g('hga-w').value.trim() : '', note, newId:nid, txnId:nid + '1' }, 30000);
+  hideLoader();
+  if (!r || !r.success) { toast('⚠️ ' + ((r && r.error) || 'Không lưu được')); return; }
+  hgClose(); toast({ sua:'🔧 Đã ghi gửi sửa', xong:'✅ Đã ghi sửa xong', bo:'🗑 Đã thanh lý — trừ tồn' }[act]);
+  await syncAll(true); refreshCurrentView(false); tk9Render();
+}
+
+// ---------- Chuyển hàng hỏng đi (phiếu xuất ra khỏi công trình / cho mượn) ----------
+function hgAsk(it, qty, open, loc) {
+  return new Promise(res => {
+    hgSheet(`<div class="kl-h">Có hàng hỏng trong số xuất đi?</div>
+      <div class="hg-d" style="margin:4px 0 10px">${escHtml(it.name)}: ${hgLoc({ loc })} đang có <b>${fmtNum(open)} ${escHtml(it.unit)} hỏng</b>. Trong ${fmtNum(qty)} ${escHtml(it.unit)} xuất đi lần này có mấy cái hỏng?</div>
+      <input class="hg-in" id="hgk-q" type="number" inputmode="decimal" value="${Math.min(qty, open)}">
+      <div class="hg-free">Bên nhận (nếu là dự án / kho FECON) sẽ thấy ngay số hàng hỏng này ở trạng thái "để chờ".</div>
+      <div class="hg-bb"><button type="button" class="hg-c" id="hgk-x">Huỷ</button><button type="button" class="hg-ok" id="hgk-ok">Tiếp tục xuất</button></div>`);
+    $g('hgk-x').onclick = () => { hgClose(); res(null); };
+    document.querySelector('#hg-sheet .kl-dim').onclick = () => { hgClose(); res(null); };
+    $g('hgk-ok').onclick = () => { const v = hgR3($g('hgk-q').value); if (v < 0 || v > Math.min(qty, open) + 1e-9) { toast('⚠️ Từ 0 đến ' + fmtNum(Math.min(qty, open))); return; } hgClose(); res(v); };
+  });
+}
+{ const _hgDX = doXuat; doXuat = async function () {
+  let ctx = null;
+  try {
+    const it = db.items.find(i => i.id === +($g('fx-item') || {}).value), qty = hgR3(($g('fx-qty') || {}).value);
+    if (it && qty > 0 && (fxMode === 'ngoai' || fxMode === 'cho')) {
+      const loc = fxMode === 'ngoai' ? (typeof fxCtVal === 'function' && fxCtVal(it) === 'ctra' ? 'ct' : 'kho') : (fxSrc === 'ct' && ctTrack(it) ? 'ct' : 'kho');
+      const open = hgQty(it, loc);
+      if (open > 0) {
+        const h = fxMode === 'ngoai' ? gdH.fxg : '', bo = h === 'hong';
+        const m = bo ? Math.min(qty, open) : await hgAsk(it, qty, open, loc);
+        if (m === null) return;
+        if (m > 0) ctx = { it, loc, m, h, bo, dest: fxMode === 'ngoai' && h ? gdDestVal('fxg') : '', mode:fxMode, nT:db.transactions.length, nL:(db.loans || []).length };
+      }
+    }
+  } catch (e) { console.error(e); }
+  const r = await _hgDX.apply(this, arguments);
+  try {
+    if (ctx) {
+      let txnId = '', dest = '', destP = '';
+      if (ctx.mode === 'ngoai') {
+        const t = db.transactions.length > ctx.nT ? db.transactions[db.transactions.length - 1] : null; if (!t || t.type !== 'xuat') return r;
+        txnId = t.id; dest = ctx.h === 'kho' ? GD.kho : ctx.dest; destP = ctx.h === 'kho' ? GD.kho : ctx.h === 'da' ? ctx.dest : '';
+      } else {
+        const L = (db.loans || []); if (L.length <= ctx.nL) return r;
+        const l = L[L.length - 1]; txnId = l.txnId || l.id; dest = l.party || ''; destP = (l.link && l.link.p) || l.linkP || '';
+      }
+      push('hongMove', { project:curProj, itemId:ctx.it.id, qty:ctx.m, loc:ctx.loc, dest, destP, bo:ctx.bo ? 1 : 0, txnId, key:'mv' + txnId });
+    }
+  } catch (e) { console.error(e); }
+  return r;
+}; }
+
+// ---------- Tổng quan: nhắc đang sửa quá 30 ngày ----------
+{ const _hgHome = renderHome; renderHome = function (c) {
+  _hgHome.apply(this, arguments);
+  try {
+    const late = (db.hong || []).filter(hgLate), wait = (db.hong || []).filter(o => o.state === 'cho');
+    if (!late.length && !wait.length) return;
+    const nm = o => { const it = db.items.find(i => (o.itemId !== '' && String(i.id) === String(o.itemId)) || normVN(i.name) === normVN(o.itemName)); return it ? `<a onclick="tk9Open(${it.id})">${escHtml(o.itemName)}</a>` : escHtml(o.itemName); };
+    c.insertAdjacentHTML('afterbegin', `<div class="hg-home${late.length ? ' late' : ''}">
+      ${late.length ? `<b>🔧 ${late.length} món đang sửa quá ${HG_DAYS} ngày</b> — quyết sửa tiếp hay thanh lý:<br>${late.slice(0, 5).map(o => `${nm(o)} (${fmtNum(o.qty)} ${escHtml(o.unit || '')}, ${hgSince(o)} ngày${o.where ? ', ' + escHtml(o.where) : ''})`).join(' · ')}` : ''}
+      ${wait.length ? `<div${late.length ? ' style="margin-top:6px"' : ''}>⏸ ${fmtNum(hgR3(wait.reduce((s, o) => s + o.qty, 0)))} món hỏng đang để chờ: ${wait.slice(0, 5).map(o => nm(o) + ' ' + fmtNum(o.qty)).join(' · ')}${wait.length > 5 ? '…' : ''}</div>` : ''}
+    </div>`);
+  } catch (e) {}
+}; }
+
+// ---------- Báo cáo ngày + Sổ NXT Excel ----------
+{ const _hgDR = buildDailyReport; buildDailyReport = function () {
+  const r = _hgDR.apply(this, arguments);
+  try {
+    const v = ($g('rp-day') || {}).value; if (!v) return r;
+    const [Y, M, D] = v.split('-').map(Number), same = s => { const d = parseVN(s); return d && d.getFullYear() === Y && d.getMonth() === M - 1 && d.getDate() === D; };
+    const ev = []; (db.hong || []).forEach(o => (o.hist || []).forEach(h => { if (same(h.at) && h.t !== 'tach') ev.push({ o, h }); }));
+    if (!ev.length) return r;
+    const L = { add:'báo hỏng', den:'nhận hàng hỏng', sua:'gửi sửa', xong:'sửa xong', bo:'thanh lý', di:'chuyển đi', cho:'để chờ' };
+    const el = $g('rp-text'), lines = ['', `🔧 HƯ HỎNG: ${ev.length} lượt`].concat(ev.slice(0, 15).map(({ o, h }) => ` • ${o.itemName}: ${L[h.t] || h.t} ${fmtNum(h.q)} ${o.unit || ''}${o.reason && (h.t === 'add' || h.t === 'bo') ? ' — ' + o.reason : ''}${h.w ? ' · ' + h.w : ''}`));
+    const t = el.value, k = t.lastIndexOf('\n\nNgười gửi:');
+    el.value = k > 0 ? t.slice(0, k) + '\n' + lines.join('\n') + t.slice(k) : t + '\n' + lines.join('\n');
+  } catch (e) {}
+  return r;
+}; }
+{ const _hgMS = addMeterSheet; addMeterSheet = function (wb, R) {
+  const r = _hgMS.apply(this, arguments);
+  try {
+    const open = (db.hong || []).filter(o => HG_OPEN[o.state]);
+    if (open.length) {
+      const ws = wb.addWorksheet('Đang hỏng');
+      ws.columns = [{ header:'STT', width:5 }, { header:'Tên vật tư', width:34 }, { header:'Đơn vị', width:9 }, { header:'Số lượng hỏng', width:12 }, { header:'Ở đâu', width:14 },
+        { header:'Tình trạng', width:14 }, { header:'Hỏng gì', width:34 }, { header:'Sửa ở đâu', width:24 }, { header:'Ngày báo', width:12 }, { header:'Số ngày', width:9 }, { header:'Chuyển từ', width:20 }, { header:'Người báo', width:18 }];
+      ws.getRow(1).font = { bold:true };
+      open.forEach((o, i) => ws.addRow([i + 1, o.itemName, o.unit, +o.qty, o.loc === 'ct' ? 'Công trường' : 'Trong kho', o.state === 'sua' ? 'Đang sửa' : 'Để chờ', o.reason, o.where || '',
+        String(o.at || '').split(' ').pop(), hgSince(o), String(o.from || '').split(' · ')[0], o.by || '']));
+      ws.views = [{ state:'frozen', ySplit:1 }];
+    }
+  } catch (e) {}
+  return r;
+}; }
+
+// ---------- Ô Nhập / Xuất nhanh: "báo hỏng 2 tank bent" · "hỏng bỏ 1 gàu d800" ----------
+{ const _hgV = q5Verb; q5Verb = function (seg) {
+  const s = String(seg || '').trim(), n = q5n(s);
+  let m = n.match(/^bao\s+hong\b\s*/); if (m) return { v:'hong', rest:s.slice(m[0].length).trim() };
+  m = n.match(/^(?:hong\s+bo|hong\s+khong\s+sua(?:\s+duoc)?|thanh\s+ly)\b\s*/); if (m) return { v:'outNgoai', h:'hong', dest:'Hỏng không sửa được', rest:s.slice(m[0].length).trim() };
+  return _hgV.apply(this, arguments);
+}; }
+Q5_NEEDKHO.hong = 1;
+Q5_KINDS.push(['hong', 'Báo hỏng – để chờ (tồn giữ nguyên)']);
+Q5_BADGE.hong = ['BÁO HỎNG · ĐỂ CHỜ', 'loan'];
+function hgQLoc(R, it) { const q = q5Qty(R); return hgR3((+it.stock || 0) - hgQty(it, 'kho')) >= q - 1e-9 || !(typeof ctSite === 'function' && ctSite(it) > 0) ? 'kho' : 'ct'; }
+{ const _hgC = q5Check; q5Check = function (R) {
+  const r = _hgC.apply(this, arguments);
+  try {
+    if (R.on && R.kind === 'hong') {
+      const it = q5ItemOf(R);
+      if (it) { const loc = hgQLoc(R, it), free = hgR3((loc === 'ct' ? ctSite(it) : +it.stock || 0) - hgQty(it, loc));
+        if (q5Qty(R) > free + 1e-9) R.errs.push(`${loc === 'ct' ? 'Ở công trường' : 'Trong kho'} chỉ còn ${fmtNum(Math.max(0, free))} ${it.unit} chưa báo hỏng`);
+        R.warns.push('Báo hỏng để chờ — tồn giữ nguyên. Ảnh, nơi sửa: bổ sung ở Thẻ kho'); }
+    }
+  } catch (e) {}
+  return r;
+}; }
+{ const _hgO = q5Ops; q5Ops = function () {
+  const res = _hgO.apply(this, arguments);
+  try {
+    let k = 0;
+    Q5.rows.forEach(R => {
+      if (!R.on) return; const it = q5ItemOf(R); if (!it) return;
+      if (R.kind === 'hong') res.ops.push({ k:'hong', line:R.line, d:{ id:String(newId() + (++k)), itemId:it.id, qty:q5Qty(R), loc:hgQLoc(R, it), state:'cho', reason:('Báo hỏng (lệnh nhanh): ' + R.seg).slice(0, 300) } });
+      if (R.kind === 'outNgoai' && R.h === 'hong') {
+        const loc = R.from === 'ct' ? 'ct' : 'kho', open = hgQty(it, loc), op = res.ops.find(o => o.k === 'txn' && o.line === R.line);
+        if (open > 0 && op) res.after.push(() => push('hongMove', { project:curProj, itemId:it.id, qty:Math.min(open, q5Qty(R)), loc, dest:'Hỏng không sửa được', bo:1, txnId:op.d.id, key:'mv' + op.d.id }));
+      }
+    });
+  } catch (e) { console.error(e); }
+  return res;
+}; }
+
+(function () {
+  try { formPhotos.hg = formPhotos.hg || []; } catch (e) {}
+  const css = `.hg-ton{font-size:12.5px;color:#C2410C;margin-top:6px;background:#FFF4EC;border-radius:8px;padding:4px 8px}.hg-ton.late{background:#FFF7E0;color:#92400E}.hg-ton b{color:var(--green)}
+.hg-box{margin:0 0 8px}.hg-g{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:8px}.hg-g div{background:#fff;border:1px solid var(--border);border-radius:10px;padding:8px 6px;text-align:center}
+.hg-g small{display:block;font-size:11px;color:var(--text2)}.hg-g b{font-size:16px}.hg-g b.bad{color:#C2410C}.hg-g b.ok{color:var(--green)}
+.hg-btn{width:100%;min-height:48px;border:2px solid #E8590C;background:#fff;color:#C2410C;border-radius:12px;font-weight:800;font-size:15.5px;margin-bottom:8px}
+.hg-sec{font-size:12px;font-weight:800;color:var(--text3,#8A93A0);margin:8px 2px 4px}
+.hg-r{background:#fff;border:1px solid var(--border);border-radius:12px;padding:8px 10px;margin-bottom:6px}.hg-r.late{background:#FFF7E0;border-color:#F0C36D}
+.hg-t{font-size:14px}.hg-s{font-size:11.5px;font-weight:800;border-radius:6px;padding:1px 6px}.hg-s.cho{background:#EDF1F4;color:#3D4A5C}.hg-s.sua{background:#FFF4EC;color:#C2410C}
+.hg-d{font-size:12.5px;color:var(--text2);margin-top:3px;line-height:1.45}.hg-d a{color:var(--primary);font-weight:700}.hg-d b{color:#92400E}
+.hg-act{display:flex;gap:6px;flex-wrap:wrap;margin-top:6px}.hg-act button{flex:1;min-height:36px;border:1.5px solid var(--border);border-radius:9px;background:#fff;font-size:12.5px;font-weight:700;color:var(--primary);white-space:nowrap}
+.hg-act button.ok{color:var(--green)}.hg-act button.no{color:#C92A2A}
+.hg-old{margin-top:6px;font-size:13px}.hg-old summary{cursor:pointer;font-weight:700;color:var(--text2);padding:4px 0}
+.hg-sh{max-height:88vh;overflow:auto}.hg-two{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:8px 0}.hg-two button{border:1.5px solid var(--border);border-radius:12px;background:#fff;padding:10px 6px;font-weight:800;font-size:14px;color:var(--text);min-height:54px}
+.hg-two button small{display:block;font-weight:500;font-size:11.5px;color:var(--text2);margin-top:2px}.hg-two button.on{border:2px solid #F26522;background:#FFF4EC;color:#C2410C}.hg-two.sm button{min-height:44px;font-size:13px}
+.hg-l{font-size:12px;font-weight:800;color:var(--text2);margin:10px 0 5px;text-transform:uppercase}.hg-in{display:block;width:100%;box-sizing:border-box;border:1.5px solid var(--border);border-radius:12px;padding:11px 12px;font-size:16px;background:#fff}
+.hg-row{display:grid;grid-template-columns:1fr 1fr;gap:8px}.hg-free{font-size:12.5px;color:var(--text2);margin-top:6px}
+.hg-bb{display:grid;grid-template-columns:1fr 1.5fr;gap:10px;margin-top:14px}.hg-bb button{min-height:50px;border-radius:12px;font-weight:800;font-size:15px}.hg-c{border:1.5px solid var(--border);background:#fff;color:var(--text)}
+.hg-ok{border:none;background:#F26522;color:#fff}.hg-ok.red{background:#C92A2A}
+.hg-home{background:#FFF4EC;border:1px solid #F5C9A8;border-radius:12px;margin:10px 14px 0;padding:10px 12px;font-size:13px;line-height:1.55;color:#7A3A0C}.hg-home.late{background:#FFF7E0;border-color:#F0C36D}.hg-home a{color:var(--primary);font-weight:700;text-decoration:underline}`;
   const st = document.createElement('style'); st.textContent = css; document.head.appendChild(st);
 })();
 </script>
