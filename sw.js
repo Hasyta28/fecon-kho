@@ -1,4 +1,7 @@
-// FECON Kho + Thi công - Service Worker v5.50.0
+// FECON Kho + Thi công - Service Worker v5.50.2
+// 5.50.2: sửa lỗi ngầm khi mở app (Tổng quan: byTimeDescL is not defined)
+// 5.50.1: Kho — Tồn kho có ô ⇅ Xếp (số lượng / tên / chủng loại / mới phát sinh); âm lên đầu, 0 xuống cuối
+// 5.50.1: Kho — xếp danh sách Tồn kho (Số lượng · Tên · Chủng loại · Mới phát sinh; âm lên đầu, 0 xuống cuối)
 // 5.50.0: Kho — Báo hỏng vật tư / thiết bị phụ trợ (Thẻ kho): để chờ · đang sửa · sửa xong · thanh lý; chuyển hàng hỏng sang dự án / kho công ty
 // 5.49.4: Kho — ô tìm kiếm ở Phiếu nhập / Phiếu xuất; Thẻ kho từng vật tư (Tồn kho → 📒 Thẻ kho)
 // 5.49.3: Kho — sửa: nút Đổi tên trên app còn chặn kho công ty (máy chủ 5.49.2 đã cho đổi)
@@ -44,7 +47,7 @@
 //  - Mở app: lấy file từ bộ nhớ của bản đang dùng; thiếu file nào mới lấy từ mạng.
 //  - Có sw.js mới trên GitHub: tải sẵn bản mới vào bộ nhớ riêng nhưng KHÔNG đổi bản đang dùng.
 //  - Địa chỉ có ?fresh=... luôn lấy thẳng từ mạng (app dùng để kiểm tra / tải bản mới).
-const VERSION = '5.50.0';
+const VERSION = '5.50.2';
 const APP = 'fecon-app-', META = 'fecon-meta';
 const CORE = ['./', './index.html', './thicong.html', './manifest.json', './icon-192.png', './icon-512.png', './icon-maskable-192.png', './icon-maskable-512.png', './bg-login.jpg'];
 

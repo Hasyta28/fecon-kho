@@ -1776,7 +1776,7 @@ button .pi,.btn .pi,a .pi,.chip .pi,.tag .pi,.badge .pi,.yn .pi,.bnav .pi,.bnav-
 // ============================================================
 // CONFIG
 // ============================================================
-const APP_VERSION = '5.50.0';
+const APP_VERSION = '5.50.2';
 const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbw6Rmi80I7RI3ij2U7RdRF5pYuQTnPrwEmGmUZS5xpxzLwwVynfoFUujZe1lm6HS1ymxw/exec';
 // ============================================================
 
@@ -2598,6 +2598,7 @@ function catGroups() {
   return out.filter(([,arr]) => arr.length);
 }
 
+function byTimeDescLSafe(a) { try { return byTimeDescL(a); } catch (e) { return byTimeDesc(a); } }   // v5.50.2
 function renderHome(c) {
   const si = stockItems();
   const low = si.filter(isLow);
@@ -2611,7 +2612,7 @@ function renderHome(c) {
   const catItems = cats.find(([c]) => c.id === homeCat)?.[1] || [];
   const units = unitGroups(catItems);
   if (!homeUnit || !units.some(([u]) => u === homeUnit)) homeUnit = units[0]?.[0] || null;
-  const recent = byTimeDescL(txns.filter(t => !(t.type === 'xuat' && t.thangCT)).concat(curProj !== 'all' && typeof devEvents === 'function' ? devEvents('vao').concat(devEvents('ra')) : [])).slice(0, 6);   // v5.44.1: có cả máy vào / ra
+  const recent = byTimeDescLSafe(txns.filter(t => !(t.type === 'xuat' && t.thangCT)).concat(curProj !== 'all' && typeof devEvents === 'function' ? devEvents('vao').concat(devEvents('ra')) : [])).slice(0, 6);   // v5.44.1: có cả máy vào / ra
 
   c.innerHTML = `${reqHomeHtml()}
     <div class="act-grid need-tk">
@@ -8510,7 +8511,7 @@ doLoan = guardBtn('loan', doLoan); saveLoanReturn = guardBtn('loan', saveLoanRet
   if (token && me && qPart !== 'kho' && tcCan() && (!khoCan() || localStorage.getItem('fecon_part') === 'tc')) { location.replace('thicong.html'); return; }   // v5.31
   if (token && me) {                  // đã đăng nhập trên máy này → vào luôn (dùng được cả khi mất mạng)
     showPage('pg-app');
-    setupApp();
+    if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', () => setupApp()); else setupApp();   // v5.50.2
   } else {
     showPage('pg-login'); authTab('login'); netStart();
     if (me) document.getElementById('li-user').value = me.username;
@@ -12226,6 +12227,82 @@ function hgQLoc(R, it) { const q = q5Qty(R); return hgR3((+it.stock || 0) - hgQt
 .hg-bb{display:grid;grid-template-columns:1fr 1.5fr;gap:10px;margin-top:14px}.hg-bb button{min-height:50px;border-radius:12px;font-weight:800;font-size:15px}.hg-c{border:1.5px solid var(--border);background:#fff;color:var(--text)}
 .hg-ok{border:none;background:#F26522;color:#fff}.hg-ok.red{background:#C92A2A}
 .hg-home{background:#FFF4EC;border:1px solid #F5C9A8;border-radius:12px;margin:10px 14px 0;padding:10px 12px;font-size:13px;line-height:1.55;color:#7A3A0C}.hg-home.late{background:#FFF7E0;border-color:#F0C36D}.hg-home a{color:var(--primary);font-weight:700;text-decoration:underline}`;
+  const st = document.createElement('style'); st.textContent = css; document.head.appendChild(st);
+})();
+</script>
+<script>// ===== v5.50.1 KHO — XẾP DANH SÁCH TỒN KHO =====
+// 1 ô "⇅ Xếp: …" → bảng chọn: Số lượng nhiều→ít (mặc định) · ít→nhiều · Tên A→Z · Chủng loại · Mới phát sinh. Nhớ trên máy.
+// Số lượng = tồn trong kho + ở công trường. Mọi kiểu: món âm lên đầu (đỏ), món = 0 xuống cuối (nhạt).
+const X9_LS = 'fecon_ton_sort_v1';
+const X9_OPT = [['qd', 'Số lượng: nhiều → ít', 'kho + công trường'], ['qa', 'Số lượng: ít → nhiều', 'kho + công trường'], ['ten', 'Tên A → Z', 'D20 < D25 < D100'],
+  ['loai', 'Chủng loại', 'theo nhóm — bấm tiêu đề nhóm để thu gọn'], ['moi', 'Mới phát sinh', 'món vừa nhập / xuất lên đầu']];
+let X9 = 'qd'; try { const v = localStorage.getItem(X9_LS); if (X9_OPT.some(o => o[0] === v)) X9 = v; } catch (e) {}
+const X9_FOLD = new Set();
+const x9Tot = it => Math.round(((+it.stock || 0) + (typeof ctSite === 'function' ? ctSite(it) : 0)) * 1000) / 1000;
+const x9Name = (a, b) => String(a.name).localeCompare(String(b.name), 'vi', { numeric:true, sensitivity:'base' });
+function x9Last() {                                                     // lần phát sinh gần nhất của từng món
+  const m = {}; (db.transactions || []).forEach(t => { const d = parseVN(t.datetime); const v = d ? d.getTime() : 0; if (v > (m[t.itemId] || 0)) m[t.itemId] = v; }); return m;
+}
+{ const _x9Rows = renderTonRows; renderTonRows = function (items) {
+  if (!Array.isArray(items) || !items.length) return _x9Rows.apply(this, arguments);
+  const neg = items.filter(i => x9Tot(i) < 0).sort((a, b) => x9Tot(a) - x9Tot(b) || x9Name(a, b));
+  const zero = items.filter(i => x9Tot(i) === 0).sort(x9Name);
+  let pos = items.filter(i => x9Tot(i) > 0);
+  const last = X9 === 'moi' ? x9Last() : null;
+  const cmp = { qd:(a, b) => x9Tot(b) - x9Tot(a) || x9Name(a, b), qa:(a, b) => x9Tot(a) - x9Tot(b) || x9Name(a, b), ten:x9Name,
+    loai:(a, b) => x9Tot(b) - x9Tot(a) || x9Name(a, b), moi:(a, b) => (last[b.id] || 0) - (last[a.id] || 0) || x9Name(a, b) }[X9];
+  pos = pos.sort(cmp);
+  const H = (cls, txt, n) => `<div class="x9-h ${cls}">${txt} · ${fmtNum(n)}</div>`;
+  let html = '';
+  if (neg.length) html += H('neg', '🔻 TỒN ÂM — SỐ LIỆU CẦN KIỂM TRA', neg.length) + `<div class="x9-neg">${_x9Rows.call(this, neg)}</div>`;
+  if (pos.length) {
+    if (X9 === 'loai') {
+      const order = CATEGORIES.map(c => c.id), g = {};
+      pos.forEach(i => { (g[i.cat] = g[i.cat] || []).push(i); });
+      Object.keys(g).sort((a, b) => ((order.indexOf(a) + 1) || 999) - ((order.indexOf(b) + 1) || 999)).forEach(cid => {
+        const c = typeof catOf === 'function' ? catOf(cid) : null, f = X9_FOLD.has(cid);
+        html += `<div class="x9-h grp${f ? ' fold' : ''}" onclick="x9Fold('${cid}')">${escHtml((c && c.name) || 'Khác')} · ${fmtNum(g[cid].length)} món <b>${f ? '▸' : '▾'}</b></div>` + (f ? '' : _x9Rows.call(this, g[cid]));
+      });
+    } else {
+      const sub = { qd:'nhiều → ít', qa:'ít → nhiều', ten:'tên A → Z', moi:'mới phát sinh trước' }[X9];
+      html += (neg.length || zero.length ? H('', 'CÓ HÀNG · ' + sub, pos.length) : '') + _x9Rows.call(this, pos);
+    }
+  }
+  if (zero.length) html += H('zero', 'HẾT HÀNG (SỐ LƯỢNG 0)', zero.length) + `<div class="x9-zero">${_x9Rows.call(this, zero)}</div>`;
+  return html;
+}; }
+function x9Fold(cid) { if (X9_FOLD.has(cid)) X9_FOLD.delete(cid); else X9_FOLD.add(cid); x9Redraw(); }
+function x9Redraw() {
+  const l = document.getElementById('ton-list'); if (!l) return;
+  l.innerHTML = renderTonRows(tonItems());
+  try { if (typeof hgDecorate === 'function') hgDecorate(); } catch (e) {}
+  const b = document.getElementById('x9-sel'); if (b) b.querySelector('b').textContent = X9_OPT.find(o => o[0] === X9)[1];
+}
+function x9Open() {
+  document.getElementById('x9-sheet')?.remove();
+  document.body.insertAdjacentHTML('beforeend', `<div class="kl-sheet-w" id="x9-sheet"><div class="kl-dim" onclick="document.getElementById('x9-sheet').remove()"></div><div class="kl-sheet" role="dialog" aria-label="Xếp danh sách">
+    <div class="kl-h">Xếp danh sách theo</div>
+    ${X9_OPT.map(o => `<button type="button" class="x9-o${o[0] === X9 ? ' on' : ''}" data-k="${o[0]}"><span>${o[1]}<small>${o[2]}</small></span>${o[0] === X9 ? '<b>✓</b>' : ''}</button>`).join('')}
+    <div class="x9-n">Kiểu nào cũng vậy: món tồn âm ở đầu (đỏ), món số lượng 0 ở cuối.</div></div></div>`);
+  document.querySelectorAll('#x9-sheet .x9-o').forEach(b => b.onclick = () => { X9 = b.dataset.k; try { localStorage.setItem(X9_LS, X9); } catch (e) {} document.getElementById('x9-sheet').remove(); x9Redraw(); });
+}
+{ const _x9RT = renderTon; renderTon = function (c) {
+  const r = _x9RT.apply(this, arguments);
+  try {
+    const chips = c.querySelector('.chip-row');
+    if (chips && !document.getElementById('x9-sel')) chips.insertAdjacentHTML('beforebegin', `<div style="padding:10px 14px 0"><button type="button" id="x9-sel" class="x9-sel" onclick="x9Open()">⇅ Xếp: <b>${X9_OPT.find(o => o[0] === X9)[1]}</b> <span>▾</span></button></div>`);
+  } catch (e) {}
+  return r;
+}; }
+(function () {
+  const css = `.x9-sel{display:inline-flex;align-items:center;gap:6px;min-height:40px;padding:0 14px;border:1.5px solid var(--border);border-radius:999px;background:#fff;font:inherit;font-size:13.5px;color:var(--text2);font-weight:600}
+.x9-sel b{color:var(--primary)}.x9-sel span{color:var(--text3,#8A93A0)}
+.x9-o{display:flex;align-items:center;justify-content:space-between;width:100%;min-height:56px;padding:8px 10px;border:none;border-bottom:1px solid #EEF1F5;background:#fff;font:inherit;font-size:15.5px;font-weight:600;text-align:left;color:var(--text)}
+.x9-o small{display:block;font-weight:500;font-size:12px;color:var(--text2);margin-top:2px}.x9-o.on{background:#FFF4EC;border-radius:10px;color:#C2410C}.x9-o b{color:#C2410C}
+.x9-n{font-size:12.5px;color:var(--text3,#8A93A0);margin-top:10px}
+.x9-h{background:#F5F7FA;font-size:11.5px;font-weight:800;color:var(--text3,#8A93A0);padding:7px 14px;letter-spacing:.02em}.x9-h.neg{background:#FDECEC;color:#C92A2A}
+.x9-h.grp{background:#EEF3FA;color:var(--primary);cursor:pointer;display:flex;justify-content:space-between;font-size:12.5px}.x9-h.grp b{font-size:13px}
+.x9-neg .progress-item{background:#FFF5F5}.x9-neg .prog-nums{color:var(--red);font-weight:800}.x9-zero .progress-item{opacity:.6}`;
   const st = document.createElement('style'); st.textContent = css; document.head.appendChild(st);
 })();
 </script>
