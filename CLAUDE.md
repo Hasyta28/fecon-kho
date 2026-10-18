@@ -34,6 +34,14 @@ KHÔNG đưa lên repo (repo công khai): file dữ liệu `.xlsx` (thư mục `
 5. Khi làm: tăng phiên bản; gói `FECON_x.y.z.zip` + `HUONG_DAN_CAP_NHAT.txt` (bấm gì, có dán Apps Script không); chạy thử trên máy chủ giả + xem ảnh chụp rồi mới gửi; cập nhật `BAN_GIAO.md`.
 6. Không làm tính năng giúp khai số đo khác thực tế trong hồ sơ nghiệm thu.
 
+## Đóng gói & triển khai (tránh làm app / máy chủ nặng)
+
+- `bg-login.jpg`: luôn dùng bản nhẹ đang có trên repo (~170 KB), không đưa bản ~2 MB vào gói — app tải sẵn ảnh này về mọi điện thoại.
+- Thư mục `1_GitHub` trong gói chỉ chứa đúng các file phải thay; `HUONG_DAN_CAP_NHAT.txt` ghi rõ từng file.
+- Bản có dán Apps Script: cập nhật luôn `apps_script_fecon.gs` + `thicong.gs` trên repo.
+- Apps Script giới hạn 200 phiên bản / dự án (đã tới ~70 vào 16/10/2026). Khi số phiên bản > 150: nhắc người dùng xoá hàng loạt phiên bản cũ (Lịch sử dự án → Xoá hàng loạt phiên bản). Triển khai luôn bằng cách SỬA bản triển khai đang dùng (ID bắt đầu `AKfycbw6Rmi80I7`) → Phiên bản mới, không tạo bản triển khai mới.
+- Hẹn giờ máy chủ: GIU_AM 5 phút, SAO_LUU_tuDong 23:00, tgPoll 1 phút (nếu bật Telegram). Tài khoản Gmail thường chỉ có ~90 phút chạy hẹn giờ / ngày — không thêm hẹn giờ dày hơn.
+
 ## Chia việc theo model (tiết kiệm chi phí)
 
 Phiên chính chạy Opus: hiểu yêu cầu, phản biện, B-C-D, chốt danh sách, quyết định, kiểm tra kết quả cuối. Không giao các việc này đi.
