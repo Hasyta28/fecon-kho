@@ -8,11 +8,14 @@ Người dùng rành vận hành app và hiện trường, không chuyên lập 
 |---|---|---|
 | `index.html` | App Kho (một file, ~12.000 dòng, ~1,1 MB) | `APP_VERSION = '…'` |
 | `thicong.html` | App Thi công cọc khoan nhồi / tường vây (~4.300 dòng) | |
-| `apps_script_fecon*.gs` | Máy chủ Google Apps Script | `SERVER_VERSION = '…'` |
+| `apps_script_fecon.gs` | Máy chủ Google Apps Script — tệp chính ("Mã") | `SERVER_VERSION = '…'` |
+| `thicong.gs` | Máy chủ Apps Script — tệp "thicong" (phần Thi công) | `TC_VERSION = '…'` |
 | `sw.js`, `manifest.json` | Cài app lên điện thoại, chạy khi mất mạng | |
 | `huongdan/*.webp`, `*.jpg`, `*.png` | Ảnh hướng dẫn / giao diện: KHÔNG đọc | |
 
-⚠ File `.gs` trong repo có thể cũ hơn máy chủ thật (bản thật nằm trong trình soạn Apps Script). Trước khi sửa phần máy chủ: so `SERVER_VERSION` với lời nhắc "máy chủ cần bản x.y.z" trong `index.html`; nếu lệch thì xin người dùng chép code Apps Script hiện tại, đừng sửa trên bản cũ.
+Hai tệp `.gs` phải luôn giống bản đang chạy trong trình soạn Apps Script. Mỗi bản có dán Apps Script mới: cập nhật luôn 2 tệp này trong repo (giữ tên cố định, không thêm số bản vào tên). Trước khi sửa phần máy chủ: so `SERVER_VERSION` với lời nhắc "máy chủ cần bản x.y.z" trong `index.html`; nếu lệch thì xin người dùng chép code Apps Script hiện tại, đừng sửa trên bản cũ.
+
+KHÔNG đưa lên repo (repo công khai): file dữ liệu `.xlsx` (thư mục `3_Du_lieu` trong gói), sao lưu Google Sheet, mã bot / mật khẩu / ID Google Sheet thật.
 
 ## Đọc code tiết kiệm token (bắt buộc)
 
