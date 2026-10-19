@@ -1,4 +1,6 @@
-// FECON Kho + Thi công - Service Worker v5.51.1
+// FECON Kho + Thi công - Service Worker v5.53.1
+// 5.53.1: phiếu giấy khớp phiếu cóc, kiểm kê, báo cáo; giờ cấp trên phiếu; vật tư cấp thẳng; Admin huỷ nhập
+// 5.53.0: phiếu yêu cầu giấy có mã QR (in hàng loạt, chụp QR nhập phiếu, theo dõi dải mã)
 // 5.51.1: gợi ý Phiếu nhập / xuất lấy từ Danh mục vật tư (Admin) · icon Phosphor kiểu đặc · bỏ emoji ở ô chọn, ô tìm, Excel, Zalo · "Thẳng ra công trường" dùng hình xe tải
 // 5.51.0: Kho — báo cáo Excel khung mới (Tổng quan · Tổng hợp NXT · Sổ nhập · Sổ xuất · Nhiên liệu + phụ lục) · ô Số chứng từ ở phiếu nhập
 // 5.50.2: sửa lỗi ngầm khi mở app (Tổng quan: byTimeDescL is not defined)
@@ -49,7 +51,7 @@
 //  - Mở app: lấy file từ bộ nhớ của bản đang dùng; thiếu file nào mới lấy từ mạng.
 //  - Có sw.js mới trên GitHub: tải sẵn bản mới vào bộ nhớ riêng nhưng KHÔNG đổi bản đang dùng.
 //  - Địa chỉ có ?fresh=... luôn lấy thẳng từ mạng (app dùng để kiểm tra / tải bản mới).
-const VERSION = '5.51.1';
+const VERSION = '5.53.1';
 const APP = 'fecon-app-', META = 'fecon-meta';
 const CORE = ['./', './index.html', './thicong.html', './manifest.json', './icon-192.png', './icon-512.png', './icon-maskable-192.png', './icon-maskable-512.png', './bg-login.jpg'];
 
