@@ -1,5 +1,5 @@
-// FECON Kho + Thi công - Service Worker v5.54.1
-// 5.54.1: sửa phông in (chữ có dấu đậm đều), phiếu nhập theo xe kéo dài hàng, biên bản xuất gọn lại
+// FECON Kho + Thi công - Service Worker v5.55.0
+// 5.55.0: một tồn kho (hàng ở công trường vẫn là tồn kho), xem phiếu giấy khi quét mã QR
 // 5.54.0: phiếu nhập theo xe (PN), biên bản xuất ra khỏi công trình (PX), ô quét QR ở Tổng quan, logo mới
 // 5.53.2: phiếu giấy in A4 dọc 4 dải ngang, lề trái kẹp bìa, QR nhỏ hơn
 // 5.53.1: phiếu giấy khớp phiếu cóc, kiểm kê, báo cáo; giờ cấp trên phiếu; vật tư cấp thẳng; Admin huỷ nhập
@@ -54,7 +54,7 @@
 //  - Mở app: lấy file từ bộ nhớ của bản đang dùng; thiếu file nào mới lấy từ mạng.
 //  - Có sw.js mới trên GitHub: tải sẵn bản mới vào bộ nhớ riêng nhưng KHÔNG đổi bản đang dùng.
 //  - Địa chỉ có ?fresh=... luôn lấy thẳng từ mạng (app dùng để kiểm tra / tải bản mới).
-const VERSION = '5.54.1';
+const VERSION = '5.55.0';
 const APP = 'fecon-app-', META = 'fecon-meta';
 const CORE = ['./', './index.html', './thicong.html', './manifest.json', './icon-192.png', './icon-512.png', './icon-maskable-192.png', './icon-maskable-512.png', './bg-login.jpg'];
 
