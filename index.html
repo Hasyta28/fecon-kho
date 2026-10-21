@@ -445,7 +445,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,"SF Pro Display","Segoe UI",sa
 .total-val{font-size:17.5px;font-weight:800;color:var(--orange)}
 
 /* ===== v5: TÀI KHOẢN & QUYỀN ===== */
-body:not(.can-tk) .need-tk,body:not(.can-ql) .need-ql,body:not(.can-admin) .need-admin{display:none!important}
+body:not(.can-tk) .need-tk,body:not(.can-ql) .need-ql,body:not(.can-admin) .need-admin,body:not(.can-gio) .need-gio{display:none!important}
 body.can-ql .hide-ql{display:none!important}
 #pg-login{overflow-y:auto;justify-content:flex-start;padding-top:calc(28px + env(safe-area-inset-top));padding-bottom:calc(28px + env(safe-area-inset-bottom))}
 #pg-login>.login-logo{margin-top:auto;margin-bottom:24px}
@@ -1894,7 +1894,7 @@ body.pg-printing #pg-print{display:block;position:fixed;inset:0;z-index:9000;bac
 // ============================================================
 // CONFIG
 // ============================================================
-const APP_VERSION = '5.55.0';
+const APP_VERSION = '5.55.2';
 const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbw6Rmi80I7RI3ij2U7RdRF5pYuQTnPrwEmGmUZS5xpxzLwwVynfoFUujZe1lm6HS1ymxw/exec';
 // ============================================================
 
@@ -2117,6 +2117,7 @@ function showPage(id) {
 // ===== APP SETUP =====
 function applyRoleUI() {
   ['tk','ql','admin'].forEach(r => document.body.classList.toggle('can-' + r, can(r)));
+  document.body.classList.toggle('can-gio', can('admin') || hp('k_gio'));   // v5.55.1: chọn ngày giờ phiếu (ghi bù)
   document.body.classList.toggle('can-lead', hp('v_all'));
   document.body.classList.toggle('can-cost', canCost());
   // v5.18: ẩn hẳn màn hình / mục Menu theo bảng quyền chức danh
@@ -2349,7 +2350,7 @@ function applyServer(r) {
   // v5.23: giữ dữ liệu các dự án khác trên máy (đổi tài khoản tải nhanh); app chỉ hiện dự án tài khoản được giao
   if (r.items) db.items = r.items.map(i => ({...i, id:+i.id, stock:+i.stock||0, minStock:+i.minStock||0, capThang:+i.capThang||0, canMay:+i.canMay||0, maQL:String(i.maQL || ''), ngoaiDM:+i.ngoaiDM || ''}));
   if (r.devlog) db.devlog = r.devlog.map(e => ({...e, deviceId:+e.deviceId, date:fmtDateInput(e.date), meter:e.meter === '' || e.meter === undefined ? '' : +e.meter}));   // v5.29: máy vào / ra
-  ['reqs','cauKien','ckv','projCfg','rolePerm','kkMoc','tg','pg','pgIn','xeTypes'].forEach(k => { if (r[k] !== undefined) db[k] = r[k]; });   // máy chủ 5.13+
+  ['reqs','cauKien','ckv','projCfg','rolePerm','kkMoc','tg','pg','pgIn','xeTypes','gioMax'].forEach(k => { if (r[k] !== undefined) db[k] = r[k]; });   // máy chủ 5.13+
   db.thangDS = Array.isArray(r.thangDS) ? r.thangDS : null;   // v5.30: máy chủ 5.22+ mới có danh sách xuất thẳng
   if (r.devices) db.devices = r.devices.map(d => ({...d, id:+d.id, fuelRate:+d.fuelRate||20, meterUnit:d.meterUnit || 'h',
     maQL:String(d.maQL || ''), ngoaiDM:+d.ngoaiDM || '',
@@ -3262,7 +3263,7 @@ function renderNhap(c) {
       <div class="fg" id="fn-cts-row"><label>Số chứng từ / biên bản giao hàng <small style="font-weight:500;color:var(--text3);text-transform:none">· không bắt buộc</small></label><input type="text" id="fn-cts" placeholder="VD: BBGH 125/10, HĐ 0001234"></div>
       <div class="fg" id="fn-giao-row" style="display:none"><label>Giao cho (không bắt buộc)</label><input type="text" id="fn-giao" placeholder="Tổ đội / hạng mục nhận…"></div>
       <div class="fg"><label>Số phiếu / Ghi chú</label><textarea id="fn-note" rows="2" placeholder="Ghi chú..."></textarea></div>
-      <div class="fg need-admin"><label>Ngày giờ phiếu (để trống = bây giờ)</label><input type="datetime-local" id="fn-time"></div>
+      <div class="fg need-gio"><label>Ngày giờ phiếu (để trống = bây giờ)</label><input type="datetime-local" id="fn-time"></div>
       <div id="fn-photo-row">${photoFieldHtml('fn')}</div>
       <button class="btn-full btn-green" id="fn-save" onclick="doNhap()">✅ Xác nhận nhập kho</button>
     </div>
@@ -3485,7 +3486,7 @@ function renderXuat(c) {
       </div>
       <div id="fx-mwrap"></div>
       <div class="fg"><label>Người nhận / Ghi chú</label><textarea id="fx-note" rows="2" placeholder="Ghi chú..."></textarea></div>
-      <div class="fg need-admin"><label>Ngày giờ phiếu (để trống = bây giờ)</label><input type="datetime-local" id="fx-time"></div>
+      <div class="fg need-gio"><label>Ngày giờ phiếu (để trống = bây giờ)</label><input type="datetime-local" id="fx-time"></div>
       ${photoFieldHtml('fx')}
       <button class="btn-full btn-orange" onclick="doXuat()">📤 Xác nhận xuất kho</button>
     </div>
@@ -5618,7 +5619,7 @@ function vnToLocal(s) {
 }
 function withAdminTime(txn, inputId) {
   const el = document.getElementById(inputId);
-  const v = can('admin') && el ? localToVN(el.value) : '';
+  const v = (can('admin') || hp('k_gio')) && el ? localToVN(el.value) : '';   // v5.55.1: quyền k_gio
   if (v) { txn.txTime = v; txn.datetime = v; }
 }
 const txnEffect = t => ctFx(t)[0];                         // v5.35: phần trong kho
@@ -8039,7 +8040,7 @@ let listLimit = {nhap:100, xuat:100, dieuchinh:100};
 // ===== v5.18.0: CHỨC DANH & PHÂN QUYỀN (Admin cài trong app) =====
 const PERM_UI = [
   ['Màn hình được thấy', [['v_pyc','Phiếu yêu cầu',''],['v_home','Tổng quan',''],['v_nhap','Phiếu nhập (xem)',''],['v_xuat','Phiếu xuất (xem)',''],['v_ton','Tồn kho (số lượng)',''],['v_baocao','Báo cáo',''],['v_stat','Thống kê dự án đang làm','Chi phí, tiến độ của dự án được giao'],['v_all','Tổng hợp các dự án','Xem mọi dự án, so sánh, chi phí nhiều dự án'],['v_ver','Xem nội dung cập nhật phiên bản','Thông báo đầy đủ, chi tiết từng bản, lịch sử cập nhật']]],
-  ['Kho', [['k_nhap','Lập phiếu nhập',''],['k_xuat','Lập phiếu xuất (xuất thẳng)',''],['k_edit','Sửa / điều chỉnh phiếu',''],['k_kk','Kiểm kê',''],['k_dm','Thêm, sửa tên + nhóm vật tư / thiết bị','Đổi đơn vị và xóa: chỉ Admin'],['k_copy','Chép vật tư từ dự án khác',''],['k_bomuon','Duyệt bỏ thông tin mượn','Mặc định CHT, CHP, P.QLTB'],['k_hd','Ghi ngày máy bắt đầu hoạt động','Mặc định PP / TP QLTB — bật thêm cho cán bộ QLTB'],['k_loan','Cho mượn / trả dụng cụ',''],['k_meter','Ghi giờ máy thiết bị','Khi xuất dầu, vào / kết thúc công trình'],['k_thang','Nhập thẳng ra công trường','Phiếu nhập có 2 ô 📦 Vào kho / 🚚 Thẳng ra công trường (nhập + xuất cùng lúc, tồn không đổi)']]],
+  ['Kho', [['k_nhap','Lập phiếu nhập',''],['k_xuat','Lập phiếu xuất (xuất thẳng)',''],['k_edit','Sửa / điều chỉnh phiếu',''],['k_kk','Kiểm kê',''],['k_dm','Thêm, sửa tên + nhóm vật tư / thiết bị','Đổi đơn vị và xóa: chỉ Admin'],['k_copy','Chép vật tư từ dự án khác',''],['k_bomuon','Duyệt bỏ thông tin mượn','Mặc định CHT, CHP, P.QLTB'],['k_hd','Ghi ngày máy bắt đầu hoạt động','Mặc định PP / TP QLTB — bật thêm cho cán bộ QLTB'],['k_loan','Cho mượn / trả dụng cụ',''],['k_meter','Ghi giờ máy thiết bị','Khi xuất dầu, vào / kết thúc công trình'],['k_thang','Nhập thẳng ra công trường (không dùng từ 5.55)','Từ 5.55 mọi hàng nhập đều là tồn kho — quyền này không còn tác dụng'],['k_gio','Chọn ngày giờ phiếu','Phiếu nhập / xuất / nhập nhanh. Số ngày được lùi: khung "Chọn ngày giờ phiếu" ở đầu trang này']]],
   ['Giá & chi phí', [['g_view','Xem giá, chi phí',''],['g_price','Sửa bảng giá',''],['g_prog','Cập nhật tiến độ thi công','']]],
   ['Phiếu yêu cầu', [['y_tao','Tạo phiếu',''],['y_bs','Xin bổ sung ngoài định mức',''],['y_duyet','Duyệt phiếu',''],['y_giao','Giao hàng theo phiếu (kho)',''],['y_nhan','Xác nhận nhận hàng',''],['y_xem','Xem mọi phiếu của dự án','Tắt = chỉ thấy phiếu của mình']]],
   ['Xuất file', [['x_nxt','Xuất Excel NXT',''],['x_pyc','Xuất báo cáo phiếu YC','']]],
@@ -8050,7 +8051,7 @@ const V6 = ['v_pyc','v_home','v_nhap','v_xuat','v_ton','v_baocao'];
 const GROUP_UI = {
   g1:['① Phiếu YC', ['v_pyc','y_tao','y_bs','y_nhan','y_xem']], g2:['② Giám sát', ['v_pyc','y_xem']],
   g3:['③ Xem toàn bộ', V6.concat(['v_stat','g_view','y_xem','x_nxt','x_pyc'])],
-  g4:['④ Kho', V6.concat(['k_nhap','k_xuat','k_edit','k_kk','k_dm','k_copy','k_loan','y_giao','y_xem','x_nxt','x_pyc','k_meter','k_thang'])],
+  g4:['④ Kho', V6.concat(['k_nhap','k_xuat','k_edit','k_kk','k_dm','k_copy','k_loan','y_giao','y_xem','x_nxt','x_pyc','k_meter','k_thang','k_gio'])],
   g5:['⑤ Đầy đủ', V6.concat(['v_stat','g_view','g_prog','y_xem','x_nxt','x_pyc','k_meter'])],
   g6:['⑥ Lãnh đạo', V6.concat(['v_stat','v_all','g_view','y_xem','x_nxt','x_pyc'])],
   gq:['Quản lý (cũ)', PERM_KEYS.filter(k => k !== 'v_all')], ga:['Quản trị', PERM_KEYS]
@@ -11464,8 +11465,8 @@ function q5Build(text) {
   let ctx = null, srcByLine = {};
   segs.forEach(sg => {
     let t = sg.text;
-    const from = q5n(t).match(/\s+tu\s+(.{2,40})$/);
-    if (from) { const k = q5n(t).lastIndexOf(from[0]); srcByLine[sg.line] = t.slice(k + 1).replace(/^từ\s+/i, '').trim(); t = t.slice(0, k).trim(); }
+    const from = t.match(/^(.*\S)\s+(?:từ|tu)\s+(.{2,40})$/i);       // v5.55.1: so chữ gốc ("tủ điện" không phải "từ …"), lấy chữ "từ" cuối cùng
+    if (from) { srcByLine[sg.line] = from[2].trim(); t = from[1].trim(); }
     let vb = q5Verb(t);
     if (vb) ctx = vb; else if (ctx) vb = Object.assign({}, ctx, { rest:t });
     const R = { line:sg.line, seg:sg.text, full:sg.full, on:true, warns:[], errs:[], ncc:srcByLine[sg.line] || '', price:'', due:'', kg:'', alts:[] };
@@ -14150,6 +14151,96 @@ pycHashOpen = function () {
   try { history.replaceState(null, '', location.pathname + location.search); } catch (e) {}
   pgView(code);
 };
+
+// =====================================================================
+// v5.55.1 — GHI BÙ NGÀY GIỜ PHIẾU: quyền k_gio (mặc định Thủ kho) chọn ngày giờ phiếu nhập / xuất / nhập nhanh.
+// Không cho giờ tương lai; không phải Admin lùi tối đa db.gioMax ngày (0 = không giới hạn, Admin đặt ở trang Phân quyền).
+// Giờ trước mốc kiểm kê → hỏi lại (ghi sổ, không đổi tồn). Phiếu ghi bù: clientTime = giờ lập thật → nhãn "Ghi bù".
+// =====================================================================
+const canGio = () => can('admin') || hp('k_gio');
+const gbOf = t => { if (!t || !t.clientTime) return null; const a = parseVN(t.datetime), b = parseVN(t.clientTime); return a && b && b - a > 10 * 60000 ? b : null; };
+function gioCheck(vn, items) {
+  const d = parseVN(vn); if (!d) { toast('⚠️ Ngày giờ phiếu không hợp lệ'); return false; }
+  const ms = d.getTime();
+  if (ms > Date.now() + 5 * 60000) { toast('⚠️ Ngày giờ phiếu ở tương lai'); return false; }
+  const mx = +db.gioMax || 0;
+  if (!can('admin') && mx > 0 && ms < Date.now() - mx * 864e5) { toast(`⚠️ Chỉ được chọn ngày phiếu lùi tối đa ${mx} ngày — phiếu cũ hơn nhờ Admin nhập`); return false; }
+  const M = db.kkMoc || {}, bm = [...new Set(items.filter(Boolean))].filter(it => +M[String(it.id)] && ms <= +M[String(it.id)]);
+  if (bm.length && !confirm(`Giờ phiếu ${vn} trước lần kiểm kê của: ${bm.map(i => i.name).join(', ')}.\nPhiếu vẫn ghi vào sổ nhưng KHÔNG đổi tồn (số đếm kiểm kê đã tính phần này).\n\nLưu tiếp?`)) return false;
+  return bm.length ? 'moc' : true;
+}
+// phiếu nhập / phiếu xuất: kiểm giờ trước khi lưu
+function gioWrap(fn, timeId, itemOf) {
+  return async function () {
+    const el = document.getElementById(timeId), v = canGio() && el ? localToVN(el.value) : '';
+    let ok = true;
+    if (v) { ok = gioCheck(v, [itemOf()]); if (!ok) return; }
+    const r = await fn.apply(this, arguments);
+    if (ok === 'moc') setTimeout(() => { syncAll(true).then(() => refreshCurrentView(false)).catch(() => {}); }, 4000);   // tồn theo máy chủ (không đổi)
+    return r;
+  };
+}
+doNhap = gioWrap(doNhap, 'fn-time', () => db.items.find(i => i.id === +document.getElementById('fn-item')?.value) || db.items.find(i => normVN(i.name) === normVN(document.getElementById('fn-item-txt')?.value || '')));
+doXuat = gioWrap(doXuat, 'fx-time', () => db.items.find(i => i.id === +document.getElementById('fx-item')?.value));
+// v5.55.2: phiếu chọn ngày giờ là phiếu bình thường — không nhãn riêng; chi tiết bỏ dòng "Lập trên máy lúc" (giờ lập thật chỉ lưu ở Sheet)
+{ const _gbOpen = openTxn; openTxn = function (id) {
+  const r = _gbOpen.apply(this, arguments);
+  try { const t = db.transactions.find(x => x.id === id), box = document.querySelector('#mt-body .kv-box');
+    if (gbOf(t) && box) [...box.querySelectorAll('.kv')].forEach(k => { if (/Lập trên máy lúc/.test(k.textContent)) k.remove(); if (/Giờ máy chủ ghi nhận/.test(k.firstElementChild?.textContent || '')) k.firstElementChild.textContent = 'Ngày giờ phiếu'; });
+  } catch (e) {}
+  return r;
+}; }
+// Nhập / Xuất nhanh: 1 ô ngày giờ chung cho cả lệnh + sửa riêng từng dòng
+const Q5_GIO = { in:1, out:1, outNgoai:1 };
+{ const _gbRender = q5Render; q5Render = function () {
+  _gbRender.apply(this, arguments);
+  if (!canGio() || !Q5) return;
+  const c = document.querySelector('#dp-quick-body .q5-chips');
+  if (c) c.insertAdjacentHTML('afterend', `<label class="q5-f q5-gio">Ngày giờ phiếu (để trống = bây giờ)<input type="datetime-local" value="${escHtml(Q5.at || '')}" onchange="Q5.at=this.value;q5Render()"></label>`);
+}; }
+{ const _gbRowH = q5RowHtml; q5RowHtml = function (R, i) {
+  const h = _gbRowH.apply(this, arguments);
+  if (!canGio() || !Q5_GIO[R.kind]) return h;
+  const add = `<label class="q5-f">Giờ riêng dòng này${Q5.at ? ' (trống = theo ô chung)' : ' (trống = bây giờ)'}<input type="datetime-local" value="${escHtml(R.at || '')}" onchange="Q5.rows[${i}].at=this.value;q5Render()"></label>`;
+  return h.replace('<div class="q5-src">', add + '<div class="q5-src">');
+}; }
+const q5AtOf = R => canGio() && Q5_GIO[R.kind] ? localToVN(R.at || Q5.at || '') : '';
+{ const _gbOps = q5Ops; q5Ops = function () {
+  const res = _gbOps.apply(this, arguments);
+  try { res.ops.forEach(o => { const R = Q5.rows.find(r => r.line === o.line); const v = R ? q5AtOf(R) : ''; if (!v) return;
+    if (o.k === 'txn') { o.d.txTime = v; o.d.datetime = v; } else if (o.k === 'thang') { o.d.nhap.txTime = v; o.d.nhap.datetime = v; } }); } catch (e) {}
+  return res;
+}; }
+{ const _gbSave = q5Save; q5Save = async function () {
+  if (Q5 && canGio()) {
+    const G = {};
+    Q5.rows.filter(r => r.on).forEach(r => { const v = q5AtOf(r); if (v) (G[v] = G[v] || []).push(q5ItemOf(r)); });
+    let moc = false;
+    for (const v of Object.keys(G)) { const ok = gioCheck(v, G[v]); if (!ok) return; if (ok === 'moc') moc = true; }
+    const r = await _gbSave.apply(this, arguments);
+    if (moc) setTimeout(() => { syncAll(true).then(() => refreshCurrentView(false)).catch(() => {}); }, 3000);
+    return r;
+  }
+  return _gbSave.apply(this, arguments);
+}; }
+// Admin: số ngày thủ kho được ghi bù (đầu trang Phân quyền chức danh)
+{ const _gbRoles = renderRoles; renderRoles = function () {
+  _gbRoles.apply(this, arguments);
+  const body = document.getElementById('dp-roles-body'); if (!body || role !== 'ADM') return;
+  const mx = +db.gioMax || 0;
+  body.insertAdjacentHTML('afterbegin', `<div class="card" style="padding:12px;margin-bottom:12px"><b>Chọn ngày giờ phiếu</b>
+    <div class="q5-note" style="margin:4px 0 8px">Người có quyền "Chọn ngày giờ phiếu" được lùi ngày giờ phiếu tối đa bao nhiêu ngày. 0 = không giới hạn. Admin luôn không giới hạn.</div>
+    <div style="display:flex;gap:8px;align-items:center"><input id="gb-max" type="number" inputmode="numeric" min="0" max="3650" value="${mx}" style="width:90px"> <span>ngày</span>
+    <button class="btn-full" style="width:auto;padding:0 18px;background:var(--primary)" onclick="gbMaxSave()">Lưu</button></div>
+    <div class="q5-note" style="margin-top:6px">Đang áp dụng: <b>${mx ? 'tối đa ' + mx + ' ngày' : 'không giới hạn'}</b> · mọi dự án</div></div>`);
+}; }
+async function gbMaxSave() {
+  const n = Math.floor(+(document.getElementById('gb-max')?.value || 0));
+  if (!(n >= 0)) { toast('⚠️ Số ngày không hợp lệ'); return; }
+  showLoader('Đang lưu...'); const r = await api('setGioMax', { days:n }); hideLoader();
+  if (!r || !r.success) { toast('⚠️ ' + ((r && r.error) || 'Không lưu được') + (/không hợp lệ: setGioMax/.test((r && r.error) || '') ? ' — máy chủ chưa lên 5.55.1' : '')); return; }
+  db.gioMax = r.gioMax; saveLocal(); renderRoles(); toast(n ? `✅ Chọn ngày phiếu lùi tối đa ${n} ngày` : '✅ Chọn ngày phiếu không giới hạn');
+}
 </script>
 
 <script>// ===== v5.51.1: BỎ EMOJI Ở FILE EXCEL VÀ NỘI DUNG GỬI ZALO (2 nơi này không vẽ được icon của app) =====
