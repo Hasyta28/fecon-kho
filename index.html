@@ -1894,7 +1894,7 @@ body.pg-printing #pg-print{display:block;position:fixed;inset:0;z-index:9000;bac
 // ============================================================
 // CONFIG
 // ============================================================
-const APP_VERSION = '5.56.2';
+const APP_VERSION = '5.56.4';
 const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbw6Rmi80I7RI3ij2U7RdRF5pYuQTnPrwEmGmUZS5xpxzLwwVynfoFUujZe1lm6HS1ymxw/exec';
 // ============================================================
 
@@ -12410,6 +12410,7 @@ function p9Render() {
     return `<div class="p9-pj${cl ? ' cl' : ''}"><div class="p9-h"><b>${escHtml(p.name)}</b>${tag}${p.name === curProj ? '<span class="p9-cur">đang mở</span>' : ''}</div>
       <div class="p9-st">${st}${cl ? ' · chỉ xem' : ''}</div>
       ${P9.list.some(x => 'siCand' in x) ? `<div class="p9-si">Đứng tên thay Admin: <b>${p.standIn ? escHtml(p.standIn.name) + (p.standIn.auto ? ' <small>(tự chọn)</small>' : '') : '<span style="color:#C92A2A">chưa chọn</span>'}</b> <a onclick="p9Si(${i})">Đổi</a>${p.standIn && !empty ? ` · <a onclick="p9SiFix(${i})">Đổi tên Admin trong dữ liệu cũ</a>` : ''}</div>` : ''}
+      ${!empty && P9.list.some(x => 'siCand' in x) ? `<div class="p9-si"><a onclick="p9Tc(${i})">Gộp phiếu nhập thẳng CT cũ</a></div>` : ''}
       <div class="p9-bt"><button type="button" onclick="p9Rename(${i})">✏️ Đổi tên</button>
         ${cl ? `<button type="button" onclick="p9Reopen(${i})">↩ Mở lại</button>` : `<button type="button" onclick="p9Close(${i})">📦 Đóng</button>`}
         <button type="button" class="${empty ? 'red' : 'off'}" ${empty ? '' : 'disabled'} onclick="p9Del(${i})">🗑 Xoá</button></div></div>`;
@@ -12664,7 +12665,7 @@ function tk9Render() {
   const neg = T.filter(t => after[t.id] < 0).length;
   const site = typeof ctSite === 'function' ? ctSite(it) : 0;
   b.innerHTML = `<div class="tk9">
-    <div class="tk9-h"><b>${escHtml(it.name)}</b><span>${escHtml(it.unit || '')} · ${escHtml(curProj)}</span></div>
+    <div class="tk9-h"><b>${escHtml(it.name)}</b><span>${escHtml(it.unit || '')} · ${escHtml(catOf(it.cat).name)} · ${escHtml(curProj)}</span>${can('tk') ? `<button type="button" class="tk9-edit" onclick="editVatTu(${it.id})">✏️ Sửa</button>` : ''}</div>
     <div class="tk9-g"><div><small>Tồn đầu (suy ra)</small><b>${fmtNum(start)}</b></div><div><small>Tổng vào</small><b class="in">+${fmtNum(Math.round(nIn * 1000) / 1000)}</b></div>
       <div><small>Tổng ra</small><b class="out">−${fmtNum(Math.round(nOut * 1000) / 1000)}</b></div><div><small>${db.one ? 'Tồn kho' : 'Tồn trong kho'}</small><b class="${+it.stock < 0 ? 'neg' : ''}">${fmtNum(+it.stock || 0)}</b></div></div>
     ${site ? `<div class="tk9-n">🏗 Ở công trường: <b>${fmtNum(site)} ${escHtml(it.unit || '')}</b> (không tính trong cột tồn kho bên dưới)</div>` : ''}
@@ -13187,13 +13188,15 @@ function bcKgPer(it) {
 }
 
 // ---------- dữ liệu ----------
+const BC_FUEL_U = /^(lit|l|kg|hop|binh|can|phuy|thung|xo|tuyp|lon|chai)$/;   // v5.56.3: đơn vị của nhiên liệu, dầu mỡ
 function bcData(R) {
   const from = R.from, to = R.to, end = R.end;
   const inR = d => !d || ((!from || d >= from) && (!to || d <= to));
   const afterStart = d => !(d && from && d < from), afterEnd = d => !!(d && to && d > to);
   const items = db.items, byId = {}; items.forEach(i => byId[i.id] = i);
-  const fuelOf = it => !!it && (it.cat === 'nhienLieu' || ((!it.cat || it.cat === 'khac') && isFuelItem(it)));   // v5.56.1: theo nhóm, chỉ đoán theo tên khi chưa có nhóm (Cont dầu…)
-  const doOf = it => fuelOf(it) && /dầu/i.test(it.name || '') && !/nhớt|mỡ/i.test(it.name || '');
+  // v5.56.1: theo nhóm, chỉ đoán theo tên khi chưa có nhóm · v5.56.3: chỉ đơn vị đo nhiên liệu (Lít, Kg, Hộp…) — Cont / Bộ / Cái… nhóm Nhiên liệu là ghi nhầm nhóm
+  const fuelOf = it => !!it && (it.cat === 'nhienLieu' || ((!it.cat || it.cat === 'khac') && isFuelItem(it))) && BC_FUEL_U.test(normVN(it.unit || ''));
+  const doOf = it => fuelOf(it) && /dầu/i.test(it.name || '') && !/nhớt|mỡ/i.test(it.name || '') && /^lit$/.test(normVN(it.unit || ''));
   const projSet = new Set([...(db.projects || []), ...((typeof GD !== 'undefined' && GD.projects) || []), (typeof GD !== 'undefined' && GD.kho) || ''].filter(p => p && p !== curProj).map(p => normVN(p)));
   const adj = adjMap();
   const rows = [];
@@ -13476,6 +13479,7 @@ function bcNXT(X, LN, LX, FU) {
       else if (close < -1e-9) { notes.push(['Xuất vượt tồn — kiểm tra', BC.RED]); negClose.push(s); }
       else if (!D.from && Math.abs(s.open) > 1e-9) notes.push([`Tồn trên app chênh ${bcVN(s.open, 3)} so với tổng phiếu — chưa có phiếu tồn đầu, nên kiểm kê`, BC.ORG]);
       if (stt === 'Sắp hết') low.push(s);
+      if (it.cat === 'nhienLieu' && !fuel) notes.push([`Nhóm Nhiên liệu nhưng đơn vị ${it.unit || '?'} — kiểm tra lại nhóm (không cộng vào sổ nhiên liệu)`, BC.RED]);   // v5.56.3
       if (qlF && !it.maQL && +it.ngoaiDM !== 2) notes.push(['Chưa có mã P.QLTB', BC.ORG]);
       const olds = [...new Set(db.transactions.filter(t => t.itemId === it.id && t.itemName && normVN(t.itemName) !== normVN(it.name)).map(t => t.itemName))].slice(0, 3);
       if (olds.length) notes.push(['Tên cũ / gộp từ: ' + olds.join(', '), BC.GREY]);
@@ -13576,10 +13580,12 @@ function bcOverview(X, LN, LX, FU, NX, LO, apx) {
   const band = (r, text) => { ws.mergeCells(r, 2, r, 13); Object.assign(ws.getCell(r, 2), { value:text, font:bcF(12, true, false, 'FFFFFF'), fill:bcFill(BC.NAVY), alignment:{ horizontal:'left', vertical:'middle', indent:1 } }); ws.getRow(r).height = 20; };
   let r = 8; band(r, 'SỐ LIỆU CHÍNH TRONG KỲ'); r += 2;
   ws.getRow(r).height = 34; ws.getRow(r + 1).height = 18;
-  const nN = LN.r2 >= LN.r1 ? D.P.filter(x => !x.fuel && x.side === 'N' && x.loai === 'Nhập mua').length : 0, nX = D.P.filter(x => !x.fuel && x.side === 'X').length;
+  const IN_T = ['Nhập mua', 'Nhập thẳng CT', 'Đi mượn', 'Nhận trả', 'Nhận luân chuyển', 'Nhận giải động'], OUT_T = ['Xuất dùng', 'Xuất luân chuyển', 'Giải động', 'Thanh lý (hỏng)', 'Cho mượn', 'Trả lại'];   // v5.56.4
+  const nN = LN.r2 >= LN.r1 ? D.P.filter(x => !x.fuel && x.side === 'N' && IN_T.includes(x.loai)).length : 0, nX = LX.r2 >= LX.r1 ? D.P.filter(x => !x.fuel && x.side === 'X' && OUT_T.includes(x.loai)).length : 0;
+  const cntIf = (L, T) => `SUMPRODUCT(COUNTIF(${bcQ(L.name)}!$${bcCL(L.cLoai)}$${L.r1}:$${bcCL(L.cLoai)}$${L.r2},{${T.map(x => '"' + x + '"').join(',')}}))`;
   const nNeg = NX.list.filter(s => { const ct = D.ct ? s.sClose : 0; return ((s.close + ct) < -1e-9); }).length;
-  tile(r, 2, { formula:`COUNTIF(${bcQ(LN.name)}!$${bcCL(LN.cLoai)}$${LN.r1}:$${bcCL(LN.cLoai)}$${LN.r2},"Nhập mua")`, result:nN }, '0', 'Lượt nhập vật tư (nhập mua)');
-  tile(r, 4, { formula:`COUNTIF(${bcQ(LX.name)}!$${bcCL(LX.cLoai)}$${LX.r1}:$${bcCL(LX.cLoai)}$${LX.r2},"?*")`, result:nX }, '0', 'Lượt xuất vật tư');
+  tile(r, 2, LN.r2 >= LN.r1 ? { formula:cntIf(LN, IN_T), result:nN } : 0, '0', 'Lượt nhập vào công trình');
+  tile(r, 4, LX.r2 >= LX.r1 ? { formula:cntIf(LX, OUT_T), result:nX } : 0, '0', 'Lượt xuất (dùng, trả, chuyển đi)');
   tile(r, 6, { formula:`${bcQ(FU.name)}!G${FU.FT}`, result:FU.tN }, '#,##0', 'Dầu DO nhập (lít)');
   tile(r, 8, { formula:`${bcQ(FU.name)}!H${FU.FT}`, result:FU.tX }, '#,##0', 'Dầu DO cấp cho máy (lít)');
   tile(r, 10, { formula:`${bcQ(FU.name)}!I${FU.FC}`, result:FU.close }, '#,##0;[Red]-#,##0', 'Tồn dầu DO cuối kỳ (lít)');
@@ -14631,6 +14637,7 @@ q8DmRender = function () {
     <div class="q8-fs sc">${CATEGORIES.map(c => chip(c.id, escHtml(c.name))).join('')}</div>
     <div class="q8-add"><input id="q8-newname" placeholder="＋ Thêm tên vật tư…"><button type="button" class="btn-full btn-orange" onclick="q8DmAdd()">Thêm</button></div>
     <button type="button" class="q8-maybtn" onclick="q8DmMay()">＋ Thêm máy (mã P.QLTB)</button>
+    <button type="button" class="q8-maybtn" onclick="dmMmOpen()">⇄ Đối chiếu nhóm hàng trong kho với danh mục</button>
     <div class="q8-hd"><span>MÃ · TÊN · NHÓM · ĐƠN VỊ</span>${db.one ? '' : '<span>KHI NHẬP</span>'}</div>
     <div id="q8-dmlist">${q8DmRows(show)}</div>
     ${V.length > show.length ? `<button type="button" class="q8-moreb" onclick="Q8D.page++;q8DmRender()">Xem thêm ${V.length - show.length} tên</button>` : ''}
@@ -14696,6 +14703,7 @@ q8DmSave = async function () {
   }
   Q8D.dirty = false; q8DmRender();
   toast(`✅ Đã lưu danh mục ${fmtNum(r.count)} tên${r.mon !== undefined ? ' · ' + r.mon + ' món có mã' : ' — máy chủ chưa lên 5.56 nên chưa cấp mã'}`);
+  if (r.rows) setTimeout(() => dmMmOpen(true), 900);              // v5.56.3: món trong kho khác nhóm danh mục
 };
 q8DmExcel = function () {
   if (!Q8D) return;
@@ -14751,6 +14759,60 @@ async function p9SiFix(i) {
   };
 }
 
+// ---------- v5.56.3: ĐỐI CHIẾU NHÓM hàng trong kho (mọi dự án) với Danh mục vật tư ----------
+let DMM = null;
+async function dmMmOpen(quiet) {
+  if (role !== 'ADM' || !navigator.onLine) return;
+  if (!quiet) showLoader('Đang đối chiếu…');
+  const r = await api('dmMismatch', {}, 60000); hideLoader();
+  if (!r || !r.success) { if (!quiet) toast('⚠️ ' + ((r && r.error) || 'Không đối chiếu được')); return; }
+  if (!r.list.length) { if (!quiet) toast('✅ Nhóm của hàng trong kho đã khớp danh mục'); return; }
+  DMM = r.list.map(x => Object.assign(x, { on:1 }));
+  dmMmRender();
+}
+function dmMmRender() {
+  const L = DMM || [], n = L.filter(x => x.on).length, cn = id => escHtml(catOf(id).name);
+  $8('dm-mm')?.remove();
+  document.body.insertAdjacentHTML('beforeend', `<div class="kl-sheet-w" id="dm-mm"><div class="kl-dim" onclick="document.getElementById('dm-mm').remove()"></div><div class="kl-sheet q8-sheet" role="dialog" aria-label="Đối chiếu nhóm">
+    <div class="kl-h">${L.length} món trong kho khác nhóm với danh mục</div>
+    <div class="pyc-hint" style="text-align:left;margin-bottom:8px">Tick món muốn sửa nhóm theo danh mục. Chỉ đổi nhóm của món — phiếu cũ, tồn, đơn vị giữ nguyên. Báo cáo xuất lại sẽ đúng nhóm.</div>
+    ${L.map((x, i) => `<label class="dm-mm-r"><input type="checkbox" ${x.on ? 'checked' : ''} onchange="DMM[${i}].on=this.checked?1:0;dmMmRender()"><span><b>${escHtml(x.name)}</b><small>${escHtml(x.project)} · tồn ${fmtNum(x.stock)} ${escHtml(x.unit)}</small><small><s>${cn(x.cat)}</s> → <b style="color:#2B8A3E">${cn(x.dmCat)}</b></small></span></label>`).join('')}
+    <div class="p9-bb"><button type="button" class="p9-c" onclick="document.getElementById('dm-mm').remove()">Để sau</button><button type="button" class="p9-ok" ${n ? '' : 'disabled'} onclick="dmMmSave()">Sửa ${n} món</button></div>
+  </div></div>`);
+}
+async function dmMmSave() {
+  const L = (DMM || []).filter(x => x.on); if (!L.length) return;
+  showLoader('Đang sửa nhóm…'); const r = await api('dmFixCats', { list:L.map(x => ({ id:x.id, cat:x.dmCat })) }, 60000); hideLoader();
+  if (!r || !r.success) { toast('⚠️ ' + ((r && r.error) || 'Không sửa được')); return; }
+  $8('dm-mm')?.remove(); DMM = null;
+  L.forEach(x => { const it = db.items.find(i => String(i.id) === String(x.id)); if (it) it.cat = x.dmCat; }); saveLocal();
+  toast(`✅ Đã sửa nhóm ${r.fixed} món`); try { await syncAll(true); refreshCurrentView(false); } catch (e) {}
+}
+{ const _tkUV = updateVatTu; updateVatTu = async function () { const r = await _tkUV.apply(this, arguments); try { if ($8('dp-thekho')?.classList.contains('show')) tk9Render(); } catch (e) {} return r; }; }
+
+// ---------- v5.56.4: GỘP PHIẾU "NHẬP THẲNG RA CÔNG TRƯỜNG" CŨ (Quản lý dự án, Admin) ----------
+async function p9Tc(i) {
+  const p = P9 && P9.list[i]; if (!p) return;
+  if (!navigator.onLine) { toast('📴 Cần có mạng'); return; }
+  showLoader('Đang đếm phiếu…'); const r = await api('thangClean', { project:p.name, dry:1 }, 120000); hideLoader();
+  if (!r || !r.success) { toast('⚠️ ' + ((r && r.error) || 'Không kiểm được') + (/không hợp lệ/.test((r && r.error) || '') ? ' — máy chủ chưa lên 5.56.4' : '')); return; }
+  if (!r.list.length) { toast(p.name + ': không còn phiếu nhập thẳng ra công trường kiểu cũ'); return; }
+  const go = r.list.filter(x => !x.skip), sk = r.list.filter(x => x.skip), f = n => fmtNum(n);
+  p9Sheet(`<div class="kl-h">Gộp phiếu nhập thẳng CT cũ · ${escHtml(p.name)}</div>
+    <div class="p9-tx">Xoá ${go.reduce((s, x) => s + x.nLegs, 0)} phiếu xuất đi cặp + ${go.reduce((s, x) => s + x.nCu, 0)} dòng "Hàng cũ ở CT (xác nhận)". Phiếu nhập giữ nguyên, thành phiếu nhập thường. Máy chủ sao lưu trước khi xoá.</div>
+    <div class="tc-t"><div class="tc-h"><span>Món</span><span>Đã nhập thẳng</span><span>Dùng</span><span>Tồn</span></div>
+    ${go.map(x => `<div class="tc-r${x.delta ? ' ch' : ''}"><span>${escHtml(x.name)}<small>${x.conf ? 'thủ kho đã xác nhận còn ' + f(x.C) : 'chưa xác nhận → coi như còn đủ'}</small></span><span>${f(x.X)}</span><span>${x.used ? f(x.used) : '—'}</span><span>${x.delta ? `${f(x.stock)} → <b>${f(x.after)}</b>` : f(x.stock)}</span></div>`).join('')}</div>
+    ${sk.length ? `<div class="p9-w" style="margin-top:8px">Bỏ qua ${sk.length} món chưa xác nhận nhưng đã kiểm kê sau phiếu (giữ nguyên): ${sk.map(x => escHtml(x.name)).join(', ')}</div>` : ''}
+    <div class="p9-tx" style="margin-top:6px">Dòng tô màu: tồn thay đổi. "Dùng": ghi 1 phiếu xuất dùng (đã dùng trước 5.55).</div>
+    <div class="p9-bb"><button type="button" class="p9-c" onclick="p9Close0()">Huỷ</button><button type="button" class="p9-ok" id="p9-tcgo" ${go.length ? '' : 'disabled'}>Gộp ${go.length} món</button></div>`);
+  $9('p9-tcgo').onclick = async () => {
+    showLoader('Đang sao lưu và gộp…'); const r2 = await api('thangClean', { project:p.name }, 300000); hideLoader();
+    if (!r2 || !r2.success) { toast('⚠️ ' + ((r2 && r2.error) || 'Không gộp được')); return; }
+    p9Close0(); toast(`✅ ${p.name}: gộp ${r2.done} món · xoá ${r2.deleted} phiếu${r2.added ? ' · ' + r2.added + ' phiếu xuất dùng' : ''}`);
+    if (p.name === curProj) { await syncAll(true); refreshCurrentView(false); }
+  };
+}
+
 // ---------- menu + trang ----------
 (function () {
   const gd = [...document.querySelectorAll('#sidebar .sidebar-item')].find(e => /Giải động/.test(e.textContent));
@@ -14760,6 +14822,10 @@ async function p9SiFix(i) {
   document.body.insertAdjacentHTML('beforeend', page('dp-dmh', '🖼 Danh mục có hình') + page('dp-dmh1', '🖼 Chi tiết món') + page('dp-dmimg', '🖼 Duyệt ảnh danh mục'));
   const css = `
 .p9-si{font-size:13px;color:#5A6676;margin:6px 0 2px}.p9-si a{color:var(--primary);font-weight:700;cursor:pointer;margin-left:4px}.p9-si small{font-weight:500;color:#8A93A0}
+.dm-mm-r{display:flex;gap:10px;align-items:flex-start;padding:9px 2px;border-bottom:1px solid var(--border);font-size:14px}.dm-mm-r input{width:20px;height:20px;margin-top:2px;flex:0 0 20px}.dm-mm-r small{display:block;color:#5A6676;font-size:12.5px;margin-top:2px}
+.tk9-h .tk9-edit{align-self:flex-start;margin-top:6px;border:1.5px solid var(--border);background:#fff;border-radius:9px;padding:6px 10px;font-weight:700;font-size:13px;color:var(--primary)}
+.tc-t{font-size:13px;margin-top:8px;max-height:46vh;overflow:auto;border:1px solid var(--border);border-radius:10px}.tc-h,.tc-r{display:grid;grid-template-columns:1fr 64px 48px 86px;gap:6px;padding:7px 8px;align-items:center}
+.tc-h{background:#F3F5F8;font-weight:800;font-size:11.5px;color:#5A6676;position:sticky;top:0}.tc-r{border-top:1px solid var(--border)}.tc-r.ch{background:#FFF7E0}.tc-r small{display:block;color:#5A6676;font-size:11.5px}.tc-r span:not(:first-child),.tc-h span:not(:first-child){text-align:right}
 .dmh-sum{font-size:13px;color:#5A6676;margin:2px 0 8px}.dmh-sum b{color:var(--text);font-size:15px}
 .dmh-acts{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px}.dmh-acts button{border:1.5px solid var(--border);background:#fff;border-radius:10px;padding:8px 10px;font-size:13px;font-weight:700;color:var(--primary)}
 .dmh-acts button.on{background:#E3ECF7;border-color:var(--primary)}.dmh-acts button.or{background:#FFF1E8;border-color:#F26522;color:#B8460A}
