@@ -1894,7 +1894,7 @@ body.pg-printing #pg-print{display:block;position:fixed;inset:0;z-index:9000;bac
 // ============================================================
 // CONFIG
 // ============================================================
-const APP_VERSION = '5.56.4';
+const APP_VERSION = '5.56.5';
 const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbw6Rmi80I7RI3ij2U7RdRF5pYuQTnPrwEmGmUZS5xpxzLwwVynfoFUujZe1lm6HS1ymxw/exec';
 // ============================================================
 
@@ -7873,7 +7873,7 @@ function addPycSheets(wb, R, P) {
   if (!reqs.length) { ws.mergeCells(r, 1, r, COLS.length); put(ws, r, 1, 'Không có phiếu yêu cầu trong kỳ này', {center:true}); r++; }
   totalRow(ws, r, 1, COLS.length, 'TỔNG CỘNG', [[8, `SUM(H${first}:H${last})`, sReq], [9, `SUM(I${first}:I${last})`, sSent], [10, `SUM(J${first}:J${last})`, sRem]]);
   note(ws, r + 2, 'Ô tô nền: Chưa giao > 0 và phiếu CHT/CHP chưa duyệt – cần xử lý.');
-  ws.views = [{state:'frozen', xSplit:7, ySplit:r0}];
+  ws.views = [{state:'frozen', xSplit:0, ySplit:r0}];   // v5.56.5: bỏ cột cố định
   if (reqs.length) ws.autoFilter = {from:{row:r0, column:1}, to:{row:last, column:COLS.length}};
   // ---------- Tóm tắt (đặt đầu file báo cáo riêng)
   top(t, 'TÓM TẮT PHIẾU YÊU CẦU CẤP VẬT TƯ', 4);
@@ -12410,7 +12410,7 @@ function p9Render() {
     return `<div class="p9-pj${cl ? ' cl' : ''}"><div class="p9-h"><b>${escHtml(p.name)}</b>${tag}${p.name === curProj ? '<span class="p9-cur">đang mở</span>' : ''}</div>
       <div class="p9-st">${st}${cl ? ' · chỉ xem' : ''}</div>
       ${P9.list.some(x => 'siCand' in x) ? `<div class="p9-si">Đứng tên thay Admin: <b>${p.standIn ? escHtml(p.standIn.name) + (p.standIn.auto ? ' <small>(tự chọn)</small>' : '') : '<span style="color:#C92A2A">chưa chọn</span>'}</b> <a onclick="p9Si(${i})">Đổi</a>${p.standIn && !empty ? ` · <a onclick="p9SiFix(${i})">Đổi tên Admin trong dữ liệu cũ</a>` : ''}</div>` : ''}
-      ${!empty && P9.list.some(x => 'siCand' in x) ? `<div class="p9-si"><a onclick="p9Tc(${i})">Gộp phiếu nhập thẳng CT cũ</a></div>` : ''}
+      ${!empty && P9.list.some(x => 'siCand' in x) ? `<div class="p9-si"><a onclick="p9Tc(${i})">Gộp phiếu nhập thẳng CT cũ</a> · <a onclick="p9Sc(${i})">Dọn khai số ở CT trùng</a></div>` : ''}
       <div class="p9-bt"><button type="button" onclick="p9Rename(${i})">✏️ Đổi tên</button>
         ${cl ? `<button type="button" onclick="p9Reopen(${i})">↩ Mở lại</button>` : `<button type="button" onclick="p9Close(${i})">📦 Đóng</button>`}
         <button type="button" class="${empty ? 'red' : 'off'}" ${empty ? '' : 'disabled'} onclick="p9Del(${i})">🗑 Xoá</button></div></div>`;
@@ -13109,7 +13109,7 @@ function bcSetup(X, ws, widths, title, sub, o = {}) {
     margins:{ left:0.4, right:0.4, top:0.45, bottom:0.6, header:0.2, footer:0.25 } };
   if (!o.noTitles) ws.pageSetup.printTitlesRow = '7:9';
   ws.headerFooter = { oddFooter:`&L&"Times New Roman"&8FECON South · ${X.Pf}&C&"Times New Roman"&9Trang &P / &N&R&"Times New Roman"&8&A · xuất ${X.now}` };
-  ws.views = [o.xSplit ? { state:'frozen', xSplit:o.xSplit, ySplit:9, showGridLines:false, zoomScale:90 } : { showGridLines:false, zoomScale:90 }];
+  ws.views = [o.xSplit !== undefined && o.xSplit !== 0 ? { state:'frozen', xSplit:0, ySplit:9, showGridLines:false, zoomScale:90 } : { showGridLines:false, zoomScale:90 }];   // v5.56.5: chỉ cố định dòng tiêu đề, không cố định cột
   return n;
 }
 function bcHead(ws, spec, nums, row = 7) {
@@ -14810,6 +14810,35 @@ async function p9Tc(i) {
     if (!r2 || !r2.success) { toast('⚠️ ' + ((r2 && r2.error) || 'Không gộp được')); return; }
     p9Close0(); toast(`✅ ${p.name}: gộp ${r2.done} món · xoá ${r2.deleted} phiếu${r2.added ? ' · ' + r2.added + ' phiếu xuất dùng' : ''}`);
     if (p.name === curProj) { await syncAll(true); refreshCurrentView(false); }
+  };
+}
+
+// ---------- v5.56.5: DỌN "KHAI SỐ Ở CT" TRÙNG (Quản lý dự án, Admin) ----------
+let SC = null;
+async function p9Sc(i) {
+  const p = P9 && P9.list[i]; if (!p) return;
+  if (!navigator.onLine) { toast('📴 Cần có mạng'); return; }
+  showLoader('Đang kiểm…'); const r = await api('siteClean', { project:p.name, dry:1 }, 120000); hideLoader();
+  if (!r || !r.success) { toast('⚠️ ' + ((r && r.error) || 'Không kiểm được') + (/không hợp lệ/.test((r && r.error) || '') ? ' — máy chủ chưa lên 5.56.5' : '')); return; }
+  if (!r.list.length) { toast(p.name + ': không có dòng "Khai số ở CT" nào cần dọn'); return; }
+  SC = { p:p.name, list:r.list.map(x => Object.assign(x, { on: !x.skip && x.stock > x.nIn + 1e-9 ? 1 : 0 })) };
+  scRender();
+}
+function scRender() {
+  const f = n => fmtNum(n), L = SC.list, n = L.filter(x => x.on).length;
+  p9Sheet(`<div class="kl-h">Dọn khai số ở CT trùng · ${escHtml(SC.p)}</div>
+    <div class="p9-tx">Hàng nhập thẳng ra công trường cũ đã được "Khai số ở CT" (bản 5.55 cộng vào tồn) rồi lại "Xác nhận hàng cũ" → tồn bị cộng 2 lần.
+      Tick món bị trùng → xoá dòng khai số, tồn trừ đúng số đó. App tự tick món có <b>tồn lớn hơn tổng đã nhập</b>.</div>
+    <div class="tc-t"><div class="tc-h"><span>Món</span><span>Đã nhập</span><span>Khai số</span><span>Tồn</span></div>
+    ${L.map((x, j) => `<label class="tc-r${x.on ? ' ch' : ''}" style="cursor:pointer"><span><input type="checkbox" ${x.on ? 'checked' : ''} ${x.skip ? 'disabled' : ''} onchange="SC.list[${j}].on=this.checked?1:0;scRender()" style="margin-right:6px">${escHtml(x.name)}<small>${x.skip ? 'đã kiểm kê sau ngày khai số → bỏ qua' : escHtml(x.unit)}</small></span><span>${f(x.nIn)}</span><span>+${f(x.S)}</span><span>${x.on ? `${f(x.stock)} → <b>${f(x.after)}</b>` : f(x.stock)}</span></label>`).join('')}</div>
+    <div class="p9-w" style="margin-top:8px">Máy chủ sao lưu trước khi sửa. Món không chắc: để trống, thủ kho kiểm kê đếm lại.</div>
+    <div class="p9-bb"><button type="button" class="p9-c" onclick="p9Close0()">Huỷ</button><button type="button" class="p9-ok" id="p9-scgo" ${n ? '' : 'disabled'}>Sửa ${n} món</button></div>`);
+  $9('p9-scgo').onclick = async () => {
+    const ids = SC.list.filter(x => x.on).map(x => x.id);
+    showLoader('Đang sao lưu và sửa…'); const r2 = await api('siteClean', { project:SC.p, ids }, 300000); hideLoader();
+    if (!r2 || !r2.success) { toast('⚠️ ' + ((r2 && r2.error) || 'Không sửa được')); return; }
+    p9Close0(); toast(`✅ ${SC.p}: sửa tồn ${r2.done} món · ${r2.list.map(x => x.name + ' ' + fmtNum(x.after)).join(', ')}`);
+    if (SC.p === curProj) { await syncAll(true); refreshCurrentView(false); }
   };
 }
 

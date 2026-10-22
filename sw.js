@@ -1,4 +1,5 @@
-// FECON Kho + Thi công - Service Worker v5.56.4
+// FECON Kho + Thi công - Service Worker v5.56.5
+// 5.56.5: sửa tồn tính trùng (khai số ở công trường), báo cáo Excel bỏ cột cố định
 // 5.56.4: gộp phiếu nhập thẳng ra công trường cũ (Admin), báo cáo đếm lượt nhập / xuất đúng
 // 5.56.3: nút Sửa trong Thẻ kho, đối chiếu nhóm hàng trong kho với danh mục, sổ nhiên liệu chỉ gộp đơn vị Lít
 // 5.56.2: danh mục tối đa 1.000 món
@@ -60,7 +61,7 @@
 //  - Mở app: lấy file từ bộ nhớ của bản đang dùng; thiếu file nào mới lấy từ mạng.
 //  - Có sw.js mới trên GitHub: tải sẵn bản mới vào bộ nhớ riêng nhưng KHÔNG đổi bản đang dùng.
 //  - Địa chỉ có ?fresh=... luôn lấy thẳng từ mạng (app dùng để kiểm tra / tải bản mới).
-const VERSION = '5.56.4';
+const VERSION = '5.56.5';
 const APP = 'fecon-app-', META = 'fecon-meta';
 const CORE = ['./', './index.html', './thicong.html', './danhmuc.html', './manifest.json', './icon-192.png', './icon-512.png', './icon-maskable-192.png', './icon-maskable-512.png', './bg-login.jpg'];
 
