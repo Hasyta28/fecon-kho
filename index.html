@@ -1894,7 +1894,7 @@ body.pg-printing #pg-print{display:block;position:fixed;inset:0;z-index:9000;bac
 // ============================================================
 // CONFIG
 // ============================================================
-const APP_VERSION = '5.56.1';
+const APP_VERSION = '5.56.2';
 const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbw6Rmi80I7RI3ij2U7RdRF5pYuQTnPrwEmGmUZS5xpxzLwwVynfoFUujZe1lm6HS1ymxw/exec';
 // ============================================================
 
@@ -14253,7 +14253,7 @@ async function gbMaxSave() {
 //   "Duyệt ảnh" (Admin chọn ảnh mạng máy chủ tìm sẵn), tem QR 24 tem / A4, QR cả danh mục, Excel có mã + ảnh nhỏ.
 //   Danh mục vật tư (Admin): thêm cột Mã (tự cấp theo nhóm, sửa được), Hiện công khai, đổi tên giữ ảnh, thêm máy theo mã P.QLTB, đếm 400 món.
 //   Trang công khai danhmuc.html (không cần đăng nhập). QR tem: danhmuc.html#m=<mã> — quét bằng ô Quét QR trong app thì mở thẳng món đó.
-const LS_DMH = 'fecon_dmh_v556', DM_MAXC = 400;
+const LS_DMH = 'fecon_dmh_v556', DM_MAXC = 1000;
 let DMH = null; try { DMH = JSON.parse(localStorage.getItem(LS_DMH) || 'null'); } catch (e) {}
 const DMR = a => ({ ma:a[0] || '', name:a[1] || '', cat:a[2] || '', unit:a[3] || '', mode:a[4] || 'k', pub:a[5] === 0 || a[5] === '0' ? 0 : 1, img:a[6] || '', th:a[7] || '', k:a[8] || '', src:a[9] || '' });
 const dmIsMon = o => o.mode === 'm' || !!(o.cat && o.unit);

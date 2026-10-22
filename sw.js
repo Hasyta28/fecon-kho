@@ -1,4 +1,5 @@
-// FECON Kho + Thi công - Service Worker v5.56.1
+// FECON Kho + Thi công - Service Worker v5.56.2
+// 5.56.2: danh mục tối đa 1.000 món
 // 5.56.1: báo cáo kho xếp nhiên liệu theo nhóm (Cont dầu…), sửa nhỏ
 // 5.56.0: Danh mục có hình + mã + QR (trang công khai danhmuc.html, tem QR 24 tem / A4)
 // 5.55.2: thủ kho chọn ngày giờ phiếu (Admin đặt số ngày tối đa)
@@ -57,7 +58,7 @@
 //  - Mở app: lấy file từ bộ nhớ của bản đang dùng; thiếu file nào mới lấy từ mạng.
 //  - Có sw.js mới trên GitHub: tải sẵn bản mới vào bộ nhớ riêng nhưng KHÔNG đổi bản đang dùng.
 //  - Địa chỉ có ?fresh=... luôn lấy thẳng từ mạng (app dùng để kiểm tra / tải bản mới).
-const VERSION = '5.56.1';
+const VERSION = '5.56.2';
 const APP = 'fecon-app-', META = 'fecon-meta';
 const CORE = ['./', './index.html', './thicong.html', './danhmuc.html', './manifest.json', './icon-192.png', './icon-512.png', './icon-maskable-192.png', './icon-maskable-512.png', './bg-login.jpg'];
 
