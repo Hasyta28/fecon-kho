@@ -1894,7 +1894,7 @@ body.pg-printing #pg-print{display:block;position:fixed;inset:0;z-index:9000;bac
 // ============================================================
 // CONFIG
 // ============================================================
-const APP_VERSION = '5.55.2';
+const APP_VERSION = '5.56.1';
 const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbw6Rmi80I7RI3ij2U7RdRF5pYuQTnPrwEmGmUZS5xpxzLwwVynfoFUujZe1lm6HS1ymxw/exec';
 // ============================================================
 
@@ -1997,6 +1997,9 @@ const isLeadRole = () => me && me.perm ? me.group === 'g6' : role === 'ld';
 const allProjRole = r => r === 'ADM' || r === 'QL' || !!(ROLES[r] && ROLES[r].perm && ROLES[r].perm.v_all);
 const can = r => r === 'admin' ? (role === 'ADM' || role === 'ADM') : r === 'ql' ? (role === 'ADM' || role === 'QL' || hp('g_price')) : r === 'tk' ? (hp('k_nhap') || hp('k_xuat')) : true;
 const newId = () => Date.now() * 100 + Math.floor(Math.random() * 100);
+// v5.56.1: Admin đứng tên thay — tên ghi vào phiếu / file xuất là người Admin chọn cho dự án (máy chủ cũng tự thay)
+function meRec() { return role === 'ADM' ? ((typeof db !== 'undefined' && db && db.standIn && db.standIn.name) || '') || (me?.name || '') : (me?.name || ''); }
+function meExp() { if (role === 'ADM') { const s = typeof db !== 'undefined' && db && db.standIn; return s && s.name ? s.name + (s.role && ROLE_NAME[s.role] ? ' (' + String(ROLE_NAME[s.role]).split(' – ').pop() + ')' : '') : ''; } return `${me?.name || ''}${role ? ' (' + String(ROLE_NAME[role] || role).split(' – ')[0] + ')' : ''}`; }
 const initials = n => { const w = String(n || '?').trim().split(/\s+/); return ((w.length > 1 ? w[0][0] + w[w.length-1][0] : w[0].slice(0, 2)) || '?').toUpperCase(); };
 
 // ===== ĐĂNG NHẬP / ĐĂNG KÝ =====
@@ -3085,7 +3088,7 @@ function openTxn(id) {
       ${kv('Ghi chú', escHtml(t.note && t.note !== t.supplierOrReceiver ? t.note : ''))}
       ${kv('Lý do', escHtml(t.reason || ''))}
       ${ref ? kv('Sửa cho phiếu', `<a onclick="openTxn(${ref.id})">${ref.type==='nhap'?'Nhập':'Xuất'} ${fmtNum(ref.qty)} · ${escHtml(ref.datetime||'')}</a>`) : (kk ? kv('Loại', 'Kiểm kê thực tế — mốc tính tồn kho') : dc ? kv('Loại', 'Điều chỉnh tồn') : '')}
-      ${kv('Người lập', escHtml(t.createdByName || (t.createdBy ? '' : 'Dữ liệu cũ (trước khi có tài khoản)')))}
+      ${kv('Người lập', escHtml(t.createdByName || (t.createdBy ? '' : 'Dữ liệu cũ (trước khi có tài khoản)')) + (role === 'ADM' && me && String(t.createdBy) === String(me.id) && t.createdByName !== me.name ? ' <small style="color:#8A93A0">· Admin lập</small>' : ''))}
       ${kv(t.createdByName ? 'Giờ máy chủ ghi nhận' : 'Thời gian', escHtml(t.datetime || ''))}
       ${late ? kv('Lập trên máy lúc', escHtml(t.clientTime) + ' (gửi khi có mạng)') : ''}
       ${kv('Số phiếu', '#' + t.id)}
@@ -3155,7 +3158,7 @@ async function saveAdjust() {
   const txn = {id:newId(), type:'dieuchinh', itemId:it.id, itemName:it.name, qty:d, unit:it.unit,
     project: t0 ? t0.project : (curProj === 'all' ? (db.projects[0] || '') : curProj),
     supplierOrReceiver:'', thietBi: t0?.thietBi || '', note:'', reason, refId: t0 ? t0.id : '',
-    datetime: nowStr(), createdByName: me?.name || ''};
+    datetime: nowStr(), createdByName: meRec()};
   it.stock = Math.round((+it.stock + d) * 100) / 100;
   db.transactions.push(txn);
   updateLowBadge(); closeModal('modal-adjust');
@@ -3402,7 +3405,7 @@ async function doNhap() {
   const txn = {id:newId(), type:'nhap', itemId:item.id, itemName:item.name, qty, unit:item.unit, project:proj,
     supplierOrReceiver:document.getElementById('fn-ncc').value,
     note:fnNoteCT(),
-    datetime:nowStr(), createdByName:me?.name||''};
+    datetime:nowStr(), createdByName:meRec()};
   withAdminTime(txn, 'fn-time');
   db.transactions.push(txn);
   addLog('Nhập kho', `${qty} ${item.unit} ${item.name} — ${proj}`);
@@ -3433,7 +3436,7 @@ function fnModeUpdate() {
   if (btn) { btn.innerHTML = ct ? '🚚 Xác nhận nhập + xuất thẳng' : on && !kho ? 'Xác nhận' : '✅ Xác nhận nhập kho'; btn.className = 'btn-full ' + (ct ? 'btn-orange' : on && !kho ? 'btn-gray' : 'btn-green'); }
 }
 async function doNhapThang(item, qty, proj) {
-  const nId = newId(), now = nowStr(), who = me?.name || ''; let xId = newId(); while (xId === nId) xId = newId();
+  const nId = newId(), now = nowStr(), who = meRec(); let xId = newId(); while (xId === nId) xId = newId();
   const giao = document.getElementById('fn-giao').value.trim();
   const base = {itemId:item.id, itemName:item.name, qty, unit:item.unit, project:proj, datetime:now, createdByName:who};
   const n = {...base, id:nId, type:'nhap', supplierOrReceiver:document.getElementById('fn-ncc').value, note:fnNoteCT(), thangCT:xId};
@@ -3510,7 +3513,7 @@ async function doXuat() {
   const _ct = fxCtVal(item); ctApply(item, {type:'xuat', ct:_ct, qty});          // v5.35
   const txn = {id:newId(), type:'xuat', ct:_ct, itemId, itemName:item.name, qty, unit:item.unit, project:proj,
     supplierOrReceiver:window.fxRecvO || document.getElementById('fx-note').value,
-    thietBi:dev, note:document.getElementById('fx-note').value, datetime:mr.fillAt ? mr.fillAt : nowStr(), createdByName:me?.name||'', meter:mr.meter, meterNote:mr.meterNote, fillAt:mr.fillAt || ''};
+    thietBi:dev, note:document.getElementById('fx-note').value, datetime:mr.fillAt ? mr.fillAt : nowStr(), createdByName:meRec(), meter:mr.meter, meterNote:mr.meterNote, fillAt:mr.fillAt || ''};
   withAdminTime(txn, 'fx-time');
   db.transactions.push(txn);
   addLog('Xuất kho', `${qty} ${item.unit} ${item.name}${dev?' → '+dev:''} — ${proj}`);
@@ -3641,7 +3644,7 @@ async function queuePhotos(txnId, list) {
   for (const ph of list) {
     try { await PDB.put('u_' + ph.id, ph.data); } catch (e) { toast('⚠️ Máy không lưu được ảnh: ' + e.message); continue; }
     photoMem[ph.id] = ph.data;
-    db.photos.push({id: ph.id, txnId, fileId: '', addedByName: me?.name || '', time: nowStr(), _local: 1});
+    db.photos.push({id: ph.id, txnId, fileId: '', addedByName: meRec(), time: nowStr(), _local: 1});
     outbox.push({action: 'uploadPhoto', data: {photoId: ph.id, txnId}, ts: Date.now()});
   }
   saveLocal();
@@ -3747,7 +3750,7 @@ function txnShareText(t) {
   if (t.note && t.note !== t.supplierOrReceiver) L.push(`Ghi chú: ${t.note}`);
   if (t.reason) L.push(`Lý do: ${t.reason}`);
   if (it) L.push(ctTrack(it) || ctSite(it) ? `Trong kho: ${fmtNum(it.stock)} · Ở công trường: ${fmtNum(ctSite(it))} · Tổng ghi nhận: ${fmtNum(ctTot(it))} ${unit}` : `Tồn hiện tại: ${fmtNum(it.stock)} ${unit}`);
-  L.push(`Người lập: ${t.createdByName || me?.name || ''} · ${t.datetime || ''}`);
+  L.push(`Người lập: ${t.createdByName || meRec()} · ${t.datetime || ''}`);
   const n = photosOf(t.id).length; if (n) L.push(`📷 ${n} ảnh biên bản`);
   return L.join('\n');
 }
@@ -3796,7 +3799,7 @@ function buildDailyReport() {
   }
   L.push(''); L.push(low.length ? `⚠️ CẦN BỔ SUNG (${low.length}):` : '✅ Không có vật tư dưới mức tối thiểu');
   low.slice(0, 15).forEach(i => L.push(` • ${i.name}: còn ${fmtNum(i.stock)} ${i.unit} (tối thiểu ${fmtNum(i.minStock)})`));
-  L.push(''); L.push(`Người gửi: ${me?.name || ''} · ${nowStr()}`);
+  L.push(''); L.push(`Người gửi: ${meRec()} · ${nowStr()}`);
   document.getElementById('rp-text').value = L.join('\n');
 }
 function sendDailyReport() { shareOut(document.getElementById('rp-text').value, [], 'Báo cáo kho'); }
@@ -4089,7 +4092,7 @@ async function qkSaveAll() {
     const src = `Zalo${d.author ? ' ' + d.author : ''}${d.time ? ' ' + d.time : ''}: “${d.line}”`;
     const txn = {id:newId(), type:d.type, itemId:item.id, itemName:item.name, qty, unit:item.unit, project:curProj,
       supplierOrReceiver:d.party || '', thietBi:d.type === 'xuat' ? (d.thietBi || '') : '',
-      note:[d.note, src].filter(Boolean).join(' · ').slice(0, 400), datetime:nowStr(), createdByName:me?.name || ''};
+      note:[d.note, src].filter(Boolean).join(' · ').slice(0, 400), datetime:nowStr(), createdByName:meRec()};
     db.transactions.push(txn);
     const r = await push('addTransaction', txn);
     if (r === 'rejected') break;
@@ -4488,7 +4491,7 @@ async function saveDevice() {
     if (typ === 'hire' && !donVi) { toast('⚠️ Máy thuê ngoài: ghi đơn vị cho thuê'); return; }
     if (!maQL && qlOn()) { const a = await askOutDM(name, true); if (a === 'fix') return; ngoaiDM = 1; }
     const device = {id:newId(), name, cat:document.getElementById('ad-cat').value, type:document.getElementById('ad-type').value, fuelRate:+document.getElementById('ad-fuel').value||20, plate:document.getElementById('ad-plate').value, note:document.getElementById('ad-note').value, project:curProj,
-      meterUnit:mu, inDate:document.getElementById('ad-in-date').value, inMeter:im === '' ? '' : +im, outDate:'', outMeter:'', addedBy:me?.name || '', addedAt:nowStr(), maQL, ngoaiDM, donVi};
+      meterUnit:mu, inDate:document.getElementById('ad-in-date').value, inMeter:im === '' ? '' : +im, outDate:'', outMeter:'', addedBy:meRec(), addedAt:nowStr(), maQL, ngoaiDM, donVi};
     db.devices.push(device);
     saved = device;
     addLog('Thêm thiết bị', name);
@@ -4548,7 +4551,7 @@ async function saveRepair() {
     by:document.getElementById('rp-by').value,
     note:document.getElementById('rp-note').value,
     project: curProj,
-    addedBy: me?.name || '',
+    addedBy: meRec(),
     datetime: nowStr()
   };
   db.repairs.push(repair);
@@ -4582,7 +4585,7 @@ function renderDpNotes() {
 async function saveNote() {
   const content = document.getElementById('note-content').value.trim();
   if (!content) { toast('⚠️ Nhập nội dung ghi chú'); return; }
-  const note = {id:newId(), content, ref:document.getElementById('note-ref').value, addedBy:me?.name||'', datetime:nowStr(), project:curProj};
+  const note = {id:newId(), content, ref:document.getElementById('note-ref').value, addedBy:meRec(), datetime:nowStr(), project:curProj};
   db.notes.push(note);
   closeModal('modal-add-note');
   addLog('Thêm ghi chú', content.substring(0,50));
@@ -5195,7 +5198,7 @@ const devLoan = id => projLoans().find(l => l.status === 'open' && l.kind === 'c
 // Áp thao tác mượn lên dữ liệu trên máy (lúc lập phiếu, và áp lại khi còn chờ gửi sau mỗi lần tải dữ liệu)
 function applyLoanOp(action, d) {
   db.loans = db.loans || [];
-  const who = me?.name || '';
+  const who = meRec();
   const addTxn = (id, type, qty, loan, note, reason) => {
     const it = db.items.find(i => i.id === loan.itemId); if (!it) return;
     it.stock = Math.round((it.stock + ({...LOAN_T, nhap:1, xuat:-1})[type] * qty) * 100) / 100;
@@ -6006,7 +6009,7 @@ async function exportSummary() {
     const ws = wb.addWorksheet(name);
     ws.mergeCells(1, 1, 1, head.length);
     Object.assign(ws.getCell(1, 1), {value:`${name.toUpperCase()} — TỪ ${fr(D.from)} ĐẾN ${fr(D.to)}`, font:{...F, bold:true, size:14}});
-    ws.getCell(2, 1).value = `Xuất lúc ${nowStr()} · ${me?.name || ''}`; ws.getCell(2, 1).font = {...F, italic:true, size:9, color:{argb:'FF777777'}};
+    ws.getCell(2, 1).value = `Xuất lúc ${nowStr()} · ${meRec()}`; ws.getCell(2, 1).font = {...F, italic:true, size:9, color:{argb:'FF777777'}};
     head.forEach((t, j) => { const c = ws.getCell(4, j + 1); c.value = t; c.font = {...F, bold:true, color:{argb:'FFFFFFFF'}}; c.fill = {type:'pattern', pattern:'solid', fgColor:{argb:'FF0056A4'}}; c.alignment = {wrapText:true, vertical:'middle', horizontal:'center'}; box(c); });
     rows.forEach((r, i) => r.forEach((v, j) => { const c = ws.getCell(5 + i, j + 1); c.value = v === null || v === '' ? null : v; if (typeof v === 'number') c.numFmt = '#,##0.##'; box(c); }));
     widths.forEach((w, j) => ws.getColumn(j + 1).width = w);
@@ -6306,7 +6309,7 @@ async function exportCost() {
     const ws = wb.addWorksheet(name);
     ws.mergeCells(1, 1, 1, head.length);
     Object.assign(ws.getCell(1, 1), {value:`${name.toUpperCase()} — ${D.project}`, font:{...F, bold:true, size:14}});
-    ws.getCell(2, 1).value = `Số liệu đến ${D.today} · xuất lúc ${nowStr()} · ${me?.name || ''}`; ws.getCell(2, 1).font = {...F, italic:true, size:9, color:{argb:'FF777777'}};
+    ws.getCell(2, 1).value = `Số liệu đến ${D.today} · xuất lúc ${nowStr()} · ${meRec()}`; ws.getCell(2, 1).font = {...F, italic:true, size:9, color:{argb:'FF777777'}};
     head.forEach((t, j) => { const c = ws.getCell(4, j + 1); c.value = t; c.font = {...F, bold:true, color:{argb:'FFFFFFFF'}}; c.fill = {type:'pattern', pattern:'solid', fgColor:{argb:'FF0056A4'}}; c.alignment = {wrapText:true, vertical:'middle', horizontal:'center'}; box(c); });
     rows.forEach((r, i) => r.forEach((v, j) => { const c = ws.getCell(5 + i, j + 1); c.value = v === null || v === '' ? null : v; if (typeof v === 'number') c.numFmt = '#,##0.##'; box(c); }));
     widths.forEach((w, j) => ws.getColumn(j + 1).width = w);
@@ -7344,7 +7347,7 @@ function pgImg(file) {
 }
 async function pgDecode(img) {
   if ('BarcodeDetector' in window) {
-    try { const bd = new BarcodeDetector({formats:['qr_code']}); const out = await bd.detect(img); const c = out.map(o => pgCode(o.rawValue)).find(Boolean); if (c) return c; } catch (e) {}
+    try { const bd = new BarcodeDetector({formats:['qr_code']}); const out = await bd.detect(img); const c = out.map(o => dmCodeOf(o.rawValue) || pgCode(o.rawValue)).find(Boolean); if (c) return c; } catch (e) {}
   }
   if (!(await ensureLib('jsQR', JSQR_URLS))) return '';
   const W = img.naturalWidth, H = img.naturalHeight;
@@ -7358,7 +7361,7 @@ async function pgDecode(img) {
     const cv = document.createElement('canvas'); cv.width = w; cv.height = h;
     const g = cv.getContext('2d', {willReadFrequently:true}); g.drawImage(img, sx, sy, sw, sh, 0, 0, w, h);
     const im = g.getImageData(0, 0, w, h), px = im.data;
-    let q = jsQR(px, w, h, {inversionAttempts:'attemptBoth'}), c = q && pgCode(q.data); if (c) return c;
+    let q = jsQR(px, w, h, {inversionAttempts:'attemptBoth'}), c = q && (dmCodeOf(q.data) || pgCode(q.data)); if (c) return c;
     const hist = new Uint32Array(256);                            // ảnh tối / lóa: kéo giãn độ tương phản rồi thử lại
     for (let i = 0; i < px.length; i += 4) hist[(px[i] * 77 + px[i + 1] * 150 + px[i + 2] * 29) >> 8]++;
     let lo = 0, hi = 255, acc = 0; const N = w * h;
@@ -7367,7 +7370,7 @@ async function pgDecode(img) {
     if (hi - lo > 10 && hi - lo < 200) {
       const k2 = 255 / (hi - lo);
       for (let i = 0; i < px.length; i += 4) { const y = (px[i] * 77 + px[i + 1] * 150 + px[i + 2] * 29) >> 8, v = Math.max(0, Math.min(255, (y - lo) * k2)); px[i] = px[i + 1] = px[i + 2] = v; }
-      q = jsQR(px, w, h, {inversionAttempts:'attemptBoth'}); c = q && pgCode(q.data); if (c) return c;
+      q = jsQR(px, w, h, {inversionAttempts:'attemptBoth'}); c = q && (dmCodeOf(q.data) || pgCode(q.data)); if (c) return c;
     }
   }
   return '';
@@ -7808,7 +7811,7 @@ function addPycSheets(wb, R, P) {
   const thin = {style:'thin', color:{argb:'FFA6B0BE'}}, BD = {top:thin, left:thin, bottom:thin, right:thin};
   const now = new Date(), p2 = n => String(n).padStart(2, '0');
   const INFO = [['Dự án', P], ['Kỳ báo cáo', R.label], ['Ngày xuất', `${p2(now.getDate())}/${p2(now.getMonth() + 1)}/${now.getFullYear()} ${p2(now.getHours())}:${p2(now.getMinutes())}`],
-    ['Người xuất', `${me?.name || ''} (${ROLE_NAME[role] || role})`]];
+    ['Người xuất', meExp()]];
   const inR = s => { const d = parseVN(s); return !d || ((!R.from || d >= R.from) && (!R.to || d <= R.to)); };
   function mk(name, widths, orient) {
     const ws = wb.addWorksheet(name, {pageSetup:{paperSize:9, orientation:orient, fitToPage:true, fitToWidth:1, fitToHeight:0, horizontalCentered:true,
@@ -8262,7 +8265,7 @@ async function devClose(id) {
   showLoader('Đang lưu...'); const r = await api('closeDevice', {id, outDate:date, outMeter:m}); hideLoader();
   if (!r || !r.success) { toast('⚠️ ' + ((r && r.error) || 'Không lưu được')); return; }
   d.outDate = date; d.outMeter = m === '' ? '' : +m;
-  (db.devlog = db.devlog || []).push({id:'L' + Date.now(), deviceId:d.id, deviceName:d.name, maQL:d.maQL || '', kind:'ra', date, meter:d.outMeter, project:curProj, by:me?.name || '', at:nowStr(), _local:1});   // v5.29: Máy ra
+  (db.devlog = db.devlog || []).push({id:'L' + Date.now(), deviceId:d.id, deviceName:d.name, maQL:d.maQL || '', kind:'ra', date, meter:d.outMeter, project:curProj, by:meRec(), at:nowStr(), _local:1});   // v5.29: Máy ra
   saveLocal(); toast('✅ Đã kết thúc máy ở công trình'); renderDeviceDetail(id); renderDevicesList();
 }
 async function devReopen(id) {
@@ -8270,7 +8273,7 @@ async function devReopen(id) {
   showLoader('Đang lưu...'); const r = await api('closeDevice', {id, reopen:1}); hideLoader();
   if (!r || !r.success) { toast('⚠️ ' + ((r && r.error) || 'Không lưu được')); return; }
   d.outDate = ''; d.outMeter = '';
-  (db.devlog = db.devlog || []).push({id:'L' + Date.now(), deviceId:d.id, deviceName:d.name, maQL:d.maQL || '', kind:'vao', date:isoDay(new Date()), meter:'', project:curProj, by:me?.name || '', at:nowStr(), _local:1});
+  (db.devlog = db.devlog || []).push({id:'L' + Date.now(), deviceId:d.id, deviceName:d.name, maQL:d.maQL || '', kind:'vao', date:isoDay(new Date()), meter:'', project:curProj, by:meRec(), at:nowStr(), _local:1});
   saveLocal(); toast('✅ Đã mở lại'); renderDeviceDetail(id); renderDevicesList();
 }
 function adMeterUnit() {
@@ -8914,7 +8917,7 @@ async function doNhapMay() {
     if (!r || !r.success) { toast('⚠️ ' + ((r && r.error) || 'Không lưu được')); return; }
     Object.assign(left, {outDate:'', outMeter:'', inDate:date, inMeter:meter});
     if (left.type !== type || (left.donVi || '') !== donVi) { left.type = type; left.donVi = donVi; push('upsert', {table:'devices', rows:[left]}); }
-    (db.devlog = db.devlog || []).push({id:'L' + Date.now(), deviceId:left.id, deviceName:left.name, maQL:x.ma, kind:'vao', date, meter, note, project:curProj, by:me?.name || '', at:nowStr(), _local:1});
+    (db.devlog = db.devlog || []).push({id:'L' + Date.now(), deviceId:left.id, deviceName:left.name, maQL:x.ma, kind:'vao', date, meter, note, project:curProj, by:meRec(), at:nowStr(), _local:1});
     saveLocal(); toast('🏗 Đã ghi máy vào lại công trường: ' + left.name); fnSetDev(null); goTab('home'); syncAll(true).then(ok => { if (ok) refreshCurrentView(false); });
     return;
   }
@@ -8922,7 +8925,7 @@ async function doNhapMay() {
   if (db.devices.some(d => devActive(d) && vnNorm(d.name).replace(/\s+/g, ' ').trim() === nk)) { toast(`⚠️ Máy "${x.name}" đã có trong dự án — dùng Gắn mã P.QLTB cho máy đó`); return; }
   const f = DEV_FILE.find(a => a[3] === x.ma);
   const device = {id:newId(), name:x.name, cat:x.cat || 'khac', type, fuelRate:devCatOf(x.cat).fuel || 20, plate:x.plate || '', note: 'Mã TS: ' + x.ma + (note ? '\n' + note : ''),
-    project:curProj, meterUnit:unit, inDate:date, inMeter:meter, outDate:'', outMeter:'', addedBy:me?.name || '', addedAt:nowStr(), maQL:x.ma, ngoaiDM:'', donVi};
+    project:curProj, meterUnit:unit, inDate:date, inMeter:meter, outDate:'', outMeter:'', addedBy:meRec(), addedAt:nowStr(), maQL:x.ma, ngoaiDM:'', donVi};
   db.devices.push(device);
   push('upsert', {table:'devices', rows:[device]});
   toast('🏗 Đã ghi máy vào công trường: ' + x.name);
@@ -9142,7 +9145,7 @@ async function askIfDupTxn(type, item, qty) {
   const now = Date.now();
   const ctK = type === 'xuat' ? fxCtVal(item) : (typeof fnLMode !== 'undefined' && fnLMode === 've' ? 've' : '');   // v5.35
   const t = db.transactions.find(x => x.type === type && +x.itemId === +item.id && Math.abs(+x.qty - qty) < 1e-9 && String(x.ct || '') === ctK &&
-    (x.createdByName || '') === (me?.name || '') && (d => d && now - d.getTime() < 120000 && now - d.getTime() > -60000)(parseVN(x.datetime)));
+    (x.createdByName || '') === (meRec()) && (d => d && now - d.getTime() < 120000 && now - d.getTime() > -60000)(parseVN(x.datetime)));
   if (!t) return true;
   const at = parseVN(t.datetime), hm = at ? String(at.getHours()).padStart(2, '0') + ':' + String(at.getMinutes()).padStart(2, '0') : '';
   const w = type === 'nhap' ? 'nhập' : 'xuất';
@@ -9329,7 +9332,7 @@ async function gdMaySave(id) {
     const c = await api('closeDevice', { id:dv.id, outDate:date, outMeter:mEl ? mEl.value : '' });
     if (!c || !c.success) { hideLoader(); toast('⚠️ ' + ((c && c.error) || 'Không lưu được')); return; }
     dv.outDate = date; dv.outMeter = mEl && mEl.value !== '' ? +mEl.value : '';
-    (db.devlog = db.devlog || []).push({ id:'L' + Date.now(), deviceId:dv.id, deviceName:dv.name, maQL:dv.maQL || '', kind:'ra', date, meter:dv.outMeter, note:gdDestLbl(h, dest), project:curProj, by:me?.name || '', at:nowStr(), _local:1 });
+    (db.devlog = db.devlog || []).push({ id:'L' + Date.now(), deviceId:dv.id, deviceName:dv.name, maQL:dv.maQL || '', kind:'ra', date, meter:dv.outMeter, note:gdDestLbl(h, dest), project:curProj, by:meRec(), at:nowStr(), _local:1 });
   }
   const res = await api('gdOut', { project:curProj, gdId:r.id, id:'h' + Date.now(), q:r.qty - r.done || 1, h, dest, date });
   hideLoader();
@@ -9406,7 +9409,7 @@ async function gdImportSave() {
       if (db.items.some(i => i.project === curProj && normVN(i.name) === normVN(x.name)) || items.some(i => normVN(i.name) === normVN(x.name))) return;
       const it = { id:newId(), name:x.name, cat:GD_CAT[x.grp], unit:x.unit || 'Cái', stock:0, minStock:0, project:curProj, maQL:'', ngoaiDM:2 };
       items.push(it);
-      txns.push({ id:newId(), type:'nhap', itemId:it.id, itemName:it.name, qty:x.qty, unit:it.unit, project:curProj, supplierOrReceiver:'Tồn đầu', note:'Tồn đầu từ DS giải động', datetime:nowStr(), createdByName:me?.name || '' });
+      txns.push({ id:newId(), type:'nhap', itemId:it.id, itemName:it.name, qty:x.qty, unit:it.unit, project:curProj, supplierOrReceiver:'Tồn đầu', note:'Tồn đầu từ DS giải động', datetime:nowStr(), createdByName:meRec() });
     });
     if (items.length) {
       items.forEach(i => db.items.push(i));
@@ -9624,7 +9627,7 @@ async function gdPickFx(id) {                                   // mục giải 
   if (!it) {
     it = { id:newId(), name:r.name, cat:GD_CAT[r.grp] || 'tbPhuTro', unit:r.unit || 'Cái', stock:0, minStock:0, project:curProj, maQL:'', ngoaiDM:2 };
     db.items.push(it); showLoader('Đang thêm vào kho...'); await push('upsert', { table:'items', rows:[it] }); hideLoader();
-    const q = gdLeft(r), t = { id:newId(), type:'nhap', itemId:it.id, itemName:it.name, qty:q, unit:it.unit, project:curProj, supplierOrReceiver:'Tồn đầu', note:'Tồn đầu từ DS giải động', datetime:nowStr(), createdByName:me?.name || '' };
+    const q = gdLeft(r), t = { id:newId(), type:'nhap', itemId:it.id, itemName:it.name, qty:q, unit:it.unit, project:curProj, supplierOrReceiver:'Tồn đầu', note:'Tồn đầu từ DS giải động', datetime:nowStr(), createdByName:meRec() };
     it.stock = q; db.transactions.push(t); push('addTransaction', t);
   }
   comboPick('fx', it.id); fxSetMode('ngoai');
@@ -9654,7 +9657,7 @@ doXuat = async function () {
     if (!c || !c.success) { hideLoader(); toast('⚠️ ' + ((c && c.error) || 'Không lưu được')); return; }
     d.outDate = date; d.outMeter = mEl && mEl.value !== '' ? +mEl.value : '';
     const lbl = h ? gdDestLbl(h, dest) : val('fx-note');
-    (db.devlog = db.devlog || []).push({ id:'L' + Date.now(), deviceId:d.id, deviceName:d.name, maQL:d.maQL || '', kind:'ra', date, meter:d.outMeter, note:lbl, project:curProj, by:me?.name || '', at:nowStr(), _local:1 });
+    (db.devlog = db.devlog || []).push({ id:'L' + Date.now(), deviceId:d.id, deviceName:d.name, maQL:d.maQL || '', kind:'ra', date, meter:d.outMeter, note:lbl, project:curProj, by:meRec(), at:nowStr(), _local:1 });
     if (fxGD && h) { const r = fxGD, res = await api('gdOut', { project:curProj, gdId:r.id, id:'h' + Date.now(), q:Math.max(1, gdLeft(r)), h, dest, date }); if (res && res.success && res.row) Object.assign(r, res.row); gdCacheSave(); }
     hideLoader(); saveLocal();
     return fxAfter('🏗 Đã ghi máy rời công trình: ' + d.name + (h ? ' → ' + gdDestLbl(h, dest) : ''));
@@ -9671,7 +9674,7 @@ doXuat = async function () {
       const data = { id:newId(), kind:'cho', itemType:'vt', party, ptype:w.ptype, linkP:w.linkP, phone:val('fxl-phone'), dueDate:val('fxl-due'), note:val('fx-note'), project:curProj, datetime:nowStr() };
       if (data.dueDate && data.dueDate < isoDay(new Date())) { toast('⚠️ Hạn trả đang ở ngày đã qua'); return; }
       if (fromCt) {                                              // v5.40: lấy từ công trường → tự ghi về kho trước (cùng hàng đợi, đúng thứ tự)
-        const ve = { id:newId(), type:'nhap', ct:'ve', itemId:it.id, itemName:it.name, qty, unit:it.unit, project:curProj, supplierOrReceiver:'Công trường', note:'Tự ghi khi cho mượn → ' + party, datetime:nowStr(), createdByName:me?.name || '' };
+        const ve = { id:newId(), type:'nhap', ct:'ve', itemId:it.id, itemName:it.name, qty, unit:it.unit, project:curProj, supplierOrReceiver:'Công trường', note:'Tự ghi khi cho mượn → ' + party, datetime:nowStr(), createdByName:meRec() };
         if (ve.id === data.id) ve.id = data.id + 2;
         ctApply(it, ve); db.transactions.push(ve); push('addTransaction', ve);
       }
@@ -9700,7 +9703,7 @@ doXuat = async function () {
   if (!t || t.type !== 'xuat') { nEl.value = old; return; }
   if (!r) return;
   const hid = 'h' + t.id, date = isoDay(new Date());
-  r.hist = (r.hist || []).concat([{ id:hid, q:t.qty, h, dest: h === 'kho' ? GD.kho : dest, date, txn:t.id, by:me?.name || '', recv:0 }]); r.done = r3(r.done + t.qty);
+  r.hist = (r.hist || []).concat([{ id:hid, q:t.qty, h, dest: h === 'kho' ? GD.kho : dest, date, txn:t.id, by:meRec(), recv:0 }]); r.done = r3(r.done + t.qty);
   gdCacheSave(); fxGD = null;
   push('gdOut', { project:curProj, gdId:r.id, id:hid, q:t.qty, h, dest, date, txn:t.id });
 };
@@ -9933,7 +9936,7 @@ async function ptPick(p, name, unit, grp) {
 const isPT = it => it && (it.cat === 'tbPhuTro' || it.cat === 'vtPhuTro');
 function ptEnsureStock(it, qty) {                               // thiết bị / vật tư phụ trợ có sẵn ở công trường nhưng chưa ghi kho → ghi tồn đầu phần thiếu
   if (!isPT(it) || !(qty > it.stock + 1e-9)) return;
-  const q = r3(qty - it.stock), t = { id:newId(), type:'nhap', itemId:it.id, itemName:it.name, qty:q, unit:it.unit, project:curProj, supplierOrReceiver:'Tồn đầu', note:'Tồn đầu (có sẵn ở công trường, ghi khi xuất)', datetime:nowStr(), createdByName:me?.name || '' };
+  const q = r3(qty - it.stock), t = { id:newId(), type:'nhap', itemId:it.id, itemName:it.name, qty:q, unit:it.unit, project:curProj, supplierOrReceiver:'Tồn đầu', note:'Tồn đầu (có sẵn ở công trường, ghi khi xuất)', datetime:nowStr(), createdByName:meRec() };
   it.stock = r3(it.stock + q); db.transactions.push(t); push('addTransaction', t);
 }
 </script>
@@ -10041,7 +10044,7 @@ function ctQtyOk(item, qty) {
 // thiết bị / vật tư phụ trợ đang ở công trường nhưng app chưa ghi nhận → tự khai phần thiếu (giống tồn đầu 5.33.2)
 function ctKhai(it, d, reason) {
   if (!d) return null;
-  const t = { id:newId(), type:'dieuchinh', ct:'site', itemId:it.id, itemName:it.name, qty:r3c(d), unit:it.unit, project:curProj, supplierOrReceiver:'', thietBi:'', note:'', reason, refId:'', datetime:nowStr(), createdByName:me?.name || '' };
+  const t = { id:newId(), type:'dieuchinh', ct:'site', itemId:it.id, itemName:it.name, qty:r3c(d), unit:it.unit, project:curProj, supplierOrReceiver:'', thietBi:'', note:'', reason, refId:'', datetime:nowStr(), createdByName:meRec() };
   ctApply(it, t); db.transactions.push(t); push('addTransaction', t);
   return t;
 }
@@ -10058,7 +10061,7 @@ async function ctNhapVe() {
   closeKeyboard();
   ctEnsureSite(item, qty, 'Tự khai: có ở công trường, ghi khi nhập về kho');
   const txn = { id:newId(), type:'nhap', ct:'ve', itemId:item.id, itemName:item.name, qty, unit:item.unit, project:curProj,
-    supplierOrReceiver:'Công trường', note:val('fn-note'), datetime:nowStr(), createdByName:me?.name || '' };
+    supplierOrReceiver:'Công trường', note:val('fn-note'), datetime:nowStr(), createdByName:meRec() };
   withAdminTime(txn, 'fn-time');
   ctApply(item, txn); db.transactions.push(txn);
   addLog('Nhập từ công trường về kho', `${qty} ${item.unit} ${item.name} — ${curProj}`);
@@ -10117,7 +10120,7 @@ async function ctConfirmAll() {
     const v = r3c(+(document.getElementById('ctq-' + it.id)?.value || 0));
     if (!(v >= 0)) { toast('⚠️ Số không hợp lệ: ' + it.name); return; }
     const t = { id:newId(), type:'dieuchinh', ct:'site', itemId:it.id, itemName:it.name, qty:v, unit:it.unit, project:curProj, supplierOrReceiver:'', thietBi:'', note:'',
-      reason:'Xác nhận số đang ở công trường (tính từ phiếu cũ' + (v !== ctSuggest(it) ? ', thủ kho sửa từ ' + fmtNum(ctSuggest(it)) : '') + ')', refId:'', datetime:nowStr(), createdByName:me?.name || '' };
+      reason:'Xác nhận số đang ở công trường (tính từ phiếu cũ' + (v !== ctSuggest(it) ? ', thủ kho sửa từ ' + fmtNum(ctSuggest(it)) : '') + ')', refId:'', datetime:nowStr(), createdByName:meRec() };
     ctApply(it, t); db.transactions.push(t); push('addTransaction', t); n++;
   }
   ctEdit = {}; addLog('Xác nhận số ở công trường', n + ' món'); toast(`✅ Đã ghi nhận ${n} món đang ở công trường`); ctRender(); updateLowBadge();
@@ -10130,7 +10133,7 @@ async function ctFix(id) {
   if (!(n >= 0)) { toast('⚠️ Số không hợp lệ'); return; }
   const why = prompt('Lý do (VD: kiểm đếm thực tế ngày …)', 'Kiểm đếm thực tế ở công trường');
   if (!why || why.trim().length < 5) { toast('⚠️ Ghi rõ lý do (ít nhất 5 ký tự)'); return; }
-  const t = { id:newId(), type:'dieuchinh', ct:'site', itemId:it.id, itemName:it.name, qty:r3c(n - ctSite(it)), unit:it.unit, project:curProj, supplierOrReceiver:'', thietBi:'', note:'', reason:why.trim(), refId:'', datetime:nowStr(), createdByName:me?.name || '' };
+  const t = { id:newId(), type:'dieuchinh', ct:'site', itemId:it.id, itemName:it.name, qty:r3c(n - ctSite(it)), unit:it.unit, project:curProj, supplierOrReceiver:'', thietBi:'', note:'', reason:why.trim(), refId:'', datetime:nowStr(), createdByName:meRec() };
   ctApply(it, t); db.transactions.push(t); push('addTransaction', t); toast('✅ Đã sửa số ở công trường'); ctRender();
 }
 DP_RENDER['dp-ct'] = () => ctRender();
@@ -10179,7 +10182,7 @@ async function cuConfirmAll() {
   let n = 0;
   V.filter(x => x[1] > 0).forEach(([it, v, o]) => {
     const t = { id:newId(), type:'dieuchinh', ct:'cu', itemId:it.id, itemName:it.name, qty:v, unit:it.unit, project:curProj, supplierOrReceiver:'', thietBi:'', note:'',
-      reason:'Hàng nhập thẳng ra công trường trước 5.55 còn chưa dùng — thủ kho xác nhận' + (v !== o ? ` (app tính tối đa ${fmtNum(o)})` : ''), refId:'', datetime:nowStr(), createdByName:me?.name || '' };
+      reason:'Hàng nhập thẳng ra công trường trước 5.55 còn chưa dùng — thủ kho xác nhận' + (v !== o ? ` (app tính tối đa ${fmtNum(o)})` : ''), refId:'', datetime:nowStr(), createdByName:meRec() };
     ctApply(it, t); db.transactions.push(t); push('addTransaction', t); n++;
   });
   cuEdit = {}; addLog('Xác nhận hàng cũ ở công trường', V.length + ' món'); toast(`✅ Đã xác nhận ${V.length} món${n ? ` · cộng tồn ${n} món` : ''}`);
@@ -11202,7 +11205,7 @@ async function devStartSave(id, clear) {
   if (!navigator.onLine) { toast('📴 Cần có mạng'); return; }
   showLoader('Đang lưu...'); const r = await api('setDevStart', { id, date:v }); hideLoader();
   if (!r || !r.success) { toast('⚠️ ' + ((r && r.error) || 'Không lưu được')); return; }
-  d.startDate = v; d.startBy = v ? (me?.name || '') : ''; saveLocal(); k5Close();
+  d.startDate = v; d.startBy = v ? (meRec()) : ''; saveLocal(); k5Close();
   toast(v ? '✅ Đã ghi ngày bắt đầu hoạt động ' + isoDmy(v) : 'Đã xóa ngày bắt đầu hoạt động');
   renderDeviceDetail(id); if (typeof renderDevicesList === 'function' && document.getElementById('dp-devices-list-body')) renderDevicesList();
 }
@@ -11779,7 +11782,7 @@ function q5Ops() {
       const f = ql ? DEV_FILE.find(a => a[3] === ql.ma) : null, cat = (ql && ql.cat) || (/^cau\b/.test(q5n(R.name)) ? 'mayCau' : 'khac');
       const dev = { id:nid(), name: ql ? ql.name : q5Cap(R.devName || R.name), cat, type: R.devType === 'hire' ? 'hire' : (ql && qlHire(ql) ? 'hire' : 'own'), fuelRate: devCatOf(cat).fuel || 20,
         plate: (ql && ql.plate) || '', note: (ql ? 'Mã TS: ' + ql.ma + '\n' : '') + lineTag, project:curProj, meterUnit: (f && f[4]) || 'h', inDate:today, inMeter:'', outDate:'', outMeter:'',
-        addedBy:me?.name || '', addedAt:now, maQL: ql ? ql.ma : '', ngoaiDM: ql ? '' : 1, donVi: R.devType === 'hire' ? String(R.donVi || '').trim() : (ql ? (ql.ncc || ql.donVi || '') : '') };
+        addedBy:meRec(), addedAt:now, maQL: ql ? ql.ma : '', ngoaiDM: ql ? '' : 1, donVi: R.devType === 'hire' ? String(R.donVi || '').trim() : (ql ? (ql.ncc || ql.donVi || '') : '') };
       if (dev.type === 'hire' && !dev.donVi) dev.donVi = 'Thuê ngoài';
       ops.push({ k:'dev', line:R.line, d:dev }); return;
     }
@@ -11795,7 +11798,7 @@ function q5Ops() {
       it = { id:nid(), name, cat: p ? p.cat : R.newCat, unit: p ? p.unit : R.newUnit, stock:0, minStock:0, project:curProj, maQL:'', ngoaiDM:'' };
       ops.push({ k:'item', line:R.line, d:it });
     }
-    const q = q5Qty(R), base = { itemId:it.id, itemName:it.name, qty:q, unit:it.unit, project:curProj, datetime:now, createdByName:me?.name || '' };
+    const q = q5Qty(R), base = { itemId:it.id, itemName:it.name, qty:q, unit:it.unit, project:curProj, datetime:now, createdByName:meRec() };
     if (R.kind === 'in' && R.mode === 'ct') {
       const n = nid(), x = nid();
       ops.push({ k:'thang', line:R.line, d:{ nhap:{ ...base, id:n, type:'nhap', supplierOrReceiver:R.ncc || '', note:note(''), thangCT:x }, xuat:{ ...base, id:x, type:'xuat', supplierOrReceiver:'', note:'', thangCT:n, ct: q5Track(p || {}) ? 'ra' : '' } } });
@@ -12406,6 +12409,7 @@ function p9Render() {
     const tag = cl ? `<span class="p9-tag off">đã đóng ${escHtml(String(p.closed.at || '').split(' ').pop())}</span>` : empty ? '<span class="p9-tag emp">trống</span>' : '<span class="p9-tag on">đang chạy</span>';
     return `<div class="p9-pj${cl ? ' cl' : ''}"><div class="p9-h"><b>${escHtml(p.name)}</b>${tag}${p.name === curProj ? '<span class="p9-cur">đang mở</span>' : ''}</div>
       <div class="p9-st">${st}${cl ? ' · chỉ xem' : ''}</div>
+      ${P9.list.some(x => 'siCand' in x) ? `<div class="p9-si">Đứng tên thay Admin: <b>${p.standIn ? escHtml(p.standIn.name) + (p.standIn.auto ? ' <small>(tự chọn)</small>' : '') : '<span style="color:#C92A2A">chưa chọn</span>'}</b> <a onclick="p9Si(${i})">Đổi</a>${p.standIn && !empty ? ` · <a onclick="p9SiFix(${i})">Đổi tên Admin trong dữ liệu cũ</a>` : ''}</div>` : ''}
       <div class="p9-bt"><button type="button" onclick="p9Rename(${i})">✏️ Đổi tên</button>
         ${cl ? `<button type="button" onclick="p9Reopen(${i})">↩ Mở lại</button>` : `<button type="button" onclick="p9Close(${i})">📦 Đóng</button>`}
         <button type="button" class="${empty ? 'red' : 'off'}" ${empty ? '' : 'disabled'} onclick="p9Del(${i})">🗑 Xoá</button></div></div>`;
@@ -13188,7 +13192,7 @@ function bcData(R) {
   const inR = d => !d || ((!from || d >= from) && (!to || d <= to));
   const afterStart = d => !(d && from && d < from), afterEnd = d => !!(d && to && d > to);
   const items = db.items, byId = {}; items.forEach(i => byId[i.id] = i);
-  const fuelOf = it => !!it && (it.cat === 'nhienLieu' || isFuelItem(it));
+  const fuelOf = it => !!it && (it.cat === 'nhienLieu' || ((!it.cat || it.cat === 'khac') && isFuelItem(it)));   // v5.56.1: theo nhóm, chỉ đoán theo tên khi chưa có nhóm (Cont dầu…)
   const doOf = it => fuelOf(it) && /dầu/i.test(it.name || '') && !/nhớt|mỡ/i.test(it.name || '');
   const projSet = new Set([...(db.projects || []), ...((typeof GD !== 'undefined' && GD.projects) || []), (typeof GD !== 'undefined' && GD.kho) || ''].filter(p => p && p !== curProj).map(p => normVN(p)));
   const adj = adjMap();
@@ -13661,7 +13665,7 @@ function bcOverview(X, LN, LX, FU, NX, LO, apx) {
 async function bcBuild() {
   const R = exportRange(), P = curProj, d = new Date();
   const X = { R, P, Pf:String(P).replace(/&/g, '&&'), D:bcData(R), now:`${bcP2(d.getDate())}/${bcP2(d.getMonth() + 1)}/${d.getFullYear()} ${bcP2(d.getHours())}:${bcP2(d.getMinutes())}`,
-    who:`${(me && me.name) || ''}${me && me.role ? ' (' + String(ROLE_NAME[me.role]).split(' – ')[0] + ')' : ''}` };
+    who:meExp() };
   const m = String(P).match(/\(([^)]+)\)\s*$/); X.unit = 'BAN CHỈ HUY CÔNG TRƯỜNG ' + (m ? m[1] : P).toUpperCase();
   const wb = new ExcelJS.Workbook(); wb.creator = 'FECON Kho Vật Tư'; wb.created = d; X.wb = wb;
   X.logo = wb.addImage({ base64:BC_LOGO, extension:'png' });
@@ -14243,6 +14247,577 @@ async function gbMaxSave() {
 }
 </script>
 
+<script>// ===== v5.56.0: DANH MỤC CÓ HÌNH + MÃ + QR =====
+// Máy chủ: DanhMucVT thêm mã / công khai / ảnh (dmFull, dmStock, dmThumbs, dmImgFind, dmImgSet, dmPhoto, dmImgDel; công khai: dmPublic, dmImg).
+// App: trang "Danh mục có hình" (mọi người đã đăng nhập: ảnh, mã, tồn từng dự án, lập phiếu xuất, thẻ kho; thủ kho chụp ảnh thật),
+//   "Duyệt ảnh" (Admin chọn ảnh mạng máy chủ tìm sẵn), tem QR 24 tem / A4, QR cả danh mục, Excel có mã + ảnh nhỏ.
+//   Danh mục vật tư (Admin): thêm cột Mã (tự cấp theo nhóm, sửa được), Hiện công khai, đổi tên giữ ảnh, thêm máy theo mã P.QLTB, đếm 400 món.
+//   Trang công khai danhmuc.html (không cần đăng nhập). QR tem: danhmuc.html#m=<mã> — quét bằng ô Quét QR trong app thì mở thẳng món đó.
+const LS_DMH = 'fecon_dmh_v556', DM_MAXC = 400;
+let DMH = null; try { DMH = JSON.parse(localStorage.getItem(LS_DMH) || 'null'); } catch (e) {}
+const DMR = a => ({ ma:a[0] || '', name:a[1] || '', cat:a[2] || '', unit:a[3] || '', mode:a[4] || 'k', pub:a[5] === 0 || a[5] === '0' ? 0 : 1, img:a[6] || '', th:a[7] || '', k:a[8] || '', src:a[9] || '' });
+const dmIsMon = o => o.mode === 'm' || !!(o.cat && o.unit);
+const dmAll = () => (DMH && DMH.rows ? DMH.rows : []).map(DMR);
+const dmMon = () => dmAll().filter(o => dmIsMon(o) && o.ma);
+const dmByMa = ma => { const k = String(ma || '').toUpperCase(); return dmMon().find(o => o.ma.toUpperCase() === k) || null; };
+const dmCat = o => o.mode === 'm' ? devCatOf(o.cat) : catOf(o.cat);
+const dmDir = () => location.origin + location.pathname.replace(/[^/]*$/, '');
+const dmPubUrl = () => dmDir() + 'danhmuc.html';
+const dmLink = ma => dmPubUrl() + '#m=' + encodeURIComponent(ma);
+const dmCanPhoto = () => role === 'ADM' || hp('k_nhap') || hp('k_xuat');
+function dmhSave() { try { localStorage.setItem(LS_DMH, JSON.stringify(DMH)); } catch (e) {} }
+async function dmhLoad(force) {
+  if (!token || navigator.onLine === false) return !!DMH;
+  const r = await api('dmFull', { hv: force || !DMH ? '' : DMH.hv }, 30000);
+  if (r && r.success) { if (!r.same) { DMH = { hv:r.hv, rows:r.rows || [] }; } DMH.stale = 0; dmhSave(); return true; }
+  if (r && /không hợp lệ: dmFull/.test(r.error || '')) DMH = DMH || { hv:'', rows:[], old:1 };
+  return !!DMH;
+}
+function dmhPut(rows, hv) {
+  if (!DMH) DMH = { hv:'', rows:[] };
+  (rows || []).forEach(a => { const i = DMH.rows.findIndex(x => q8N(x[1]) === q8N(a[1])); if (i >= 0) DMH.rows[i] = a; else DMH.rows.push(a); });
+  if (hv) DMH.hv = hv; dmhSave();
+}
+{ const _dmAS = applyServer; applyServer = function (r) { const out = _dmAS.apply(this, arguments); try { if (r && r.dmHv && DMH && r.dmHv !== DMH.hv) DMH.stale = 1; } catch (e) {} return out; }; }
+
+// ---------- ảnh: Drive công khai → lh3 → hỏi máy chủ (dmImg) ----------
+const DM_IMG = {}, DM_IQ = []; let DM_IN = 0;
+function dmImgTag(id, w, cls) {
+  if (!id) return '';
+  const src = DM_IMG[id] || `https://drive.google.com/thumbnail?id=${encodeURIComponent(id)}&sz=w${w}`;
+  return `<img class="${cls || ''}" src="${src}" data-id="${escHtml(id)}" data-w="${w}" loading="lazy" alt="" onerror="dmImgErr(this)">`;
+}
+function dmImgErr(el) {
+  const id = el.dataset.id, st = +(el.dataset.st || 0); el.dataset.st = st + 1;
+  if (DM_IMG[id] && el.src !== DM_IMG[id]) { el.src = DM_IMG[id]; return; }
+  if (st === 0) { el.src = `https://lh3.googleusercontent.com/d/${encodeURIComponent(id)}=w${el.dataset.w}`; return; }
+  if (st === 1) { DM_IQ.push(el); dmImgPump(); return; }
+  el.classList.add('dm-noimg'); el.removeAttribute('src');
+}
+async function dmImgPump() {
+  while (DM_IN < 4 && DM_IQ.length) {
+    const el = DM_IQ.shift(), id = el.dataset.id; DM_IN++;
+    (async () => {
+      try { if (!DM_IMG[id]) { const r = await api('dmImg', { id }, 30000); if (r && r.success) DM_IMG[id] = r.data; } } catch (e) {}
+      if (DM_IMG[id]) el.src = DM_IMG[id]; else { el.classList.add('dm-noimg'); el.removeAttribute('src'); }
+      DM_IN--; dmImgPump();
+    })();
+  }
+}
+const dmPh = (o, sz) => `<span class="dm-ph">${q8Ico(dmCat(o), sz || 44)}</span>`;
+const dmPic = (o, w, cls) => o.th || o.img ? dmImgTag(w > 400 ? (o.img || o.th) : (o.th || o.img), w, cls) : dmPh(o);
+
+// ---------- TRANG DANH MỤC CÓ HÌNH ----------
+let DMV = { q:'', f:'all', sel:null, page:1 };
+async function dmhOpen() {
+  DMV.sel = null; openDp('dp-dmh'); dmhRender();
+  const had = !!(DMH && DMH.rows && DMH.rows.length);
+  if (!had) $8('dp-dmh-body').innerHTML = '<div class="empty-state" style="padding:40px 0">Đang tải danh mục…</div>';
+  await dmhLoad(); dmhRender();
+}
+function dmhView() {
+  const q = q8N(DMV.q), f = DMV.f;
+  return dmMon().filter(o => (!q || q8N(o.name + ' ' + o.ma).includes(q)) && (f === 'all' || (f === 'noimg' && !o.img) || (f === 'mh' && o.k === 'mh') ||
+    (f === 'th' && o.k === 'th') || (f === 'may' && o.mode === 'm') || (f === 'hide' && !o.pub) || (o.mode !== 'm' && f === o.cat)));
+}
+function dmhRender() {
+  const b = $8('dp-dmh-body'); if (!b) return;
+  if (DMH && DMH.old) { b.innerHTML = '<div class="info-box">Máy chủ chưa lên bản 5.56.0 — Admin dán Apps Script mới rồi Triển khai Phiên bản mới.</div>'; return; }
+  const M = dmMon(), V = dmhView(), show = V.slice(0, DMV.page * 60), adm = role === 'ADM', S = DMV.sel;
+  if (!M.length) { b.innerHTML = `<div class="empty-state" style="padding:36px 10px">Chưa có danh mục có mã.${adm ? '<br><br><button type="button" class="btn-full btn-orange" onclick="q8DmOpen()">📚 Mở Danh mục vật tư → Lưu để cấp mã</button>' : '<br>Admin lưu Danh mục vật tư để cấp mã.'}</div>`; return; }
+  const n = k => M.filter(o => k === 'noimg' ? !o.img : k === 'mh' ? o.k === 'mh' : k === 'th' ? o.k === 'th' : k === 'may' ? o.mode === 'm' : k === 'hide' ? !o.pub : o.mode !== 'm' && o.cat === k).length;
+  const chip = (k, l, c) => c === 0 ? '' : `<button type="button" class="q8-f${DMV.f === k ? ' on' : ''}" onclick="DMV.f='${k}';DMV.page=1;dmhRender()">${l}${c !== undefined ? ' ' + c : ''}</button>`;
+  const cats = CATEGORIES.filter(c => n(c.id));
+  b.innerHTML = `<div class="dmh">
+    <div class="dmh-sum"><b>${M.length}</b> món · ${n('th')} ảnh thật · ${n('mh')} ảnh minh hoạ · ${n('noimg')} chưa có ảnh</div>
+    <div class="dmh-acts">
+      <button type="button" onclick="dmPoster()">🔗 QR cả danh mục</button>
+      <button type="button" onclick="${S ? 'DMV.sel=null;dmhRender()' : 'DMV.sel={};dmhRender()'}" class="${S ? 'on' : ''}">🖨 ${S ? 'Thôi chọn tem' : 'In tem QR'}</button>
+      <button type="button" onclick="dmExcel(dmhView())">⬇ Excel</button>
+      ${adm ? `<button type="button" onclick="dmImgOpen()" class="or">🖼 Duyệt ảnh${n('noimg') ? ' · ' + n('noimg') : ''}</button><button type="button" onclick="q8DmOpen()">📚 Sửa danh mục</button>` : ''}
+    </div>
+    <input type="search" class="q8-q" placeholder="Tìm tên hoặc mã…" value="${escHtml(DMV.q)}" oninput="DMV.q=this.value;DMV.page=1;clearTimeout(window.__dmt);window.__dmt=setTimeout(()=>{dmhRender();const q=document.querySelector('#dp-dmh-body .q8-q');if(q){q.focus();q.setSelectionRange(q.value.length,q.value.length)}},220)">
+    <div class="q8-fs sc">${chip('all', 'Tất cả', M.length)}${chip('noimg', 'Chưa có ảnh', n('noimg'))}${chip('mh', 'Ảnh minh hoạ', n('mh'))}${chip('th', 'Ảnh thật', n('th'))}${chip('may', 'Máy móc', n('may'))}${adm ? chip('hide', 'Không công khai', n('hide')) : ''}${cats.map(c => chip(c.id, escHtml(c.name), n(c.id))).join('')}</div>
+    ${S ? `<div class="dmh-selbar"><span>Chọn món cần in tem · đã chọn <b>${Object.keys(S).length}</b></span><button type="button" onclick="dmhView().forEach(o=>DMV.sel[o.ma]=1);dmhRender()">Chọn hết ${V.length}</button><button type="button" onclick="DMV.sel={};dmhRender()">Bỏ chọn</button></div>` : ''}
+    <div class="dmh-grid">${show.map(o => `<button type="button" class="dmh-c${S && S[o.ma] ? ' sel' : ''}" onclick="${S ? `dmhTog('${escHtml(o.ma)}')` : `dmhItem('${escHtml(o.ma)}')`}">
+      <span class="dmh-im">${dmPic(o, 320)}${o.k === 'mh' ? '<span class="dmh-k">Minh hoạ</span>' : ''}${adm && !o.pub ? '<span class="dmh-hid">Không công khai</span>' : ''}${S ? `<span class="dmh-ck">${S[o.ma] ? '✓' : ''}</span>` : ''}</span>
+      <span class="dmh-ma">${escHtml(o.ma)}</span><span class="dmh-n">${escHtml(o.name)}</span><span class="dmh-u">${escHtml(o.unit)} · ${escHtml(dmCat(o).name)}</span></button>`).join('') || '<div class="empty-state" style="grid-column:1/-1;padding:24px 0">Không có món nào</div>'}</div>
+    ${V.length > show.length ? `<button type="button" class="q8-moreb" onclick="DMV.page++;dmhRender()">Xem thêm ${V.length - show.length} món</button>` : ''}
+    ${S && Object.keys(S).length ? `<div class="dmh-printbar"><button type="button" class="btn-full btn-orange" onclick="dmTemDlg(Object.keys(DMV.sel))">🖨 In ${Object.keys(S).length} tem QR</button></div>` : ''}
+    <div class="dmh-foot">Trang công khai (không cần đăng nhập, không có tồn kho / dự án / giá): <a href="${escHtml(dmPubUrl())}" target="_blank" rel="noopener">${escHtml(dmPubUrl().replace(/^https?:\/\//, ''))}</a></div>
+  </div>`;
+}
+function dmhTog(ma) { if (!DMV.sel) return; if (DMV.sel[ma]) delete DMV.sel[ma]; else DMV.sel[ma] = 1; dmhRender(); }
+
+// ---------- CHI TIẾT MỘT MÓN ----------
+let DM1 = '', DM1S = null;
+async function dmhItem(ma) {
+  if ((!DMH || !DMH.rows || !DMH.rows.length) && token) await dmhLoad();
+  let o = dmByMa(ma);
+  if (!o && token && navigator.onLine) { await dmhLoad(true); o = dmByMa(ma); }
+  if (!o) { toast('⚠️ Không thấy mã ' + ma + ' trong danh mục'); return; }
+  DM1 = o.ma; DM1S = null; openDp('dp-dmh1'); dm1Render();
+  const r = await api('dmStock', { name:o.name, mode:o.mode, ma:o.ma }, 30000);
+  if (DM1 === o.ma) { DM1S = r && r.success ? r.list : { err:(r && (r.error || r.reason)) || 'Không tải được' }; dm1Render(); }
+}
+function dm1Render() {
+  const b = $8('dp-dmh1-body'), o = dmByMa(DM1); if (!b || !o) return;
+  const adm = role === 'ADM', c = dmCat(o), S = DM1S;
+  let st = '<div class="dm1-load">Đang tải tồn các dự án…</div>';
+  if (S && S.err) st = `<div class="dm1-load">⚠️ ${escHtml(S.err)}</div>`;
+  else if (S && o.mode === 'm') st = S.length ? S.map(x => `<div class="dm1-p"><div><b>${escHtml(x.p)}</b><small>${x.on ? 'Đang ở công trình' + (x.inDate ? ' · vào ' + escHtml(x.inDate) : '') : 'Đã ra' + (x.outDate ? ' · ' + escHtml(x.outDate) : '')}</small></div><span class="dm1-q ${x.on ? '' : 'z'}">${x.on ? 'Đang ở' : 'Đã ra'}</span></div>`).join('') : '<div class="dm1-load">Chưa có ở dự án nào bạn được giao</div>';
+  else if (S) st = S.length ? S.map(x => `<div class="dm1-p"><div><b>${escHtml(x.p)}</b><small>${x.p === curProj ? 'Dự án đang mở' : ''}</small></div><span class="dm1-q ${x.stock > 0 ? '' : 'z'}">${fmtNum(x.stock)} ${escHtml(x.unit)}</span>
+      <div class="dm1-pb">${hp('k_xuat') && x.stock > 0 ? `<button type="button" onclick="dm1Xuat('${escHtml(x.p)}',${+x.id})">📤 Lập phiếu xuất</button>` : ''}<button type="button" onclick="dm1The('${escHtml(x.p)}',${+x.id})">📒 Thẻ kho</button></div></div>`).join('') : '<div class="dm1-load">Chưa có trong kho dự án nào bạn được giao</div>';
+  b.innerHTML = `<div class="dm1">
+    <div class="dm1-im" onclick="${o.img ? `dm1Zoom()` : ''}">${o.img || o.th ? dmImgTag(o.img || o.th, 900, 'dm1-img') : dmPh(o, 96)}</div>
+    <div class="dm1-kl ${o.k === 'th' ? 'th' : o.k === 'mh' ? 'mh' : ''}">${o.k === 'th' ? '📷 Ảnh thật (chụp ở kho)' : o.k === 'mh' ? '🖼 Ảnh minh hoạ (lấy trên mạng)' : 'Chưa có ảnh'}</div>
+    <div class="dm1-ma">${escHtml(o.ma)}</div>
+    <div class="dm1-n">${escHtml(o.name)}</div>
+    <div class="dm1-g"><span>Nhóm</span><b>${q8Ico(c, 22)} ${escHtml(c.name)}</b><span>Đơn vị</span><b>${escHtml(o.unit)}</b>${o.mode === 'm' ? '<span>Loại</span><b>Máy · mã P.QLTB</b>' : ''}${adm ? `<span>Công khai</span><b>${o.pub ? 'Có' : 'Không'} <a onclick="dm1Pub()">${o.pub ? 'Tắt' : 'Bật'}</a></b>` : ''}</div>
+    <div class="dm1-h">${o.mode === 'm' ? 'MÁY Ở CÁC DỰ ÁN' : 'TỒN TỪNG DỰ ÁN'}</div>${st}
+    <div class="dm1-acts">
+      ${dmCanPhoto() ? `<button type="button" class="or" onclick="dm1Cam()">📷 ${o.k === 'th' ? 'Chụp lại ảnh thật' : 'Chụp ảnh thật'}</button>` : ''}
+      ${adm ? `<button type="button" onclick="dmImgOpen(['${escHtml(o.ma)}'])">🖼 Chọn ảnh mạng</button><button type="button" onclick="dm1Link()">🔗 Dán link ảnh</button>${o.img ? '<button type="button" onclick="dm1Del()">🗑 Xoá ảnh</button>' : ''}` : ''}
+      <button type="button" onclick="dmTemDlg(['${escHtml(o.ma)}'])">🖨 In tem QR</button>
+      <button type="button" onclick="window.open(dmLink('${escHtml(o.ma)}'),'_blank')">🌐 Trang công khai</button>
+    </div>
+    ${o.k === 'mh' && adm && o.src ? `<div class="dm1-src">Nguồn ảnh: ${escHtml(o.src.slice(0, 90))}</div>` : ''}
+  </div>`;
+}
+function dm1Zoom() {
+  const o = dmByMa(DM1); if (!o || !o.img) return;
+  document.body.insertAdjacentHTML('beforeend', `<div class="dm-zoom" onclick="this.remove()">${dmImgTag(o.img, 1600, '')}<span>Bấm để đóng</span></div>`);
+}
+async function dm1Xuat(p, id) {
+  if (p !== curProj) await switchProject(p);
+  closeDp('dp-dmh1'); closeDp('dp-dmh'); goTab('xuat');
+  setTimeout(() => { try { comboPick('fx', id); document.getElementById('fx-qty')?.focus(); } catch (e) {} }, 350);
+}
+async function dm1The(p, id) { if (p !== curProj) await switchProject(p); setTimeout(() => tk9Open(id), 200); }
+async function dm1Pub() {
+  const o = dmByMa(DM1); if (!o || role !== 'ADM') return;
+  if (!confirm(o.pub ? `Ẩn "${o.name}" khỏi trang danh mục công khai?` : `Hiện "${o.name}" trên trang danh mục công khai?`)) return;
+  await dmSaveRows(DMH.rows.map(a => a[1] === o.name ? Object.assign([], a, { 5: o.pub ? 0 : 1 }) : a)) && dm1Render();
+}
+async function dmSaveRows(rows) {                                // lưu cả danh mục từ DMH (bật / tắt công khai, sửa nhanh)
+  if (!navigator.onLine) { toast('📴 Cần có mạng'); return false; }
+  showLoader('Đang lưu danh mục…');
+  const r = await api('setDanhMuc', { v:2, list:rows.map(a => [a[1], a[2], a[3], a[4], a[0], a[5] === 0 ? 0 : 1]) }, 60000); hideLoader();
+  if (!r || !r.success) { toast('⚠️ ' + ((r && r.error) || 'Không lưu được')); return false; }
+  dmAfterSave(r); return true;
+}
+function dmAfterSave(r) {
+  if (!r.rows) return;
+  DMH = { hv:r.hv, rows:r.rows }; dmhSave();
+  db.dmVT = r.rows.filter(a => a[4] !== 'm').map(a => [a[1], a[2], a[3], a[4] === 't' ? 't' : 'k']); db.dmRev = r.dmRev; q8IdxSrc = null; saveLocal();
+}
+function dm1Cam() {
+  let inp = $8('dm-cam');
+  if (!inp) { inp = document.createElement('input'); inp.type = 'file'; inp.accept = 'image/*'; inp.id = 'dm-cam'; inp.style.display = 'none'; inp.setAttribute('capture', 'environment'); document.body.appendChild(inp); }
+  inp.onchange = () => { const f = inp.files && inp.files[0]; if (f) dmUpFile(DM1, f, role === 'ADM' ? 'dmImgSet' : 'dmPhoto'); };
+  inp.value = ''; inp.click();
+}
+async function dmUpFile(ma, f, act) {
+  const o = dmByMa(ma); if (!o) return;
+  if (!navigator.onLine) { toast('📴 Cần có mạng để lưu ảnh'); return; }
+  showLoader('Đang lưu ảnh…');
+  let data, thumb;
+  try { data = await compressImage(f, 1280, 0.8); thumb = await compressImage(f, 360, 0.72); } catch (e) { hideLoader(); toast('⚠️ ' + e.message); return; }
+  const r = await api(act, { name:o.name, data, thumb, k:'th' }, 90000); hideLoader();
+  if (!r || !r.success) { toast('⚠️ ' + ((r && r.error) || 'Không lưu được ảnh')); return; }
+  (r.rows || []).forEach(a => { DM_IMG[a[6]] = data; DM_IMG[a[7]] = thumb; });
+  dmhPut(r.rows, r.hv); toast('✅ Đã lưu ảnh thật cho ' + o.name); dm1Render(); dmhRender();
+}
+async function dm1Link() {
+  const o = dmByMa(DM1); if (!o) return;
+  const u = (prompt('Dán đường link ẢNH (bấm giữ ảnh trên Google → Sao chép địa chỉ hình ảnh):') || '').trim(); if (!u) return;
+  if (!/^https?:\/\//i.test(u)) { toast('⚠️ Link phải bắt đầu bằng http'); return; }
+  showLoader('Máy chủ đang tải ảnh…');
+  const r = await api('dmImgSet', { picks:[{ name:o.name, url:u, turl:'' }] }, 90000); hideLoader();
+  if (!r || !r.success) { toast('⚠️ ' + ((r && r.error) || 'Không lưu được')); return; }
+  if (!(r.rows || []).length) { toast('⚠️ Link không phải ảnh hoặc trang chặn tải — thử ảnh khác'); return; }
+  dmhPut(r.rows, r.hv); toast('✅ Đã lưu ảnh minh hoạ'); dm1Render();
+}
+async function dm1Del() {
+  const o = dmByMa(DM1); if (!o || !confirm('Xoá ảnh của ' + o.name + '?')) return;
+  showLoader('Đang xoá ảnh…'); const r = await api('dmImgDel', { name:o.name }, 30000); hideLoader();
+  if (!r || !r.success) { toast('⚠️ ' + ((r && r.error) || 'Không xoá được')); return; }
+  dmhPut([r.row], r.hv); dm1Render();
+}
+
+// ---------- DUYỆT ẢNH (Admin): máy chủ tìm sẵn ảnh gợi ý trên mạng → Admin chạm chọn → lưu về Drive ----------
+let DMI = null; const DMI_N = 6;
+const DMQ_HINT = { tbPhuTro:' thi công cọc nhồi', vtPhuTro:' công trình', gau:' máy khoan cọc nhồi', ongSieuAm:' cọc khoan nhồi', cocNoi:' thép', dungCu:' công trình' };
+const dmQ = o => o.mode === 'm' ? o.name.split(' - ')[0].replace(/\(.*?\)/g, '').trim() : o.name.replace(/\s+/g, ' ') + (DMQ_HINT[o.cat] || '');
+function dmImgOpen(mas) {
+  if (role !== 'ADM') return;
+  const L = mas && mas.length ? mas : dmMon().filter(o => !o.img).map(o => o.ma);
+  if (!L.length) { toast('✅ Mọi món đều đã có ảnh'); return; }
+  DMI = { list:L, page:0, cand:{}, pick:{}, q:{}, busy:0, one: !!(mas && mas.length) }; openDp('dp-dmimg'); dmiRender(); dmiFetch();
+}
+const dmiItems = () => DMI.list.slice(DMI.page * DMI_N, DMI.page * DMI_N + DMI_N).map(dmByMa).filter(Boolean);
+async function dmiFetch(force) {
+  const need = dmiItems().filter(o => force === o.ma || !DMI.cand[o.name]); if (!need.length) return;
+  need.forEach(o => DMI.cand[o.name] = 'load'); dmiRender();
+  const r = await api('dmImgFind', { list:need.map(o => ({ n:o.name, q:DMI.q[o.ma] || dmQ(o) })) }, 60000);
+  need.forEach(o => DMI.cand[o.name] = r && r.success ? (r.res[o.name] || []) : 'err');
+  dmiRender();
+}
+function dmiRender() {
+  const b = $8('dp-dmimg-body'); if (!b || !DMI) return;
+  const its = dmiItems(), np = Object.keys(DMI.pick).length, pages = Math.ceil(DMI.list.length / DMI_N);
+  b.innerHTML = `<div class="dmi">
+    <div class="info-box" style="margin-bottom:10px">Máy chủ tự tìm ảnh trên mạng. Chạm 1 ảnh đúng món để chọn (chạm lại để bỏ), xong bấm <b>Lưu</b> ở dưới. Ảnh lưu vào Google Drive "FECON – Ảnh danh mục", ghi nhãn <b>Ảnh minh hoạ</b>; thủ kho chụp ảnh thật sau sẽ thay. Không thấy ảnh đúng: sửa từ khoá → 🔎, hoặc Google ↗ rồi dán link.</div>
+    <div class="dmi-pg">Trang ${DMI.page + 1}/${pages} · ${DMI.list.length} món cần ảnh</div>
+    ${its.map(o => { const C = DMI.cand[o.name], P = DMI.pick[o.name];
+      return `<div class="dmi-it${P ? ' done' : ''}"><div class="dmi-h"><b>${escHtml(o.ma)}</b> ${escHtml(o.name)} <small>${escHtml(dmCat(o).name)}${o.img ? ' · đang có ảnh' : ''}</small></div>
+        <div class="dmi-cs">${C === 'load' || C === undefined ? '<div class="dmi-msg">Đang tìm ảnh…</div>' : C === 'err' ? '<div class="dmi-msg">⚠️ Không tìm được — thử lại 🔎</div>' : !C.length ? '<div class="dmi-msg">Không thấy ảnh — sửa từ khoá rồi 🔎</div>'
+          : C.map((x, j) => `<button type="button" class="dmi-c${P && P.url === x[0] ? ' on' : ''}" onclick="dmiPick('${escHtml(o.ma)}',${j})"><img src="${escHtml(x[1] || x[0])}" alt="" loading="lazy" onerror="this.closest('.dmi-c').classList.add('bad')"></button>`).join('')}</div>
+        <div class="dmi-t"><input value="${escHtml(DMI.q[o.ma] || dmQ(o))}" onchange="DMI.q['${escHtml(o.ma)}']=this.value" aria-label="Từ khoá tìm ảnh"><button type="button" onclick="DMI.q['${escHtml(o.ma)}']=this.previousElementSibling.value;dmiFetch('${escHtml(o.ma)}')">🔎</button>
+          <a href="https://www.google.com/search?tbm=isch&q=${encodeURIComponent(DMI.q[o.ma] || dmQ(o))}" target="_blank" rel="noopener">Google ↗</a><button type="button" onclick="DM1='${escHtml(o.ma)}';dm1Link().then(()=>{DMI.list=DMI.list.filter(m=>!(dmByMa(m)||{}).img||DMI.one);dmiRender()})">Dán link</button>
+          <button type="button" onclick="DM1='${escHtml(o.ma)}';dmiFile()">Ảnh từ máy</button></div></div>`; }).join('')}
+    <div class="dmi-nav">${DMI.page > 0 ? '<button type="button" onclick="DMI.page--;dmiRender();dmiFetch()">‹ Trang trước</button>' : '<span></span>'}${DMI.page < pages - 1 ? '<button type="button" onclick="DMI.page++;dmiRender();dmiFetch()">Trang sau ›</button>' : ''}</div>
+    <div class="dmh-printbar"><button type="button" class="btn-full btn-orange" ${np ? '' : 'disabled'} onclick="dmiSave()">💾 Lưu ${np} ảnh đã chọn</button></div>
+  </div>`;
+}
+function dmiPick(ma, j) {
+  const o = dmByMa(ma), C = o && DMI.cand[o.name]; if (!Array.isArray(C) || !C[j]) return;
+  const P = DMI.pick[o.name];
+  if (P && P.url === C[j][0]) delete DMI.pick[o.name]; else DMI.pick[o.name] = { name:o.name, url:C[j][0], turl:C[j][1] || '' };
+  dmiRender();
+}
+function dmiFile() {
+  let inp = $8('dm-file');
+  if (!inp) { inp = document.createElement('input'); inp.type = 'file'; inp.accept = 'image/*'; inp.id = 'dm-file'; inp.style.display = 'none'; document.body.appendChild(inp); }
+  inp.onchange = async () => { const f = inp.files && inp.files[0]; if (!f) return; await dmUpFile(DM1, f, 'dmImgSet'); if (DMI && !DMI.one) DMI.list = DMI.list.filter(m => !(dmByMa(m) || {}).img); dmiRender(); };
+  inp.value = ''; inp.click();
+}
+async function dmiSave() {
+  const P = Object.values(DMI.pick); if (!P.length) return;
+  if (!navigator.onLine) { toast('📴 Cần có mạng'); return; }
+  const bad = []; let ok = 0;
+  for (let i = 0; i < P.length; i += 10) {
+    showLoader(`Máy chủ đang tải ảnh ${Math.min(i + 10, P.length)}/${P.length}…`);
+    const r = await api('dmImgSet', { picks:P.slice(i, i + 10) }, 150000);
+    if (!r || !r.success) { hideLoader(); toast('⚠️ ' + ((r && r.error) || 'Không lưu được')); break; }
+    dmhPut(r.rows, r.hv); ok += (r.rows || []).length; (r.bad || []).forEach(n => bad.push(n));
+    (r.rows || []).forEach(a => delete DMI.pick[a[1]]);
+  }
+  hideLoader();
+  if (!DMI.one) DMI.list = DMI.list.filter(m => !(dmByMa(m) || {}).img);
+  bad.forEach(n => { delete DMI.pick[n]; const o = dmMon().find(x => x.name === n); if (o) DMI.cand[n] = (DMI.cand[n] || []).filter(x => !P.some(p => p.name === n && p.url === x[0])); });
+  if (DMI.page * DMI_N >= DMI.list.length) DMI.page = Math.max(0, Math.ceil(DMI.list.length / DMI_N) - 1);
+  toast(`✅ Đã lưu ${ok} ảnh` + (bad.length ? ` · ${bad.length} ảnh không tải được (${bad.slice(0, 3).join(', ')}) — chọn ảnh khác` : ''));
+  if (DMI.one && ok) { closeDp('dp-dmimg'); dm1Render(); dmhRender(); return; }
+  dmiRender(); dmiFetch(); dmhRender();
+}
+
+// ---------- TEM QR 24 / A4 + QR CẢ DANH MỤC ----------
+function dmTemDlg(mas) {
+  const L = mas.map(dmByMa).filter(Boolean); if (!L.length) return;
+  $8('dm-sheet')?.remove();
+  document.body.insertAdjacentHTML('beforeend', `<div class="kl-sheet-w" id="dm-sheet"><div class="kl-dim" onclick="document.getElementById('dm-sheet').remove()"></div><div class="kl-sheet dm-tsh" role="dialog" aria-label="In tem QR">
+    <div class="kl-h">In tem QR · ${L.length} món</div>
+    <div class="dm-tf"><label>Số tem mỗi món<input id="dm-tc" type="number" inputmode="numeric" min="1" max="24" value="1" oninput="dmTemSum(${L.length})"></label>
+      <label>Bắt đầu từ ô số<input id="dm-ts" type="number" inputmode="numeric" min="1" max="24" value="1" oninput="dmTemSum(${L.length})"></label></div>
+    <div class="dm-tn" id="dm-tn"></div>
+    <div class="pyc-hint" style="text-align:left">Giấy decal A4 24 tem (3 cột × 8 hàng, tem 70 × 37 mm). Tờ đã dùng dở: gõ ô bắt đầu (đếm từ trái sang phải, trên xuống dưới). Khi in chọn tỉ lệ 100%, không lề.</div>
+    <button type="button" class="btn-full btn-orange" onclick="dmTemGo()">🖨 Xem trước & in</button></div></div>`);
+  $8('dm-sheet').dataset.mas = JSON.stringify(L.map(o => o.ma)); dmTemSum(L.length);
+}
+function dmTemSum(n) {
+  const c = Math.max(1, Math.min(24, Math.round(+($8('dm-tc')?.value) || 1))), s = Math.max(1, Math.min(24, Math.round(+($8('dm-ts')?.value) || 1)));
+  const t = n * c, p = Math.ceil((t + s - 1) / 24); const el = $8('dm-tn'); if (el) el.innerHTML = `<b>${t}</b> tem · <b>${p}</b> tờ A4`;
+}
+async function dmTemGo() {
+  const sh = $8('dm-sheet'); if (!sh) return;
+  const mas = JSON.parse(sh.dataset.mas || '[]'), c = Math.max(1, Math.min(24, Math.round(+$8('dm-tc').value || 1))), s = Math.max(1, Math.min(24, Math.round(+$8('dm-ts').value || 1)));
+  sh.remove(); await dmTemPrint(mas, c, s);
+}
+function dmTemHtml(o) {
+  const ma = o.ma, cls = ma.length > 16 ? ' l2' : ma.length > 10 ? ' l1' : '';
+  return `<div class="dmt"><div class="dmt-q">${qrSvg(dmLink(ma))}</div><div class="dmt-r"><div class="dmt-ma${cls}">${escHtml(ma).replace(/_/g, '_<wbr>')}</div><div class="dmt-n">${escHtml(o.name)}</div>
+    <div class="dmt-u">ĐVT: ${escHtml(o.unit)}</div><img class="dmt-lg" src="${LOGO_FS}" alt="FECON South"></div></div>`;
+}
+async function dmTemPrint(mas, copies, start) {
+  if (!(await ensureLib('qrcode', QRGEN_URLS))) { toast('⚠️ Không tải được bộ tạo mã QR — kiểm tra mạng'); return; }
+  const L = mas.map(dmByMa).filter(Boolean), cells = Array.from({ length:(start || 1) - 1 }, () => '<div class="dmt dmt-e"></div>');
+  L.forEach(o => { for (let i = 0; i < (copies || 1); i++) cells.push(dmTemHtml(o)); });
+  let pages = '';
+  for (let i = 0; i < cells.length; i += 24) { const part = cells.slice(i, i + 24); while (part.length < 24) part.push('<div class="dmt dmt-e"></div>'); pages += `<div class="pgq-a4"><div class="dmt-in">${part.join('')}</div></div>`; }
+  dmPrintShow(`${cells.length - (start || 1) + 1} tem QR`, 'Khổ A4 dọc · 24 tem / tờ (70 × 37 mm) · tỉ lệ 100%, không lề. Thử in 1 tờ giấy thường, đặt chồng lên tờ decal xem có khớp ô không.', pages);
+}
+async function dmPoster() {
+  if (!(await ensureLib('qrcode', QRGEN_URLS))) { toast('⚠️ Không tải được bộ tạo mã QR — kiểm tra mạng'); return; }
+  const n = dmMon().filter(o => o.pub).length, u = dmPubUrl();
+  dmPrintShow('QR danh mục', 'In dán ở kho, cổng công trường, văn phòng. Ai quét cũng xem được (không cần tài khoản), không thấy tồn kho / dự án / giá.',
+    `<div class="pgq-a4"><div class="dmp-in"><img class="dmp-lg" src="${LOGO_FS}" alt="FECON South"><div class="dmp-t">DANH MỤC VẬT TƯ – THIẾT BỊ</div>
+      <div class="dmp-s">${n} món · có hình ảnh · mã từng món</div><div class="dmp-q">${qrSvg(u)}</div><div class="dmp-h">Quét mã bằng camera điện thoại</div><div class="dmp-u">${escHtml(u.replace(/^https?:\/\//, ''))}</div></div></div>`,
+    `<button onclick="navigator.clipboard&&navigator.clipboard.writeText('${escHtml(u)}').then(()=>toast('✅ Đã sao chép link'))">🔗 Link</button>`);
+}
+function dmPrintShow(title, hint, pages, extra) {
+  let el = document.getElementById('pg-print');
+  if (!el) { el = document.createElement('div'); el.id = 'pg-print'; document.body.appendChild(el); }
+  el.innerHTML = `<style>@page{size:A4 portrait;margin:0}</style>
+    <div class="pgq-bar"><button onclick="pgPrintClose()">‹ Đóng</button><b>${escHtml(title)}</b>${extra || ''}<button class="pr" onclick="window.print()">🖨 In / Lưu PDF</button></div>
+    <div class="pgq-hint">${escHtml(hint)}</div><div class="pgq-pages">${pages}</div>`;
+  document.body.classList.add('pg-printing'); el.scrollTop = 0;
+}
+
+// ---------- EXCEL: mã + ảnh nhỏ ----------
+async function dmExcel(list) {
+  list = (list || []).filter(o => o && o.name); if (!list.length) { toast('Không có món nào'); return; }
+  showLoader('Đang tạo file Excel…');
+  if (!(await ensureExcelJS())) { hideLoader(); toast('⚠️ Không tải được công cụ Excel — cần có mạng'); return; }
+  const ids = [...new Set(list.map(o => o.th || o.img).filter(Boolean))], data = {};
+  for (let i = 0; i < ids.length && navigator.onLine; i += 40) {
+    showLoader(`Đang lấy ảnh ${Math.min(i + 40, ids.length)}/${ids.length}…`);
+    const r = await api('dmThumbs', { ids:ids.slice(i, i + 40) }, 60000); if (r && r.success) Object.assign(data, r.data || {});
+  }
+  const wb = new ExcelJS.Workbook(), ws = wb.addWorksheet('Danh mục có hình');
+  ws.columns = [{ header:'STT', width:6 }, { header:'Mã', width:16 }, { header:'Ảnh', width:11 }, { header:'Tên vật tư / máy', width:44 }, { header:'Nhóm', width:24 },
+    { header:'Đơn vị', width:9 }, { header:'Loại ảnh', width:14 }, { header:'Công khai', width:10 }];
+  ws.getRow(1).font = { bold:true }; ws.views = [{ state:'frozen', ySplit:1 }];
+  list.forEach((o, i) => {
+    const row = ws.addRow([i + 1, o.ma, '', o.name, dmCat(o).name, o.unit, o.k === 'th' ? 'Ảnh thật' : o.k === 'mh' ? 'Minh hoạ' : '', o.pub ? 'Có' : 'Không']);
+    row.alignment = { vertical:'middle', wrapText:true };
+    const d = data[o.th || o.img], m = d && String(d).match(/^data:image\/(png|jpeg|jpg|gif);base64,(.+)$/);
+    if (m) { row.height = 48; const id = wb.addImage({ base64:m[2], extension:m[1] === 'jpg' ? 'jpeg' : m[1] }); ws.addImage(id, { tl:{ col:2.08, row:i + 1.06 }, ext:{ width:58, height:58 } }); }
+  });
+  const buf = await xlBuf(wb); hideLoader();
+  const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([buf], { type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' }));
+  a.download = 'Danh_muc_co_hinh_FECON.xlsx'; document.body.appendChild(a); a.click(); setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 4000);
+  toast('✅ Đã xuất file ' + a.download);
+}
+
+// ---------- ADMIN: DANH MỤC VẬT TƯ có cột Mã, Công khai, đổi tên, thêm máy ----------
+// Q8D.rows: [tên, nhóm, đơn vị, chế độ k/t/m, mới?, mã, công khai, tên cũ, ID ảnh nhỏ, loại ảnh]
+const q8Mon = r => r[3] === 'm' || !!(r[1] && r[2]);
+q8DmOpen = async function () {
+  if (role !== 'ADM') return;
+  openDp('dp-dm');
+  const b = $8('dp-dm-body'); b.innerHTML = '<div class="empty-state" style="padding:40px 0">Đang tải danh mục…</div>';
+  await dmhLoad();
+  const fromH = DMH && DMH.rows && DMH.rows.length;
+  const base = fromH ? DMH.rows.map(a => [a[1], a[2] || '', a[3] || '', a[4] === 't' ? 't' : a[4] === 'm' ? 'm' : 'k', 0, a[0] || '', a[5] === 0 ? 0 : 1, '', a[7] || a[6] || '', a[8] || ''])
+    : (Array.isArray(db.dmVT) ? db.dmVT : q8DefaultDM()).map(e => [e[0], e[1] || '', e[2] || '', e[3] === 't' ? 't' : 'k', 0, '', 1, '', '', '']);
+  const seen = new Set(base.map(e => q8N(e[0]))), extra = [];
+  if (navigator.onLine) {
+    try {
+      const r = await api('itemCatalog', {}, 25000);
+      (r && r.items || []).forEach(x => { const k = q8N(x.name); if (!k || seen.has(k)) return; seen.add(k);
+        extra.push([x.name, x.cat || '', x.unit || '', q8Track(x.cat) && !db.one ? 't' : 'k', 1, '', 1, '', '', '']); });
+    } catch (e) {}
+  }
+  Q8D = { rows: base.concat(extra), q:'', f:'all', page:1, dirty: !fromH || extra.length > 0, fresh: extra.length };
+  q8DmRender();
+};
+q8DmView = function () {
+  const q = q8N(Q8D.q), f = Q8D.f;
+  return Q8D.rows.map((r, i) => [r, i]).filter(([r]) => (!q || q8N(r[0] + ' ' + (r[5] || '')).includes(q)) &&
+    (f === 'all' || (f === 't' && r[3] === 't') || (f === 'k' && r[3] === 'k') || (f === 'nocat' && !r[1] && r[3] !== 'm') || (f === 'new' && r[4]) ||
+     (f === 'may' && r[3] === 'm') || (f === 'hide' && r[6] === 0) || (f === 'rule' && !q8Mon(r)) || (r[3] !== 'm' && f === r[1])));
+};
+q8DmRender = function () {
+  const b = $8('dp-dm-body'); if (!b || !Q8D) return;
+  const R = Q8D.rows, V = q8DmView(), show = V.slice(0, Q8D.page * 80), mon = R.filter(q8Mon).length;
+  const cnt = k => R.filter(r => k === 't' ? r[3] === 't' : k === 'k' ? r[3] === 'k' : k === 'nocat' ? !r[1] && r[3] !== 'm' : k === 'new' ? r[4] : k === 'may' ? r[3] === 'm' : k === 'hide' ? r[6] === 0 : k === 'rule' ? !q8Mon(r) : true).length;
+  const chip = (k, l) => `<button type="button" class="q8-f${Q8D.f === k ? ' on' : ''}" onclick="Q8D.f='${k}';Q8D.page=1;q8DmRender()">${l}</button>`;
+  b.innerHTML = `<div class="q8-dm">
+    <div class="info-box" style="margin-bottom:10px">Dùng chung mọi dự án. Mã tự cấp theo nhóm khi lưu (sửa được — đổi mã thì tem QR đã in phải in lại). Máy dùng mã P.QLTB. Tên ngắn không nhóm như "Thép" chỉ để gợi ý tên, không có mã, không tính vào ${DM_MAXC} món. Bỏ tick 🌐 = không hiện ở trang danh mục công khai.</div>
+    <div class="q8-cnt${mon > DM_MAXC ? ' over' : ''}"><b>${mon}</b> / ${DM_MAXC} món${mon > DM_MAXC ? ' — bỏ bớt ' + (mon - DM_MAXC) + ' món mới lưu được' : ''}<button type="button" onclick="dmhOpen()">🖼 Danh mục có hình ›</button></div>
+    <input type="search" class="q8-q" placeholder="Tìm tên hoặc mã…" value="${escHtml(Q8D.q)}" oninput="Q8D.q=this.value;Q8D.page=1;clearTimeout(window.__q8t);window.__q8t=setTimeout(q8DmList,200)">
+    <div class="q8-fs">${chip('all', 'Tất cả ' + R.length)}${db.one ? '' : chip('t', 'Thẳng CT ' + cnt('t')) + chip('k', 'Vào kho ' + cnt('k'))}${cnt('may') ? chip('may', 'Máy ' + cnt('may')) : ''}${cnt('nocat') ? chip('nocat', 'Chưa có nhóm ' + cnt('nocat')) : ''}${cnt('new') ? chip('new', 'Mới thêm ' + cnt('new')) : ''}${cnt('hide') ? chip('hide', 'Không công khai ' + cnt('hide')) : ''}${cnt('rule') ? chip('rule', 'Tên gợi ý ' + cnt('rule')) : ''}</div>
+    <div class="q8-fs sc">${CATEGORIES.map(c => chip(c.id, escHtml(c.name))).join('')}</div>
+    <div class="q8-add"><input id="q8-newname" placeholder="＋ Thêm tên vật tư…"><button type="button" class="btn-full btn-orange" onclick="q8DmAdd()">Thêm</button></div>
+    <button type="button" class="q8-maybtn" onclick="q8DmMay()">＋ Thêm máy (mã P.QLTB)</button>
+    <div class="q8-hd"><span>MÃ · TÊN · NHÓM · ĐƠN VỊ</span>${db.one ? '' : '<span>KHI NHẬP</span>'}</div>
+    <div id="q8-dmlist">${q8DmRows(show)}</div>
+    ${V.length > show.length ? `<button type="button" class="q8-moreb" onclick="Q8D.page++;q8DmRender()">Xem thêm ${V.length - show.length} tên</button>` : ''}
+    <div class="q8-foot"><button type="button" class="btn-full" style="background:#fff;color:var(--primary);border:1.5px solid var(--primary)" onclick="q8DmExcel()">⬇ Xuất Excel</button>
+      <button type="button" class="btn-full btn-orange" onclick="q8DmSave()" ${Q8D.dirty ? '' : 'disabled'}>💾 Lưu danh mục</button></div>
+  </div>`;
+};
+q8DmRows = function (list) {
+  if (!list.length) return '<div class="empty-state" style="padding:24px 0">Không có tên nào</div>';
+  return list.map(([r, i]) => { const may = r[3] === 'm', c = may ? devCatOf(r[1]) : r[1] ? CATEGORIES.find(x => x.id === r[1]) : null, mon = q8Mon(r);
+    return `<div class="q8-r${mon ? '' : ' rule'}">${r[8] ? `<span class="q8-th">${dmImgTag(r[8], 120, '')}</span>` : ''}<div class="q8-rl">
+      <div class="q8-rn">${may && r[5] ? `<span class="q8-mam">${escHtml(r[5])}</span>` : mon ? `<input class="q8-ma" value="${escHtml(r[5] || '')}" placeholder="tự cấp" aria-label="Mã" onchange="q8DmSet(${i},5,this.value.toUpperCase().replace(/\\s+/g,''))">` : ''}<span>${escHtml(r[0])}</span>${r[4] ? ' <span class="q8-new">mới</span>' : ''}${may ? ' <span class="q8-may">máy</span>' : ''}</div>
+      <div class="q8-rs">${may ? `<span class="q8-rc">${escHtml(c.name)}</span>` : `<button type="button" class="q8-rc${c ? '' : ' need'}" onclick="q8DmCat(${i})">${c ? escHtml(c.name) : 'Chưa có nhóm'} ▾</button>`} · <select class="q8-ru" aria-label="Đơn vị" onchange="q8DmSet(${i},2,this.value)"><option value="">—</option>${[...new Set(UNITS.concat(r[2] ? [r[2]] : []))].map(u => `<option ${u === r[2] ? 'selected' : ''}>${escHtml(u)}</option>`).join('')}</select>
+      ${mon ? `<button type="button" class="q8-pub${r[6] === 0 ? ' off' : ''}" title="Hiện ở trang công khai" onclick="q8DmSet(${i},6,${r[6] === 0 ? 1 : 0})">🌐</button>` : ''}<button type="button" class="q8-x" aria-label="Đổi tên" onclick="q8DmRen(${i})">✏</button><button type="button" class="q8-x" aria-label="Bỏ tên này" onclick="q8DmDel(${i})">✕</button></div></div>
+      ${db.one || may ? '' : `<div class="q8-tg" role="group" aria-label="Khi nhập"><button type="button" class="${r[3] === 'k' ? 'k' : ''}" onclick="q8DmSet(${i},3,'k')">Kho</button><button type="button" class="${r[3] === 't' ? 't' : ''}" onclick="q8DmSet(${i},3,'t')">Thẳng</button></div>`}</div>`; }).join('');
+};
+q8DmAdd = function () {
+  const el = $8('q8-newname'), n = (el.value || '').replace(/\s+/g, ' ').trim();
+  if (n.length < 2) { toast('⚠️ Gõ tên vật tư'); el.focus(); return; }
+  if (Q8D.rows.some(r => q8N(r[0]) === q8N(n))) { toast('⚠️ Tên đã có trong danh mục'); return; }
+  const e = q8Find(n);
+  Q8D.rows.unshift([n, e ? e[1] : '', e ? e[2] : '', e ? e[3] : 'k', 1, '', 1, '', '', '']); Q8D.dirty = true; Q8D.q = ''; Q8D.f = 'all'; Q8D.page = 1; q8DmRender();
+};
+function q8DmRen(i) {
+  const r = Q8D.rows[i]; if (!r) return;
+  const n = (prompt('Tên mới (giữ nguyên mã và ảnh):', r[0]) || '').replace(/\s+/g, ' ').trim();
+  if (!n || n === r[0]) return;
+  if (n.length < 2 || Q8D.rows.some((x, j) => j !== i && q8N(x[0]) === q8N(n))) { toast('⚠️ Tên trống hoặc đã có'); return; }
+  if (!r[7]) r[7] = r[0]; r[0] = n; Q8D.dirty = true; q8DmRender();
+}
+function q8DmMay() {
+  const have = new Set(Q8D.rows.filter(r => r[3] === 'm').map(r => (r[5] || '').toUpperCase()).concat(Q8D.rows.map(r => q8N(r[0]))));
+  const src = qlOn() ? qlList().filter(x => x.kind === 'may').map(x => ({ name:x.name, ma:x.ma, cat:x.cat || 'khac' })) : DEV_FILE.map(x => ({ name:x[0], ma:x[3] || '', cat:x[1] || 'khac' }));
+  const L = src.filter(x => !have.has((x.ma || '').toUpperCase()) && !have.has(q8N(x.name)));
+  $8('q8-sheet')?.remove();
+  document.body.insertAdjacentHTML('beforeend', `<div class="kl-sheet-w" id="q8-sheet"><div class="kl-dim" onclick="document.getElementById('q8-sheet').remove()"></div><div class="kl-sheet q8-sheet" role="dialog" aria-label="Thêm máy">
+    <div class="kl-h">Thêm máy vào danh mục (${L.length} máy P.QLTB chưa có)</div>
+    <input type="search" class="q8-q" placeholder="Tìm tên / mã máy…" oninput="const q=q8N(this.value);document.querySelectorAll('#q8-sheet .q8-it').forEach(b=>b.style.display=q8N(b.textContent).includes(q)?'':'none')">
+    ${L.map((x, j) => `<button type="button" class="q8-it" data-j="${j}">${q8Ico(devCatOf(x.cat), 32)}<span>${escHtml(x.name)}<small style="display:block;color:#5A6676">${escHtml(x.ma || 'chưa có mã P.QLTB → tự cấp MM-…')}</small></span></button>`).join('') || '<div class="empty-state">Đã thêm hết</div>'}
+  </div></div>`);
+  document.querySelectorAll('#q8-sheet .q8-it').forEach(b => b.onclick = () => {
+    const x = L[+b.dataset.j]; b.remove();
+    Q8D.rows.unshift([x.name, x.cat, 'Chiếc', 'm', 1, (x.ma || '').toUpperCase(), 1, '', '', '']); Q8D.dirty = true; Q8D.f = 'all'; Q8D.q = ''; q8DmRender();
+    toast('＋ ' + x.name);
+  });
+}
+q8DmSave = async function () {
+  if (!Q8D) return;
+  if (!navigator.onLine) { toast('📴 Cần có mạng'); return; }
+  const mon = Q8D.rows.filter(q8Mon).length;
+  if (mon > DM_MAXC) { toast(`⚠️ Danh mục tối đa ${DM_MAXC} món — đang có ${mon}, bỏ bớt ${mon - DM_MAXC} món`); return; }
+  const seen = {};
+  for (const r of Q8D.rows) { const k = (r[5] || '').toUpperCase(); if (!k) continue; if (seen[k]) { toast(`⚠️ Mã ${k} bị trùng: ${seen[k]} và ${r[0]}`); return; } seen[k] = r[0]; }
+  const list = Q8D.rows.map(r => [r[0], r[1], r[2], r[3], r[5] || '', r[6] === 0 ? 0 : 1, r[7] || '']);
+  showLoader('Đang lưu danh mục…');
+  const r = await api('setDanhMuc', { list, v:2 }, 60000); hideLoader();
+  if (!r || !r.success) { toast('⚠️ ' + ((r && r.error) || 'Không lưu được')); return; }
+  if (r.rows) {
+    dmAfterSave(r);
+    Q8D.rows = r.rows.map(a => [a[1], a[2] || '', a[3] || '', a[4] === 't' ? 't' : a[4] === 'm' ? 'm' : 'k', 0, a[0] || '', a[5] === 0 ? 0 : 1, '', a[7] || a[6] || '', a[8] || '']);
+  } else {                                                        // máy chủ cũ (chưa 5.56): như trước, chưa có mã
+    db.dmVT = list.filter(x => x[3] !== 'm').map(x => x.slice(0, 4)); db.dmRev = r.dmRev; q8IdxSrc = null; saveLocal(); Q8D.rows.forEach(x => x[4] = 0);
+  }
+  Q8D.dirty = false; q8DmRender();
+  toast(`✅ Đã lưu danh mục ${fmtNum(r.count)} tên${r.mon !== undefined ? ' · ' + r.mon + ' món có mã' : ' — máy chủ chưa lên 5.56 nên chưa cấp mã'}`);
+};
+q8DmExcel = function () {
+  if (!Q8D) return;
+  const byN = {}; dmAll().forEach(o => byN[q8N(o.name)] = o);
+  dmExcel(Q8D.rows.map(r => Object.assign({ ma:r[5] || '', name:r[0], cat:r[1], unit:r[2], mode:r[3], pub:r[6] === 0 ? 0 : 1, img:'', th:'', k:'' }, (() => { const o = byN[q8N(r[7] || r[0])]; return o ? { img:o.img, th:o.th, k:o.k } : {}; })())));
+};
+
+// ---------- QUÉT QR · ĐƯỜNG DẪN #dm= ----------
+const dmCodeOf = s => { const m = String(s || '').match(/danhmuc\.html#m=([^&\s]+)/i) || String(s || '').match(/[#&]dm=([^&\s]+)/i); return m ? 'DM:' + decodeURIComponent(m[1]) : ''; };
+{ const _dmR = pgRoute; pgRoute = function (code, photo) { if (String(code || '').indexOf('DM:') === 0) return dmhItem(code.slice(3)); return _dmR.apply(this, arguments); }; }
+let DM_HASH = (dmCodeOf(location.href) || '').slice(3);
+function dmHashOpen() {
+  if (!DM_HASH || !token) return;
+  const ma = DM_HASH; DM_HASH = '';
+  try { history.replaceState(null, '', location.pathname + location.search); } catch (e) {}
+  setTimeout(() => dmhItem(ma), 400);
+}
+{ const _dmPH = pycHashOpen; pycHashOpen = function () { const r = _dmPH.apply(this, arguments); try { dmHashOpen(); } catch (e) {} return r; }; }
+window.addEventListener('hashchange', () => { const c = dmCodeOf(location.href); if (c) { DM_HASH = c.slice(3); dmHashOpen(); } });
+
+// ---------- v5.56.1: ADMIN ĐỨNG TÊN THAY (Quản lý dự án) ----------
+{ const _siAS = applyServer; applyServer = function (r) { const out = _siAS.apply(this, arguments); try { if (r && 'standIn' in r) db.standIn = r.standIn || null; } catch (e) {} return out; }; }
+function p9Si(i) {
+  const p = P9 && P9.list[i]; if (!p) return;
+  const C = p.siCand || [], cur = p.standIn && !p.standIn.auto ? String(p.standIn.id) : '';
+  p9Sheet(`<div class="kl-h">Đứng tên thay Admin · ${escHtml(p.name)}</div>
+    <div class="p9-tx">Phiếu, lịch sử, tin Telegram và file Excel do Admin làm ở dự án này sẽ ghi tên người được chọn. Nhật ký hoạt động (chỉ Admin xem) vẫn ghi đúng Admin. Không áp dụng cho Thi công.</div>
+    <button type="button" class="q8-it${cur ? '' : ' on'}" data-id="">${'<span>Tự chọn <small style="display:block;color:#5A6676">dự án có đúng 1 thủ kho thì lấy người đó</small></span>'}${cur ? '' : '<b>✓</b>'}</button>
+    ${C.map(x => `<button type="button" class="q8-it${String(x.id) === cur ? ' on' : ''}" data-id="${escHtml(String(x.id))}"><span>${escHtml(x.name)} <small style="display:block;color:#5A6676">${escHtml(String(ROLE_NAME[x.role] || x.role))}</small></span>${String(x.id) === cur ? '<b>✓</b>' : ''}</button>`).join('') || '<div class="p9-tx">Dự án chưa giao tài khoản nào (Thành viên → giao dự án).</div>'}
+    <div class="p9-bb"><button type="button" class="p9-c" onclick="p9Close0()">Đóng</button></div>`);
+  document.querySelectorAll('#p9-sheet .q8-it').forEach(b => b.onclick = async () => {
+    if (!navigator.onLine) { toast('📴 Cần có mạng'); return; }
+    showLoader('Đang lưu…'); const r = await api('setStandIn', { project:p.name, userId:b.dataset.id }, 30000); hideLoader();
+    if (!r || !r.success) { toast('⚠️ ' + ((r && r.error) || 'Không lưu được')); return; }
+    p.standIn = r.standIn; if (p.name === curProj) db.standIn = r.standIn; p9Close0(); p9Render();
+    toast('✅ ' + p.name + ': ' + (r.standIn ? 'đứng tên ' + r.standIn.name : 'chưa có người đứng tên'));
+  });
+}
+async function p9SiFix(i) {
+  const p = P9 && P9.list[i]; if (!p || !p.standIn) return;
+  if (!navigator.onLine) { toast('📴 Cần có mạng'); return; }
+  showLoader('Đang đếm…'); const r = await api('siFix', { project:p.name, dry:1 }, 120000); hideLoader();
+  if (!r || !r.success) { toast('⚠️ ' + ((r && r.error) || 'Không kiểm được')); return; }
+  if (!r.total) { toast('Dự án ' + p.name + ': không còn chỗ nào mang tên Admin'); return; }
+  p9Sheet(`<div class="kl-h">Đổi tên Admin trong dữ liệu cũ · ${escHtml(p.name)}</div>
+    <div class="p9-g"><b>Sẽ đổi thành "${escHtml(r.to)}":</b><br>${r.list.map(x => escHtml(x.label) + ' ' + fmtNum(x.n)).join(' · ')}
+    <div class="p9-w">Máy chủ sao lưu trước khi đổi. Nhật ký hoạt động giữ nguyên. Không đụng Thi công.</div></div>
+    <div class="p9-bb"><button type="button" class="p9-c" onclick="p9Close0()">Huỷ</button><button type="button" class="p9-ok" id="p9-sigo">Đổi ${fmtNum(r.total)} chỗ</button></div>`);
+  $9('p9-sigo').onclick = async () => {
+    showLoader('Đang sao lưu và đổi tên…'); const r2 = await api('siFix', { project:p.name }, 300000); hideLoader();
+    if (!r2 || !r2.success) { toast('⚠️ ' + ((r2 && r2.error) || 'Không đổi được')); return; }
+    p9Close0(); toast(`✅ Đã đổi ${fmtNum(r2.total)} chỗ thành ${r2.to}`); if (p.name === curProj) { await syncAll(true); refreshCurrentView(false); }
+  };
+}
+
+// ---------- menu + trang ----------
+(function () {
+  const gd = [...document.querySelectorAll('#sidebar .sidebar-item')].find(e => /Giải động/.test(e.textContent));
+  const html = '<div class="sidebar-item" id="sb-dmh" onclick="closeSidebar();setTimeout(dmhOpen,300)"><span class="sidebar-item-ico">🖼</span><span style="flex:1">Danh mục có hình</span></div>';
+  if (gd) gd.insertAdjacentHTML('afterend', html); else document.querySelector('#sidebar .sidebar-item')?.insertAdjacentHTML('beforebegin', html);
+  const page = (id, t) => `<div class="detail-page" id="${id}"><div class="detail-header"><button class="back-btn" onclick="closeDp('${id}')">‹</button><div class="detail-title">${t}</div></div><div class="detail-body" id="${id}-body"></div></div>`;
+  document.body.insertAdjacentHTML('beforeend', page('dp-dmh', '🖼 Danh mục có hình') + page('dp-dmh1', '🖼 Chi tiết món') + page('dp-dmimg', '🖼 Duyệt ảnh danh mục'));
+  const css = `
+.p9-si{font-size:13px;color:#5A6676;margin:6px 0 2px}.p9-si a{color:var(--primary);font-weight:700;cursor:pointer;margin-left:4px}.p9-si small{font-weight:500;color:#8A93A0}
+.dmh-sum{font-size:13px;color:#5A6676;margin:2px 0 8px}.dmh-sum b{color:var(--text);font-size:15px}
+.dmh-acts{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px}.dmh-acts button{border:1.5px solid var(--border);background:#fff;border-radius:10px;padding:8px 10px;font-size:13px;font-weight:700;color:var(--primary)}
+.dmh-acts button.on{background:#E3ECF7;border-color:var(--primary)}.dmh-acts button.or{background:#FFF1E8;border-color:#F26522;color:#B8460A}
+.dmh-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin-top:10px}@media(min-width:700px){.dmh-grid{grid-template-columns:repeat(4,minmax(0,1fr))}}
+.dmh-c{display:flex;flex-direction:column;text-align:left;border:1.5px solid var(--border);background:#fff;border-radius:14px;padding:0 0 10px;overflow:hidden;min-width:0;font:inherit;color:inherit}
+.dmh-c.sel{border-color:#F26522;box-shadow:0 0 0 2px #F26522 inset}
+.dmh-im{position:relative;display:flex;align-items:center;justify-content:center;aspect-ratio:1/1;background:#F5F7FA;overflow:hidden}.dmh-im img{width:100%;height:100%;object-fit:cover}
+.dm-ph{display:flex;align-items:center;justify-content:center;opacity:.85}.dm-noimg{display:none}
+.dmh-k{position:absolute;left:6px;bottom:6px;font-size:10.5px;font-weight:700;background:rgba(20,24,31,.62);color:#fff;border-radius:6px;padding:2px 6px}
+.dmh-hid{position:absolute;right:6px;top:6px;font-size:10.5px;font-weight:700;background:#FFF7E0;color:#7A5200;border-radius:6px;padding:2px 6px}
+.dmh-ck{position:absolute;left:8px;top:8px;width:26px;height:26px;border-radius:8px;border:2px solid #fff;background:rgba(20,24,31,.35);color:#fff;font-weight:900;display:flex;align-items:center;justify-content:center}.dmh-c.sel .dmh-ck{background:#F26522}
+.dmh-ma{font-family:ui-monospace,Consolas,monospace;font-weight:800;font-size:12.5px;color:var(--primary);margin:8px 10px 2px;word-break:break-all}
+.dmh-n{font-size:14px;font-weight:700;margin:0 10px;line-height:1.3;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.dmh-u{font-size:12px;color:#5A6676;margin:3px 10px 0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.dmh-selbar{display:flex;flex-wrap:wrap;gap:6px;align-items:center;background:#FFF1E8;border-radius:10px;padding:8px 10px;margin-top:8px;font-size:13px}.dmh-selbar span{flex:1;min-width:150px}
+.dmh-selbar button{border:0;background:#fff;border-radius:8px;padding:6px 10px;font-weight:700;color:#B8460A}
+.dmh-printbar{position:sticky;bottom:0;padding:10px 0 calc(10px + env(safe-area-inset-bottom));background:linear-gradient(transparent,var(--bg,#F3F5F8) 30%)}
+.dmh-foot{font-size:12px;color:#5A6676;margin:16px 0 8px;line-height:1.5;word-break:break-all}
+.dm1-im{display:flex;align-items:center;justify-content:center;background:#F5F7FA;border-radius:16px;overflow:hidden;min-height:220px;max-height:62vh}.dm1-img{width:100%;max-height:62vh;object-fit:contain}
+.dm1-kl{font-size:12.5px;font-weight:700;color:#5A6676;margin:6px 2px 0}.dm1-kl.th{color:#2B8A3E}.dm1-kl.mh{color:#B8460A}
+.dm1-ma{font-family:ui-monospace,Consolas,monospace;font-weight:800;font-size:18px;color:var(--primary);margin-top:10px}.dm1-n{font-size:19px;font-weight:800;line-height:1.3;margin:2px 0 10px}
+.dm1-g{display:grid;grid-template-columns:auto 1fr;gap:6px 14px;font-size:14px;align-items:center;background:#fff;border:1px solid var(--border);border-radius:12px;padding:10px 12px}.dm1-g span{color:#5A6676}.dm1-g b{display:flex;align-items:center;gap:6px}.dm1-g a{color:var(--primary);font-weight:700;margin-left:8px;cursor:pointer}
+.dm1-h{font-size:12px;font-weight:800;color:#5A6676;letter-spacing:.04em;margin:16px 2px 6px}.dm1-load{font-size:13.5px;color:#5A6676;padding:8px 2px}
+.dm1-p{display:grid;grid-template-columns:1fr auto;gap:4px 10px;align-items:center;background:#fff;border:1px solid var(--border);border-radius:12px;padding:10px 12px;margin-bottom:8px}
+.dm1-p small{display:block;font-size:12px;color:#5A6676}.dm1-q{font-weight:800;font-size:16px;color:#2B8A3E}.dm1-q.z{color:#8A93A0}
+.dm1-pb{grid-column:1/-1;display:flex;gap:6px;flex-wrap:wrap}.dm1-pb button{border:1.5px solid var(--border);background:#F8FAFC;border-radius:9px;padding:7px 10px;font-weight:700;font-size:13px;color:var(--primary)}
+.dm1-acts{display:flex;flex-wrap:wrap;gap:8px;margin-top:16px}.dm1-acts button{flex:1 1 45%;border:1.5px solid var(--border);background:#fff;border-radius:12px;padding:11px 10px;font-weight:700;font-size:14px;color:var(--primary)}
+.dm1-acts button.or{flex-basis:100%;background:#F26522;border-color:#F26522;color:#fff}.dm1-src{font-size:11.5px;color:#8A93A0;margin-top:10px;word-break:break-all}
+.dm-zoom{position:fixed;inset:0;z-index:9500;background:rgba(0,0,0,.92);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px}.dm-zoom img{max-width:100%;max-height:88vh;object-fit:contain}.dm-zoom span{color:#ccc;font-size:13px}
+.dmi-pg{font-size:13px;color:#5A6676;margin-bottom:8px}.dmi-it{background:#fff;border:1.5px solid var(--border);border-radius:14px;padding:10px;margin-bottom:10px}.dmi-it.done{border-color:#F26522}
+.dmi-h{font-size:14px;font-weight:700;margin-bottom:8px}.dmi-h b{font-family:ui-monospace,Consolas,monospace;color:var(--primary)}.dmi-h small{display:block;color:#5A6676;font-weight:500;font-size:12px}
+.dmi-cs{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px}.dmi-msg{grid-column:1/-1;font-size:13px;color:#5A6676;padding:14px 4px;text-align:center;background:#F5F7FA;border-radius:10px}
+.dmi-c{aspect-ratio:1/1;border:2px solid transparent;border-radius:10px;overflow:hidden;padding:0;background:#F5F7FA}.dmi-c img{width:100%;height:100%;object-fit:cover}.dmi-c.on{border-color:#F26522;box-shadow:0 0 0 2px #F26522}.dmi-c.bad{display:none}
+.dmi-t{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px;align-items:center}.dmi-t input{flex:1 1 160px;min-width:0;border:1.5px solid var(--border);border-radius:9px;padding:7px 9px;font-size:13.5px}
+.dmi-t button,.dmi-t a{border:1.5px solid var(--border);background:#F8FAFC;border-radius:9px;padding:6px 9px;font-size:12.5px;font-weight:700;color:var(--primary);text-decoration:none}
+.dmi-nav{display:flex;justify-content:space-between;margin:6px 0}.dmi-nav button{border:1.5px solid var(--border);background:#fff;border-radius:10px;padding:8px 12px;font-weight:700;color:var(--primary)}
+.dm-tf{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:6px 0 8px}.dm-tf label{font-size:13px;font-weight:700;color:#5A6676;display:flex;flex-direction:column;gap:4px}.dm-tf input{border:1.5px solid var(--border);border-radius:10px;padding:10px;font-size:16px}
+.dm-tn{font-size:14px;margin:4px 0 6px}
+.q8-cnt{display:flex;align-items:center;gap:8px;font-size:13.5px;margin:0 0 8px;color:#5A6676}.q8-cnt b{color:var(--text);font-size:16px}.q8-cnt.over{color:#C92A2A}.q8-cnt button{margin-left:auto;border:0;background:#E3ECF7;color:var(--primary);border-radius:999px;padding:6px 12px;font-weight:700;font-size:13px}
+.q8-maybtn{width:100%;border:1.5px dashed var(--border);background:#fff;border-radius:10px;padding:9px;font-weight:700;color:var(--primary);margin:6px 0 4px}
+.q8-r .q8-ma{width:84px;border:1px solid var(--border);border-radius:6px;padding:2px 5px;font-family:ui-monospace,Consolas,monospace;font-size:12px;font-weight:700;color:var(--primary);margin-right:6px}
+.q8-mam{font-family:ui-monospace,Consolas,monospace;font-size:11.5px;font-weight:700;color:var(--primary);background:#E3ECF7;border-radius:6px;padding:1px 6px;margin-right:6px;word-break:break-all}
+.q8-r.rule .q8-rn span{color:#5A6676;font-style:italic}.q8-may{font-size:10.5px;font-weight:800;background:#E3ECF7;color:var(--primary);border-radius:5px;padding:1px 5px}
+.q8-pub{border:0;background:transparent;padding:2px 4px;opacity:1}.q8-pub.off{opacity:.25}.q8-th{width:36px;height:36px;border-radius:8px;overflow:hidden;flex:0 0 36px;background:#F5F7FA;margin-right:8px}.q8-th img{width:100%;height:100%;object-fit:cover}
+/* tem QR 24 / A4: 3 × 8, tem 70 × 37 mm */
+.dmt-in{aspect-ratio:210/296.6;display:grid;grid-template-columns:repeat(3,1fr);grid-template-rows:repeat(8,1fr);color:#14181F;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif}
+.dmt{display:grid;grid-template-columns:calc(var(--m)*29) 1fr;gap:calc(var(--m)*1.5);padding:calc(var(--m)*2.6) calc(var(--m)*2.6) calc(var(--m)*2.2) calc(var(--m)*3);min-width:0;min-height:0;overflow:hidden;outline:1px dashed #D5DAE1;outline-offset:-1px}
+.dmt-e{outline-color:#EEF0F3}.dmt-q .pgq-qr{width:calc(var(--m)*29);height:calc(var(--m)*29);display:block}
+.dmt-r{display:flex;flex-direction:column;min-width:0;min-height:0}.dmt-ma{font-family:ui-monospace,Consolas,monospace;font-weight:800;font-size:calc(var(--m)*4.2);line-height:1.1;word-break:break-all}.dmt-ma.l1{font-size:calc(var(--m)*3.3)}.dmt-ma.l2{font-size:calc(var(--m)*2.3);word-break:normal;overflow-wrap:anywhere}
+.dmt-n{font-size:calc(var(--m)*2.85);font-weight:700;line-height:1.22;margin-top:calc(var(--m)*1);display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
+.dmt-u{font-size:calc(var(--m)*2.4);color:#333;margin-top:auto}.dmt-lg{height:calc(var(--m)*4.2);width:auto;align-self:flex-start;margin-top:calc(var(--m)*.6)}
+.dmp-in{aspect-ratio:210/296.6;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:calc(var(--m)*5);color:#0B3D78;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;text-align:center}
+.dmp-lg{height:calc(var(--m)*18)}.dmp-t{font-size:calc(var(--m)*10);font-weight:800;line-height:1.15;padding:0 calc(var(--m)*12)}.dmp-s{font-size:calc(var(--m)*5);color:#333}
+.dmp-q .pgq-qr{width:calc(var(--m)*120);height:calc(var(--m)*120)}.dmp-h{font-size:calc(var(--m)*6);font-weight:700;color:#F26522}.dmp-u{font-size:calc(var(--m)*4);color:#333;font-family:ui-monospace,Consolas,monospace}
+@media print{.dmt,.dmt-e{outline:0}}`;
+  document.head.insertAdjacentHTML('beforeend', '<style>' + css + '</style>');
+})();
+</script>
 <script>// ===== v5.51.1: BỎ EMOJI Ở FILE EXCEL VÀ NỘI DUNG GỬI ZALO (2 nơi này không vẽ được icon của app) =====
 // Giữ các dấu dùng trong biểu mẫu: ☐ ☑ ☒ ✓ ✔ ✕ ✖ ✗ và mũi tên →. Bỏ emoji màu + 1 dấu cách theo sau.
 const NOEMO_RE = /(?:[\u{1F000}-\u{1FAFF}]|[\u{2600}-\u{260F}\u{2613}-\u{26FF}]|[\u{2700}-\u{2712}\u{2718}-\u{27BF}]|[\u{2B00}-\u{2BFF}]|[\u{231A}\u{231B}\u{23E9}-\u{23FA}\u{2139}\u{24C2}\u{3030}\u{303D}\u{3297}\u{3299}])[\u{FE0F}\u{200D}\u{1F3FB}-\u{1F3FF}]* ?/gu;

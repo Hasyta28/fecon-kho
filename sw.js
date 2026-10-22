@@ -1,4 +1,6 @@
-// FECON Kho + Thi công - Service Worker v5.55.2
+// FECON Kho + Thi công - Service Worker v5.56.1
+// 5.56.1: báo cáo kho xếp nhiên liệu theo nhóm (Cont dầu…), sửa nhỏ
+// 5.56.0: Danh mục có hình + mã + QR (trang công khai danhmuc.html, tem QR 24 tem / A4)
 // 5.55.2: thủ kho chọn ngày giờ phiếu (Admin đặt số ngày tối đa)
 // 5.55.0: một tồn kho (hàng ở công trường vẫn là tồn kho), xem phiếu giấy khi quét mã QR
 // 5.54.0: phiếu nhập theo xe (PN), biên bản xuất ra khỏi công trình (PX), ô quét QR ở Tổng quan, logo mới
@@ -55,9 +57,9 @@
 //  - Mở app: lấy file từ bộ nhớ của bản đang dùng; thiếu file nào mới lấy từ mạng.
 //  - Có sw.js mới trên GitHub: tải sẵn bản mới vào bộ nhớ riêng nhưng KHÔNG đổi bản đang dùng.
 //  - Địa chỉ có ?fresh=... luôn lấy thẳng từ mạng (app dùng để kiểm tra / tải bản mới).
-const VERSION = '5.55.2';
+const VERSION = '5.56.1';
 const APP = 'fecon-app-', META = 'fecon-meta';
-const CORE = ['./', './index.html', './thicong.html', './manifest.json', './icon-192.png', './icon-512.png', './icon-maskable-192.png', './icon-maskable-512.png', './bg-login.jpg'];
+const CORE = ['./', './index.html', './thicong.html', './danhmuc.html', './manifest.json', './icon-192.png', './icon-512.png', './icon-maskable-192.png', './icon-maskable-512.png', './bg-login.jpg'];
 
 const getActive = () => caches.open(META).then(c => c.match('./__active')).then(r => r ? r.text() : '').catch(() => '');
 const setActive = v => caches.open(META).then(c => c.put('./__active', new Response(v)));
@@ -101,7 +103,7 @@ self.addEventListener('fetch', e => {
   if (url.searchParams.has('fresh')) return;                      // kiểm tra / tải bản mới: đi thẳng ra mạng
   e.respondWith((async () => {
     const act = await getActive();
-    const key = req.mode === 'navigate' ? (/thicong\.html$/.test(url.pathname) ? './thicong.html' : './index.html') : req;
+    const key = req.mode === 'navigate' ? (/thicong\.html$/.test(url.pathname) ? './thicong.html' : /danhmuc\.html$/.test(url.pathname) ? './danhmuc.html' : './index.html') : req;   // v5.56: trang danh mục công khai
     if (act) {
       const c = await caches.open(APP + act);
       const hit = await c.match(key, { ignoreSearch: true });
