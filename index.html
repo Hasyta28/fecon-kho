@@ -1894,7 +1894,7 @@ body.pg-printing #pg-print{display:block;position:fixed;inset:0;z-index:9000;bac
 // ============================================================
 // CONFIG
 // ============================================================
-const APP_VERSION = '5.56.5';
+const APP_VERSION = '5.56.6';
 const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbw6Rmi80I7RI3ij2U7RdRF5pYuQTnPrwEmGmUZS5xpxzLwwVynfoFUujZe1lm6HS1ymxw/exec';
 // ============================================================
 
@@ -12306,6 +12306,80 @@ CATEGORIES.forEach(c => { c.icon = ''; });
   return r;
 }; }
 
+// ---------- v5.56.6: MÁY VÀO / RA — Admin sửa / xoá dòng · dọn lần vào trùng ----------
+let DLE = null, DLD = null;
+const dlOid = t => String(t.id || '').replace(/^dv-/, '');
+{ const _dvr = devEvRow; devEvRow = function (t) {
+    const h = _dvr(t); if (role !== 'ADM') return h;
+    const oid = dlOid(t), syn = /^[st]\d/.test(oid);
+    const b = `<div class="dl-acts"><button type="button" title="Sửa ngày / số đồng hồ" onclick="event.stopPropagation();dlEdit('${escHtml(oid)}')">✏️</button>${syn ? '' : `<button type="button" title="Xoá dòng" onclick="event.stopPropagation();dlDel('${escHtml(oid)}')">🗑</button>`}</div>`;
+    return h.replace(/(<\/span>)(<\/div>\s*<\/div>\s*)$/, '$1' + b + '$2');
+  }; }
+function dlFind(oid) {
+  const L = devEvents('vao').concat(devEvents('ra'));
+  return L.find(e => dlOid(e) === String(oid));
+}
+function dlEdit(oid) {
+  const e = dlFind(oid); if (!e) { toast('⚠️ Không thấy dòng này — tải lại app'); return; }
+  const d = db.devices.find(x => +x.id === +e.deviceId), vao = e.kind === 'vao', km = d && mUnit(d) === 'km';
+  DLE = { oid, e };
+  p9Sheet(`<div class="kl-h">${vao ? '🏗 Sửa Máy vào' : '🏗 Sửa Máy ra'}</div>
+    <div class="p9-tx"><b>${escHtml(d?.name || e.deviceName || '?')}</b>${e.by ? ' · ' + escHtml(e.by) : ''}</div>
+    <label class="dl-f">Ngày ${vao ? 'vào' : 'ra'} công trường<input type="date" id="dl-date" value="${escHtml(String(e.date || '').slice(0, 10))}"></label>
+    <label class="dl-f">${km ? 'Số km' : 'Số đồng hồ giờ máy'} lúc ${vao ? 'vào' : 'ra'} (để trống nếu chưa có)<input type="number" inputmode="decimal" id="dl-meter" value="${e.meter === '' || e.meter === undefined || e.meter === null ? '' : +e.meter}"></label>
+    <div class="p9-w">Nếu đây là lần ${vao ? 'vào' : 'ra'} gần nhất, ngày ${vao ? 'vào' : 'kết thúc'} của máy đổi theo. Báo cáo xuất lại sẽ đúng ngày.</div>
+    <div class="p9-bb"><button type="button" class="p9-c" onclick="p9Close0()">Huỷ</button><button type="button" class="p9-ok" onclick="dlEditSave()">Lưu</button></div>`);
+}
+async function dlEditSave() {
+  const x = DLE; if (!x) return;
+  const date = $9('dl-date').value, mv = $9('dl-meter').value;
+  if (!date) { toast('⚠️ Chọn ngày'); return; }
+  if (!navigator.onLine) { toast('📴 Cần có mạng'); return; }
+  showLoader('Đang lưu…');
+  const r = await api('devLogEdit', { id:x.oid, devId:x.e.deviceId, kind:x.e.kind, project:curProj, date, meter:mv === '' ? '' : +mv }); hideLoader();
+  if (!r || !r.success) { toast('⚠️ ' + ((r && r.error) || 'Không lưu được') + (/không hợp lệ|quyền/i.test((r && r.error) || '') ? ' — máy chủ chưa lên 5.56.6' : '')); return; }
+  p9Close0(); toast('✅ Đã sửa'); try { await syncAll(true); refreshCurrentView(false); } catch (e) {}
+}
+async function dlDel(oid) {
+  const e = dlFind(oid); if (!e) return;
+  const d = db.devices.find(x => +x.id === +e.deviceId), vao = e.kind === 'vao';
+  const others = (db.devlog || []).filter(z => +z.deviceId === +e.deviceId && z.kind === e.kind && String(z.id) !== oid);
+  const warn = vao ? (others.length ? '' : '\n\nĐây là lần vào duy nhất trong nhật ký — ngày vào của máy giữ nguyên.')
+    : (d && d.outDate && !others.length ? '\n\nXoá lần "Máy ra" này thì máy trở lại ĐANG Ở CÔNG TRƯỜNG.' : '');
+  if (!confirm(`Xoá dòng "${vao ? 'Máy vào' : 'Máy ra'}" ${fmtDMY(e.date)} của ${d?.name || e.deviceName}?${warn}\n\nMáy chủ sao lưu trước khi xoá.`)) return;
+  if (!navigator.onLine) { toast('📴 Cần có mạng'); return; }
+  showLoader('Đang sao lưu và xoá…'); const r = await api('devLogEdit', { id:oid, del:1, project:curProj }, 120000); hideLoader();
+  if (!r || !r.success) { toast('⚠️ ' + ((r && r.error) || 'Không xoá được') + (/không hợp lệ|quyền/i.test((r && r.error) || '') ? ' — máy chủ chưa lên 5.56.6' : '')); return; }
+  db.devlog = (db.devlog || []).filter(z => String(z.id) !== oid); saveLocal();
+  toast('✅ Đã xoá'); try { await syncAll(true); refreshCurrentView(false); } catch (er) {}
+}
+async function p9Dl(i) {
+  const p = P9 && P9.list[i]; if (!p) return;
+  if (!navigator.onLine) { toast('📴 Cần có mạng'); return; }
+  showLoader('Đang kiểm…'); const r = await api('devLogDups', { project:p.name, dry:1 }, 120000); hideLoader();
+  if (!r || !r.success) { toast('⚠️ ' + ((r && r.error) || 'Không kiểm được') + (/không hợp lệ|quyền/i.test((r && r.error) || '') ? ' — máy chủ chưa lên 5.56.6' : '')); return; }
+  if (!r.list.length) { toast(p.name + ': không có máy nào bị ghi "Máy vào" trùng'); return; }
+  DLD = { p:p.name, list:r.list.map(x => Object.assign(x, { on:1 })) };
+  dlDupRender();
+}
+function dlDupRender() {
+  const L = DLD.list, n = L.filter(x => x.on).length, dm = (dt, m) => fmtDMY(dt) + (m === '' || m === undefined || m === null ? '' : ' · ' + fmtNum(+m));
+  p9Sheet(`<div class="kl-h">Dọn máy vào trùng · ${escHtml(DLD.p)}</div>
+    <div class="p9-tx">Máy có 2 lần "Máy vào" liền nhau mà không có "Máy ra" ở giữa. Giữ <b>lần vào sớm nhất</b>, xoá lần sau. Muốn giữ lần khác: bỏ tick rồi sửa / xoá từng dòng trong Lịch sử nhập (✏️ 🗑).</div>
+    ${L.map((x, j) => `<label class="dm-mm-r"><input type="checkbox" ${x.on ? 'checked' : ''} onchange="DLD.list[${j}].on=this.checked?1:0;dlDupRender()"><span><b>${escHtml(x.name)}</b><small>Giữ: vào ${escHtml(dm(x.keepDate, x.keepMeter))}</small><small style="color:#C92A2A">Xoá: vào ${escHtml(dm(x.date, x.meter))}${x.by ? ' · ' + escHtml(x.by) : ''}${x.at ? ' · ghi ' + escHtml(x.at) : ''}</small></span></label>`).join('')}
+    <div class="p9-w" style="margin-top:8px">Máy chủ sao lưu trước khi xoá.</div>
+    <div class="p9-bb"><button type="button" class="p9-c" onclick="p9Close0()">Huỷ</button><button type="button" class="p9-ok" id="dl-go" ${n ? '' : 'disabled'}>Xoá ${n} dòng</button></div>`);
+  $9('dl-go').onclick = async () => {
+    const ids = DLD.list.filter(x => x.on).map(x => x.id);
+    showLoader('Đang sao lưu và xoá…'); const r2 = await api('devLogDups', { project:DLD.p, ids }, 300000); hideLoader();
+    if (!r2 || !r2.success) { toast('⚠️ ' + ((r2 && r2.error) || 'Không xoá được')); return; }
+    p9Close0(); toast(`✅ ${DLD.p}: đã xoá ${r2.done} dòng Máy vào trùng`);
+    if (DLD.p === curProj) { await syncAll(true); refreshCurrentView(false); }
+  };
+}
+{ const st = document.createElement('style'); st.textContent = `.dl-acts{display:flex;gap:6px;margin-top:6px;justify-content:flex-end}.dl-acts button{border:1.5px solid var(--border);background:#fff;border-radius:9px;padding:4px 9px;font-size:14px;line-height:1.2}
+.dl-f{display:block;font-size:13px;font-weight:700;color:#5A6676;margin:10px 0 4px}.dl-f input{display:block;width:100%;box-sizing:border-box;margin-top:5px;padding:10px;border:1.5px solid var(--border);border-radius:10px;font-size:15px}`; document.head.appendChild(st); }
+
 // ---------- menu + trang ----------
 (function () {
   const old = [...document.querySelectorAll('.sidebar-item.need-admin')].find(e => /Tên vật tư gợi ý thêm/.test(e.textContent));
@@ -12410,7 +12484,7 @@ function p9Render() {
     return `<div class="p9-pj${cl ? ' cl' : ''}"><div class="p9-h"><b>${escHtml(p.name)}</b>${tag}${p.name === curProj ? '<span class="p9-cur">đang mở</span>' : ''}</div>
       <div class="p9-st">${st}${cl ? ' · chỉ xem' : ''}</div>
       ${P9.list.some(x => 'siCand' in x) ? `<div class="p9-si">Đứng tên thay Admin: <b>${p.standIn ? escHtml(p.standIn.name) + (p.standIn.auto ? ' <small>(tự chọn)</small>' : '') : '<span style="color:#C92A2A">chưa chọn</span>'}</b> <a onclick="p9Si(${i})">Đổi</a>${p.standIn && !empty ? ` · <a onclick="p9SiFix(${i})">Đổi tên Admin trong dữ liệu cũ</a>` : ''}</div>` : ''}
-      ${!empty && P9.list.some(x => 'siCand' in x) ? `<div class="p9-si"><a onclick="p9Tc(${i})">Gộp phiếu nhập thẳng CT cũ</a> · <a onclick="p9Sc(${i})">Dọn khai số ở CT trùng</a></div>` : ''}
+      ${!empty && P9.list.some(x => 'siCand' in x) ? `<div class="p9-si"><a onclick="p9Tc(${i})">Gộp phiếu nhập thẳng CT cũ</a> · <a onclick="p9Sc(${i})">Dọn khai số ở CT trùng</a> · <a onclick="p9Dl(${i})">Dọn máy vào trùng</a></div>` : ''}
       <div class="p9-bt"><button type="button" onclick="p9Rename(${i})">✏️ Đổi tên</button>
         ${cl ? `<button type="button" onclick="p9Reopen(${i})">↩ Mở lại</button>` : `<button type="button" onclick="p9Close(${i})">📦 Đóng</button>`}
         <button type="button" class="${empty ? 'red' : 'off'}" ${empty ? '' : 'disabled'} onclick="p9Del(${i})">🗑 Xoá</button></div></div>`;
