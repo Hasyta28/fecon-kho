@@ -1894,7 +1894,7 @@ body.pg-printing #pg-print{display:block;position:fixed;inset:0;z-index:9000;bac
 // ============================================================
 // CONFIG
 // ============================================================
-const APP_VERSION = '5.56.6';
+const APP_VERSION = '5.56.7';
 const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbw6Rmi80I7RI3ij2U7RdRF5pYuQTnPrwEmGmUZS5xpxzLwwVynfoFUujZe1lm6HS1ymxw/exec';
 // ============================================================
 
@@ -13144,6 +13144,8 @@ function fnNoteCT() {                                                   // ô "S
   const s = (document.getElementById('fn-cts')?.value || '').trim(), n = document.getElementById('fn-note')?.value || '';
   return s ? 'CT: ' + s + (n.trim() ? ' · ' + n.trim() : '') : n;
 }
+const bcNoteClean = (note, side) => String(note || '').split(/\s*·\s*/).map(x => x.replace(/⚡?\s*Lệnh:\s*“[^”]*”/g, '').trim())   // v5.56.7: bỏ câu lệnh gõ nhanh; bên nhập bỏ "giải động từ …"
+  .filter(x => x && !(side === 'N' && /giải động/i.test(x))).join(' · ');
 const bcSplitCT = note => { const m = String(note || '').match(/^CT:\s*([^·]*?)\s*(?:·\s*([\s\S]*))?$/); return m ? [m[1].trim(), (m[2] || '').trim()] : ['', String(note || '').trim()]; };
 
 // ---------- khung trình bày ----------
@@ -13286,11 +13288,11 @@ function bcData(R) {
     let loai;
     if (t.type === 'dieuchinh') loai = t.ct === 'cu' ? 'Hàng cũ ở CT (xác nhận)' : t.ct === 'site' ? 'Khai số ở CT' : side === 'N' ? 'Điều chỉnh tăng' : 'Điều chỉnh giảm';
     else if (LOAN_T[t.type]) loai = { chomuon:'Cho mượn', nhantra:'Nhận trả', dimuon:'Đi mượn', tralai:'Trả lại' }[t.type];
-    else if (t.type === 'nhap') loai = t.thangCT ? 'Nhập thẳng CT' : t.ct === 've' ? 'Về kho từ CT' : /^tồn đầu/i.test(sv) ? 'Tồn đầu' : /giải động/i.test(t.note || '') ? 'Nhận giải động'
-      : projSet.has(normVN(sv)) ? 'Nhận luân chuyển' : 'Nhập mua';
+    else if (t.type === 'nhap') loai = t.thangCT ? 'Nhập thẳng CT' : t.ct === 've' ? 'Về kho từ CT' : /^tồn đầu/i.test(sv) ? 'Tồn đầu'
+      : 'Nhập kho';   // v5.56.7: mọi phiếu nhập thường = "Nhập kho" (mua, từ dự án khác, chưa ghi nguồn) — nguồn xem ở cột Bên giao hàng
     else loai = t.thangCT ? 'Xuất thẳng CT' : /hư hỏng/i.test(sv) ? 'Thanh lý (hỏng)' : /giải động/i.test(t.note || '') ? 'Giải động'
       : projSet.has(normVN(sv)) ? 'Xuất luân chuyển' : t.ct === 'ra' ? 'Ra công trường' : 'Xuất dùng';
-    rows.push({ t, t0, it, d, q, dk, ds, side, qty, site, loai, sv, cts, note0, fuel:fuelOf(it), isDO:doOf(it), inR:inR(d), afterStart:afterStart(d), afterEnd:afterEnd(d),
+    rows.push({ t, t0, it, d, q, dk, ds, side, qty, site, loai, sv, cts, note0:bcNoteClean(note0, side), fuel:fuelOf(it), isDO:doOf(it), inR:inR(d), afterStart:afterStart(d), afterEnd:afterEnd(d),
       fixed:(t.type === 'nhap' || t.type === 'xuat') && adj[t.id] ? [+t.qty, q] : null });
   });
   const ord = (a, b) => ((a.d ? a.d.getTime() : 0) - (b.d ? b.d.getTime() : 0)) || (+a.t.id - +b.t.id);
@@ -13316,6 +13318,7 @@ function bcData(R) {
 }
 
 // ---------- sổ nhập / sổ xuất ----------
+const bcNoSv = (x, N) => !x.sv && !/^Điều chỉnh|Khai số|Tồn đầu|Về kho|thẳng/.test(x.loai) && (N || !x.t.thietBi);
 function bcLedger(X, wb, side) {
   const D = X.D, N = side === 'N';
   const L = D.P.filter(x => !x.fuel && x.side === side);
@@ -13352,23 +13355,23 @@ function bcLedger(X, wb, side) {
     const fm = cols.map((c, i) => i === 0 ? 'c' : i === 1 ? 'd' : i === 2 ? 'c' : i === 3 ? 'l' : i === 4 ? 'c' : i === 5 ? 'n' : (kg && i === 6) ? 'n' : c[0] === 'Ghi chú' || /Bên|Sử dụng/.test(c[0]) ? 'l' : 'c');
     bcPut(ws, r, v, fm, bcH(cols.map((c, i) => [v[i] && typeof v[i] === 'object' ? '' : v[i], c[1]]).filter((_, i) => i !== 1 && i !== 5 && i !== 6)));
     if (kg && !kgp && x.it.cat === 'thep') ws.getCell(r, 7).font = bcF(9.5, false, true, BC.ORG);
-    const base = N ? 'Nhập mua' : 'Xuất dùng';
-    if (x.loai !== base) { for (let c = 1; c <= n; c++) ws.getCell(r, c).fill = bcFill(BC.SOFT); ws.getCell(r, cLoai).font = bcF(10.5, true, false, BC.ORG); }
-    if (N && !x.sv && !/^Điều chỉnh|Khai số/.test(x.loai)) bcFlag(ws, r, cNote, [note, '⚠ Chưa ghi bên giao hàng'].filter(Boolean).join(' · '));
-    if (!N && !x.sv && !x.t.thietBi && !/^Điều chỉnh|Khai số/.test(x.loai)) bcFlag(ws, r, cNote, [note, '⚠ Chưa ghi bên nhận'].filter(Boolean).join(' · '));
+    const base = N ? /^Nhập (kho|mua)$/.test(x.loai) : x.loai === 'Xuất dùng';
+    if (!base) { for (let c = 1; c <= n; c++) ws.getCell(r, c).fill = bcFill(BC.SOFT); ws.getCell(r, cLoai).font = bcF(10.5, true, false, BC.ORG); }
+    if (bcNoSv(x, N)) ws.getCell(r, C[N ? 'Bên giao hàng' : 'Bên nhận hàng']).fill = bcFill('FCE9C8');   // v5.56.7: ô trống tô vàng, đếm ở dòng Cộng (không lặp chữ ở Ghi chú)
     r++;
   });
   if (!L.length) { bcEmptyRow(ws, r, n, N ? 'Không có phiếu nhập vật tư trong kỳ' : 'Không có phiếu xuất vật tư trong kỳ'); r++; }
   const r1 = 10, r2 = r - 1;
   const cnt = f => L.filter(f).length;
-  const lab = N ? `Cộng: ${L.length} lượt nhập  ·  ${cnt(x => x.loai === 'Nhập mua')} nhập mua  ·  ${cnt(x => /mượn|trả/i.test(x.loai))} mượn / nhận trả  ·  ${cnt(x => /^Điều chỉnh|Khai số/.test(x.loai))} điều chỉnh`
-    + (cnt(x => !/Nhập mua|mượn|trả|Điều chỉnh|Khai số/i.test(x.loai)) ? `  ·  ${cnt(x => !/Nhập mua|mượn|trả|Điều chỉnh|Khai số/i.test(x.loai))} loại khác` : '')
+  const noSv = cnt(x => bcNoSv(x, N)), noSvT = noSv ? `  ·  ${noSv} lượt chưa ghi ${N ? 'bên giao hàng' : 'bên nhận'} (ô tô vàng)` : '';
+  const lab = (N ? `Cộng: ${L.length} lượt nhập  ·  ${cnt(x => /^Nhập (kho|mua)$/.test(x.loai))} nhập kho  ·  ${cnt(x => /mượn|trả/i.test(x.loai))} mượn / nhận trả  ·  ${cnt(x => /^Điều chỉnh|Khai số/.test(x.loai))} điều chỉnh`
+    + (cnt(x => !/Nhập (kho|mua)|mượn|trả|Điều chỉnh|Khai số/i.test(x.loai)) ? `  ·  ${cnt(x => !/Nhập (kho|mua)|mượn|trả|Điều chỉnh|Khai số/i.test(x.loai))} loại khác` : '')
     : `Cộng: ${L.length} lượt xuất  ·  ${cnt(x => x.loai === 'Xuất dùng')} xuất dùng  ·  ${cnt(x => /luân chuyển|Giải động/.test(x.loai))} luân chuyển / giải động  ·  ${cnt(x => /mượn|Trả lại/.test(x.loai))} cho mượn / trả lại`
-      + (cnt(x => /Ra công trường|thẳng|Thanh lý/.test(x.loai)) ? `  ·  ${cnt(x => /Ra công trường|thẳng|Thanh lý/.test(x.loai))} ra CT / thẳng CT / thanh lý` : '');
+      + (cnt(x => /Ra công trường|thẳng|Thanh lý/.test(x.loai)) ? `  ·  ${cnt(x => /Ra công trường|thẳng|Thanh lý/.test(x.loai))} ra CT / thẳng CT / thanh lý` : '')) + noSvT;
   bcTotal(ws, r, n, lab, n, {});
   ws.autoFilter = `A9:${bcCL(n)}${r2}`;
   r = bcNotes(ws, r + 2, n, N ? [
-    'Ghi chú: dòng nền vàng không phải nhập mua (mượn, nhận trả, điều chỉnh, luân chuyển / giải động từ dự án khác, nhập thẳng CT, về kho từ công trường) — loại ghi ở cột "Loại nhập".',
+    'Ghi chú: "Nhập kho" = hàng vào kho (mua hoặc nhận từ dự án khác — xem cột Bên giao hàng). Dòng nền vàng là loại khác (mượn, nhận trả, điều chỉnh, nhập thẳng CT, về kho từ công trường). Ô bên giao tô vàng = chưa ghi.',
     'Số phiếu do app đánh theo ngày (PN = phiếu làm tăng tồn). Chứng từ = số biên bản giao hàng / hoá đơn ghi khi lập phiếu; để trống thì điền tay khi in. Bấm nút lọc ở dòng tiêu đề để xem riêng một vật tư hoặc một nhà cung cấp.',
     kg ? 'Quy đổi (kg) = số cây × kg/cây; kg/cây = 0,00617 × D² × chiều dài (đọc từ tên, vd "Thép cây D20 x 11,7m"). "chưa quy đổi" = tên chưa ghi đường kính / chiều dài.' : '']
     : [
@@ -13407,7 +13410,7 @@ function bcFuel(X) {
     const tm = (String(x.t.datetime || '').match(/\d{1,2}:\d{2}/) || [''])[0];
     if (x.isDO) doBal = bcR(doBal + (inn ? x.qty : -x.qty));
     let note = x.t.type === 'dieuchinh' ? (x.t.reason || x.t0.reason || 'Điều chỉnh') : x.note0;
-    if (x.loai !== 'Nhập mua' && x.loai !== 'Xuất dùng') note = [x.loai + (x.sv && LOAN_T[x.t.type] ? ' · ' + x.sv : ''), note].filter(Boolean).join(' · ');
+    if (!/^(Nhập mua|Nhập kho|Xuất dùng)$/.test(x.loai)) note = [x.loai + (x.sv && LOAN_T[x.t.type] ? ' · ' + x.sv : ''), note].filter(Boolean).join(' · ');
     if (x.fixed) note = [note, `Đã sửa số: ${bcVN(x.fixed[0], 2)} → ${bcVN(x.fixed[1], 2)}`].filter(Boolean).join(' · ');
     const v = [k + 1, bcXD(x.d), tm, x.so, who || (inn && x.t.type === 'nhap' ? 'Nhập kho (chưa ghi nhà cung cấp)' : ''), mtr,
       x.isDO && inn ? x.qty : '', x.isDO && !inn ? x.qty : '', { formula:`I${r - 1}+G${r}-H${r}`, result:doBal },
@@ -13654,7 +13657,7 @@ function bcOverview(X, LN, LX, FU, NX, LO, apx) {
   const band = (r, text) => { ws.mergeCells(r, 2, r, 13); Object.assign(ws.getCell(r, 2), { value:text, font:bcF(12, true, false, 'FFFFFF'), fill:bcFill(BC.NAVY), alignment:{ horizontal:'left', vertical:'middle', indent:1 } }); ws.getRow(r).height = 20; };
   let r = 8; band(r, 'SỐ LIỆU CHÍNH TRONG KỲ'); r += 2;
   ws.getRow(r).height = 34; ws.getRow(r + 1).height = 18;
-  const IN_T = ['Nhập mua', 'Nhập thẳng CT', 'Đi mượn', 'Nhận trả', 'Nhận luân chuyển', 'Nhận giải động'], OUT_T = ['Xuất dùng', 'Xuất luân chuyển', 'Giải động', 'Thanh lý (hỏng)', 'Cho mượn', 'Trả lại'];   // v5.56.4
+  const IN_T = ['Nhập mua', 'Nhập kho', 'Nhập thẳng CT', 'Đi mượn', 'Nhận trả', 'Nhận luân chuyển', 'Nhận giải động'], OUT_T = ['Xuất dùng', 'Xuất luân chuyển', 'Giải động', 'Thanh lý (hỏng)', 'Cho mượn', 'Trả lại'];   // v5.56.4
   const nN = LN.r2 >= LN.r1 ? D.P.filter(x => !x.fuel && x.side === 'N' && IN_T.includes(x.loai)).length : 0, nX = LX.r2 >= LX.r1 ? D.P.filter(x => !x.fuel && x.side === 'X' && OUT_T.includes(x.loai)).length : 0;
   const cntIf = (L, T) => `SUMPRODUCT(COUNTIF(${bcQ(L.name)}!$${bcCL(L.cLoai)}$${L.r1}:$${bcCL(L.cLoai)}$${L.r2},{${T.map(x => '"' + x + '"').join(',')}}))`;
   const nNeg = NX.list.filter(s => { const ct = D.ct ? s.sClose : 0; return ((s.close + ct) < -1e-9); }).length;
