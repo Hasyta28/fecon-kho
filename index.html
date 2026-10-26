@@ -1721,20 +1721,22 @@ body.pg-printing #pg-print{display:block;position:fixed;inset:0;z-index:9000;bac
     <div class="modal-handle"></div>
     <div class="modal-title" id="exp-title">⬇️ Xuất báo cáo Excel</div>
     <div class="fg"><label>Khoảng thời gian</label>
-      <select id="exp-range">
+      <select id="exp-range" onchange="expPick()">
         <option value="all" selected>Toàn bộ (từ đầu dự án) — như file NXT</option>
         <option value="today">Hôm nay</option>
-        <option value="week">Tuần này</option>
+        <option value="week">Tuần này (từ thứ Hai)</option>
         <option value="month">Tháng này</option>
+        <option value="lastmonth">Tháng trước</option>
         <option value="year">Năm nay</option>
-        <option value="custom">Tùy chọn ngày</option>
+        <option value="custom">Tự chọn từ ngày – đến ngày</option>
       </select>
     </div>
-    <div id="exp-custom" style="display:none">
+    <div id="exp-custom">
       <div class="fg-row">
-        <div class="fg"><label>Từ ngày</label><input type="date" id="exp-from"></div>
-        <div class="fg"><label>Đến ngày</label><input type="date" id="exp-to"></div>
+        <div class="fg"><label>Từ ngày</label><input type="date" id="exp-from" oninput="expManual()"></div>
+        <div class="fg"><label>Đến ngày</label><input type="date" id="exp-to" oninput="expManual()"></div>
       </div>
+      <div style="font-size:12px;color:var(--text2);margin:-4px 0 10px">Để trống "Từ ngày" = từ đầu dự án · để trống "Đến ngày" = đến hôm nay</div>
     </div>
     <div class="fg"><label>Dự án</label>
       <select id="exp-proj" disabled></select>
@@ -1894,7 +1896,7 @@ body.pg-printing #pg-print{display:block;position:fixed;inset:0;z-index:9000;bac
 // ============================================================
 // CONFIG
 // ============================================================
-const APP_VERSION = '5.56.8';
+const APP_VERSION = '5.56.9';
 const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbw6Rmi80I7RI3ij2U7RdRF5pYuQTnPrwEmGmUZS5xpxzLwwVynfoFUujZe1lm6HS1ymxw/exec';
 // ============================================================
 
@@ -2147,9 +2149,6 @@ async function setupApp(pre) {
   applyRoleUI(); bioCheck(); renderBioMenu();
   setTimeout(() => { try { verAfterLogin(); } catch (e) {} }, 1500);   // v5.28: "Có gì mới" + kiểm tra bản mới
   setTimeout(() => { try { if (hp('k_nhap') || hp('k_dm')) qltbLoad(); } catch (e) {} }, 2500);   // v5.29: danh mục P.QLTB
-  document.getElementById('exp-range').onchange = function() {
-    document.getElementById('exp-custom').style.display = this.value === 'custom' ? '' : 'none';
-  };
   updateProjSel();
   goHome();
   updateLowBadge();
@@ -2427,9 +2426,11 @@ function showVersion() {
   if (el) el.textContent = `Phiên bản ${APP_VERSION}`;
 }
 // Tham số đồng bộ: chỉ xin phần mới nếu dữ liệu trên máy đúng dự án
+// v5.56.9: trên máy có phiếu của dự án khác (đổi dự án lúc đang đồng bộ) → không xin phần mới, tải lại toàn bộ
+const dbMixed = () => !!curProj && (db.transactions || []).some(t => !t._local && t.project && t.project !== curProj);
 function syncInc() {
   const inc = {project: curProj};
-  if (curProj && db.scope === curProj && db.txnTotal && db.txnLastId && db.transactions.length) Object.assign(inc, {since: db.txnTotal, lastId: db.txnLastId, scope: curProj, txnRev: db.txnRev || 0});
+  if (curProj && db.scope === curProj && !dbMixed() && db.txnTotal && db.txnLastId && db.transactions.length) Object.assign(inc, {since: db.txnTotal, lastId: db.txnLastId, scope: curProj, txnRev: db.txnRev || 0});
   if (db.ckv && (db.cauKien || []).length) inc.ckv = db.ckv;                     // v5.14: cấu kiện chỉ gửi khi đổi
   return inc;
 }
@@ -2443,10 +2444,11 @@ async function syncAll(silent) {
     if (!silent) setSyncBar('🔄 Đang đồng bộ...');
     const flushed = await flushOutbox();          // gửi thay đổi chờ trước; lỗi vẫn tiếp tục tải dữ liệu
     if (!token || gen !== sessionGen) return false;
-    const inc = syncInc();
+    const inc = syncInc(), db0 = db;
     let r = await api('getAll', inc, 25000);
-    if (!r.success && !r.auth && !r.stale && token) r = await api('getAll', inc, 35000);   // tối đa ~1 phút   // lỗi mạng: thử lại ngay, không chờ 15 giây
+    if (!r.success && !r.auth && !r.stale && token && db === db0 && curProj === inc.project) r = await api('getAll', inc, 35000);   // tối đa ~1 phút   // lỗi mạng: thử lại ngay, không chờ 15 giây
     if (gen !== sessionGen || r.stale) return false;
+    if (db !== db0 || curProj !== inc.project) { resyncSoon = true; return false; }   // v5.56.9: đã đổi dự án trong lúc chờ → bỏ kết quả của dự án cũ
     if (!r.success) {
       lastSyncErr = r;
       if (token) setSyncBar((outbox.length ? `📴 ${outbox.length} thay đổi đang chờ gửi · ` : '⚠️ ') + (r.reason || r.error || 'Không kết nối được máy chủ') + ' — đang dùng dữ liệu lưu trên máy', '#E74C3C');
@@ -2463,8 +2465,12 @@ async function syncAll(silent) {
     else if (!silent) { setSyncBar(`✅ Đã đồng bộ (${sec} giây${adm})`, 'var(--green)'); setTimeout(() => setSyncBar(''), adm ? 4000 : 2000); }
     else setSyncBar('');
     return true;
-  } finally { if (gen === sessionGen) syncing = false; }
+  } finally {
+    if (gen === sessionGen) syncing = false;
+    if (resyncSoon && gen === sessionGen) { resyncSoon = false; setTimeout(() => syncAll(true).then(() => { try { refreshCurrentView(false); } catch (e) {} }), 50); }
+  }
 }
+let resyncSoon = false;
 // Trả về: true = đã lưu lên máy chủ · false = offline, đang chờ gửi · 'rejected' = máy chủ từ chối
 async function push(action, data) {
   if (action === 'addTransaction') data._local = 1;     // phiếu tạm trên máy, chờ máy chủ xác nhận
@@ -4801,24 +4807,64 @@ async function ensureExcelJS() {
   return false;
 }
 const slugVN = s => String(s || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/đ/g, 'd').replace(/Đ/g, 'D').replace(/[^a-z0-9]+/gi, '-').replace(/^-|-$/g, '');
+// v5.56.9: ô Từ / Đến luôn hiện · chọn nhanh thì tự điền ngày · sửa ngày tay → "Tự chọn" · nhớ lựa chọn trên máy
+const LS_EXP = 'fecon_exp_range';
+function expQuick(v, now = new Date()) {
+  const sod = d => new Date(d.getFullYear(), d.getMonth(), d.getDate());
+  if (v === 'today') return [sod(now), null];
+  if (v === 'week') return [sod(new Date(now.getFullYear(), now.getMonth(), now.getDate() - ((now.getDay() + 6) % 7))), null];
+  if (v === 'month') return [new Date(now.getFullYear(), now.getMonth(), 1), null];
+  if (v === 'lastmonth') return [new Date(now.getFullYear(), now.getMonth() - 1, 1), new Date(now.getFullYear(), now.getMonth(), 0, 23, 59, 59)];
+  if (v === 'year') return [new Date(now.getFullYear(), 0, 1), null];
+  return [null, null];
+}
+function expPick() {
+  const v = document.getElementById('exp-range').value;
+  if (v === 'custom') return;
+  const [f, t] = expQuick(v);
+  document.getElementById('exp-from').value = f ? isoDay(f) : '';
+  document.getElementById('exp-to').value = t ? isoDay(t) : '';
+}
+function expManual() { document.getElementById('exp-range').value = 'custom'; }
+function expSave() {
+  try { localStorage.setItem(LS_EXP, JSON.stringify({ v:document.getElementById('exp-range').value, f:document.getElementById('exp-from').value, t:document.getElementById('exp-to').value })); } catch (e) {}
+}
+function expLoad() {
+  let o = null; try { o = JSON.parse(localStorage.getItem(LS_EXP) || 'null'); } catch (e) {}
+  const sel = document.getElementById('exp-range'); if (!sel) return;
+  sel.value = o && [...sel.options].some(x => x.value === o.v) ? o.v : 'all';
+  if (sel.value === 'custom') { document.getElementById('exp-from').value = o.f || ''; document.getElementById('exp-to').value = o.t || ''; }
+  else expPick();                                               // chọn nhanh: tính lại theo hôm nay (tháng này / tháng trước…)
+  const mx = isoDay(new Date()); document.getElementById('exp-from').max = mx; document.getElementById('exp-to').max = mx;
+}
 function exportRange() {
   const v = document.getElementById('exp-range').value, now = new Date();
-  const sod = d => new Date(d.getFullYear(), d.getMonth(), d.getDate());
   const fmt = d => `${d.getDate()}/${d.getMonth() + 1}/${d.getFullYear()}`;
-  let from = null, to = null, tag = 'ToanBo';
-  if (v === 'today') { from = sod(now); tag = 'HomNay'; }
-  else if (v === 'week') { from = sod(new Date(now - 6 * 864e5)); tag = 'TuanNay'; }
-  else if (v === 'month') { from = new Date(now.getFullYear(), now.getMonth(), 1); tag = 'Thang' + (now.getMonth() + 1); }
-  else if (v === 'year') { from = new Date(now.getFullYear(), 0, 1); tag = 'Nam' + now.getFullYear(); }
-  else if (v === 'custom') {
-    const f = document.getElementById('exp-from').value, t = document.getElementById('exp-to').value;
-    if (f) from = new Date(f + 'T00:00:00'); if (t) to = new Date(t + 'T23:59:59');
-    tag = `${from ? fmt(from).replace(/\//g, '-') : 'DauKy'}_den_${to ? fmt(to).replace(/\//g, '-') : 'Nay'}`;
-  }
+  const f = document.getElementById('exp-from').value, t = document.getElementById('exp-to').value;
+  let from = f ? new Date(f + 'T00:00:00') : null, to = t ? new Date(t + 'T23:59:59') : null;
+  if (v !== 'custom') [from, to] = expQuick(v, now);
+  if (from && from > now) { toast('⚠️ "Từ ngày" đang ở tương lai'); return null; }
+  if (from && to && from > to) { toast('⚠️ "Từ ngày" phải trước "Đến ngày"'); return null; }
+  if (to && to > now) to = null;                                // đến ngày ở tương lai = đến hôm nay
+  const d2 = d => fmt(d).replace(/\//g, '-');
+  const tag = v === 'all' && !from && !to ? 'ToanBo' : v === 'today' ? 'HomNay' : v === 'week' ? 'TuanNay' : v === 'month' ? 'Thang' + (now.getMonth() + 1)
+    : v === 'lastmonth' ? 'Thang' + (from.getMonth() + 1) + '-' + from.getFullYear() : v === 'year' ? 'Nam' + now.getFullYear()
+    : `${from ? d2(from) : 'DauDA'}_den_${to ? d2(to) : d2(now)}`;
   const label = from || to ? `Từ ngày ${from ? fmt(from) : '(đầu dự án)'} đến ngày ${fmt(to || now)}` : `Toàn bộ từ đầu dự án đến ngày ${fmt(now)}`;
   return {from, to, tag, label, end: to || now};
 }
 async function doExport() {
+  const R0 = exportRange(); if (!R0) return;                    // v5.56.9: ngày chọn sai → đã báo
+  expSave();
+  if (dbMixed()) {                                               // v5.56.9: dữ liệu trên máy lẫn dự án khác → tải lại toàn bộ rồi mới xuất
+    showLoader('Dữ liệu trên máy bị lẫn dự án khác — đang tải lại ' + curProj + '...');
+    db.txnTotal = 0; db.txnLastId = ''; db.scope = '';
+    for (let i = 0; syncing && i < 60; i++) await new Promise(r => setTimeout(r, 250));
+    try { await syncAll(true); } catch (e) {}
+    hideLoader();
+    if (dbMixed() || db.scope !== curProj) { toast('⚠️ Chưa tải lại được dữ liệu ' + curProj + ' — kiểm tra mạng rồi xuất lại'); return; }
+    toast('✅ Đã tải lại dữ liệu ' + curProj);
+  }
   showLoader('Đang tạo file Excel...');
   if (!(await ensureExcelJS())) { hideLoader(); toast('⚠️ Không tải được công cụ Excel — cần có mạng'); return; }
   try { if (exportMode === 'pyc') await buildPycWorkbook(); else await buildNxtWorkbook(); }
@@ -7815,7 +7861,7 @@ async function tgCheck() { showLoader('Đang kiểm tra...'); await syncAll(true
 // ===== v5.17.1: BÁO CÁO EXCEL PHIẾU YÊU CẦU (kiểu báo cáo văn phòng, một màu) =====
 let exportMode = 'all';
 function openExport(mode) {
-  exportMode = mode;
+  exportMode = mode; expLoad();
   document.getElementById('exp-title').textContent = mode === 'pyc' ? '📊 Xuất báo cáo phiếu yêu cầu' : '⬇️ Xuất báo cáo Excel';
   openModal('modal-export');
 }
@@ -13640,22 +13686,34 @@ function bcNXT(X, LN, LX, FU) {
 
 // ---------- phiếu mượn chưa trả ----------
 function bcLoans(X) {
-  const L = (db.loans || []).filter(l => l.status === 'open').sort((a, b) => (a.dueDate || '9') < (b.dueDate || '9') ? -1 : 1);
+  // v5.56.9: chọn "Đến ngày" trong quá khứ → phiếu đang mở TẠI ngày đó (bỏ lần trả / đóng sau ngày đó)
+  const E = X.R.to ? X.R.end.getTime() : 0, fmtE = d => `${d.getDate()}/${d.getMonth() + 1}/${d.getFullYear()}`;
+  const remainAt = l => {
+    if (!E) return loanRemain(l);
+    if ((parseVN(l.datetime) || 0) > E) return 0;
+    const hs = (l.history || []).filter(h => (parseVN(h.at) || 0) <= E);
+    if (hs.some(h => h.t === 'dong')) return 0;
+    const tra = hs.filter(h => h.t === 'tra');
+    return l.itemType === 'tb' ? (tra.length ? 0 : +l.qty || 1) : r3((+l.qty || 0) - tra.reduce((a, h) => a + (+h.q || 0), 0));
+  };
+  const odAt = l => { if (!E) return loanOverdue(l); if (!l.dueDate) return null; const [y, m, d] = l.dueDate.split('-').map(Number), e = new Date(E);
+    return Math.round((Date.UTC(e.getFullYear(), e.getMonth(), e.getDate()) - Date.UTC(y, m - 1, d)) / 864e5); };
+  const L = (db.loans || []).filter(l => E ? remainAt(l) > 1e-9 : l.status === 'open').sort((a, b) => (a.dueDate || '9') < (b.dueDate || '9') ? -1 : 1);
   if (!L.length) return null;
   const ws = X.wb.addWorksheet('Phiếu mượn chưa trả');
   const W = [5.5, 11, 10, 8, 30, 7, 9, 10, 24, 17, 20, 12];
-  const n = bcSetup(X, ws, W, 'PHIẾU MƯỢN CHƯA TRẢ XONG', 'Tính đến ' + X.now, { xSplit:0 });
+  const n = bcSetup(X, ws, W, 'PHIẾU MƯỢN CHƯA TRẢ XONG', E ? 'Đang mở tại ngày ' + fmtE(new Date(E)) + ' (cuối kỳ báo cáo)' : 'Tính đến ' + X.now, { xSplit:0 });
   bcHead(ws, [['STT', 1], ['Ngày lập', 1], ['Loại', 1], ['Hàng', 1], ['Tên vật tư / máy', 1], ['ĐVT', 1], ['Số lượng', 1], ['Còn phải trả', 1], ['Người / đơn vị', 1], ['Số phiếu mượn', 1], ['Hạn trả', 1], ['Điện thoại', 1]],
     ['A', 'B', 'C', 'D', 'E', 'F', '1', '2', 'G', 'H', 'I', 'K']);
   let r = 10;
   L.forEach((l, i) => {
-    const od = loanOverdue(l);
-    bcPut(ws, r, [i + 1, bcXD(parseVN(l.datetime)), l.kind === 'cho' ? 'Cho mượn' : 'Đi mượn', l.itemType === 'tb' ? 'Máy' : 'Vật tư', l.itemName, l.unit, +l.qty || 0, loanRemain(l), l.party,
+    const od = odAt(l);
+    bcPut(ws, r, [i + 1, bcXD(parseVN(l.datetime)), l.kind === 'cho' ? 'Cho mượn' : 'Đi mượn', l.itemType === 'tb' ? 'Máy' : 'Vật tư', l.itemName, l.unit, +l.qty || 0, remainAt(l), l.party,
       String(l.id), l.dueDate ? fmtDue(l.dueDate) + (od > 0 ? ` (quá ${od} ngày)` : '') : '', l.phone || ''], ['c', 'd', 'c', 'c', 'l', 'c', 'n', 'n', 'l', 'c', 'c', 'c'], bcH([[l.itemName, 30], [l.party, 24], [String(l.id), 17], [od > 0 ? fmtDue(l.dueDate) + ' (quá 99 ngày)' : '', 20]]));
     if (od > 0) { ws.getCell(r, 11).font = bcF(10.5, true, false, BC.RED); for (let c = 1; c <= n; c++) ws.getCell(r, c).fill = bcFill('FDF0EA'); }
     r++;
   });
-  bcTotal(ws, r, n, `Cộng: ${L.length} phiếu đang mở · ${L.filter(l => loanOverdue(l) > 0).length} phiếu quá hạn`, n, {});
+  bcTotal(ws, r, n, `Cộng: ${L.length} phiếu đang mở · ${L.filter(l => odAt(l) > 0).length} phiếu quá hạn`, n, {});
   r = bcNotes(ws, r + 2, n, ['Dòng tô đỏ: quá hạn trả. Đối chiếu với dự án / đơn vị bên kia trước khi chốt sổ.']);
   bcSign(X, ws, r, n, ['NGƯỜI LẬP BIỂU', 'THỦ KHO', 'CHỈ HUY TRƯỞNG']);
   return { name:'Phiếu mượn chưa trả', ws, n:L.length };
@@ -13794,7 +13852,9 @@ async function bcBuild() {
   try { BC_WB = wb; await _bcOldNxt(); } finally { BC_WB = null; }
   wb.worksheets.filter(w => !mine.has(w.id)).forEach(w => { if (!KEEP.includes(w.name)) wb.removeWorksheet(w.id); });
   const apx = []; if (LO) apx.push(LO.name);
-  wb.worksheets.filter(w => !mine.has(w.id)).forEach(w => { if (w.name === 'Đang hỏng') w.name = 'Hàng hư hỏng'; bcRestyle(X, w); apx.push(w.name); });
+  wb.worksheets.filter(w => !mine.has(w.id)).forEach(w => { if (w.name === 'Đang hỏng') w.name = 'Hàng hư hỏng'; bcRestyle(X, w); apx.push(w.name);
+    if ((R.from || R.to) && ['Hàng hư hỏng', 'Đối chiếu P.QLTB', 'Sửa chữa'].includes(w.name)) {          // v5.56.9: các sheet này không theo kỳ
+      const rr = w.rowCount + 2; Object.assign(w.getCell(rr, 1), { value:`Lưu ý: số liệu sheet này tính đến lúc xuất file (${X.now}), không theo kỳ báo cáo đã chọn.`, font:bcF(10, false, true, BC.RED) }); } });
   bcOverview(X, LN, LX, FU, NX, LO, apx);
   // thứ tự: Tổng quan · Tổng hợp NXT · Sổ nhập · Sổ xuất · Nhiên liệu · phụ lục
   const order = ['Tổng quan', 'Tổng hợp NXT', 'Sổ nhập kho', 'Sổ xuất kho', 'Nhiên liệu', ...apx];
