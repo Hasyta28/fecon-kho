@@ -1894,7 +1894,7 @@ body.pg-printing #pg-print{display:block;position:fixed;inset:0;z-index:9000;bac
 // ============================================================
 // CONFIG
 // ============================================================
-const APP_VERSION = '5.56.7';
+const APP_VERSION = '5.56.8';
 const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbw6Rmi80I7RI3ij2U7RdRF5pYuQTnPrwEmGmUZS5xpxzLwwVynfoFUujZe1lm6HS1ymxw/exec';
 // ============================================================
 
@@ -5432,6 +5432,7 @@ function openLoanReturn() {
   document.getElementById('lr-qty-label').textContent = `Số lượng ${cho ? 'nhận trả' : 'trả lại'} lần này (${l.unit})`;
   document.getElementById('lr-qty').value = tb ? '' : loanRemain(l);
   document.getElementById('lr-note').value = '';
+  lnDtField('lr-note', 'lr-dt', cho ? 'Ngày giờ nhận trả' : 'Ngày giờ trả lại');
   document.getElementById('lr-ok').textContent = tb ? (cho ? 'Xác nhận đã nhận máy' : 'Xác nhận đã trả máy') : 'Xác nhận';
   closeModal('modal-loan');
   openModal('modal-loan-ret');
@@ -5445,7 +5446,9 @@ async function saveLoanReturn() {
     if (qty > remain + 1e-9) { toast(`⚠️ Chỉ còn ${fmtNum(remain)} ${l.unit} chưa trả`); return; }
     if (l.kind === 'di') { const it = db.items.find(i => i.id === l.itemId); if (it && qty > it.stock + 1e-9) { toast(`❌ Tồn trong kho không đủ để trả lại — còn ${fmtNum(it.stock)} ${l.unit}`); return; } }
   }
-  const data = {loanId:l.id, id:newId(), qty, note:document.getElementById('lr-note').value.trim(), datetime:nowStr()};
+  const at = lnAt('lr-dt'); if (at === null) return;
+  if (at && parseVN(at) < parseVN(l.datetime) - 60e3) { toast('⚠️ Ngày trả sớm hơn ngày mượn (' + l.datetime + ')'); return; }
+  const data = {loanId:l.id, id:newId(), qty, note:document.getElementById('lr-note').value.trim(), datetime:at || nowStr(), at:at || ''};
   closeModal('modal-loan-ret');
   const ok = await pushLoan('returnLoan', data);
   if (ok === 'rejected') return;
@@ -5465,6 +5468,7 @@ function openLoanClose() {
         + (cho ? `<b>phiếu xuất</b> cho ${escHtml(l.party)} (coi như đã dùng / mất). Tồn kho không đổi.`
                : `<b>phiếu nhập</b> từ ${escHtml(l.party)} (coi như đã mua / giữ lại). Tồn kho không đổi.`));
   document.getElementById('lc-reason').value = '';
+  lnDtField('lc-reason', 'lc-dt', 'Ngày giờ đóng phiếu');
   closeModal('modal-loan');
   openModal('modal-loan-close');
 }
@@ -5474,7 +5478,8 @@ async function saveLoanClose() {
   if (reason.length < 5) { toast('⚠️ Ghi rõ lý do (ít nhất 5 ký tự)'); return; }
   let id2 = newId(); const id = newId(); if (id2 === id) id2 = id + 1;
   closeModal('modal-loan-close');
-  const ok = await pushLoan('closeLoan', {loanId:l.id, id, id2, reason, datetime:nowStr()});
+  const at = lnAt('lc-dt'); if (at === null) return;
+  const ok = await pushLoan('closeLoan', {loanId:l.id, id, id2, reason, datetime:at || nowStr(), at:at || ''});
   if (ok === 'rejected') return;
   toast('🔒 Đã đóng phiếu mượn');
   refreshLoanViews();
@@ -5484,6 +5489,19 @@ function refreshLoanViews() {
   if (document.getElementById('dp-loans').classList.contains('show')) renderLoans();
   if (document.getElementById('dp-device').classList.contains('show') && currentDeviceId) renderDeviceDetail(currentDeviceId);
   if (['home', 'ton'].includes(curTab)) goTab(curTab);
+}
+
+// v5.56.8: ô ngày giờ ghi trên phiếu mượn / trả / đóng (không giới hạn lùi, không cho tương lai)
+function lnDtField(afterId, id, label, val) {
+  document.getElementById(id)?.closest('.fg')?.remove();
+  document.getElementById(afterId).closest('.fg').insertAdjacentHTML('beforebegin', `<div class="fg"><label>${label} ghi trên phiếu</label><input type="datetime-local" id="${id}" max="${pfIso(new Date())}" value="${val || pfIso(new Date())}"></div>`);
+}
+function lnAt(id) {
+  const el = document.getElementById(id); if (!el || !el.value) return '';
+  const t = new Date(el.value).getTime();
+  if (t > Date.now() + 10 * 60e3) { toast('⚠️ Ngày giờ ở tương lai'); return null; }
+  if (Math.abs(t - Date.now()) < 3 * 60e3) return '';                    // để mặc định = bây giờ (máy chủ ghi giờ thật)
+  return pfAtTxt(el.value);
 }
 
 // ---- Lập phiếu mượn ----
@@ -5533,6 +5551,7 @@ function openLoanForm() {
         <input type="date" id="fl-due">
         <div class="ln-due-chips"><button type="button" onclick="setLoanDue(1)">Ngày mai</button><button type="button" onclick="setLoanDue(3)">3 ngày</button><button type="button" onclick="setLoanDue(7)">1 tuần</button><button type="button" onclick="setLoanDue(30)">1 tháng</button><button type="button" onclick="setLoanDue(0)">Không hạn</button></div>
       </div>
+<div class="fg"><label>Ngày giờ mượn ghi trên phiếu</label><input type="datetime-local" id="fl-dt" max="${pfIso(new Date())}" value="${pfIso(new Date())}"></div>
       <div class="fg"><label>Ghi chú</label><textarea id="fl-note" rows="2" placeholder="VD: mượn hàn cọc khu B, tình trạng còn tốt"></textarea></div>
       ${photoFieldHtml('fl')}
       <button class="btn-full btn-orange" id="fl-save" onclick="doLoan()">Lưu phiếu</button>
@@ -5571,7 +5590,8 @@ async function doLoan() {
   const val = id => document.getElementById(id).value.trim();
   const party = val('fl-party');
   if (party.length < 2) { toast(loanKind === 'cho' ? '⚠️ Ghi rõ người / đơn vị mượn' : '⚠️ Ghi rõ mượn của ai'); document.getElementById('fl-party').focus(); return; }
-  const data = {id:newId(), kind:loanKind, itemType:loanType, party, phone:val('fl-phone'), dueDate:val('fl-due'), note:val('fl-note'), project:curProj, datetime:nowStr()};
+  const at = lnAt('fl-dt'); if (at === null) return;
+  const data = {id:newId(), kind:loanKind, itemType:loanType, party, phone:val('fl-phone'), dueDate:val('fl-due'), note:val('fl-note'), project:curProj, datetime:at || nowStr(), at:at || ''};
   if (data.dueDate && data.dueDate < isoDay(new Date())) { toast('⚠️ Hạn trả đang ở ngày đã qua'); return; }
   let newItem = null;
   if (loanType === 'vt') {
@@ -5799,6 +5819,11 @@ function openEditLoan() {
   document.getElementById('el-phone').value = l.phone || '';
   document.getElementById('el-due').value = l.dueDate || '';
   document.getElementById('el-note').value = l.note || '';
+  lnDtField('el-note', 'el-dt', 'Ngày giờ mượn', vnToLocal(l.datetime));
+  document.getElementById('el-hist')?.remove();
+  const hs = (l.history || []).filter(h => h.t === 'tra' || h.t === 'dong');
+  if (hs.length) document.getElementById('el-note').closest('.fg').insertAdjacentHTML('afterend', `<div class="fg" id="el-hist"><label>Ngày giờ từng lần ${l.kind === 'cho' ? 'nhận trả' : 'trả lại'}</label>
+    ${hs.map(h => `<div style="display:flex;gap:8px;align-items:center;margin-top:6px"><span style="flex:0 0 96px;font-size:13px;color:var(--text2)">${h.t === 'dong' ? 'Đóng phiếu' : 'Trả ' + fmtNum(h.q)}</span><input type="datetime-local" data-hid="${escHtml(String(h.id))}" value="${vnToLocal(h.at)}" max="${pfIso(new Date())}" style="flex:1"></div>`).join('')}</div>`);
   closeModal('modal-loan');
   openModal('modal-edit-loan');
 }
@@ -5808,10 +5833,18 @@ async function saveEditLoan() {
   if (party.length < 2) { toast('⚠️ Ghi rõ người / đơn vị'); return; }
   const data = {id:l.id, party, phone:document.getElementById('el-phone').value.trim(), dueDate:document.getElementById('el-due').value,
     note:document.getElementById('el-note').value.trim()};
+  const dv = localToVN(document.getElementById('el-dt')?.value || '');               // v5.56.8: ngày mượn / ngày trả
+  if (dv && dv !== l.datetime) { if (parseVN(dv) > Date.now() + 6e5) { toast('⚠️ Ngày giờ ở tương lai'); return; } data.datetime = dv; }
+  const hist = [...document.querySelectorAll('#el-hist input[data-hid]')].map(el => ({id:el.dataset.hid, at:localToVN(el.value)}))
+    .filter(x => { const h = l.history.find(h => String(h.id) === x.id); return x.at && h && x.at !== h.at; });
+  if (hist.length) data.hist = hist;
+  const t0 = parseVN(data.datetime || l.datetime);
+  if ((l.history || []).some(h => parseVN((hist.find(x => x.id === String(h.id)) || {}).at || h.at) < t0 - 60e3)) { toast('⚠️ Có lần trả sớm hơn ngày mượn'); return; }
   closeModal('modal-edit-loan');
   const ok = await pushAdmin('editLoan', data);
   if (ok === 'rejected') return;
   toast('✅ Đã sửa phiếu mượn');
+  if (data.datetime || data.hist) { try { await syncAll(true); } catch (e) {} }
   openLoan(l.id);
 }
 async function deleteLoanAdmin() {
