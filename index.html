@@ -1035,7 +1035,7 @@ button .pi,.btn .pi,a .pi,.chip .pi,.tag .pi,.badge .pi,.yn .pi,.bnav .pi,.bnav-
   <div class="detail-header">
     <button class="back-btn" onclick="closeDp('dp-vattu')">‹</button>
     <div class="detail-title" style="white-space:nowrap;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis">📦 Vật tư</div>
-    <button class="need-tk" onclick="openCopyItems()" title="Chép vật tư từ dự án khác" style="background:#fff;color:var(--primary);border:1.5px solid var(--primary);border-radius:8px;padding:6px 9px;font-size:13px;font-weight:700;cursor:pointer;margin-right:6px;white-space:nowrap;flex-shrink:0">📋 Chép</button>
+    <button class="need-admin" onclick="openCopyItems()" title="Chép vật tư từ dự án khác (Admin)" style="background:#fff;color:var(--primary);border:1.5px solid var(--primary);border-radius:8px;padding:6px 9px;font-size:13px;font-weight:700;cursor:pointer;margin-right:6px;white-space:nowrap;flex-shrink:0">📋 Chép</button>
     <button class="need-tk" onclick="openAddVatTu()" style="background:var(--orange);color:#fff;border:none;border-radius:8px;padding:6px 12px;font-size:13px;font-weight:700;cursor:pointer;white-space:nowrap;flex-shrink:0">+ Thêm</button>
   </div>
   <div class="detail-body" id="dp-vattu-body"></div>
@@ -1432,7 +1432,7 @@ body.pg-printing #pg-print{display:block;position:fixed;inset:0;z-index:9000;bac
     <div class="sidebar-item" data-p="v_home" onclick="openDpSb('dp-devices-list')"><span class="sidebar-item-ico">🏗️</span>Máy móc & Thiết bị</div>
     <div class="sidebar-item" data-p="v_home" onclick="openDpSb('dp-notes')"><span class="sidebar-item-ico">📝</span>Ghi chú trong ngày</div>
     <div class="sidebar-item" data-p="v_nhap|v_xuat" onclick="openDpSb('dp-dc-hist')"><span class="sidebar-item-ico">⚖️</span>Điều chỉnh & kiểm kê</div>
-    <div class="sidebar-item" data-p="k_copy" onclick="closeSidebar();setTimeout(openCopyItems,300)"><span class="sidebar-item-ico">📋</span>Chép vật tư từ dự án khác</div>
+    <div class="sidebar-item need-admin" onclick="closeSidebar();setTimeout(openCopyItems,300)"><span class="sidebar-item-ico">📋</span>Chép vật tư từ dự án khác</div>
     <div class="sidebar-item" data-p="k_kk" onclick="closeSidebar();setTimeout(openKK,300)"><span class="sidebar-item-ico">🔢</span>Đợt kiểm kê</div>
     <div class="sidebar-item need-cost" onclick="openDpSb('dp-coc')"><span class="sidebar-item-ico">🔗</span>Đối chiếu cóc nối</div>
     <div class="sidebar-item" data-p="k_dm" onclick="closeSidebar();setTimeout(openQlMap,300)"><span class="sidebar-item-ico">🔗</span>Gắn mã P.QLTB</div>
@@ -1896,7 +1896,7 @@ body.pg-printing #pg-print{display:block;position:fixed;inset:0;z-index:9000;bac
 // ============================================================
 // CONFIG
 // ============================================================
-const APP_VERSION = '5.56.10';
+const APP_VERSION = '5.56.11';
 const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbw6Rmi80I7RI3ij2U7RdRF5pYuQTnPrwEmGmUZS5xpxzLwwVynfoFUujZe1lm6HS1ymxw/exec';
 // ============================================================
 
@@ -3277,7 +3277,7 @@ function renderNhap(c) {
       <button class="btn-full btn-green" id="fn-save" onclick="doNhap()">✅ Xác nhận nhập kho</button>
     </div>
   </div>`;
-  fnQL = null; fnDev = null; fnMode = ''; fnMore = {};
+  fnQL = null; fnDev = null; fnHint = null; fnMode = ''; fnMore = {};
   fillNhapItems();
   renderFormPhotos('fn');
   if (!qlOn()) qltbLoad();
@@ -3398,10 +3398,12 @@ async function doNhap() {
   let qlMa = '', qlOut = '';
   if (!item) {                                               // v5.29: vật tư mới — theo danh mục P.QLTB hay ngoài danh mục
     if (fnQL && normVN(fnQL.name) === normVN(name)) qlMa = fnQL.ma;
+    else if (fnHint && normVN(fnHint.n) === normVN(name) && fnHint.nd !== '' && fnHint.nd !== undefined) qlOut = fnHint.nd;   // v5.56.11: tên từ dự án khác → giữ cờ ngoài DM
     else if (qlOn()) { const a = await askOutDM(name, false); if (a === 'fix') { document.getElementById('fn-item-txt').focus(); return; } qlOut = a === 'out' ? 1 : 2; }
   }
   if (!item) {
     item = {id:newId(), name, cat:document.getElementById('fn-cat').value, unit:document.getElementById('fn-unit-sel').value, stock:0, minStock:0, project:curProj, maQL:qlMa, ngoaiDM:qlOut};
+    if (fnHint && normVN(fnHint.n) === normVN(name)) Object.assign(item, {capThang:+fnHint.cap || 0, canMay:+fnHint.may || 0}, fnHint.td === '' || fnHint.td === undefined ? {} : {theoDoi:+fnHint.td});   // v5.56.11
     db.items.push(item);
     addLog('Thêm vật tư', name);
     push('upsert', {table:'items', rows:[item]});      // gửi nền, giữ đúng thứ tự trong hàng chờ
@@ -5688,7 +5690,7 @@ function vnToLocal(s) {
 }
 function withAdminTime(txn, inputId) {
   const el = document.getElementById(inputId);
-  const v = (can('admin') || hp('k_gio')) && el ? localToVN(el.value) : '';   // v5.55.1: quyền k_gio
+  const v = (can('admin') || hp('k_gio')) && el ? localToVN(gioVal(el)) : '';   // v5.55.1: quyền k_gio · v5.56.11: ô hiện sẵn giờ, chưa chỉnh = giờ bấm Lưu
   if (v) { txn.txTime = v; txn.datetime = v; }
 }
 const txnEffect = t => ctFx(t)[0];                         // v5.35: phần trong kho
@@ -7089,7 +7091,7 @@ function renderReqNew() {
       }
     }
   } else {
-    const it = db.items.find(i => i.id === +rf.itemId && +i.capThang !== 1);
+    const it = db.items.find(i => i.id === +rf.itemId && +i.capThang !== 1) || rfHintIt();   // v5.56.11: tên từ dự án khác
     html += `<div class="form-section">
       <div class="fg"><label>Vật tư</label>
         <div class="combo">
@@ -7171,14 +7173,15 @@ async function submitReq() {
       d.bs = {size:rf.bsSize, qty:+rf.bsQty, reason:rf.bsReason, note:rf.bsNote};
     } else if (done) { toast('⚠️ Cấu kiện đã có phiếu — bấm "Xin bổ sung" nếu cần thêm'); return; }
   } else {
-    const it = db.items.find(i => i.id === +rf.itemId);
+    const it = db.items.find(i => i.id === +rf.itemId) || rfHintIt();
     if (!it) { toast('⚠️ Chọn vật tư trong danh sách gợi ý'); return; }
     if (!(+rf.qty > 0)) { toast('⚠️ Nhập số lượng'); return; }
     if (+it.canMay === 1) {
       if (!rf.may) { toast('⚠️ Chọn máy sử dụng'); return; }
       if (rf.may === 'chung' && !rf.mayNote.trim()) { toast('⚠️ Ghi lý do dùng chung'); return; }
     }
-    Object.assign(d, {itemId:it.id, qty:+rf.qty, may:rf.may, mayNote:rf.mayNote});
+    Object.assign(d, {itemId:it._hint ? '' : it.id, qty:+rf.qty, may:rf.may, mayNote:rf.mayNote});
+    if (it._hint) d.newItem = {name:it.name, cat:it.cat, unit:it.unit, maQL:it.maQL || '', ngoaiDM:it.ngoaiDM, canMay:+it.canMay || 0};   // v5.56.11: máy chủ thêm vật tư vào kho dự án
   }
   const r = await reqAction('createReq', d, '✅ Đã gửi phiếu — bấm "Gửi Zalo" nếu cần báo thêm qua Zalo');
   if (r) { closeDp('dp-req-new'); reqListMode = 'open'; goTab('pyc'); if (r.req) openReq(r.req.id); }
@@ -8040,6 +8043,7 @@ async function buildPycWorkbook() {
 // ===== v5.18.0: CHÉP VẬT TƯ TỪ DỰ ÁN KHÁC =====
 let cpSrc = '', cpList = [], cpProjects = [], cpSel = {};
 async function openCopyItems() {
+  if (!can('admin')) return;                                    // v5.56.11: chỉ Admin
   if (!navigator.onLine) { toast('📴 Cần có mạng để chép vật tư'); return; }
   cpSel = {}; cpList = [];
   openDp('dp-copy', renderCopy);
@@ -8892,8 +8896,8 @@ function qlFind(q, kind, limit) {
 const qlHire = x => /thue/.test(vnNorm((x && x.soHuu) || ''));
 const qlOwnTxt = x => !x || !x.soHuu ? '' : x.soHuu + (qlHire(x) && (x.ncc || x.donVi) ? ' · ' + (x.ncc || x.donVi) : '');
 const qlOwnTag = x => { const t = qlOwnTxt(x); return t ? `<span class="ql-own${qlHire(x) ? ' hire' : ''}">🏷 ${escHtml(t)}</span>` : ''; };
-const qlDevHere = ma => db.devices.find(d => d.maQL === ma && devActive(d));
-const qlDevLeft = ma => db.devices.find(d => d.maQL === ma && !devActive(d));
+const qlDevHere = ma => ma ? db.devices.find(d => d.maQL === ma && devActive(d)) : undefined;      // v5.56.11: máy không mã (gợi ý từ dự án khác) không khớp nhầm
+const qlDevLeft = ma => ma ? db.devices.find(d => d.maQL === ma && !devActive(d)) : undefined;
 const qlItemHere = ma => db.items.find(i => i.maQL === ma);
 const qlBadge = o => o && o.maQL ? `<span class="ql-badge ok" title="Mã P.QLTB">📚 ${escHtml(o.maQL)}</span>` : (+o?.ngoaiDM === 1 ? '<span class="ql-badge out">Ngoài danh mục P.QLTB</span>' : '');
 
@@ -8918,7 +8922,7 @@ function askOutDM(name, isDev) {
 }
 
 // ---- Phiếu nhập: gợi ý danh mục P.QLTB + Máy vào công trường ----
-let fnQL = null, fnDev = null;                    // fnQL: loại VTP đã chọn; fnDev: máy đã chọn (phiếu chuyển sang "Máy vào công trường")
+let fnQL = null, fnDev = null, fnHint = null;                    // fnQL: loại VTP đã chọn; fnDev: máy đã chọn (phiếu chuyển sang "Máy vào công trường")
 function qlComboHtml(q) {
   if (!qlOn() || !q) return '';
   const list = qlFind(q, '', 40).filter(x => x.kind === 'may' ? !qlDevHere(x.ma) : !qlItemHere(x.ma)).slice(0, 25);
@@ -8989,7 +8993,7 @@ async function doNhapMay() {
   const note = document.getElementById('fn-note').value.trim(), type = document.getElementById('fn-dv-type').value, meter = mv === '' ? '' : +mv;
   const donVi = type === 'hire' ? document.getElementById('fn-dv-dvi').value.trim() : '';
   if (type === 'hire' && !donVi) { toast('⚠️ Máy thuê ngoài: ghi đơn vị cho thuê'); return; }
-  const left = qlDevLeft(x.ma);
+  const left = x.ma ? qlDevLeft(x.ma) : db.devices.find(d => !devActive(d) && vnNorm(d.name).replace(/\s+/g, ' ').trim() === vnNorm(x.name).replace(/\s+/g, ' ').trim());   // v5.56.11
   if (left) {                                                   // máy quay lại dự án → Mở lại với ngày + số đồng hồ vào mới
     if (!navigator.onLine) { toast('📴 Cần có mạng để ghi máy vào lại'); return; }
     showLoader('Đang lưu...'); const r = await api('closeDevice', {id:left.id, reopen:1, inDate:date, inMeter:meter, note:note || 'Máy vào lại công trường'}); hideLoader();
@@ -9003,8 +9007,8 @@ async function doNhapMay() {
   const nk = vnNorm(x.name).replace(/\s+/g, ' ').trim();
   if (db.devices.some(d => devActive(d) && vnNorm(d.name).replace(/\s+/g, ' ').trim() === nk)) { toast(`⚠️ Máy "${x.name}" đã có trong dự án — dùng Gắn mã P.QLTB cho máy đó`); return; }
   const f = DEV_FILE.find(a => a[3] === x.ma);
-  const device = {id:newId(), name:x.name, cat:x.cat || 'khac', type, fuelRate:devCatOf(x.cat).fuel || 20, plate:x.plate || '', note: 'Mã TS: ' + x.ma + (note ? '\n' + note : ''),
-    project:curProj, meterUnit:unit, inDate:date, inMeter:meter, outDate:'', outMeter:'', addedBy:meRec(), addedAt:nowStr(), maQL:x.ma, ngoaiDM:'', donVi};
+  const device = {id:newId(), name:x.name, cat:x.cat || 'khac', type, fuelRate:+x.fuel || devCatOf(x.cat).fuel || 20, plate:x.plate || '', note: (x.ma ? 'Mã TS: ' + x.ma : '') + (x.ma && note ? '\n' : '') + note,
+    project:curProj, meterUnit:unit, inDate:date, inMeter:meter, outDate:'', outMeter:'', addedBy:meRec(), addedAt:nowStr(), maQL:x.ma || '', ngoaiDM:x.ma ? '' : (x.nd === undefined ? '' : x.nd), donVi};
   db.devices.push(device);
   push('upsert', {table:'devices', rows:[device]});
   toast('🏗 Đã ghi máy vào công trường: ' + x.name);
@@ -12563,7 +12567,7 @@ function p9Render() {
     return `<div class="p9-pj${cl ? ' cl' : ''}"><div class="p9-h"><b>${escHtml(p.name)}</b>${tag}${p.name === curProj ? '<span class="p9-cur">đang mở</span>' : ''}</div>
       <div class="p9-st">${st}${cl ? ' · chỉ xem' : ''}</div>
       ${P9.list.some(x => 'siCand' in x) ? `<div class="p9-si">Đứng tên thay Admin: <b>${p.standIn ? escHtml(p.standIn.name) + (p.standIn.auto ? ' <small>(tự chọn)</small>' : '') : '<span style="color:#C92A2A">chưa chọn</span>'}</b> <a onclick="p9Si(${i})">Đổi</a>${p.standIn && !empty ? ` · <a onclick="p9SiFix(${i})">Đổi tên Admin trong dữ liệu cũ</a>` : ''}</div>` : ''}
-      ${!empty && P9.list.some(x => 'siCand' in x) ? `<div class="p9-si"><a onclick="p9Tc(${i})">Gộp phiếu nhập thẳng CT cũ</a> · <a onclick="p9Sc(${i})">Dọn khai số ở CT trùng</a> · <a onclick="p9Dl(${i})">Dọn máy vào trùng</a></div>` : ''}
+      ${!empty && P9.list.some(x => 'siCand' in x) ? `<div class="p9-si"><a onclick="p9Tc(${i})">Gộp phiếu nhập thẳng CT cũ</a> · <a onclick="p9Sc(${i})">Dọn khai số ở CT trùng</a> · <a onclick="p9Dl(${i})">Dọn máy vào trùng</a> · <a onclick="p9Pu(${i})">Xoá vật tư chưa dùng</a></div>` : ''}
       <div class="p9-bt"><button type="button" onclick="p9Rename(${i})">✏️ Đổi tên</button>
         ${cl ? `<button type="button" onclick="p9Reopen(${i})">↩ Mở lại</button>` : `<button type="button" onclick="p9Close(${i})">📦 Đóng</button>`}
         <button type="button" class="${empty ? 'red' : 'off'}" ${empty ? '' : 'disabled'} onclick="p9Del(${i})">🗑 Xoá</button></div></div>`;
@@ -14352,7 +14356,7 @@ function gioCheck(vn, items) {
 // phiếu nhập / phiếu xuất: kiểm giờ trước khi lưu
 function gioWrap(fn, timeId, itemOf) {
   return async function () {
-    const el = document.getElementById(timeId), v = canGio() && el ? localToVN(el.value) : '';
+    const el = document.getElementById(timeId), v = canGio() && el ? localToVN(gioVal(el)) : '';
     let ok = true;
     if (v) { ok = gioCheck(v, [itemOf()]); if (!ok) return; }
     const r = await fn.apply(this, arguments);
@@ -14362,6 +14366,186 @@ function gioWrap(fn, timeId, itemOf) {
 }
 doNhap = gioWrap(doNhap, 'fn-time', () => db.items.find(i => i.id === +document.getElementById('fn-item')?.value) || db.items.find(i => normVN(i.name) === normVN(document.getElementById('fn-item-txt')?.value || '')));
 doXuat = gioWrap(doXuat, 'fx-time', () => db.items.find(i => i.id === +document.getElementById('fx-item')?.value));
+
+// =====================================================================
+// v5.56.11 — GỢI Ý TÊN VẬT TƯ / MÁY TỪ MỌI DỰ ÁN · Ô NGÀY GIỜ PHIẾU HIỆN SẴN · ADMIN XOÁ VẬT TƯ CHƯA DÙNG
+// Máy chủ gửi danh sách 1 lần (hints), điện thoại lưu lại, chỉ tải lại khi có tên mới (hintRev).
+// =====================================================================
+const LS_HINT = 'fecon_hints_v1';
+let HINTS = null;
+try { HINTS = JSON.parse(localStorage.getItem(LS_HINT) || 'null'); } catch (e) {}
+const hintN = s => normVN(String(s || '')).replace(/\s+/g, ' ').trim();
+function hintIdx() {
+  if (!HINTS) return null;
+  if (!HINTS._k) { (HINTS.items || []).forEach(x => x.k = hintN(x.n)); (HINTS.devs || []).forEach(x => x.k = hintN(x.n)); HINTS._k = 1; }
+  return HINTS;
+}
+{ const _h = applyServer; applyServer = function (r) {
+  _h.apply(this, arguments);
+  try { if (r && r.hints) { HINTS = { rev:r.hintRev || '', items:r.hints.items || [], devs:r.hints.devs || [] }; localStorage.setItem(LS_HINT, JSON.stringify(HINTS)); } } catch (e) {}
+}; }
+{ const _i = syncInc; syncInc = function () { const inc = _i.apply(this, arguments); if (HINTS && HINTS.rev) inc.hintRev = HINTS.rev; return inc; }; }
+let qlNameSet = null, qlNameSrc = null;
+function qlNames() { const L = qlOn() ? qlList() : []; if (qlNameSrc !== L) { qlNameSet = new Set(L.map(x => hintN(x.name))); qlNameSrc = L; } return qlNameSet; }
+// tên chưa có ở dự án này · không trùng danh mục P.QLTB / tên gợi ý Admin
+function hintFind(q, o = {}) {
+  const H = hintIdx(); if (!H) return [];
+  const toks = hintN(q).split(' ').filter(Boolean), hit = k => toks.every(t => k.includes(t));
+  const have = new Set(db.items.map(i => hintN(i.name))), ql = qlNames(), ds = new Set((db.thangDS || []).map(hintN));
+  let out = (H.items || []).filter(x => !have.has(x.k) && !ql.has(x.k) && !ds.has(x.k) && (!o.noCap || +x.cap !== 1) && (!toks.length || hit(x.k))).map(x => Object.assign({ kind:'vt' }, x));
+  if (o.devs) {
+    const hd = new Set(db.devices.filter(devActive).map(d => hintN(d.name)));
+    out = out.concat((H.devs || []).filter(x => !hd.has(x.k) && !ql.has(x.k) && (!toks.length || hit(x.k))).map(x => Object.assign({ kind:'may' }, x)));
+  }
+  const w = x => toks.filter(t => (' ' + x.k).includes(' ' + t)).length;           // chữ gõ trùng đầu từ → lên trước
+  return out.map((x, i) => [x, w(x), i]).sort((a, b) => b[1] - a[1] || b[2] - a[2]).map(z => z[0]);   // cùng điểm: tên dùng gần nhất lên trước
+}
+const HROWS = {};
+function hintRowsHtml(p, arr, N, moreKey, moreOn, moreJs) {
+  HROWS[p] = arr;
+  const show = moreOn ? arr : arr.slice(0, N);
+  return `<div class="combo-head">🔁 Tên đã dùng ở dự án khác (${arr.length})</div>` + show.map((x, i) => `<div class="combo-opt hint" onmousedown="event.preventDefault()" onclick="hintPick('${p}',${i})">
+      <span>${x.kind === 'may' ? '🏗 ' : '📦 '}${escHtml(x.n)}</span><small>${x.kind === 'may' ? 'máy' + (x.t === 'hire' ? ' thuê' : '') : escHtml(x.u || '')} · ${escHtml(x.p || '')}</small></div>`).join('')
+    + (arr.length > N && !moreOn ? `<div class="combo-opt combo-more" onmousedown="event.preventDefault()" onclick="${moreJs}">Xem thêm ${fmtNum(arr.length - N)} tên…</div>` : '');
+}
+// Phiếu nhập: thêm nhóm trước "Danh mục P.QLTB"
+{ const _fs = fnSuggestHtml; fnSuggestHtml = function (q, optK) {
+  const h = _fs.apply(this, arguments), arr = q ? hintFind(q, { devs:true }) : [];
+  if (!arr.length) return h;
+  const g = hintRowsHtml('fn', arr, 6, 'hint', fnMore.hint, "fnMore.hint=1;comboInput('fn')"), k = h.indexOf('<div class="combo-head">📚');
+  return k < 0 ? h + g : h.slice(0, k) + g + h.slice(k);
+}; }
+// Phiếu đi mượn: gợi ý vật tư mới
+let flHintMore = false;
+{ const _ci = comboInput; comboInput = function (p) {
+  _ci.apply(this, arguments);
+  if (p !== 'fl' || loanKind !== 'di') return;
+  const q = document.getElementById('fl-item-txt').value, arr = q.trim() ? hintFind(q) : [];
+  const lst = document.getElementById('fl-list'); if (!arr.length || !lst) return;
+  const g = hintRowsHtml('fl', arr, 6, '', flHintMore, "flHintMore=true;comboInput('fl')");
+  lst.querySelector('.combo-opt.empty')?.remove();
+  const nw = lst.querySelector('.combo-opt.new');
+  if (nw) nw.insertAdjacentHTML('beforebegin', g); else lst.insertAdjacentHTML('beforeend', g);
+}; }
+function hintUnit(sel, u) { if (!sel || !u) return; if (![...sel.options].some(o => o.value === u)) sel.insertAdjacentHTML('beforeend', `<option>${escHtml(u)}</option>`); sel.value = u; sel.dataset.q8user = 1; }
+function hintPick(p, i) {
+  const x = (HROWS[p] || [])[i]; if (!x) return;
+  if (p === 'rf') { rf.hint = x; rf.itemId = ''; rf.itemQ = x.n; rf.may = ''; rf.mayNote = ''; renderReqNew(); return; }
+  if (p === 'fl') {
+    document.getElementById('fl-item-txt').value = x.n;
+    const cs = document.getElementById('fl-cat'); if (cs && [...cs.options].some(o => o.value === x.c)) cs.value = x.c;
+    comboInput('fl'); comboHide('fl');
+    hintUnit(document.getElementById('fl-unit-sel'), x.u);
+    const h = document.getElementById('fl-hint'); if (h) h.innerHTML = `<span style="color:var(--primary)">🔁 Tên dùng ở ${escHtml(x.p)} · vật tư mới trong kho dự án</span>`;
+    document.getElementById('fl-qty')?.focus(); return;
+  }
+  // phiếu nhập
+  comboHide('fn');
+  if (x.kind === 'may') {
+    const d = { kind:'may', ma:x.ma || '', name:x.n, cat:x.c, plate:x.pl || '', meterUnit:x.mu || 'h', soHuu:x.t === 'hire' ? 'Thuê ngoài' : '', ncc:x.dv || '', donVi:x.dv || '', fuel:x.f, nd:x.nd, _hint:1 };
+    fnHint = null; fnSetDev(d); d.soHuu = ''; fnDevType();
+    const sm = document.querySelector('#fn-dev-card small'); if (sm && !x.ma) sm.textContent = `🔁 Dùng ở ${x.p} · ${devCatOf(x.c).name}${x.pl ? ' · ' + x.pl : ''}`;
+    return;
+  }
+  fnSetDev(null);
+  fnHint = x; fnQL = x.ma ? { ma:x.ma, name:x.n } : null;
+  document.getElementById('fn-item-txt').value = x.n;
+  const cs = document.getElementById('fn-cat'); if (cs && [...cs.options].some(o => o.value === x.c)) { cs.value = x.c; cs.dataset.q8user = 1; }
+  comboInput('fn'); comboHide('fn');
+  if (!document.getElementById('fn-item').value) {
+    hintUnit(document.getElementById('fn-unit-sel'), x.u);
+    document.getElementById('fn-hint').innerHTML = `<span style="color:var(--primary)">🔁 Tên dùng ở ${escHtml(x.p)}${x.ma ? ' · mã ' + escHtml(x.ma) : ''} · vật tư mới trong kho dự án</span>`;
+  }
+  try { q8Fill(); } catch (e) {}
+  document.getElementById('fn-qty')?.focus();
+}
+// Phiếu yêu cầu: vật tư chưa có ở kho dự án → máy chủ thêm vào kho khi gửi phiếu
+function rfHintIt() {
+  const x = rf && rf.hint; if (!x || rf.itemQ !== x.n) return null;
+  return { id:0, _hint:1, name:x.n, cat:x.c, unit:x.u, stock:0, canMay:+x.may || 0, capThang:0, maQL:x.ma || '', ngoaiDM:x.nd, p:x.p };
+}
+{ const _rl = rfItemList; rfItemList = function () {
+  _rl.apply(this, arguments);
+  const el = document.getElementById('rf-ilist'); if (!el || !rf.itemQ || !rf.itemQ.trim()) return;
+  const arr = hintFind(rf.itemQ, { noCap:true }); if (!arr.length) return;
+  el.querySelector('.combo-empty')?.remove();
+  el.insertAdjacentHTML('beforeend', hintRowsHtml('rf', arr, 8, '', false, '').replace(/class="combo-opt hint"/g, 'class="combo-item hint"'));
+  el.style.display = 'block';
+}; }
+{ const _rr = renderReqNew; renderReqNew = function () {
+  const r = _rr.apply(this, arguments);
+  const it = rfHintIt(), h = document.querySelector('#rf-iq')?.closest('.fg')?.querySelector('.combo-hint');
+  if (it && h) h.innerHTML = `✔ Đã chọn: <b>${escHtml(it.name)}</b> <span style="color:var(--primary)">· 🔁 tên dùng ở ${escHtml(it.p)} — chưa có trong kho dự án, gửi phiếu sẽ thêm vào danh mục kho</span>`;
+  return r;
+}; }
+// Thêm máy: chưa tải danh sách máy chủ thì dùng tên máy đã lưu trên điện thoại
+{ const _dc = devCatalog; devCatalog = function () {
+  if (devCatSrv || !HINTS) return _dc.apply(this, arguments);
+  devCatSrv = (HINTS.devs || []).map(x => ({ name:x.n, cat:x.c, meterUnit:x.mu, fuelRate:x.f, plate:x.pl, type:x.t, donVi:x.dv, project:x.p }));
+  try { return _dc.apply(this, arguments); } finally { devCatSrv = null; }
+}; }
+// Phiếu đi mượn máy: gợi ý tên máy
+{ const _of = openLoanForm; openLoanForm = function () {
+  const r = _of.apply(this, arguments);
+  try {
+    if (!document.getElementById('hint-devs')) document.body.insertAdjacentHTML('beforeend', '<datalist id="hint-devs"></datalist>');
+    document.getElementById('hint-devs').innerHTML = ((HINTS && HINTS.devs) || []).map(x => `<option value="${escHtml(x.n)}">`).join('');
+    document.getElementById('fl-devname')?.setAttribute('list', 'hint-devs');
+  } catch (e) {}
+  return r;
+}; }
+
+// ---------- Ô ngày giờ phiếu: ngay dưới Số lượng / Đơn vị, hiện sẵn giờ hiện tại ----------
+function gioVal(el) { return el && el.value && el.value !== el.dataset.auto ? el.value : ''; }
+function gioPlace(p) {
+  const el = document.getElementById(p + '-time'); if (!el) return;
+  const fg = el.closest('.fg'), qty = document.getElementById(p + '-qty'), row = qty && (qty.closest('.fg-row') || qty.closest('.fg'));
+  if (!fg || !row) return;
+  row.after(fg);
+  const lb = fg.querySelector('label'); if (lb) lb.textContent = 'Ngày giờ phiếu';
+  const now = pfIso(new Date()); el.value = now; el.dataset.auto = now; el.max = now;
+  if (!fg.querySelector('.gio-hint')) fg.insertAdjacentHTML('beforeend', `<div class="combo-hint gio-hint"></div>`);
+  const hint = () => { const h = fg.querySelector('.gio-hint'); if (!h) return; const on = !!gioVal(el);
+    h.innerHTML = on ? `Phiếu ghi theo ngày giờ đã chọn · <a href="javascript:void 0" onclick="gioReset('${p}')">↺ Về bây giờ</a>` : 'Chưa chỉnh = ghi đúng giờ bấm Lưu. Bấm vào để chọn ngày giờ khác.'; };
+  el.oninput = el.onchange = hint; hint();
+  if (!document.getElementById(p + '-time-ro')) fg.insertAdjacentHTML('afterend', `<div class="fg no-gio" id="${p}-time-ro"><label>Ngày giờ phiếu</label><div class="gio-ro">Ghi theo giờ bấm Lưu</div></div>`);
+}
+function gioReset(p) { const el = document.getElementById(p + '-time'); if (!el) return; const n = pfIso(new Date()); el.value = n; el.dataset.auto = n; el.oninput && el.oninput(); }
+setInterval(() => { document.querySelectorAll('input[type="datetime-local"][data-auto]').forEach(el => { const n = pfIso(new Date()); el.max = n; if (el.value === el.dataset.auto) { el.value = n; el.dataset.auto = n; } }); }, 30000);
+{ const _rn = renderNhap; renderNhap = function () { const r = _rn.apply(this, arguments); try { gioPlace('fn'); } catch (e) { console.error(e); } return r; }; }
+{ const _rx = renderXuat; renderXuat = function () { const r = _rx.apply(this, arguments); try { gioPlace('fx'); } catch (e) { console.error(e); } return r; }; }
+
+// ---------- Admin: xoá vật tư chưa dùng (VD đã "Chép vật tư" thừa) ----------
+let PUD = null;
+async function p9Pu(i) {
+  const p = P9 && P9.list[i]; if (!p) return;
+  if (!navigator.onLine) { toast('📴 Cần có mạng'); return; }
+  showLoader('Đang kiểm…'); const r = await api('purgeUnused', { project:p.name, dry:1 }, 120000); hideLoader();
+  if (!r || !r.success) { toast('⚠️ ' + ((r && r.error) || 'Không kiểm được') + (/không hợp lệ|quyền/i.test((r && r.error) || '') ? ' — máy chủ chưa lên 5.56.11' : '')); return; }
+  if (!r.list.length) { toast(p.name + ': không có vật tư nào chưa dùng'); return; }
+  PUD = { p:p.name, total:r.total, list:r.list.map(x => Object.assign(x, { on:1 })) };
+  puRender();
+}
+function puRender() {
+  const L = PUD.list, n = L.filter(x => x.on).length;
+  p9Sheet(`<div class="kl-h">Xoá vật tư chưa dùng · ${escHtml(PUD.p)}</div>
+    <div class="p9-tx">${L.length} / ${PUD.total} vật tư <b>tồn 0, chưa có phiếu nhập / xuất / mượn / yêu cầu nào</b> (VD do "Chép vật tư"). Xoá khỏi danh mục kho dự án này — tên vẫn còn trong gợi ý vì các dự án khác đang dùng.</div>
+    <div class="pu-sel"><button type="button" onclick="PUD.list.forEach(x=>x.on=1);puRender()">Chọn tất cả</button><button type="button" onclick="PUD.list.forEach(x=>x.on=0);puRender()">Bỏ chọn</button></div>
+    <div style="max-height:52vh;overflow:auto">${L.map((x, j) => `<label class="dm-mm-r"><input type="checkbox" ${x.on ? 'checked' : ''} onchange="PUD.list[${j}].on=this.checked?1:0;puRender()"><span><b>${escHtml(x.name)}</b><small>${escHtml(catOf(x.cat)?.name || x.cat)} · ${escHtml(x.unit)}</small></span></label>`).join('')}</div>
+    <div class="p9-w" style="margin-top:8px">Máy chủ sao lưu trước khi xoá. Món đã có phiếu luôn được giữ.</div>
+    <div class="p9-bb"><button type="button" class="p9-c" onclick="p9Close0()">Huỷ</button><button type="button" class="p9-ok" id="pu-go" ${n ? '' : 'disabled'}>Xoá ${n} vật tư</button></div>`);
+  $9('pu-go').onclick = async () => {
+    const ids = PUD.list.filter(x => x.on).map(x => x.id);
+    if (!confirm(`Xoá ${ids.length} vật tư chưa dùng khỏi ${PUD.p}?`)) return;
+    showLoader('Đang sao lưu và xoá…'); const r2 = await api('purgeUnused', { project:PUD.p, ids }, 300000); hideLoader();
+    if (!r2 || !r2.success) { toast('⚠️ ' + ((r2 && r2.error) || 'Không xoá được')); return; }
+    p9Close0(); toast(`✅ ${PUD.p}: đã xoá ${r2.removed} vật tư chưa dùng`);
+    if (PUD.p === curProj) { db.txnTotal = 0; await syncAll(true); refreshCurrentView(false); }
+  };
+}
+{ const st = document.createElement('style'); st.textContent = `body.can-gio .no-gio{display:none!important}.gio-ro{padding:11px 12px;border:1.5px solid var(--border);border-radius:10px;background:var(--bg);color:var(--text2);font-size:15px}
+.combo-opt.hint small,.combo-item.hint small{color:var(--primary)}
+.pu-sel{display:flex;gap:8px;margin:8px 0}.pu-sel button{border:1.5px solid var(--border);background:#fff;border-radius:999px;padding:7px 14px;font-size:14px;font-weight:700;color:var(--primary);cursor:pointer}`; document.head.appendChild(st); }
 // v5.55.2: phiếu chọn ngày giờ là phiếu bình thường — không nhãn riêng; chi tiết bỏ dòng "Lập trên máy lúc" (giờ lập thật chỉ lưu ở Sheet)
 { const _gbOpen = openTxn; openTxn = function (id) {
   const r = _gbOpen.apply(this, arguments);
