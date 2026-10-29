@@ -301,6 +301,7 @@ button{cursor:pointer;-webkit-tap-highlight-color:transparent}
 .signs{font-size:12.5px;color:var(--text2)}
 .signs div{padding:6px 0;border-bottom:1px dashed var(--border);display:flex;gap:8px}
 .signs div:last-child{border-bottom:none}
+.selftag{display:inline-block;margin-left:4px;padding:0 6px;border-radius:8px;background:#FFF1D6;color:#8A5A00;font-size:11px;font-weight:600}
 .signs b{color:var(--text)}
 .demo{background:#FFF1E8;color:#9A3412;font-size:12.5px;font-weight:800;padding:6px 14px;text-align:center;border-bottom:1px solid #FCD9C2}
 .pill{display:inline-block;padding:2px 8px;border-radius:7px;font-size:11.5px;font-weight:800}
@@ -466,9 +467,9 @@ button .pi,.btn .pi,a .pi,.chip .pi,.tag .pi,.badge .pi,.yn .pi,.bnav .pi,.bnav-
 <div id="app"></div>
 <script>
 // FECON South · THI CÔNG 1.4.3 — chạy cùng app Kho (đăng nhập ở index.html, dùng chung máy chủ Apps Script)
-const KHO_VERSION = '5.56.11';
+const KHO_VERSION = '5.56.12';
 // ===== FECON Thi công 1.0 — lõi: máy chủ, lưu trên máy, hàng đợi gửi, điều hướng =====
-const TC_APP_VERSION = '1.12.1';
+const TC_APP_VERSION = '1.13.0';   // 1.13.0 (FECON 5.56.12): CHT/CHP "Gửi & xác nhận luôn" (trừ Hold, Nghiệm thu, Khối lượng) — cần máy chủ TC 1.6.0
 const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbw6Rmi80I7RI3ij2U7RdRF5pYuQTnPrwEmGmUZS5xpxzLwwVynfoFUujZe1lm6HS1ymxw/exec';
 const LS_TOKEN = 'fecon_token_v5', LS_USER = 'fecon_user_v5';           // dùng chung phiên đăng nhập với Kho
 const LS_P = 'tc_proj', LS_BOOT = 'tc_boot2|', LS_OUT = 'tc_out_v1', LS_CA = 'tc_ca', LS_PART = 'fecon_part';
@@ -500,6 +501,10 @@ let online = navigator.onLine !== false;
 let syncing = false, lastSync = 0, syncErr = '';
 const VIEWS = {};
 const hp = k => !!(me && (me.role === 'ADM' || (me.perm && me.perm[k])));
+// 1.13.0: tự xác nhận — người có cả QA/QC + CHT (CHT, CHP…); điểm Hold, Nghiệm thu, Khối lượng luôn cần người thứ hai (khớp máy chủ TC_NOSELF)
+const NOSELF = { truoc:1, lt:1, kp:1, nt:1, kl:1 };
+const selfOk = mod => !!me && !NOSELF[mod] && (me.role === 'ADM' || (hp('t_qa') && hp('t_cht')));
+const selfSign = r => (r && r.sign || []).filter(s => s.act === 'xn' && s.self).slice(-1)[0];
 
 // ---------- Máy chủ ----------
 async function api(action, data, ms) {
@@ -625,7 +630,7 @@ function applyOutboxLocal() {
   outbox.forEach(o => {
     if (o.action === 'tcSave') {
       const r0 = o.data.rec, cur = REC[r0.id];
-      const st = r0.submit ? 'gui' : (cur ? cur.st : (r0.mod === 'sk' ? 'mo' : 'nhap'));
+      const st = r0.submit ? (r0.selfXn ? 'xn' : 'gui') : (cur ? cur.st : (r0.mod === 'sk' ? 'mo' : 'nhap'));
       REC[r0.id] = Object.assign({}, cur || { by:me.id, byName:me.name, at:'', sign:[], rev:0 }, { id:r0.id, ck:r0.ck || '', mod:r0.mod, d:r0.d, ngay:r0.ngay, st, _pend:1 });
     } else if (o.action === 'tcSign') {
       const cur = REC[o.data.id]; if (cur) { cur.st = { xn:'xn', tra:'tra', duyet:'duyet', dong:'dong', mo:'mo', huy:'huy', gui:'gui' }[o.data.act] || cur.st; cur._pend = 1; }
@@ -2084,28 +2089,30 @@ function shrink(file, max, q) {
 // ---------- lịch sử xác nhận ----------
 const ACTN = { nap:'Nạp sổ', tao:'Tạo', gui:'Gửi kiểm tra', xn:'Xác nhận', tra:'Trả về', duyet:'Duyệt', dong:'Đóng', mo:'Mở lại', huy:'Hủy', sua:'Sửa', xungdot:'Xung đột', nhan:'Nhận ca', phanhoi:'Phản hồi' };
 function signBlock(r) {
-  return `<div class="fsec"><div class="fsec-t">🕘 Lịch sử<small>ai · lúc nào · căn cứ</small></div><div class="signs">${r.sign.slice().reverse().map(s => `<div><b>${ACTN[s.act] || s.act}</b><span style="flex:1">${esc(s.byName || '')}${s.note ? ' · ' + esc(s.note) : ''}${s.diff && s.diff.length ? '<br><span class="small">' + s.diff.slice(0, 6).map(x => esc(x[0]) + ': ' + esc(x[1]) + ' → ' + esc(x[2])).join(' · ') + '</span>' : ''}</span><span class="small">${esc(s.at || '')}</span></div>`).join('')}</div></div>`;
+  return `<div class="fsec"><div class="fsec-t">🕘 Lịch sử<small>ai · lúc nào · căn cứ</small></div><div class="signs">${r.sign.slice().reverse().map(s => `<div><b>${ACTN[s.act] || s.act}${s.self ? ' <span class="selftag">tự xác nhận</span>' : ''}</b><span style="flex:1">${esc(s.byName || '')}${(n => n ? ' · ' + esc(n) : '')(s.self ? String(s.note || '').replace(/^tự xác nhận \(CHT\/CHP\)( · )?/, '') : s.note)}${s.diff && s.diff.length ? '<br><span class="small">' + s.diff.slice(0, 6).map(x => esc(x[0]) + ': ' + esc(x[1]) + ' → ' + esc(x[2])).join(' · ') + '</span>' : ''}</span><span class="small">${esc(s.at || '')}</span></div>`).join('')}</div></div>`;
 }
 // ---------- nút thao tác ----------
 function formActs(ed) {
   const M = MODS[F.mod], r = F.rec, b = [];
   const own = !r || r.by === me.id;
-  if (r && r.st === 'gui' && (hp('t_qa') || (F.mod === 'nt' && hp('t_cht'))) && (!own || me.role === 'ADM')) {
+  if (r && r.st === 'gui' && (hp('t_qa') || (F.mod === 'nt' && hp('t_cht'))) && (!own || selfOk(F.mod))) {
     b.push(`<button class="btn ghost" onclick="fSign('tra')">↩ Trả về</button>`, `<button class="btn gr" onclick="fSign('xn')">${M.hold && F.mod === 'truoc' ? '✓ Giải phóng Hold' : '✓ Xác nhận'}</button>`);
     return b.join('');
   }
-  if (r && F.mod === 'nt' && r.st === 'xn' && hp('t_cht') && (!own || me.role === 'ADM')) return `<button class="btn ghost" onclick="fSign('tra')">↩ Trả về</button><button class="btn nv" onclick="fSign('duyet')">Duyệt nội bộ (CHT)</button>`;
+  if (r && F.mod === 'nt' && r.st === 'xn' && hp('t_cht') && !own) return `<button class="btn ghost" onclick="fSign('tra')">↩ Trả về</button><button class="btn nv" onclick="fSign('duyet')">Duyệt nội bộ (CHT)</button>`;
   if (r && F.mod === 'sk') {
     if (r.st === 'dong') return hp('t_qa') || hp('t_cht') ? `<button class="btn ghost" onclick="fSign('mo')">Mở lại</button>` : '';
     return `<button class="btn ghost" onclick="fSign('phanhoi')">💬 Phản hồi</button>${ed ? `<button class="btn ghost" onclick="fSave(false)">Lưu</button>` : ''}${hp('t_qa') || hp('t_cht') ? `<button class="btn gr" onclick="fSign('dong')">Đóng</button>` : ''}`;
   }
   if (r && F.mod === 'bg' && r.st === 'gui' && !(r.d.nhan && r.d.nhan.at) && r.by !== me.id) return `<button class="btn gr" onclick="fSign('nhan')">🤝 Nhận ca</button>`;
-  if (!ed) return r && (r.st === 'xn' || r.st === 'duyet') && hp('t_cht') ? '' : '';
+  if (r && r.st === 'xn' && selfSign(r) && (hp('t_qa') || hp('t_cht')) && selfSign(r).by !== me.id) b.push(`<button class="btn ghost" onclick="fSign('tra')">↩ Trả về</button>`);   // 1.13.0: QA/QC vẫn trả về được
+  if (!ed) return b.join('');
   if (F.mod === 'bt' && !holdOk(CK[F.code]) && (!B.cfg.hold || B.cfg.hold.batBuoc !== 0) && !r) return `<button class="btn ghost" onclick="back()">Quay lại</button><button class="btn" onclick="openForm('truoc','${esc(F.code)}')">✋ Kiểm tra trước đổ</button>`;
   const locked = r && (r.st === 'xn' || r.st === 'duyet' || r.st === 'dong');
-  if (locked) return `<button class="btn ghost" onclick="fSave(false)">✏️ Lưu sửa (ghi lý do)</button>`;
+  if (locked) return b.join('') + `<button class="btn ghost" onclick="fSave(false)">✏️ Lưu sửa (ghi lý do)</button>`;
   if (r && r.st === 'gui') return `${own ? `<button class="btn ghost" onclick="fSign('huy')">Hủy</button>` : ''}<button class="btn ghost" onclick="fSave(false)">Lưu sửa</button>`;
   if (F.mod === 'bg') return `<button class="btn ghost" onclick="fSave(false)">Lưu nháp</button><button class="btn" onclick="fSave(true)">🤝 Gửi bàn giao</button>`;
+  if (M.qa && selfOk(F.mod)) return `<button class="btn ghost" onclick="fSave(false)">Nháp</button><button class="btn ghost" onclick="fSave(true)">Gửi QA</button><button class="btn gr" onclick="fSave(true,1)">✓ Gửi &amp; xác nhận</button>`;
   if (M.qa) return `<button class="btn ghost" onclick="fSave(false)">Lưu nháp</button><button class="btn" onclick="fSave(true)">${M.hold ? '✋ Gửi kiểm tra Hold' : 'Gửi kiểm tra'}</button>`;
   return `${r && own && r.st !== 'huy' ? `<button class="btn ghost" onclick="fDel()">Xóa</button>` : ''}<button class="btn" onclick="fSave(false)">${r ? 'Lưu' : '💾 Lưu'}</button>`;
 }
@@ -2118,7 +2125,7 @@ function convNums(d) {          // đổi ô số (đang là chữ) sang số tr
   });
   secs(ctx).forEach(s => walk(s.f));
 }
-async function fSave(submit) {
+async function fSave(submit, self) {
   const M = MODS[F.mod], c = F.code ? CK[F.code] : null;
   const d = JSON.parse(JSON.stringify(F.d));
   // bắt buộc
@@ -2137,12 +2144,14 @@ async function fSave(submit) {
     const miss2 = itpOf(c).filter(p => p[0] !== 'nt' && p[0] !== 'tn' && p[0] !== 'hh').filter(p => itpState(c, p[0]).s !== 'done');
     if (miss2.length && !(await ask('Còn ' + miss2.length + ' điểm chưa xác nhận', { msg:miss2.map(p => esc(p[2])).join(', ') + '. Vẫn gửi hồ sơ nghiệm thu?', ok:'Vẫn gửi' }))) return;
   }
-  queue('tcSave', { rec:{ id:F.id, ck:F.code, mod:F.mod, d, ngay, submit:!!submit, baseRev:r ? r.rev || 0 : 0, clientTime:new Date().toISOString(), why } });
+  const sx = !!(submit && self && selfOk(F.mod));
+  if (sx && !(await ask('Gửi & xác nhận luôn?', { msg:'Bạn ghi và xác nhận ' + esc(M.t || '') + (c ? ' ' + esc(c.code) : '') + ' trong 1 bước. Lịch sử và biên bản ghi rõ "tự xác nhận (CHT/CHP)"; QA/QC được báo và vẫn trả về được.', ok:'Gửi & xác nhận', okCls:'gr' }))) return;
+  queue('tcSave', { rec:Object.assign({ id:F.id, ck:F.code, mod:F.mod, d, ngay, submit:!!submit, baseRev:r ? r.rev || 0 : 0, clientTime:new Date().toISOString(), why }, sx ? { selfXn:1 } : {}) });
   const label = (c ? c.code + ' ' : '') + (M.t || '');
   F.ph.forEach(p => queue('tcPhoto', { photoId:p.id, recId:F.id, data:p.data, label:label + (p.lab ? ' · ' + String(p.lab).slice(0, 40) : '') }));
   if (c && CKREC[c.code] && !CKREC[c.code].recs.some(x => x.id === F.id)) CKREC[c.code].recs.push(REC[F.id]);
   F.dirty = false; F.ph = [];
-  toast(navigator.onLine === false ? '💾 Đã lưu trên máy — tự gửi khi có mạng' : (submit ? '📤 Đã gửi kiểm tra' : '💾 Đã lưu'));
+  toast(navigator.onLine === false ? '💾 Đã lưu trên máy — tự gửi khi có mạng' : (sx ? '✅ Đã gửi & xác nhận' : submit ? '📤 Đã gửi kiểm tra' : '💾 Đã lưu'));
   F = null; back();
 }
 async function fSign(act) {
@@ -3990,7 +3999,10 @@ function bbTv(X) {
     ['12 - Bê tông · cấp ' + X.mac + ' · độ sụt 19±1 cm', '', '', ''], ['Khối lượng bê tông (m³)', f2(X.vlt), f2(X.vtt), ''], ['Phần dư (m³)', '', isFinite(X.vtt) ? f2(X.vtt - X.vlt) : '', '']], [6, 2, 2, 2])], ket:'Đồng ý nghiệm thu' });
   return docs;
 }
-function bbDocs(c) { const X = bbData(c); const list = X.tv ? BB_TV : BB_COC; return (X.tv ? bbTv(X) : bbCoc(X)).map(d => { const t = list.find(x => x[0] === d.n); return Object.assign({ title:t[1], sub:t[2] || '', no:bbNo(X, d.n), head:d.head || bbHead(X, d.ngay, d.extraHead), X }, d, d.bv2 ? { head:bbHead(X, d.ngay, d.extraHead).concat([['', d.bv2]]) } : {}); }); }
+function bbSelf(c) {          // 1.13.0: bản ghi của cấu kiện do CHT/CHP tự xác nhận → ghi chú cuối Lý lịch
+  return recsOf(c.code).map(r => { const s = selfSign(r); return s ? `${(MODS[r.mod] || {}).t || r.mod} (${s.byName || ''}${(String(s.at || '').match(/\d{1,2}\/\d{1,2}\/\d{4}/) || [''])[0] ? ', ' + String(s.at).match(/\d{1,2}\/\d{1,2}\/\d{4}/)[0] : ''})` : ''; }).filter(Boolean);
+}
+function bbDocs(c) { const X = bbData(c); const list = X.tv ? BB_TV : BB_COC, sf = bbSelf(c); return (X.tv ? bbTv(X) : bbCoc(X)).map(d => { const t = list.find(x => x[0] === d.n); return Object.assign({ title:t[1], sub:t[2] || '', no:bbNo(X, d.n), head:d.head || bbHead(X, d.ngay, d.extraHead), X }, d, d.bv2 ? { head:bbHead(X, d.ngay, d.extraHead).concat([['', d.bv2]]) } : {}, d.n === 1 && sf.length ? { selfNote:sf } : {}); }); }
 
 // ---------- HTML (xem + in PDF) ----------
 function bbCell(v) { return esc(v === undefined || v === null ? '' : v).replace(/\n/g, '<br>'); }
@@ -4010,14 +4022,14 @@ function bbLL(d) {
 function bbSign(d) {
   const tv = d.X.tv;
   return `${d.ket === '' ? '' : `<div class="bb-ket"><b><u>Kết luận:</u></b><span>☐ ${esc(d.ket || 'Nghiệm thu')}</span><span>☐ Không nghiệm thu</span></div>`}
-    <div class="bb-sig"><div>TƯ VẤN GIÁM SÁT</div><div>${tv ? 'ĐẠI DIỆN ' : ''}NHÀ THẦU CHÍNH</div><div>${tv ? 'ĐẠI DIỆN ' : ''}NHÀ THẦU PHỤ</div></div>`;
+    <div class="bb-sig"><div>TƯ VẤN GIÁM SÁT</div><div>${tv ? 'ĐẠI DIỆN ' : ''}NHÀ THẦU CHÍNH</div><div>${tv ? 'ĐẠI DIỆN ' : ''}NHÀ THẦU PHỤ</div></div>${d.selfNote ? `<div class="bb-self">Ghi chú nội bộ nhà thầu: ${esc(d.selfNote.join('; '))} — tự xác nhận (CHT/CHP).</div>` : ''}`;
 }
 function bbPageHtml(d) {
   return `<section class="bb-pg noicon ${d.land ? 'land' : ''}"><div class="bb-top"><div class="bb-lg l">${esc((d.X.I.tvgs || 'TVGS').replace(/^.*\(([^)]+)\).*$/, '$1'))}</div><div class="bb-tt"><div>${esc(d.title)}</div>${d.sub ? `<small>${esc(d.sub)}</small>` : ''}</div><div class="bb-lg r">FECON<br><small>South</small></div></div>
     <div class="bb-no">${esc(d.no)}</div>${bbHeadHtml(d.head)}${d.ll ? bbLL(d) : (d.blocks || []).map(b => b.k === 'tbl' ? bbTbl(b) : b.k === 'kv' ? bbKv(b) : b.k === 'svg' ? b.html : `<div class="bb-txt">${bbCell(b.v)}</div>`).join('')}${bbSign(d)}</section>`;
 }
 const BB_CSS = `.bb-pg{background:#fff;color:#000;font-family:'Times New Roman',Times,serif;font-size:12px;width:190mm;min-height:270mm;margin:0 auto 14px;padding:8mm 8mm 10mm;box-shadow:0 1px 6px rgba(0,0,0,.15);box-sizing:border-box}
-.bb-pg.land{width:277mm;min-height:180mm}.bb-top{display:grid;grid-template-columns:22% 1fr 22%;border:1px solid #000;align-items:center}.bb-top>div{padding:6px;text-align:center}.bb-tt{border-left:1px solid #000;border-right:1px solid #000;font-weight:700;font-size:15px}.bb-tt small{display:block;font-weight:700;font-size:12px}
+.bb-pg.land{width:277mm;min-height:180mm}.bb-self{margin-top:70px;font-style:italic;font-size:10.5px;color:#333;border-top:1px dashed #999;padding-top:4px}.bb-top{display:grid;grid-template-columns:22% 1fr 22%;border:1px solid #000;align-items:center}.bb-top>div{padding:6px;text-align:center}.bb-tt{border-left:1px solid #000;border-right:1px solid #000;font-weight:700;font-size:15px}.bb-tt small{display:block;font-weight:700;font-size:12px}
 .bb-lg{font-weight:700;font-size:13px}.bb-lg.r{color:#4a4a4a;font-family:Arial;font-size:17px;line-height:1}.bb-lg.r small{font-size:11px;color:#0056A4}.bb-no{text-align:right;font-style:italic;margin:3px 0 6px}
 .bb-h,.bb-kv{width:100%;border-collapse:collapse;margin:2px 0 6px}.bb-h th,.bb-kv th{text-align:left;font-weight:700;padding:2px 6px 2px 0;vertical-align:top;white-space:nowrap;width:1%}.bb-h td,.bb-kv td{padding:2px 8px 2px 0;vertical-align:top}.bb-kv th{font-weight:400}.bb-kv.in{margin:2px 0 0}.bb-kv.in th{font-weight:400;font-size:11.5px}.bb-kv.in td{white-space:nowrap}
 .bb-q{display:flex;flex-wrap:wrap;gap:4px 22px}.bb-cap{font-weight:700;margin:8px 0 2px}.bb-t{width:100%;border-collapse:collapse;margin:4px 0 8px;table-layout:fixed}.bb-t th,.bb-t td{border:1px solid #000;padding:3px 4px;vertical-align:middle;word-wrap:break-word}.bb-t th{font-weight:700;text-align:center;background:#f3f3f3}.bb-t td{text-align:center}.bb-t td:first-child+td{text-align:left}
@@ -4094,6 +4106,7 @@ function bbSheet(wb, d, name) {
   } else (d.blocks || []).forEach(b => b.k === 'tbl' ? tbl(b) : b.k === 'kv' ? kv(b) : b.k === 'txt' ? (put(R, 1, 12, b.v), ws.getRow(R).height = 15 * (String(b.v).split('\n').length), R += 2) : null);
   if (d.ket !== '') { put(R, 1, 2, 'Kết luận:', { font:{ bold:true, underline:true } }); put(R, 3, 6, '☐ ' + (d.ket || 'Nghiệm thu')); put(R, 8, 11, '☐ Không nghiệm thu'); R += 2; }
   put(R, 1, 4, 'TƯ VẤN GIÁM SÁT', { font:{ bold:true }, al:{ horizontal:'center' } }); put(R, 5, 8, (d.X.tv ? 'ĐẠI DIỆN ' : '') + 'NHÀ THẦU CHÍNH', { font:{ bold:true }, al:{ horizontal:'center' } }); put(R, 9, 12, (d.X.tv ? 'ĐẠI DIỆN ' : '') + 'NHÀ THẦU PHỤ', { font:{ bold:true }, al:{ horizontal:'center' } });
+  if (d.selfNote) { R += 6; put(R, 1, 12, 'Ghi chú nội bộ nhà thầu: ' + d.selfNote.join('; ') + ' — tự xác nhận (CHT/CHP).', { font:{ italic:true, size:9 } }); }   // 1.13.0
   ws.pageSetup.printArea = 'A1:L' + (R + 5);
   return ws;
 }

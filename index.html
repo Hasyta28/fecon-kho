@@ -1896,7 +1896,7 @@ body.pg-printing #pg-print{display:block;position:fixed;inset:0;z-index:9000;bac
 // ============================================================
 // CONFIG
 // ============================================================
-const APP_VERSION = '5.56.11';
+const APP_VERSION = '5.56.12';
 const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbw6Rmi80I7RI3ij2U7RdRF5pYuQTnPrwEmGmUZS5xpxzLwwVynfoFUujZe1lm6HS1ymxw/exec';
 // ============================================================
 
@@ -3470,8 +3470,8 @@ function renderXuat(c) {
       <div class="fg"><label>Dự án</label>
         <select id="fx-proj" disabled><option>${escHtml(curProj)}</option></select>
       </div>
-      <div class="fg"><label>Nhóm vật tư</label>
-        <select id="fx-cat" onchange="fillXuatItems()">
+      <div class="fg" style="display:none"><label>Nhóm vật tư</label>
+        <select id="fx-cat" onchange="fillXuatItems()"><option value=""></option>
           ${db.categories.map(cat=>`<option value="${cat.id}">${cat.name}</option>`).join('')}
         </select>
       </div>
@@ -5569,7 +5569,7 @@ function openLoanForm() {
       </div>
       <div id="fl-vt">
         <div class="fg"><label>Nhóm vật tư</label>
-          <select id="fl-cat" onchange="comboClear('fl', false)">${db.categories.map(cat => `<option value="${cat.id}">${cat.name}</option>`).join('')}</select>
+          <select id="fl-cat" onchange="flCatChange()"><option value="">— Chọn nhóm —</option>${db.categories.map(cat => `<option value="${cat.id}">${cat.name}</option>`).join('')}</select>
         </div>
         <div class="fg"><label>Tên vật tư</label>
           <div class="combo">
@@ -5584,7 +5584,7 @@ function openLoanForm() {
         <div class="fg-row">
           <div class="fg"><label>Số lượng</label><input type="number" id="fl-qty" placeholder="0" min="0" step="any" inputmode="decimal"></div>
           <div class="fg"><label>Đơn vị</label><input type="text" id="fl-unit" readonly style="background:var(--bg)" placeholder="—">
-            <select id="fl-unit-sel" style="display:none">${UNITS.map(u => `<option>${u}</option>`).join('')}</select></div>
+            <select id="fl-unit-sel" style="display:none"><option value="">— Đơn vị —</option>${UNITS.map(u => `<option>${u}</option>`).join('')}</select></div>
         </div>
       </div>
       <div id="fl-tb" style="display:none">
@@ -5634,6 +5634,11 @@ function setLoanType(t) {
   document.getElementById('fl-vt').style.display = t === 'vt' ? '' : 'none';
   document.getElementById('fl-tb').style.display = t === 'tb' ? '' : 'none';
 }
+function flCatChange() {        // v5.56.12: đang gõ tên vật tư MỚI (đi mượn) → đổi nhóm không xoá tên đã gõ
+  const t = document.getElementById('fl-item-txt');
+  if (loanKind === 'di' && t && t.value.trim() && !document.getElementById('fl-item').value) { comboHide('fl'); return; }
+  comboClear('fl', false);
+}
 async function doLoan() {
   const val = id => document.getElementById(id).value.trim();
   const party = val('fl-party');
@@ -5650,6 +5655,8 @@ async function doLoan() {
     const qty = r3(parseVN_num(val('fl-qty')));
     if (!(qty > 0)) { toast('⚠️ Nhập số lượng hợp lệ'); return; }
     if (item && loanKind === 'cho' && qty > item.stock + 1e-9) { toast(`❌ Tồn không đủ! Còn ${fmtNum(item.stock)} ${item.unit}`); return; }
+    if (!item && !val('fl-cat')) { toast('⚠️ Vật tư mới — chọn Nhóm vật tư'); document.getElementById('fl-cat').focus(); return; }   // v5.56.12: không còn mặc định nhóm Nhiên liệu
+    if (!item && !document.getElementById('fl-unit-sel').value) { toast('⚠️ Vật tư mới — chọn Đơn vị'); return; }
     if (!item) newItem = item = {id:newId(), name, cat:val('fl-cat'), unit:document.getElementById('fl-unit-sel').value, stock:0, minStock:0, project:curProj};
     let txnId = newId(); if (txnId === data.id) txnId = data.id + 1;
     Object.assign(data, {itemId:item.id, itemName:item.name, unit:item.unit, qty, txnId});
@@ -9646,7 +9653,7 @@ renderXuat = function (c) {
 function fxPickDev(id) {
   const d = db.devices.find(x => x.id === id); if (!d) return;
   fxDev = d; document.getElementById('fx-item-txt').value = d.name; document.getElementById('fx-item').value = '';
-  comboHide('fx'); document.getElementById('fx-hint').innerHTML = `<span style="color:var(--text2)">🏗 Máy đang ở công trình${d.inDate ? ' từ ' + escHtml(fmtDMY(d.inDate)) : ''}</span>`;
+  comboHide('fx'); document.getElementById('fx-hint').innerHTML = `<span style="color:var(--text2)">🏗 Máy · ${escHtml(devCatOf(d.cat).name)} · đang ở công trình${d.inDate ? ' từ ' + escHtml(fmtDMY(d.inDate)) : ''}</span>`;
   fxModeUpdate();
 }
 const _gdComboInput = comboInput;
@@ -9658,7 +9665,9 @@ comboInput = function (p) {
   const lst = document.getElementById(p + '-list');
   if (p === 'fx') { fxModeUpdate(); if (lst) { lst.innerHTML = fxSuggestHtml(q); lst.style.display = 'block'; } }
   if (p === 'fx') { const it = db.items.find(i => i.id === +document.getElementById('fx-item').value), hn = document.getElementById('fx-hint');
-    if (isPT(it) && it.stock <= 0 && !(ctSite(it) > 0) && hn) hn.innerHTML = '<span style="color:var(--orange)">Chưa ghi tồn — có sẵn ở công trường thì cứ xuất, app tự ghi tồn đầu</span>'; }
+    if (isPT(it) && it.stock <= 0 && !(ctSite(it) > 0) && hn) hn.innerHTML = '<span style="color:var(--orange)">Chưa ghi tồn — có sẵn ở công trường thì cứ xuất, app tự ghi tồn đầu</span>';
+    if (it && hn && !hn.querySelector('.fx-cat-lbl')) { const cn = (db.categories.find(c => c.id === it.cat) || {}).name;   // v5.56.12: bỏ ô Nhóm ở phiếu xuất — hiện nhóm của món đã chọn
+      if (cn) hn.insertAdjacentHTML('afterbegin', `<span class="fx-cat-lbl" style="color:var(--text2)">${escHtml(cn)} · </span>`); } }
   if (p === 'fn') {
     if (fnGD && normVN(fnGD.name) !== q) fnGdSet(null);
     let pre = '';
@@ -14992,6 +15001,7 @@ q8DmRender = function () {
     <div class="q8-add"><input id="q8-newname" placeholder="＋ Thêm tên vật tư…"><button type="button" class="btn-full btn-orange" onclick="q8DmAdd()">Thêm</button></div>
     <button type="button" class="q8-maybtn" onclick="q8DmMay()">＋ Thêm máy (mã P.QLTB)</button>
     <button type="button" class="q8-maybtn" onclick="dmMmOpen()">⇄ Đối chiếu nhóm hàng trong kho với danh mục</button>
+    <button type="button" class="q8-maybtn" onclick="nlFixOpen()">⛽ Dọn nhóm Nhiên liệu ghi nhầm (đơn vị Bộ, Cái, Cont…)</button>
     <div class="q8-hd"><span>MÃ · TÊN · NHÓM · ĐƠN VỊ</span>${db.one ? '' : '<span>KHI NHẬP</span>'}</div>
     <div id="q8-dmlist">${q8DmRows(show)}</div>
     ${V.length > show.length ? `<button type="button" class="q8-moreb" onclick="Q8D.page++;q8DmRender()">Xem thêm ${V.length - show.length} tên</button>` : ''}
@@ -15142,6 +15152,62 @@ async function dmMmSave() {
   L.forEach(x => { const it = db.items.find(i => String(i.id) === String(x.id)); if (it) it.cat = x.dmCat; }); saveLocal();
   toast(`✅ Đã sửa nhóm ${r.fixed} món`); try { await syncAll(true); refreshCurrentView(false); } catch (e) {}
 }
+// ---------- v5.56.12: DỌN NHÓM "NHIÊN LIỆU & DẦU MỠ" GHI NHẦM (Admin, mọi dự án) ----------
+// Món nhóm nhienLieu mà đơn vị không phải đơn vị nhiên liệu (Bộ, Cái, Cont…) — thường do phiếu xuất / phiếu mượn cũ để mặc định nhóm.
+// Dùng lại API sẵn có: listItemsOf (đọc từng dự án) + dmFixCats (ghi nhóm, ghi nhật ký) → không cần dán lại Apps Script.
+let NLF = null;
+async function nlFixOpen() {
+  if (role !== 'ADM') return;
+  if (!navigator.onLine) { toast('📴 Cần có mạng'); return; }
+  showLoader('Đang quét các dự án…');
+  try {
+    const r0 = await api('listItemsOf', {}, 60000);
+    if (!r0 || !r0.success) throw new Error((r0 && r0.error) || 'Không đọc được danh sách dự án');
+    const projs = r0.projects || [], out = [];
+    for (let i = 0; i < projs.length; i += 4) {
+      const R = await Promise.all(projs.slice(i, i + 4).map(p => api('listItemsOf', { project:p }, 60000)));
+      R.forEach((r, j) => { if (!r || !r.success) throw new Error('Không đọc được dự án ' + projs[i + j]);
+        r.items.forEach(it => { if (it.cat === 'nhienLieu' && !BC_FUEL_U.test(normVN(it.unit || ''))) out.push({ id:it.id, project:r.project, name:it.name, unit:it.unit, to:'', on:0 }); }); });
+    }
+    hideLoader();
+    if (!out.length) { toast('✅ Không có món nào nhóm Nhiên liệu ghi nhầm'); return; }
+    out.sort((a, b) => a.name.localeCompare(b.name, 'vi') || a.project.localeCompare(b.project, 'vi'));
+    NLF = { list:out, all:'' }; nlFixRender();
+  } catch (e) { hideLoader(); toast('⚠️ ' + e.message); }
+}
+function nlFixSet(i, v) { const x = NLF.list[i]; x.to = v; x.on = v ? 1 : 0; nlFixRender(); }
+function nlFixAll(v) { NLF.all = v; if (v) NLF.list.forEach(x => { if (!x.to) { x.to = v; x.on = 1; } }); nlFixRender(); }   // chỉ dòng chưa chọn nhóm
+function nlFixRender() {
+  const L = NLF.list, n = L.filter(x => x.on && x.to).length, opts = sel => '<option value="">— chọn nhóm —</option>' +
+    CATEGORIES.filter(c => c.id !== 'nhienLieu').map(c => `<option value="${c.id}"${c.id === sel ? ' selected' : ''}>${escHtml(c.name)}</option>`).join('');
+  $8('nl-fix')?.remove();
+  document.body.insertAdjacentHTML('beforeend', `<div class="kl-sheet-w" id="nl-fix"><div class="kl-dim" onclick="document.getElementById('nl-fix').remove()"></div><div class="kl-sheet q8-sheet" role="dialog" aria-label="Dọn nhóm Nhiên liệu">
+    <div class="kl-h">${L.length} món nhóm Nhiên liệu nhưng đơn vị không phải nhiên liệu</div>
+    <div class="pyc-hint" style="text-align:left;margin-bottom:8px">Chọn nhóm đúng cho từng món (hoặc chọn 1 nhóm cho tất cả các dòng chưa chọn). Chỉ đổi nhóm — phiếu cũ, tồn, đơn vị giữ nguyên. Có ghi nhật ký.</div>
+    <div class="fg" style="margin-bottom:8px"><label>Áp 1 nhóm cho các dòng chưa chọn</label><select onchange="nlFixAll(this.value)">${opts(NLF.all)}</select></div>
+    <div style="max-height:50vh;overflow:auto">${L.map((x, i) => `<div class="dm-mm-r nl-r"><input type="checkbox" ${x.on ? 'checked' : ''} ${x.to ? '' : 'disabled'} onchange="NLF.list[${i}].on=this.checked?1:0;nlFixRender()"><span><b>${escHtml(x.name)}</b><small>${escHtml(x.project)} · đơn vị ${escHtml(x.unit || '—')}</small>
+      <select class="nl-sel" onchange="nlFixSet(${i},this.value)">${opts(x.to)}</select></span></div>`).join('')}</div>
+    <div class="p9-bb"><button type="button" class="p9-c" onclick="document.getElementById('nl-fix').remove()">Để sau</button><button type="button" class="p9-ok" id="nl-go" ${n ? '' : 'disabled'} onclick="nlFixPreview()">Xem trước ${n} món</button></div>
+  </div></div>`);
+}
+function nlFixPreview() {
+  const L = NLF.list.filter(x => x.on && x.to); if (!L.length) return;
+  const g = {}; L.forEach(x => (g[x.to] = g[x.to] || []).push(x));
+  const sh = $8('nl-fix')?.querySelector('.kl-sheet'); if (!sh) return;
+  sh.innerHTML = `<div class="kl-h">Xem trước · đổi nhóm ${L.length} món</div>
+    <div class="pyc-hint" style="text-align:left;margin-bottom:8px">Từ <s>Nhiên liệu &amp; Dầu mỡ</s> sang:</div>
+    <div style="max-height:52vh;overflow:auto">${Object.keys(g).map(k => `<div class="nl-pv"><b>${escHtml(catOf(k).name)} · ${g[k].length} món</b>
+      ${g[k].map(x => `<small>${escHtml(x.name)} — ${escHtml(x.project)} (${escHtml(x.unit || '—')})</small>`).join('')}</div>`).join('')}</div>
+    <div class="p9-bb"><button type="button" class="p9-c" onclick="nlFixRender()">‹ Sửa lại</button><button type="button" class="p9-ok" id="nl-ok" onclick="nlFixSave()">Đổi nhóm ${L.length} món</button></div>`;
+}
+async function nlFixSave() {
+  const L = NLF.list.filter(x => x.on && x.to); if (!L.length) return;
+  showLoader('Đang sửa nhóm…'); const r = await api('dmFixCats', { list:L.map(x => ({ id:x.id, cat:x.to })) }, 60000); hideLoader();
+  if (!r || !r.success) { toast('⚠️ ' + ((r && r.error) || 'Không sửa được')); return; }
+  $8('nl-fix')?.remove(); NLF = null;
+  L.forEach(x => { const it = db.items.find(i => String(i.id) === String(x.id)); if (it) it.cat = x.to; }); saveLocal();
+  toast(`✅ Đã đổi nhóm ${r.fixed} món`); try { await syncAll(true); refreshCurrentView(false); } catch (e) {}
+}
 { const _tkUV = updateVatTu; updateVatTu = async function () { const r = await _tkUV.apply(this, arguments); try { if ($8('dp-thekho')?.classList.contains('show')) tk9Render(); } catch (e) {} return r; }; }
 
 // ---------- v5.56.4: GỘP PHIẾU "NHẬP THẲNG RA CÔNG TRƯỜNG" CŨ (Quản lý dự án, Admin) ----------
@@ -15205,6 +15271,7 @@ function scRender() {
   document.body.insertAdjacentHTML('beforeend', page('dp-dmh', '🖼 Danh mục có hình') + page('dp-dmh1', '🖼 Chi tiết món') + page('dp-dmimg', '🖼 Duyệt ảnh danh mục'));
   const css = `
 .p9-si{font-size:13px;color:#5A6676;margin:6px 0 2px}.p9-si a{color:var(--primary);font-weight:700;cursor:pointer;margin-left:4px}.p9-si small{font-weight:500;color:#8A93A0}
+.nl-r .nl-sel{display:block;margin-top:6px;width:100%;padding:7px 8px;border:1px solid var(--border);border-radius:8px;font-size:14px;background:#fff}.nl-r span{flex:1;min-width:0}.nl-pv{padding:8px 2px;border-bottom:1px solid var(--border)}.nl-pv b{display:block;font-size:14.5px;color:#2B8A3E}.nl-pv small{display:block;color:#5A6676;font-size:12.5px;margin-top:2px}
 .dm-mm-r{display:flex;gap:10px;align-items:flex-start;padding:9px 2px;border-bottom:1px solid var(--border);font-size:14px}.dm-mm-r input{width:20px;height:20px;margin-top:2px;flex:0 0 20px}.dm-mm-r small{display:block;color:#5A6676;font-size:12.5px;margin-top:2px}
 .tk9-h .tk9-edit{align-self:flex-start;margin-top:6px;border:1.5px solid var(--border);background:#fff;border-radius:9px;padding:6px 10px;font-weight:700;font-size:13px;color:var(--primary)}
 .tc-t{font-size:13px;margin-top:8px;max-height:46vh;overflow:auto;border:1px solid var(--border);border-radius:10px}.tc-h,.tc-r{display:grid;grid-template-columns:1fr 64px 48px 86px;gap:6px;padding:7px 8px;align-items:center}
