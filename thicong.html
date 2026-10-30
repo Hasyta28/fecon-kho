@@ -467,9 +467,9 @@ button .pi,.btn .pi,a .pi,.chip .pi,.tag .pi,.badge .pi,.yn .pi,.bnav .pi,.bnav-
 <div id="app"></div>
 <script>
 // FECON South · THI CÔNG 1.4.3 — chạy cùng app Kho (đăng nhập ở index.html, dùng chung máy chủ Apps Script)
-const KHO_VERSION = '5.56.13';
+const KHO_VERSION = '5.56.15';
 // ===== FECON Thi công 1.0 — lõi: máy chủ, lưu trên máy, hàng đợi gửi, điều hướng =====
-const TC_APP_VERSION = '1.14.0';   // 1.14.0 (FECON 5.56.13): cấu kiện "tọa độ sơ đồ" (nạp từ bản vẽ, chưa có VN2000) — Định vị để trống X, Y thiết kế · nạp trạng thái đã thi công từ trang "Trang thai" ·   // 1.13.0 (FECON 5.56.12): CHT/CHP "Gửi & xác nhận luôn" (trừ Hold, Nghiệm thu, Khối lượng) — cần máy chủ TC 1.6.0
+const TC_APP_VERSION = '1.16.0';   // 1.16.0 (FECON 5.56.15): Mặt bằng → Bố trí công trường (kéo thả thiết bị, bãi; tự báo sát tường vây, đè mốc, chồng lấn, tầm quay cẩu; gắn máy thật Kho) — cần máy chủ TC 1.8.0 ·   // 1.15.0 (FECON 5.56.14): Quản trị → Cấu hình: nhập ranh hầm (đường bao) + mốc trắc đạc VN2000, vẽ lên mặt bằng ·   // 1.14.0 (FECON 5.56.13): cấu kiện "tọa độ sơ đồ" (nạp từ bản vẽ, chưa có VN2000) — Định vị để trống X, Y thiết kế · nạp trạng thái đã thi công từ trang "Trang thai" ·   // 1.13.0 (FECON 5.56.12): CHT/CHP "Gửi & xác nhận luôn" (trừ Hold, Nghiệm thu, Khối lượng) — cần máy chủ TC 1.6.0
 const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbw6Rmi80I7RI3ij2U7RdRF5pYuQTnPrwEmGmUZS5xpxzLwwVynfoFUujZe1lm6HS1ymxw/exec';
 const LS_TOKEN = 'fecon_token_v5', LS_USER = 'fecon_user_v5';           // dùng chung phiên đăng nhập với Kho
 const LS_P = 'tc_proj', LS_BOOT = 'tc_boot2|', LS_OUT = 'tc_out_v1', LS_CA = 'tc_ca', LS_PART = 'fecon_part';
@@ -2200,7 +2200,7 @@ function pickList() {
 function render(top) {
   const v = VIEWS[cur.v] || VIEWS.home;
   if (!B) { $('#app').innerHTML = shell({ body:`<div class="dbody">${updCardHtml()}</div><div class="empty"><span class="spin" style="display:inline-block"></span><br>Đang tải dữ liệu thi công…</div>`, tab:'home' }); setSync(); return; }
-  if (!Object.keys(CK).length && cur.v !== 'qtri' && cur.v !== 'proj' && cur.v !== 'hd' && cur.v !== 'hdx') { $('#app').innerHTML = shell({ body:noCkHtml(), tab:cur.v }); setSync(); return; }
+  if (!Object.keys(CK).length && cur.v !== 'qtri' && cur.v !== 'proj' && cur.v !== 'hd' && cur.v !== 'hdx' && !(cur.v === 'plan' && (B.cfg.poly || []).length)) { $('#app').innerHTML = shell({ body:noCkHtml(), tab:cur.v }); setSync(); return; }
   $('#app').innerHTML = v.render(cur.a);
   document.body.classList.toggle('pk-open', !!document.querySelector('#peek.pkf'));
   setSync();
@@ -2209,7 +2209,7 @@ function render(top) {
 }
 function noCkHtml() {
   return `<div class="dbody">${updCardHtml()}<div class="card pad center"><div style="font-size:44px">🏗️</div><div class="rname mt8">${esc(P || 'Chưa có dự án')}</div>
-    <div class="small mt8" style="line-height:1.5">Dự án chưa có danh sách cọc / panel trong phần Thi công.${hp('t_qt') ? '' : '<br>Nhờ Admin nạp danh sách cấu kiện.'}</div>
+    <div class="small mt8" style="line-height:1.5">Dự án chưa có danh sách cọc / panel trong phần Thi công.${hp('t_qt') ? '' : '<br>Nhờ Admin nạp danh sách cấu kiện.'}</div>${(B.cfg.poly || []).length ? `<button class="btn ghost mt12" onclick="go('plan')">🗺 Xem mặt bằng ranh hầm (${B.cfg.poly.length} đỉnh · ${((B.cfg.info && B.cfg.info.moc) || []).length} mốc)</button>` : ''}
     ${hp('t_qt') ? `<button class="btn mt12" onclick="go('qtri',{tab:'ck'})">📥 Nạp danh sách cấu kiện</button>${me.role === 'ADM' && /tthc|hầm|công viên/i.test(P) ? `<button class="btn ghost mt8" onclick="go('qtri',{tab:'mau'})">🧪 Nạp dữ liệu mẫu TTHC để tập</button>` : ''}` : ''}
     ${(B.projects || []).filter(x => x !== P).map(x => `<button class="btn ghost mt8" onclick="setProj('${esc(x)}')">↩ Chuyển sang dự án ${esc(x)}</button>`).join('')}</div></div>`;
 }
@@ -2361,7 +2361,7 @@ async function setProj(p) {
 }
 
 // ---------- M03 Mặt bằng ----------
-const PV = { z:1, cx:null, cy:null, f:'all', st:'', sel:'', mode:'map', q:'', kp:false };
+const PV = { z:1, cx:null, cy:null, f:'all', st:'', sel:'', mode:'map', q:'', kp:false, lay:false, ledit:0, place:'', lsel:'' };
 let GEO = null;
 function geo() {
   if (GEO && GEO.P === P && GEO.n === Object.keys(CK).length && GEO.rot === B.cfg.rot) return GEO;
@@ -2369,6 +2369,8 @@ function geo() {
   const all = Object.values(CK);
   let E0 = 0, N0 = 0, k = 0;
   all.forEach(c => { if (c.x && c.y) { E0 += c.y; N0 += c.x; k++; } });
+  const PL0 = (B.cfg.poly || []).filter(q => q && isFinite(q[0]) && isFinite(q[1]));
+  if (!k && PL0.length) { PL0.forEach(q => { E0 += q[1]; N0 += q[0]; }); k = PL0.length; }   // 1.15.0: dự án chưa có cấu kiện → lấy tâm theo ranh hầm
   E0 = k ? E0 / k : 0; N0 = k ? N0 / k : 0;
   const tf = (X, Y) => { const dx = Y - E0, dy = X - N0; return [dx * cs - dy * sn, dx * sn + dy * cs]; };   // X = Bắc, Y = Đông
   const pts = {};
@@ -2379,9 +2381,11 @@ function geo() {
     else if (c.x && c.y) { const p = tf(c.x, c.y); pts[c.code] = { p }; ext(p); }
   });
   const poly = (B.cfg.poly || []).map(q => tf(q[0], q[1])); poly.forEach(ext);
+  const moc = ((B.cfg.info && B.cfg.info.moc) || []).filter(m => isFinite(m[1]) && isFinite(m[2])).map(m => ({ n:m[0], p:tf(m[1], m[2]) })); moc.forEach(m => ext(m.p));   // 1.15.0
   if (x0 > x1) { x0 = -10; x1 = 10; y0 = -10; y1 = 10; }
   const m = Math.max(x1 - x0, y1 - y0) * 0.04 + 3;
-  GEO = { P, n:all.length, rot:B.cfg.rot, tf, pts, poly, x0:x0 - m, x1:x1 + m, y0:y0 - m, y1:y1 + m };
+  ((B.cfg.layout && B.cfg.layout.items) || []).forEach(o => ext(tf(+o.X, +o.Y)));   // 1.16.0
+  GEO = { P, n:all.length, rot:B.cfg.rot, tf, pts, poly, moc, E0, N0, cs, sn, x0:x0 - m, x1:x1 + m, y0:y0 - m, y1:y1 + m };
   return GEO;
 }
 VIEWS.plan = {
@@ -2396,10 +2400,10 @@ VIEWS.plan = {
     const kps = all.filter(hasKp), nKp = kps.length, nKpD = kps.filter(kpDone).length;
     const chips = [['all', 'Tất cả'], ['coc', 'Cọc ' + nCoc], ['tv', 'Tường vây ' + nTv]].concat(kvs.map(k => [k, k]));
     const body = `<div class="ptitle" style="padding-bottom:8px"><b>Mặt bằng</b><span>${esc(projName())}</span></div>
-      <div class="chip-row"><span class="chip navy ${PV.mode === 'map' ? 'on' : ''}" onclick="PV.mode='map';render(false)">🗺️ Bản vẽ</span><span class="chip navy ${PV.mode === 'list' ? 'on' : ''}" onclick="PV.mode='list';render(false)">☰ Danh sách</span>${nKp ? `<span class="chip ${PV.kp ? 'on' : ''}" onclick="PV.kp=!PV.kp;render(false)">⌶ Kingpost ${nKpD}/${nKp}</span>` : ''}${chips.map(x => `<span class="chip ${PV.f === x[0] ? 'on' : ''}" onclick="PV.f='${esc(x[0])}';render(false)">${esc(x[1])}</span>`).join('')}</div>
+      <div class="chip-row"><span class="chip navy ${PV.mode === 'map' ? 'on' : ''}" onclick="PV.mode='map';render(false)">🗺️ Bản vẽ</span><span class="chip navy ${PV.lay ? 'on' : ''}" onclick="PV.lay=!PV.lay;if(PV.lay&&!KHO&&navigator.onLine!==false)loadKho(true).then(()=>render(false));PV.mode='map';render(false)">🏗 Bố trí${PV.lay || !(B.cfg.layout && B.cfg.layout.items && B.cfg.layout.items.length) ? '' : ''}</span><span class="chip navy ${PV.mode === 'list' ? 'on' : ''}" onclick="PV.mode='list';render(false)">☰ Danh sách</span>${nKp ? `<span class="chip ${PV.kp ? 'on' : ''}" onclick="PV.kp=!PV.kp;render(false)">⌶ Kingpost ${nKpD}/${nKp}</span>` : ''}${chips.map(x => `<span class="chip ${PV.f === x[0] ? 'on' : ''}" onclick="PV.f='${esc(x[0])}';render(false)">${esc(x[1])}</span>`).join('')}</div>
       <div class="section"><div class="cnt">${['nt', 'dd', 'dl', 'sl', 'cl', 'tt'].map(s => `<button class="${PV.st === s ? 'on' : ''}" onclick="PV.st=PV.st==='${s}'?'':'${s}';render(false)"><i style="background:${s === 'tt' ? '#E74C3C' : ST[s].c}"></i>${s === 'tt' ? 'Có tồn tại' : ST[s].t}<b>${cnt[s]}</b></button>`).join('')}</div></div>
       ${PV.mode === 'map' ? `<div class="section"><div class="planbox" id="pbox"><svg id="psvg"></svg><div class="zbtns"><button onclick="pz(1.6)">＋</button><button onclick="pz(1/1.6)">－</button><button onclick="PV.z=1;PV.cx=null;drawPlan()" title="Toàn bộ">⌖</button></div><div class="zlab" id="zlab"></div></div></div>
-        <div class="section ${CK[PV.sel] ? 'pkf' : ''}" id="peek">${peekHtml()}</div>` : planList()}`;
+        ${PV.lay ? layBarHtml() : `<div class="section ${CK[PV.sel] ? 'pkf' : ''}" id="peek">${peekHtml()}</div>`}` : planList()}`;
     return shell({ body, tab:'plan' });
   },
   after() { if (PV.mode === 'map') { drawPlan(); planEvents(); } }
@@ -2440,7 +2444,11 @@ function drawPlan() {
   svg.setAttribute('height', H); svg.style.height = H + 'px';
   const r0 = 2.6 / ppm, sw = 1 / ppm, showLab = ppm * 8 > 34;
   let s = '';
-  if (g.poly.length) s += `<polygon points="${g.poly.map(p => p[0].toFixed(2) + ',' + (-p[1]).toFixed(2)).join(' ')}" fill="#FFF8EF" stroke="#E2C9A6" stroke-width="${(1.2 * sw).toFixed(3)}"/>`;
+  if (g.poly.length) s += `<polygon points="${g.poly.map(p => p[0].toFixed(2) + ',' + (-p[1]).toFixed(2)).join(' ')}" fill="#FFF8EF" stroke="${B.cfg.info && B.cfg.info.ranhHam ? '#1C3D6E' : '#E2C9A6'}" stroke-width="${((B.cfg.info && B.cfg.info.ranhHam ? 2.2 : 1.2) * sw).toFixed(3)}"/>`;
+  (g.moc || []).forEach(m => { const x = m.p[0], y = -m.p[1], t = 3.2 * sw;   // 1.15.0: mốc trắc đạc
+    s += `<polygon points="${x},${y - t} ${x - t * 0.9},${y + t * 0.6} ${x + t * 0.9},${y + t * 0.6}" fill="#2F9E44" stroke="#fff" stroke-width="${(0.5 * sw).toFixed(3)}"/>`;
+    if (showLab) s += `<text x="${x + t * 1.2}" y="${y + t * 0.4}" font-size="${(9 * sw).toFixed(2)}" fill="#2B8A3E" font-weight="700">${esc(m.n)}</text>`; });
+  const layS = PV.lay && cur.v === 'plan' ? laySvg(g, sw, ppm, showLab) : '';   // 1.16.0: lớp bố trí vẽ sau cùng (trên cấu kiện) — ghép ở cuối
   const sel = PV.sel, any = PV.st || PV.f !== 'all' || PV.kp;
   Object.values(CK).forEach(c => {
     const q = g.pts[c.code]; if (!q) return;
@@ -2463,6 +2471,7 @@ function drawPlan() {
   s += planRipples(g, ppm, sw, any);
   if (sel && g.pts[sel]) { const q = g.pts[sel], cx = q.p[0].toFixed(2), cy = (-q.p[1]).toFixed(2); s += `<circle cx="${cx}" cy="${cy}" r="${(9 / ppm).toFixed(2)}" fill="none" stroke="#0B2545" stroke-width="${(2.4 * sw).toFixed(3)}"/><circle class="pl-pulse" cx="${cx}" cy="${cy}" r="${(9 / ppm).toFixed(2)}" fill="none" stroke="#F26522" stroke-width="${(2.4 * sw).toFixed(3)}"><animate attributeName="r" values="${(7 / ppm).toFixed(2)};${(20 / ppm).toFixed(2)};${(7 / ppm).toFixed(2)}" dur="1.4s" repeatCount="indefinite"/><animate attributeName="opacity" values="1;0.15;1" dur="1.4s" repeatCount="indefinite"/></circle>`; }
   s += `<g transform="translate(${(PV.cx + vw / 2 - 26 / ppm).toFixed(2)},${(-PV.cy + vh / 2 - 26 / ppm).toFixed(2)})"><g transform="rotate(${-(+B.cfg.rot || 0)})"><path d="M0 ${-12 / ppm} L${4 / ppm} ${4 / ppm} L0 ${1 / ppm} L${-4 / ppm} ${4 / ppm}Z" fill="#0B2545"/><text y="${-15 / ppm}" font-size="${9 / ppm}" text-anchor="middle" font-weight="800" fill="#0B2545">B</text></g></g>`;
+  s += layS;
   svg.innerHTML = s;
   const zl = $('#zlab'); if (zl) zl.textContent = (PV.z < 1.05 ? 'Toàn bộ' : 'Phóng ' + PV.z.toFixed(1) + '×') + (showLab ? ' · 10 m ≈ ' + Math.round(10 * ppm) + ' px' : ' · bấm ＋ để hiện mã');
 }
@@ -2502,6 +2511,129 @@ function planRipples(g, ppm, sw, any) {
   });
   return s;
 }
+// ===== 1.16.0: BỐ TRÍ CÔNG TRƯỜNG — thiết bị / bãi trên mặt bằng, kéo thả, tự kiểm tra va chạm =====
+// cfg.layout = { items:[{ id, k, ten, X, Y, rot, L, W, r, dev:{id, ma, ten} }], nguong:{ nang, moc }, at, by }
+// X = Bắc, Y = Đông (cùng hệ tọa độ cấu kiện của dự án) · rot = góc trục dài so với hướng Đông (độ, ngược chiều kim đồng hồ)
+const LK = {
+  cau:{ t:'Cẩu bánh xích', L:8, W:6, c:'#C92A2A', nang:1, r:15, ic:'CẨU' }, cap:{ t:'Máy cạp / gầu ngoạm', L:7, W:5, c:'#E8590C', nang:1, ic:'CẠP' },
+  khoan:{ t:'Máy khoan cọc', L:7, W:5, c:'#D9480F', nang:1, ic:'KHOAN' }, silo:{ t:'Silo', L:3, W:3, c:'#5F3DC4', tron:1, codinh:1, nang:1, ic:'SILO' },
+  bon:{ t:'Bồn bentonite', L:6, W:2.5, c:'#3B5BDB', codinh:1, nang:1, ic:'BỒN' }, tach:{ t:'Trạm tách cát', L:6, W:2.5, c:'#1971C2', codinh:1, ic:'TÁCH' },
+  phat:{ t:'Máy phát điện', L:4, W:2, c:'#495057', codinh:1, ic:'PHÁT' }, cont:{ t:'Container / văn phòng', L:6, W:2.4, c:'#2B8A3E', codinh:1, nguoi:1, ic:'VP' },
+  thep:{ t:'Bãi thép / lồng', L:20, W:8, c:'#868E96', codinh:1, bai:1, ic:'BÃI THÉP' }, bun:{ t:'Bãi bùn / đất thải', L:10, W:8, c:'#8D6E63', codinh:1, bai:1, ic:'BÃI BÙN' },
+  xebt:{ t:'Xe bồn bê tông', L:9, W:2.5, c:'#F59F00', nang:1, ic:'XE BT' }, xeben:{ t:'Xe ben', L:8, W:2.5, c:'#E67700', nang:1, ic:'XE BEN' },
+  cong:{ t:'Cổng', L:6, W:0.8, c:'#212529', ic:'CỔNG' }, khac:{ t:'Khác', L:3, W:3, c:'#ADB5BD', codinh:1, ic:'' }
+};
+const LAYN = { nang:3, moc:1 };      // ngưỡng mặc định — CHT sửa theo biện pháp thi công
+let LAY = null;                       // bản đang sửa (chưa lưu)
+const layData = () => LAY || (B && B.cfg && B.cfg.layout) || { items:[] };
+const layNg = () => Object.assign({}, LAYN, layData().nguong || {});
+const canLay = () => hp('t_qt') || hp('t_cht') || hp('t_kh');
+function layEdit() { if (!LAY) LAY = JSON.parse(JSON.stringify((B.cfg && B.cfg.layout) || { items:[] })); LAY.items = LAY.items || []; return LAY; }
+// --- hình học (hệ Đông E – Bắc N, mét) ---
+const lEN = o => [+o.Y, +o.X];
+function lCorners(o) {
+  const k = LK[o.k] || LK.khac, L = +o.L || k.L, W = +o.W || k.W, a = (+o.rot || 0) * Math.PI / 180, c = Math.cos(a), s = Math.sin(a), [E, N] = lEN(o);
+  if (k.tron) { const R = L / 2, out = []; for (let i = 0; i < 12; i++) { const t = i * Math.PI / 6; out.push([E + R * Math.cos(t), N + R * Math.sin(t)]); } return out; }
+  return [[-L / 2, -W / 2], [L / 2, -W / 2], [L / 2, W / 2], [-L / 2, W / 2]].map(([u, v]) => [E + u * c - v * s, N + u * s + v * c]);
+}
+function dSeg(p, a, b) { const dx = b[0] - a[0], dy = b[1] - a[1], l2 = dx * dx + dy * dy; let t = l2 ? ((p[0] - a[0]) * dx + (p[1] - a[1]) * dy) / l2 : 0; t = Math.max(0, Math.min(1, t)); return Math.hypot(p[0] - a[0] - t * dx, p[1] - a[1] - t * dy); }
+function segX(a, b, c, d) { const o = (p, q, r) => Math.sign((q[0] - p[0]) * (r[1] - p[1]) - (q[1] - p[1]) * (r[0] - p[0])); return o(a, b, c) !== o(a, b, d) && o(c, d, a) !== o(c, d, b); }
+function inPoly(p, P) { let r = false; for (let i = 0, j = P.length - 1; i < P.length; j = i++) { if ((P[i][1] > p[1]) !== (P[j][1] > p[1]) && p[0] < (P[j][0] - P[i][0]) * (p[1] - P[i][1]) / (P[j][1] - P[i][1]) + P[i][0]) r = !r; } return r; }
+function polyDist(A, B, closedB) {            // khoảng cách nhỏ nhất giữa đa giác A (kín) và đường B (kín nếu closedB) · 0 nếu cắt / chứa
+  const eA = A.map((p, i) => [p, A[(i + 1) % A.length]]), eB = B.map((p, i) => [p, B[(i + 1) % B.length]]).slice(0, closedB ? B.length : B.length - 1);
+  for (const [a, b] of eA) for (const [c, d] of eB) if (segX(a, b, c, d)) return 0;
+  let m = Infinity; A.forEach(p => eB.forEach(([c, d]) => { m = Math.min(m, dSeg(p, c, d)); })); B.forEach(p => eA.forEach(([a, b]) => { m = Math.min(m, dSeg(p, a, b)); }));
+  return m;
+}
+// --- kiểm tra --- (chồng lấn: bỏ qua cặp đều là thiết bị cố định — trạm silo + bồn ghép sát nhau là bình thường)
+function layCheck() {
+  const D = layData(), it = D.items || [], ng = layNg(), out = [];
+  const ranh = ((B.cfg.poly || [])).map(q => [q[1], q[0]]);
+  const moc = ((B.cfg.info && B.cfg.info.moc) || []).map(m => ({ n:m[0], p:[m[2], m[1]] }));
+  const pan = Object.values(CK).filter(c => c.loai === 'tv' && c.m && c.m.a && c.m.b).map(c => ({ code:c.code, s:[[c.m.a[1], c.m.a[0]], [c.m.b[1], c.m.b[0]]] }));
+  const C = it.map(o => lCorners(o));
+  it.forEach((o, i) => {
+    const k = LK[o.k] || LK.khac, A = C[i], ten = o.ten || k.t, cen = lEN(o);
+    if (k.nang && ranh.length >= 3) { const d = polyDist(A, ranh, true); if (d < ng.nang) out.push({ i, m:2, t:`${ten} cách tuyến tường vây ${fmtN(d, 1)} m (ngưỡng ${fmtN(ng.nang, 1)} m)` }); }
+    if (k.nang && pan.length) { let bd = Infinity, bc = ''; pan.forEach(p => { const d = polyDist(A, p.s, false); if (d < bd) { bd = d; bc = p.code; } }); if (bd < ng.nang && !(ranh.length >= 3 && polyDist(A, ranh, true) < ng.nang)) out.push({ i, m:2, t:`${ten} cách panel ${bc} ${fmtN(bd, 1)} m` }); }
+    if (k.codinh && ranh.length >= 3 && inPoly(cen, ranh)) out.push({ i, m:1, t:`${ten} nằm trong ranh hố — phải dời trước khi bàn giao mặt bằng đào` });
+    moc.forEach(m => { const d = inPoly(m.p, A) ? 0 : Math.min(...A.map((p, j) => dSeg(m.p, p, A[(j + 1) % A.length]))); if (d < ng.moc) out.push({ i, m:2, t:`${ten} ${d === 0 ? 'đè lên' : 'sát'} mốc ${m.n}` }); });
+    it.forEach((q, j) => { if (j <= i || (k.codinh && (LK[q.k] || LK.khac).codinh)) return; const B2 = C[j]; if (polyDist(A, B2, true) === 0) out.push({ i, j, m:2, t:`${ten} chồng lên ${q.ten || (LK[q.k] || LK.khac).t}` }); });
+    if (o.k === 'cau') { const R = +o.r || k.r; it.forEach((q, j) => { if (j === i || !(LK[q.k] || {}).nguoi) return; const d = Math.min(...C[j].map(p => Math.hypot(p[0] - cen[0], p[1] - cen[1]))); if (d < R) out.push({ i, m:1, t:`Tầm quay cần ${ten} (${fmtN(R, 0)} m) chạm ${q.ten || 'container / VP'}` }); }); }
+  });
+  return out;
+}
+// --- vẽ ---
+function laySvg(g, sw, ppm, showLab) {
+  const D = layData(), it = D.items || []; if (!it.length && !PV.ledit) return '';
+  const W = layCheck(), bad = {}; W.forEach(w => { bad[w.i] = Math.max(bad[w.i] || 0, w.m); if (w.j !== undefined) bad[w.j] = Math.max(bad[w.j] || 0, w.m); });
+  const rot = +B.cfg.rot || 0; let s = '';
+  it.forEach((o, i) => {
+    const k = LK[o.k] || LK.khac, p = g.tf(+o.X, +o.Y), a = -((+o.rot || 0) + rot), L = +o.L || k.L, Wd = +o.W || k.W;
+    const st = bad[i] === 2 ? '#E03131' : bad[i] === 1 ? '#F08C00' : '#fff', sel = PV.lsel === o.id;
+    if (o.k === 'cau') s += `<circle cx="${p[0].toFixed(2)}" cy="${(-p[1]).toFixed(2)}" r="${(+o.r || k.r)}" fill="rgba(201,42,42,.05)" stroke="#C92A2A" stroke-width="${(0.8 * sw).toFixed(3)}" stroke-dasharray="${(4 * sw).toFixed(2)} ${(3 * sw).toFixed(2)}" pointer-events="none"/>`;
+    s += `<g transform="translate(${p[0].toFixed(2)} ${(-p[1]).toFixed(2)}) rotate(${a.toFixed(1)})" data-l="${esc(o.id)}" style="cursor:${PV.ledit ? 'move' : 'pointer'}">`;
+    s += k.tron ? `<circle r="${(L / 2).toFixed(2)}" fill="${k.c}" fill-opacity="${k.bai ? .25 : .85}" stroke="${sel ? '#1C7ED6' : st}" stroke-width="${((sel || bad[i] ? 2.4 : 1) * sw).toFixed(3)}" data-l="${esc(o.id)}"/>`
+      : `<rect x="${(-L / 2).toFixed(2)}" y="${(-Wd / 2).toFixed(2)}" width="${L}" height="${Wd}" rx="${(0.3).toFixed(2)}" fill="${k.c}" fill-opacity="${k.bai ? .25 : .85}" stroke="${sel ? '#1C7ED6' : st}" stroke-width="${((sel || bad[i] ? 2.4 : 1) * sw).toFixed(3)}" data-l="${esc(o.id)}"${k.bai ? ` stroke-dasharray="${(3 * sw).toFixed(2)} ${(2 * sw).toFixed(2)}"` : ''}/>`;
+    if (showLab && k.ic && ppm * Math.min(L, 6) > 26) s += `<text text-anchor="middle" dy="${(3 * sw).toFixed(2)}" font-size="${(Math.min(10, ppm * Math.min(Wd, 3) * 0.45) * sw).toFixed(2)}" font-weight="800" fill="${k.bai ? '#343A40' : '#fff'}" pointer-events="none">${esc(k.ic)}</text>`;
+    s += `</g>`;
+    if (bad[i]) s += `<circle cx="${(p[0] + L / 2).toFixed(2)}" cy="${(-p[1] - Wd / 2).toFixed(2)}" r="${(4 * sw).toFixed(2)}" fill="${bad[i] === 2 ? '#E03131' : '#F08C00'}" stroke="#fff" stroke-width="${(1 * sw).toFixed(2)}" pointer-events="none"/>`;
+  });
+  return s;
+}
+// --- giao diện ---
+function layBarHtml() {
+  const W = layCheck(), D = layData(), it = D.items || [], o = it.find(x => x.id === PV.lsel), ng = layNg();
+  const dirty = !!LAY;
+  let h = `<div class="section"><div class="card pad"><div class="sec-title">🏗 Bố trí công trường <small style="font-weight:600;color:var(--text2)">${it.length} mục${W.length ? ` · <b style="color:#C92A2A">${W.length} cảnh báo</b>` : ' · không có cảnh báo'}</small></div>`;
+  if (canLay()) h += `<div class="split mt8" style="gap:8px;flex-wrap:wrap">${PV.ledit ? `<button class="btn sm" onclick="laySave()" ${dirty ? '' : 'disabled'}>💾 Lưu bố trí</button><button class="btn ghost sm" onclick="LAY=null;PV.ledit=0;PV.place='';PV.lsel='';render(false)">${dirty ? 'Hủy thay đổi' : 'Xong'}</button>` : `<button class="btn ghost sm" onclick="PV.ledit=1;render(false)">✏️ Sửa bố trí</button>`}</div>`;
+  if (PV.ledit) {
+    h += `<div class="small mt8">${PV.place ? `👉 Chạm lên mặt bằng để đặt <b>${esc(LK[PV.place].t)}</b> · <a onclick="PV.place='';render(false)" style="color:#C92A2A">bỏ</a>` : 'Chọn loại rồi chạm lên mặt bằng để đặt · chạm giữ và kéo để dời'}</div>
+      <div class="chip-row mt8" style="flex-wrap:wrap">${Object.keys(LK).map(k => `<span class="chip ${PV.place === k ? 'on' : ''}" onclick="PV.place=PV.place==='${k}'?'':'${k}';render(false)" style="border-color:${LK[k].c}"><i style="display:inline-block;width:9px;height:9px;border-radius:2px;background:${LK[k].c};margin-right:5px"></i>${esc(LK[k].t)}</span>`).join('')}</div>`;
+    if (o) {
+      const k = LK[o.k] || LK.khac, devs = (KHO && KHO.devices) || [];
+      h += `<div class="fsec mt8"><div class="fsec-t">${esc(k.t)}<small>${esc(o.ten || '')}</small></div>
+        <div class="fg"><label>Tên / số hiệu</label><input value="${esc(o.ten || '')}" onchange="laySet('ten',this.value)"></div>
+        <div class="fg-row"><div class="fg"><label>Dài (m)</label><input inputmode="decimal" value="${+o.L || k.L}" onchange="laySet('L',num(this.value))"></div><div class="fg"><label>Rộng (m)</label><input inputmode="decimal" value="${+o.W || k.W}" onchange="laySet('W',num(this.value))"></div>
+        ${o.k === 'cau' ? `<div class="fg"><label>Bán kính làm việc (m)</label><input inputmode="decimal" value="${+o.r || k.r}" onchange="laySet('r',num(this.value))"></div>` : ''}</div>
+        <div class="split" style="gap:6px;flex-wrap:wrap"><button class="btn ghost sm" onclick="layRot(-15)">⟲ 15°</button><button class="btn ghost sm" onclick="layRot(15)">⟳ 15°</button><button class="btn ghost sm" onclick="layRot(-90)">⟲ 90°</button><span class="small">Góc ${fmtN(+o.rot || 0, 0)}°</span></div>
+        ${['cau', 'cap', 'khoan', 'xebt', 'xeben', 'phat'].includes(o.k) ? `<div class="fg mt8"><label>Máy thật (Kho · máy đang ở công trình)</label><select onchange="layDev(this.value)"><option value="">— chưa gắn —</option>${devs.map(d => `<option value="${esc(String(d.id))}" ${o.dev && String(o.dev.id) === String(d.id) ? 'selected' : ''}>${esc((d.maQL ? d.maQL + ' · ' : '') + d.name)}</option>`).join('')}</select>${KHO ? '' : '<div class="small">Đang tải danh sách máy…</div>'}</div>` : ''}
+        <div class="split mt8" style="gap:8px"><button class="btn ghost sm" onclick="layDup()">⧉ Nhân bản</button><button class="btn ghost sm" style="color:#C92A2A" onclick="layDel()">🗑 Xóa</button></div></div>`;
+    }
+    h += `<details class="mt8"><summary class="small" style="cursor:pointer">⚙️ Ngưỡng kiểm tra · nạp từ danh sách</summary>
+      <div class="fg-row mt8"><div class="fg"><label>Thiết bị nặng cách tuyến tường vây tối thiểu (m)</label><input inputmode="decimal" value="${ng.nang}" onchange="layEdit().nguong=Object.assign({},layNg(),{nang:num(this.value)});render(false)"></div>
+      <div class="fg"><label>Cách mốc trắc đạc tối thiểu (m)</label><input inputmode="decimal" value="${ng.moc}" onchange="layEdit().nguong=Object.assign({},layNg(),{moc:num(this.value)});render(false)"></div></div>
+      <div class="small">Ngưỡng mặc định ${LAYN.nang} m / ${LAYN.moc} m chỉ để bắt đầu — sửa theo biện pháp thi công được duyệt.</div>
+      <div class="fg mt8"><label>Nạp nhanh — mỗi dòng: loại; tên; X; Y; góc; dài; rộng</label><textarea id="lay-imp" rows="4" style="width:100%;font-family:monospace;font-size:12px" placeholder="silo; Silo 1; 1191952.1; 605880.4; 0"></textarea>
+      <button class="btn ghost sm mt8" onclick="layImport()">Thêm vào bố trí</button></div></details>`;
+  }
+  if (W.length) h += `<div class="mt8">${W.map(w => `<div class="row tap" onclick="PV.lsel='${esc((it[w.i] || {}).id || '')}';drawPlan();render(false)" style="padding:6px 0"><span style="color:${w.m === 2 ? '#E03131' : '#F08C00'};font-weight:800;margin-right:6px">${w.m === 2 ? '●' : '▲'}</span><span class="small" style="flex:1">${esc(w.t)}</span></div>`).join('')}</div>`;
+  return h + `</div></div>`;
+}
+function layObj() { const D = layEdit(); return D.items.find(x => x.id === PV.lsel); }
+function laySet(k, v) { const o = layObj(); if (!o) return; if (typeof v === 'number' && !(v > 0)) return; o[k] = v; render(false); }
+function layRot(d) { const o = layObj(); if (!o) return; o.rot = (((+o.rot || 0) + d) % 360 + 360) % 360; render(false); }
+function layDev(id) { const o = layObj(); if (!o) return; const d = ((KHO && KHO.devices) || []).find(x => String(x.id) === String(id)); o.dev = d ? { id:d.id, ma:d.maQL || '', ten:d.name } : null; if (d && !o.ten) o.ten = d.name; render(false); }
+function layDel() { const D = layEdit(); D.items = D.items.filter(x => x.id !== PV.lsel); PV.lsel = ''; render(false); }
+function layDup() { const o = layObj(); if (!o) return; const n = Object.assign({}, o, { id:uid('L'), X:+o.X - 4, Y:+o.Y + 4, dev:null }); layEdit().items.push(n); PV.lsel = n.id; render(false); }
+function layAdd(k, X, Y) { const t = LK[k] || LK.khac; const o = { id:uid('L'), k, ten:'', X:Math.round(X * 1000) / 1000, Y:Math.round(Y * 1000) / 1000, rot:0, L:t.L, W:t.W }; if (k === 'cau') o.r = t.r; layEdit().items.push(o); PV.lsel = o.id; PV.place = ''; render(false); }
+function layImport() {
+  const ali = { 'silo':'silo', 'bồn':'bon', 'bon':'bon', 'cẩu':'cau', 'cau':'cau', 'container':'cont', 'cont':'cont', 'vp':'cont', 'tách':'tach', 'tach':'tach', 'cạp':'cap', 'cap':'cap', 'khoan':'khoan', 'phát':'phat', 'phat':'phat', 'bãi thép':'thep', 'thep':'thep', 'bãi bùn':'bun', 'bun':'bun', 'xe bt':'xebt', 'xebt':'xebt', 'xe ben':'xeben', 'xeben':'xeben', 'cổng':'cong', 'cong':'cong', 'khac':'khac', 'khác':'khac' };
+  let n = 0, bad = [];
+  $('#lay-imp').value.split(/\r?\n/).forEach((l, i) => { if (!l.trim()) return; const f = l.split(/[;\t]/).map(x => x.trim()); const k = ali[(f[0] || '').toLowerCase()] || (LK[f[0]] ? f[0] : ''); const X = num(f[2]), Y = num(f[3]);
+    if (!k || !isFinite(X) || !isFinite(Y)) { bad.push(i + 1); return; }
+    const t = LK[k]; const o = { id:uid('L'), k, ten:f[1] || '', X, Y, rot:num(f[4]) || 0, L:num(f[5]) || t.L, W:num(f[6]) || t.W }; if (k === 'cau') o.r = t.r; layEdit().items.push(o); n++; });
+  toast(`Đã thêm ${n} mục${bad.length ? ' · bỏ qua dòng ' + bad.slice(0, 8).join(', ') : ''} — bấm Lưu bố trí`, 5000); GEO = null; render(false);
+}
+function laySave() {
+  const D = layEdit(); D.at = new Date().toISOString(); D.by = me.name;
+  const W = layCheck();
+  cfgSave('layout', D); LAY = null; PV.ledit = 0; PV.place = '';
+  toast(`💾 Đã lưu bố trí · ${D.items.length} mục${W.length ? ' · ⚠️ ' + W.length + ' cảnh báo' : ''}`, 4000); render(false);
+}
+function scr2map(e) { const box = $('#pbox'), svg = $('#psvg'); const r = box.getBoundingClientRect(); const vb = svg.getAttribute('viewBox').split(' ').map(Number), k = vb[2] / r.width; return [vb[0] + (e.clientX - r.left) * k, -(vb[1] + (e.clientY - r.top) * k)]; }
+function map2world(m) { const g = geo(); const mx = m[0], my = m[1]; const dx = mx * g.cs + my * g.sn, dy = -mx * g.sn + my * g.cs; return [dy + g.N0, dx + g.E0]; }   // → [X Bắc, Y Đông]
+
 function pz(f, px, py) {
   const box = $('#pbox'); if (!box) return;
   const old = PV.z; PV.z = Math.min(12, Math.max(1, PV.z * f));
@@ -2513,15 +2645,23 @@ function planEvents() {
   const box = $('#pbox'); if (!box) return;
   const pts = new Map(); let moved = false, start = null, pinch = null;
   const ppm = () => { const g = geo(), W = box.clientWidth, H = $('#psvg').clientHeight; return Math.min(W / (g.x1 - g.x0), H / (g.y1 - g.y0)) * PV.z; };
-  box.addEventListener('pointerdown', e => { box.setPointerCapture(e.pointerId); pts.set(e.pointerId, [e.clientX, e.clientY]); moved = false; start = [e.clientX, e.clientY, PV.cx, PV.cy]; if (pts.size === 2) { const v = [...pts.values()]; pinch = [Math.hypot(v[0][0] - v[1][0], v[0][1] - v[1][1]), PV.z]; } });
+  let LD = null;   // 1.16.0: kéo thiết bị bố trí
+  box.addEventListener('pointerdown', e => { box.setPointerCapture(e.pointerId); pts.set(e.pointerId, [e.clientX, e.clientY]); moved = false; start = [e.clientX, e.clientY, PV.cx, PV.cy];
+    LD = null; if (PV.lay && PV.ledit && !PV.place && pts.size === 1) { const t = e.target && e.target.closest && e.target.closest('[data-l]'); const id = t && t.getAttribute('data-l'); const o = id && layEdit().items.find(x => x.id === id); if (o) { LD = { o, w0:map2world(scr2map(e)), X:+o.X, Y:+o.Y }; PV.lsel = id; } } if (pts.size === 2) { const v = [...pts.values()]; pinch = [Math.hypot(v[0][0] - v[1][0], v[0][1] - v[1][1]), PV.z]; } });
   box.addEventListener('pointermove', e => {
     if (!pts.has(e.pointerId)) return; pts.set(e.pointerId, [e.clientX, e.clientY]);
     if (pts.size === 2 && pinch) { const v = [...pts.values()]; const d = Math.hypot(v[0][0] - v[1][0], v[0][1] - v[1][1]); const nz = Math.min(12, Math.max(1, pinch[1] * d / pinch[0])); if (Math.abs(nz - PV.z) > 0.02) { PV.z = nz; if (PV.z === 1) PV.cx = null; drawPlan(); } moved = true; return; }
     const dx = e.clientX - start[0], dy = e.clientY - start[1];
     if (Math.abs(dx) + Math.abs(dy) > 6) moved = true;
+    if (LD) { if (moved) { const w = map2world(scr2map(e)); LD.o.X = Math.round((LD.X + w[0] - LD.w0[0]) * 1000) / 1000; LD.o.Y = Math.round((LD.Y + w[1] - LD.w0[1]) * 1000) / 1000; drawPlan(); } return; }
     if (moved && PV.z > 1 && start[2] !== null) { const k = ppm(); PV.cx = start[2] - dx / k; PV.cy = start[3] + dy / k; drawPlan(); }
   });
   const up = e => { pts.delete(e.pointerId); if (pts.size < 2) pinch = null;
+    if (LD) { const was = LD; LD = null; if (e.type === 'pointerup') { render(false); } return; }
+    if (PV.lay && !moved && e.type === 'pointerup') {   // 1.16.0: đặt mới / chọn thiết bị
+      if (PV.ledit && PV.place) { const w = map2world(scr2map(e)); layAdd(PV.place, w[0], w[1]); return; }
+      const t = document.elementFromPoint(e.clientX, e.clientY); const id = t && t.closest && t.closest('[data-l]') && t.closest('[data-l]').getAttribute('data-l');
+      if (id) { PV.lsel = id; render(false); return; } if (PV.ledit) { PV.lsel = ''; render(false); return; } }
     if (!moved && e.type === 'pointerup') { const t = document.elementFromPoint(e.clientX, e.clientY); const code = t && t.getAttribute && t.getAttribute('data-c'); if (code) { PV.sel = code; drawPlan(); setPeek(); } else { const near = nearestCk(e); if (near) { PV.sel = near; drawPlan(); setPeek(); } } }
     if (pts.size === 1) { const v = [...pts.values()][0]; start = [v[0], v[1], PV.cx, PV.cy]; } };
   box.addEventListener('pointerup', up); box.addEventListener('pointercancel', up);
@@ -3203,7 +3343,15 @@ VIEWS.qtri = {
     const cfg = B ? B.cfg || {} : {};
     if (tab === 'ch') {
       const info = cfg.info || {}, L = LIM(), lv = cfg.levels || [];
-      inner = `${itpBox(cfg)}<div class="fsec"><div class="fsec-t">🏢 Thông tin dự án<small>in lên biên bản</small></div>${INFO_F.map(f => `<div class="fg"><label>${f[1]}</label><input id="in-${f[0]}" value="${esc(info[f[0]] || '')}"></div>`).join('')}<button class="btn sm" onclick="saveInfo()">Lưu thông tin</button></div>
+      const ptxt = l => (l || []).map(q => q.join('  ')).join('\n');
+      const soN = Object.values(CK).filter(ckSo).length;
+      const ranhBox = `<div class="fsec"><div class="fsec-t">📐 Ranh hầm &amp; mốc trắc đạc<small>VN2000 · vẽ lên mặt bằng</small></div>
+          <div class="small" style="line-height:1.5">Mỗi dòng: <b>Tên  X  Y</b> (X hướng Bắc ~1.19x.xxx, Y hướng Đông ~6xx.xxx), cách nhau bằng dấu cách hoặc tab. Ranh hầm: các đỉnh theo thứ tự đi vòng. Dán thẳng từ bảng tọa độ bản vẽ được.</div>
+          ${soN ? `<div class="note n-warn mt8">⚠️<span>Dự án có ${soN} cấu kiện tọa độ sơ đồ (không phải VN2000) — ranh VN2000 sẽ không khớp vị trí cấu kiện.</span></div>` : ''}
+          <div class="fg mt8"><label>Ranh hầm (${(cfg.poly || []).length} đỉnh)</label><textarea id="rh-poly" rows="6" style="width:100%;font-family:monospace;font-size:12px">${esc(ptxt((cfg.poly || []).map((q, i) => [(cfg.info && cfg.info.ranhTen && cfg.info.ranhTen[i]) || 'Đ' + (i + 1), q[0], q[1]])))}</textarea></div>
+          <div class="fg"><label>Mốc trắc đạc (${((cfg.info && cfg.info.moc) || []).length} mốc)</label><textarea id="rh-moc" rows="5" style="width:100%;font-family:monospace;font-size:12px">${esc(ptxt((cfg.info && cfg.info.moc) || []))}</textarea></div>
+          <div id="rh-res" class="small"></div><button class="btn sm" onclick="saveRanh()">Lưu ranh &amp; mốc</button></div>`;
+      inner = `${itpBox(cfg)}${ranhBox}<div class="fsec"><div class="fsec-t">🏢 Thông tin dự án<small>in lên biên bản</small></div>${INFO_F.map(f => `<div class="fg"><label>${f[1]}</label><input id="in-${f[0]}" value="${esc(info[f[0]] || '')}"></div>`).join('')}<button class="btn sm" onclick="saveInfo()">Lưu thông tin</button></div>
         <div class="fsec"><div class="fsec-t">📏 Ngưỡng kiểm tra<small>theo BPTC / chỉ dẫn kỹ thuật</small></div>
           <div class="fg-row">${[['e', 'Sai lệch tim tối đa (mm)'], ['exy', 'Sai lệch tim mỗi trục X/Y (mm)'], ['nghieng', 'Nghiêng cọc tối đa (%)'], ['ngTV', 'Nghiêng tường vây (%)'], ['gianDoan', 'Gián đoạn đổ BT tối đa (phút)'], ['can', 'Cặn đáy tối đa (mm)'], ['hMin', 'Độ ngập ống tremie tối thiểu (m) · báo đỏ'], ['hGoiY', 'Độ ngập giữ lại khi gợi ý tháo ống (m)'], ['ongChinh', 'Chiều dài ống tremie chính (m)'], ['sauTre', 'Thời gian sau trộn tối đa (phút)'], ['hanChong', 'Hàn chồng râu (× đường kính, VD 10)'], ['longDinh', 'Dung sai đỉnh thép chủ (± mm)'], ['duBT', 'Đổ dư trên cắt đầu cọc (m)'], ['xeM3', 'Dung tích 1 xe bê tông (m³)'], ['qtCanh', 'Quan trắc nghiêng · cảnh báo (mm)'], ['qtDung', 'Quan trắc nghiêng · dừng (mm)'], ['kpXY', 'Kingpost · lệch tim mỗi trục (± mm) — trống: chỉ ghi số'], ['kpZ', 'Kingpost · cao độ đỉnh (± mm)'], ['kpXoay', 'Kingpost · góc xoay (± độ)']].map(f => `<div class="fg"><label>${f[1]}</label><input inputmode="decimal" id="lm-${f[0]}" value="${esc(L[f[0]])}"></div>`).join('')}</div>
           <div class="fg-row">${[['kl', 'Khối lượng riêng (g/cm³)'], ['nhot', 'Độ nhớt Marsh (s)'], ['nhotTruoc', 'Độ nhớt trước đổ (s)'], ['cat', 'Hàm lượng cát (%)'], ['ph', 'pH'], ['sut', 'Độ sụt (cm)'], ['cachDay', 'Đầu ống tremie cách đáy (m)']].map(f => `<div class="fg"><label>${f[1]} · từ – đến</label><input id="lm-${f[0]}" value="${esc((L[f[0]] || []).join(' – '))}"></div>`).join('')}
@@ -3269,6 +3417,30 @@ async function applyItp() {
   cfgSave('itp', ITP_TTHC.itp);
   const docs = (c.docs || []).slice(); ITP_TTHC.docs.forEach(d => { if (!docs.some(x => x.so === d.so)) docs.unshift(d); }); cfgSave('docs', docs);
   toast('Đã áp dụng ITP'); render(false);
+}
+// 1.15.0: ranh hầm (cfg.poly = [[X, Y]…]) + mốc (cfg.info.moc = [[tên, X, Y]…]) — tọa độ VN2000
+function parsePts(txt, named) {
+  const out = [], bad = [];
+  String(txt || '').split(/\r?\n/).forEach((l, i) => {
+    const t = l.trim(); if (!t) return;
+    const nums = (t.match(/-?\d+(?:[.,]\d+)?/g) || []).map(v => +v.replace(',', '.')).filter(v => v > 100000);
+    const name = t.replace(/^\s*/, '').split(/[\s\t;]+/)[0];
+    if (nums.length < 2) { bad.push(i + 1); return; }
+    let X = nums[0], Y = nums[1]; if (X < 1e6 && Y > 1e6) { const z = X; X = Y; Y = z; }   // dán nhầm thứ tự Y X
+    if (X < 1e6 || X > 2.6e6 || Y < 1e5 || Y > 1e6) { bad.push(i + 1); return; }
+    out.push([/^-?\d/.test(name) ? (named ? 'M' + (out.length + 1) : 'Đ' + (out.length + 1)) : name.slice(0, 20), X, Y]);
+  });
+  return { out, bad };
+}
+function saveRanh() {
+  const a = parsePts($('#rh-poly').value), b = parsePts($('#rh-moc').value, 1), box = $('#rh-res');
+  if (a.bad.length || b.bad.length) { box.innerHTML = `<span style="color:#C92A2A">Dòng không đọc được tọa độ VN2000 — ranh: ${a.bad.join(', ') || '—'} · mốc: ${b.bad.join(', ') || '—'}</span>`; return; }
+  if (a.out.length && a.out.length < 3) { box.innerHTML = '<span style="color:#C92A2A">Ranh hầm cần ít nhất 3 đỉnh</span>'; return; }
+  let per = 0, ar = 0; const P2 = a.out.map(q => [q[2], q[1]]);
+  P2.forEach((p, i) => { const q = P2[(i + 1) % P2.length]; per += Math.hypot(q[0] - p[0], q[1] - p[1]); ar += p[0] * q[1] - q[0] * p[1]; });
+  cfgSave('poly', a.out.map(q => [q[1], q[2]]));
+  cfgSave('info', Object.assign({}, B.cfg.info || {}, { moc:b.out, ranhTen:a.out.map(q => q[0]), ranhHam:a.out.length ? 1 : 0 }));
+  toast(`Đã lưu ${a.out.length} đỉnh ranh${a.out.length ? ` (chu vi ${fmtN(per, 1)} m · diện tích ${fmtN(Math.abs(ar) / 2, 0)} m²)` : ''} · ${b.out.length} mốc`, 5000); render(false);
 }
 function saveInfo() { const o = Object.assign({}, B.cfg.info || {}); INFO_F.forEach(([k]) => o[k] = $('#in-' + k).value.trim()); cfgSave('info', o); toast('Đã lưu'); }
 function saveLim() {

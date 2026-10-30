@@ -1,4 +1,6 @@
-// FECON Kho + Thi công - Service Worker v5.56.13
+// FECON Kho + Thi công - Service Worker v5.56.15
+// 5.56.15: Thi công 1.16.0 — bố trí công trường kéo thả + tự kiểm tra va chạm
+// 5.56.14: Thi công 1.15.0 — nhập ranh hầm + mốc trắc đạc VN2000, vẽ lên mặt bằng
 // 5.56.13: Thi công 1.14.0 — cấu kiện "tọa độ sơ đồ" (nạp từ bản vẽ), nạp trạng thái đã thi công từ Excel
 // 5.56.12: phiếu xuất bỏ ô Nhóm (hiện nhóm món đã chọn), phiếu mượn bắt chọn nhóm cho vật tư mới, Admin dọn nhóm Nhiên liệu ghi nhầm; Thi công 1.13.0: CHT/CHP "Gửi & xác nhận luôn"
 // 5.56.5: sửa tồn tính trùng (khai số ở công trường), báo cáo Excel bỏ cột cố định
@@ -63,7 +65,7 @@
 //  - Mở app: lấy file từ bộ nhớ của bản đang dùng; thiếu file nào mới lấy từ mạng.
 //  - Có sw.js mới trên GitHub: tải sẵn bản mới vào bộ nhớ riêng nhưng KHÔNG đổi bản đang dùng.
 //  - Địa chỉ có ?fresh=... luôn lấy thẳng từ mạng (app dùng để kiểm tra / tải bản mới).
-const VERSION = '5.56.13';
+const VERSION = '5.56.15';
 const APP = 'fecon-app-', META = 'fecon-meta';
 const CORE = ['./', './index.html', './thicong.html', './danhmuc.html', './manifest.json', './icon-192.png', './icon-512.png', './icon-maskable-192.png', './icon-maskable-512.png', './bg-login.jpg'];
 
