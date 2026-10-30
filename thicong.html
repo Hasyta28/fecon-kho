@@ -467,9 +467,9 @@ button .pi,.btn .pi,a .pi,.chip .pi,.tag .pi,.badge .pi,.yn .pi,.bnav .pi,.bnav-
 <div id="app"></div>
 <script>
 // FECON South · THI CÔNG 1.4.3 — chạy cùng app Kho (đăng nhập ở index.html, dùng chung máy chủ Apps Script)
-const KHO_VERSION = '5.56.12';
+const KHO_VERSION = '5.56.13';
 // ===== FECON Thi công 1.0 — lõi: máy chủ, lưu trên máy, hàng đợi gửi, điều hướng =====
-const TC_APP_VERSION = '1.13.0';   // 1.13.0 (FECON 5.56.12): CHT/CHP "Gửi & xác nhận luôn" (trừ Hold, Nghiệm thu, Khối lượng) — cần máy chủ TC 1.6.0
+const TC_APP_VERSION = '1.14.0';   // 1.14.0 (FECON 5.56.13): cấu kiện "tọa độ sơ đồ" (nạp từ bản vẽ, chưa có VN2000) — Định vị để trống X, Y thiết kế · nạp trạng thái đã thi công từ trang "Trang thai" ·   // 1.13.0 (FECON 5.56.12): CHT/CHP "Gửi & xác nhận luôn" (trừ Hold, Nghiệm thu, Khối lượng) — cần máy chủ TC 1.6.0
 const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbw6Rmi80I7RI3ij2U7RdRF5pYuQTnPrwEmGmUZS5xpxzLwwVynfoFUujZe1lm6HS1ymxw/exec';
 const LS_TOKEN = 'fecon_token_v5', LS_USER = 'fecon_user_v5';           // dùng chung phiên đăng nhập với Kho
 const LS_P = 'tc_proj', LS_BOOT = 'tc_boot2|', LS_OUT = 'tc_out_v1', LS_CA = 'tc_ca', LS_PART = 'fecon_part';
@@ -503,6 +503,9 @@ const VIEWS = {};
 const hp = k => !!(me && (me.role === 'ADM' || (me.perm && me.perm[k])));
 // 1.13.0: tự xác nhận — người có cả QA/QC + CHT (CHT, CHP…); điểm Hold, Nghiệm thu, Khối lượng luôn cần người thứ hai (khớp máy chủ TC_NOSELF)
 const NOSELF = { truoc:1, lt:1, kp:1, nt:1, kl:1 };
+// 1.14.0: cấu kiện nạp từ bản vẽ (m.so = 1) — x, y chỉ để vẽ sơ đồ, KHÔNG dùng làm tọa độ thiết kế
+const ckSo = c => !!(c && c.m && +c.m.so === 1);
+const ckX = c => c && !ckSo(c) ? c.x : '', ckY = c => c && !ckSo(c) ? c.y : '';
 const selfOk = mod => !!me && !NOSELF[mod] && (me.role === 'ADM' || (hp('t_qa') && hp('t_cht')));
 const selfSign = r => (r && r.sign || []).filter(s => s.act === 'xn' && s.self).slice(-1)[0];
 
@@ -1469,11 +1472,11 @@ const MODS = {
     sec:ctx => ctx.c.loai === 'tv' ? [
       { t:'📍 Tường dẫn · định vị panel', f:[row(N('sai', 'Sai lệch tim tường', 'mm', { lim:maxL('e') }), N('rong', 'Bề rộng lòng tường dẫn', 'mm')), row(N('zDinh', 'Cao độ đỉnh tường dẫn', 'm'), T('nguoiDo', 'Người đo', { def:() => me.name }))] }
     ] : [
-      { st:1, t:'🎯 Tim cọc · VN2000', f:[row(N('xTk', 'X thiết kế', '', { def:c => c.x, ro:1 }), N('yTk', 'Y thiết kế', '', { def:c => c.y, ro:1 })),
+      { st:1, t:ckSo(ctx.c) ? '🎯 Tim cọc · tự nhập X, Y thiết kế (cọc nạp từ bản vẽ)' : '🎯 Tim cọc · VN2000', f:[row(N('xTk', 'X thiết kế', '', { def:c => ckX(c), ro:c => !ckSo(c) }), N('yTk', 'Y thiết kế', '', { def:c => ckY(c), ro:c => !ckSo(c) })),
         row(N('xTt', 'X thực tế', 'm'), N('yTt', 'Y thực tế', 'm')),
         row3(C('dX', 'ΔX', ctx => dmm(ctx.d.xTt, ctx.d.xTk), 'mm', { lim:(ctx, v) => axL(ctx, ctx.d.xTt, ctx.d.xTk) }), C('dY', 'ΔY', ctx => dmm(ctx.d.yTt, ctx.d.yTk), 'mm', { lim:(ctx, v) => axL(ctx, ctx.d.yTt, ctx.d.yTk) }),
           C('e', 'Sai lệch e', ctx => { const a = dmmN(ctx.d.xTt, ctx.d.xTk), b = dmmN(ctx.d.yTt, ctx.d.yTk); return isFinite(a) && isFinite(b) ? Math.round(Math.hypot(a, b)) : ''; }, 'mm', { lim:maxL('e') }))],
-        note:'Dung sai ITP: ±50 mm theo từng trục X, Y (biên bản kiểm tra hố khoan) · e = √(ΔX² + ΔY²) để tham khảo · tọa độ gốc giữ nguyên' },
+        note:(ckSo(ctx.c) ? '⚠️ Cấu kiện nạp từ bản vẽ, CHƯA có tọa độ VN2000 — nhập X, Y thiết kế theo bảng tọa độ được duyệt. ' : '') + 'Dung sai ITP: ±50 mm theo từng trục X, Y (biên bản kiểm tra hố khoan) · e = √(ΔX² + ΔY²) để tham khảo · tọa độ gốc giữ nguyên' },
       { st:2, t:'🛢️ Ống vách · cao độ sin', f:[row(N('zSin', 'Cao độ sin (mặt bằng tại cọc)', 'm', { def:c => dz(c).gl }), N('ovL', 'Chiều dài ống vách', 'm', { def:c => tyOf(c).vach || '' })),
         row(T('ovD', 'Đường kính ngoài', { ph:'Theo BPTC' }), N('ovZ', 'Z đỉnh ống vách', 'm', { def:c => dz(c).gl })), row(N('thang', 'Độ thẳng đứng', '%', { lim:maxL('nghieng') }), S('may', 'Máy hạ ống', ctx => resMay(ctx))),
         row(S('to', 'Tổ đội', ctx => RES().to), T('nguoiDo', 'Người đo', { def:() => me.name }))],
@@ -1694,7 +1697,7 @@ function minDiff(a, b) { if (!a || !b) return NaN; const [h1, m1] = a.split(':')
 function ngMax(rows) { let m = NaN; (rows || []).forEach(r => { const s = num(r.sau), x = num(r.x) || 0, y = num(r.y) || 0; if (s > 0) { const v = Math.hypot(x, y) / 1000 / s * 100; m = isFinite(m) ? Math.max(m, v) : v; } }); return m; }
 // 5.39: kingpost — tọa độ thiết kế (nạp từ trang KP của sổ hồ sơ; chưa có thì lấy tim cọc), góc xoay, dung sai
 function kpPt(c) { const k = (c && c.m && c.m.kp) || {}, r3 = v => isFinite(num(v)) ? Math.round(num(v) * 1000) / 1000 : ''; const o = kpPt0(c, k); return { x1:r3(o.x1), y1:r3(o.y1), x2:r3(o.x2), y2:r3(o.y2) }; }
-function kpPt0(c, k) { return { x1:isFinite(num(k.x1TK)) ? num(k.x1TK) : c.x, y1:isFinite(num(k.y1TK)) ? num(k.y1TK) : c.y, x2:isFinite(num(k.x2TK)) ? num(k.x2TK) : '', y2:isFinite(num(k.y2TK)) ? num(k.y2TK) : '' }; }
+function kpPt0(c, k) { return { x1:isFinite(num(k.x1TK)) ? num(k.x1TK) : ckX(c), y1:isFinite(num(k.y1TK)) ? num(k.y1TK) : ckY(c), x2:isFinite(num(k.x2TK)) ? num(k.x2TK) : '', y2:isFinite(num(k.y2TK)) ? num(k.y2TK) : '' }; }
 function kpXoay(d) { const a = Math.atan2(num(d.y2TK) - num(d.y1TK), num(d.x2TK) - num(d.x1TK)), b = Math.atan2(num(d.y2) - num(d.y1), num(d.x2) - num(d.x1)); if (!isFinite(a) || !isFinite(b)) return NaN; let x = (b - a) * 180 / Math.PI; while (x > 180) x -= 360; while (x < -180) x += 360; return x; }
 function kpLim(key, fn, u) { return ctx => { const v = fn(ctx), L = num(LIM()[key]); if (!isFinite(v)) return null; if (!isFinite(L) || L <= 0) return { c:'o', m:'chưa khai dung sai — chỉ ghi số' }; return Math.abs(v) <= L ? { c:'o', m:`✓ trong ±${fmtN(L)} ${u}` } : { c:'w', m:`⚠ vượt ±${fmtN(L)} ${u}` }; }; }
 function xePrev(ctx) { const id = F && F.id, mine = (ctx.d.pb || [])[0] && ctx.d.pb[0].ck || (ctx.c && ctx.c.code); return Object.values(REC).filter(r => r.mod === 'xe' && r.id !== id && r.st !== 'huy' && r.ngay === (F ? F.ngay : today()) && r.d.gioDen && ((r.d.pb || []).some(x => x && x.ck === mine) || r.ck === mine) && minDiff(r.d.gioDen, ctx.d.gioDen) < 720).sort((a, b) => minDiff(a.d.gioDen, ctx.d.gioDen) - minDiff(b.d.gioDen, ctx.d.gioDen))[0] || null; }
@@ -1973,7 +1976,7 @@ function optList(f, ctx) { let o = typeof f.opt === 'function' ? f.opt(ctx) : f.
 function fieldHtml(f, ctx, ed) {
   if (f.row || f.row3) { const inner = (f.row || f.row3).map(x => fieldHtml(x, ctx, ed)).filter(Boolean); return inner.length ? `<div class="${f.row ? 'fg-row' : 'fg-row3'}">${inner.join('')}</div>` : ''; }
   if (f.show && !f.show(ctx.d)) return '';
-  const v = getP(ctx.d, f.k), dis = !ed || f.ro ? 'disabled' : '';
+  const v = getP(ctx.d, f.k), dis = !ed || (typeof f.ro === 'function' ? f.ro(ctx.c) : f.ro) ? 'disabled' : '';
   const lab = f.l ? `<label>${esc(f.l)}${f.u ? ` <span style="text-transform:none;letter-spacing:0">(${esc(f.u)})</span>` : ''}</label>` : '';
   const hint = `<div class="hint" data-h="${f.k}"></div>`;
   const ev = `data-k="${f.k}" oninput="fIn(this)" onchange="fIn(this)"`;
@@ -2747,7 +2750,7 @@ VIEWS.ck = {
     } else if (tab === 'tk') {
       const kv = c.loai === 'tv'
         ? [['Loại panel', c.m.k || c.type], ['Chiều dài b', fmtN(z.L, 3) + ' m'], ['Bề dày t', fmtN(z.t, 2) + ' m'], ['GL (mặt bằng thi công)', fmtZ(z.gl) + ' m'], ['Đỉnh thép / đỉnh đổ', fmtZ(z.top) + ' m'], ['Đáy tường', fmtZ(z.toe) + ' m'], ['Chiều sâu cạp', fmtN(z.Lk, 2) + ' m'], ['Gioăng cản nước', isFinite(z.gTop) ? fmtZ(z.gTop) + ' → ' + fmtZ(z.gBot) : '—'], ['V lý thuyết', fmtN(z.vlt, 2) + ' m³'], ['Bản vẽ', z.bv || '—'], ['Đầu A (X, Y)', c.m.a ? c.m.a.map(v => fmtN(v, 3)).join(' · ') : '—'], ['Đầu B (X, Y)', c.m.b ? c.m.b.map(v => fmtN(v, 3)).join(' · ') : '—']]
-        : [['Đường kính D', fmtN(z.d * 1000, 0) + ' mm'], ['Loại thiết kế', c.type], ['Trục · khu vực', (c.truc || '—') + ' · ' + (c.kv || '—')], ['X thiết kế (VN2000)', fmtN(c.x, 3)], ['Y thiết kế (VN2000)', fmtN(c.y, 3)], ['GL (mặt đất thi công)', fmtZ(z.gl) + ' m'], ['Z cắt đầu cọc (COL)', fmtZ(z.col) + ' m'], ['Z mũi thiết kế', fmtZ(z.toe) + ' m'], ['L khoan / L bê tông', fmtN(z.Lk, 2) + ' / ' + fmtN(z.Lbt, 2) + ' m'], ['V lý thuyết', fmtN(z.vlt, 2) + ' m³'], ['Thép lồng', z.thep ? fmtN(z.thep, 2) + ' t · ' + fmtN(z.nLong) + ' lồng' : '—'], ['Bản vẽ', z.bv || '—']];
+        : [['Đường kính D', fmtN(z.d * 1000, 0) + ' mm'], ['Loại thiết kế', c.type], ['Trục · khu vực', (c.truc || '—') + ' · ' + (c.kv || '—')], ...(ckSo(c) ? [['Vị trí', 'Theo bản vẽ — chưa có tọa độ VN2000']] : [['X thiết kế (VN2000)', fmtN(c.x, 3)], ['Y thiết kế (VN2000)', fmtN(c.y, 3)]]), ['GL (mặt đất thi công)', fmtZ(z.gl) + ' m'], ['Z cắt đầu cọc (COL)', fmtZ(z.col) + ' m'], ['Z mũi thiết kế', fmtZ(z.toe) + ' m'], ['L khoan / L bê tông', fmtN(z.Lk, 2) + ' / ' + fmtN(z.Lbt, 2) + ' m'], ['V lý thuyết', fmtN(z.vlt, 2) + ' m³'], ['Thép lồng', z.thep ? fmtN(z.thep, 2) + ' t · ' + fmtN(z.nLong) + ' lồng' : '—'], ['Bản vẽ', z.bv || '—']];
       inner = `<div class="kv-box w card" style="padding:2px 16px">${kv.map(x => `<div class="kv"><span>${esc(x[0])}</span><b>${esc(x[1])}</b></div>`).join('')}</div>${c.loai !== 'tv' && c.truc ? `<button class="btn ghost mt12" onclick="go('sec',{code:'${esc(c.code)}'})">📐 Xem mặt cắt trục ${esc(c.truc.split('-')[0])}</button>` : ''}`;
     } else if (tab === 'cl') {
       inner = liveITP({ c }) + `<button class="btn ghost mt12" onclick="go('bb',{code:'${esc(c.code)}'})">📑 Bộ biên bản ${c.loai === 'tv' ? '12' : '13'} biểu theo ITP · in / Excel</button><button class="btn mt8" onclick="openForm('nt','${esc(c.code)}')">🏁 ${lastOf(c.code, 'nt') ? 'Mở hồ sơ nghiệm thu' : 'Lập hồ sơ nghiệm thu'}</button>`;
@@ -3332,7 +3335,7 @@ async function resetTc(onlyTest) {
 }
 // ---------- nạp cấu kiện ----------
 const CK_COLS = [['code', 'Mã'], ['loai', 'Loại (Cọc / Panel / Cọc thử)'], ['type', 'Loại thiết kế'], ['x', 'X (Bắc)'], ['y', 'Y (Đông)'], ['kv', 'Khu vực'], ['truc', 'Trục'], ['d', 'D (m)'], ['gl', 'Cao độ mặt bằng thi công'], ['col', 'Z cắt đầu cọc'], ['toe', 'Z mũi / đáy'], ['bv', 'Bản vẽ'], ['v', 'V lý thuyết (m³)'], ['thep', 'Thép lồng (tấn)'], ['nLong', 'Số lồng'],
-  ['ax', 'Panel: X đầu A'], ['ay', 'Panel: Y đầu A'], ['bx', 'Panel: X đầu B'], ['by', 'Panel: Y đầu B'], ['t', 'Bề dày panel (m)'], ['top', 'Z đỉnh panel'], ['k', 'Loại panel (MỞ / TIẾP / ĐÓNG)'], ['gTop', 'Z đỉnh gioăng'], ['gBot', 'Z đáy gioăng']];
+  ['ax', 'Panel: X đầu A'], ['ay', 'Panel: Y đầu A'], ['bx', 'Panel: X đầu B'], ['by', 'Panel: Y đầu B'], ['t', 'Bề dày panel (m)'], ['top', 'Z đỉnh panel'], ['k', 'Loại panel (MỞ / TIẾP / ĐÓNG)'], ['gTop', 'Z đỉnh gioăng'], ['gBot', 'Z đáy gioăng'], ['so', 'Tọa độ sơ đồ (1 = theo bản vẽ, chưa có VN2000)']];
 async function ckTemplate() {
   showLoader('Đang tạo file mẫu…');
   try { const X = await loadXL(); const wb = new X.Workbook();
@@ -3342,8 +3345,10 @@ async function ckTemplate() {
   hideLoader();
 }
 const nk = s => String(s || '').normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/đ/gi, 'd').toLowerCase().replace(/[^a-z0-9]/g, '');
+let STT = null;
 async function ckImport(inp) {
   const f = inp.files && inp.files[0]; if (!f) return;
+  STT = null;
   showLoader('Đang đọc file…');
   let rows = [];
   try {
@@ -3351,6 +3356,8 @@ async function ckImport(inp) {
       const X = await loadXL(); const wb = new X.Workbook(); await wb.xlsx.load(await f.arrayBuffer());
       const ws = wb.worksheets[0];
       ws.eachRow({ includeEmpty:false }, r => rows.push(r.values.slice(1).map(v => v && typeof v === 'object' ? (v.result !== undefined ? v.result : v.text || '') : v)));
+      const ws2 = wb.worksheets.find(w => nk(w.name) === 'trangthai');   // 1.14.0: trang "Trang thai" = cấu kiện đã thi công
+      if (ws2) { STT = []; ws2.eachRow({ includeEmpty:false }, r => STT.push(r.values.slice(1).map(v => v instanceof Date ? v : v && typeof v === 'object' ? (v.result !== undefined ? v.result : v.text || '') : v))); }
     } else {
       const t = await f.text(); const sep = t.indexOf('\t') >= 0 ? '\t' : t.split('\n')[0].indexOf(';') >= 0 ? ';' : ',';
       rows = t.split(/\r?\n/).filter(l => l.trim()).map(l => l.split(sep).map(x => x.trim().replace(/^"|"$/g, '')));
@@ -3371,6 +3378,7 @@ async function ckImport(inp) {
     const meta = {};
     ['d', 'gl', 'col', 'toe', 'v', 'thep', 'nLong', 't', 'top', 'gTop', 'gBot'].forEach(k => { const v = nv(r, k); if (v !== undefined) meta[k] = v; });
     if (g(r, 'bv')) meta.bv = String(g(r, 'bv'));
+    if (String(g(r, 'so')).trim() === '1') meta.so = 1;   // 1.14.0
     let x = nv(r, 'x'), y = nv(r, 'y');
     if (loai === 'tv') {
       const a = [nv(r, 'ax'), nv(r, 'ay')], b = [nv(r, 'bx'), nv(r, 'by')];
@@ -3384,13 +3392,42 @@ async function ckImport(inp) {
   const box = $('#imp-res');
   if (err.length) { box.innerHTML = `<div class="note n-err">❌<span>${err.slice(0, 8).map(esc).join('<br>')}${err.length > 8 ? '<br>… và ' + (err.length - 8) + ' lỗi khác' : ''}</span></div>`; return; }
   const n = l => out.filter(c => c.loai === l).length;
-  box.innerHTML = `<div class="note n-info">📋<span>Đọc được <b>${out.length}</b> cấu kiện: ${n('coc')} cọc · ${n('tp')} cọc thử · ${n('tv')} panel. Thiếu cột: ${CK_COLS.filter(c => idx[c[0]] === undefined).map(c => c[1]).slice(0, 6).join(', ') || 'không'}${CK_COLS.filter(c => idx[c[0]] === undefined).length > 6 ? '…' : ''}</span></div><button class="btn mt8" id="imp-go">Nạp ${out.length} cấu kiện (${(cur.a.mode || 'them') === 'thay' ? 'thay toàn bộ' : 'thêm / cập nhật'})</button>`;
+  const SR = sttRecs(out), nSo = out.filter(c => c.meta.so).length;
+  box.innerHTML = `<div class="note n-info">📋<span>${nSo ? `⚠️ ${nSo} cấu kiện <b>tọa độ sơ đồ</b> (theo bản vẽ, chưa có VN2000) — Định vị để trống X, Y thiết kế.<br>` : ''}${SR ? `Trang "Trang thai": <b>${SR.recs.length}</b> cấu kiện đã thi công${SR.err.length ? ` · ⚠️ bỏ qua ${SR.err.length} dòng (${esc(SR.err.slice(0, 4).join('; '))}${SR.err.length > 4 ? '…' : ''})` : ''}.<br>` : ''}Đọc được <b>${out.length}</b> cấu kiện: ${n('coc')} cọc · ${n('tp')} cọc thử · ${n('tv')} panel. Thiếu cột: ${CK_COLS.filter(c => idx[c[0]] === undefined).map(c => c[1]).slice(0, 6).join(', ') || 'không'}${CK_COLS.filter(c => idx[c[0]] === undefined).length > 6 ? '…' : ''}</span></div><button class="btn mt8" id="imp-go">Nạp ${out.length} cấu kiện (${(cur.a.mode || 'them') === 'thay' ? 'thay toàn bộ' : 'thêm / cập nhật'})</button>`;
   $('#imp-go').onclick = async () => {
     showLoader('Đang nạp…');
     const r = await api('tcImportCk', { project:P, rows:out, mode:cur.a.mode || 'them' }, 180000); hideLoader();
     if (!r.success) { box.innerHTML = `<div class="note n-err">❌<span>${esc(r.error)}</span></div>`; return; }
-    toast(`Đã nạp ${r.n} cấu kiện · dự án có ${r.total}`); B.ckRev = ''; GEO = null; await sync(true); render(false);
+    if (SR && SR.recs.length) {
+      showLoader('Đang nạp trạng thái…'); let ok = 0;
+      for (let i = 0; i < SR.recs.length; i += 500) {
+        $('#loader div') && ($('#loader div').innerHTML = `<span class="spin"></span>Đang nạp trạng thái ${Math.min(i + 500, SR.recs.length)} / ${SR.recs.length}…`);
+        const r2 = await api('tcImportRecs', { project:P, recs:SR.recs.slice(i, i + 500), last:i + 500 >= SR.recs.length ? 1 : 0, total:SR.recs.length, nguon:SR.nguon }, 300000);
+        if (!r2.success) { hideLoader(); box.innerHTML = `<div class="note n-err">❌<span>Đã nạp cấu kiện, lỗi khi nạp trạng thái: ${esc(r2.error)}</span></div>`; return; }
+        ok += r2.add + r2.upd;
+      }
+      toast(`Đã nạp ${r.n} cấu kiện · ${ok} cấu kiện đã thi công`);
+    } else toast(`Đã nạp ${r.n} cấu kiện · dự án có ${r.total}`);
+    hideLoader(); B.ckRev = ''; GEO = null; await sync(true); render(false);
   };
+}
+
+// 1.14.0: trang "Trang thai" — Mã · Ngày thi công (dd/mm/yyyy) · Nguồn · Ghi chú → bản ghi Đổ bê tông "đã xong" (không có số đo)
+function sttRecs(cks) {
+  if (!STT || STT.length < 2) return null;
+  const h = STT[0].map(nk), iC = h.findIndex(x => x === 'ma' || x.indexOf('ma') === 0), iD = h.findIndex(x => x.indexOf('ngay') === 0), iN = h.findIndex(x => x.indexOf('nguon') === 0), iG = h.findIndex(x => x.indexOf('ghichu') === 0);
+  const codes = new Set(cks.map(c => c.code).concat(Object.keys(CK))), recs = [], err = []; let nguon = '';
+  STT.slice(1).forEach((r, i) => {
+    const code = String(r[iC] || '').trim(); if (!code) return;
+    if (!codes.has(code)) { err.push(code + ': không có cấu kiện'); return; }
+    let v = r[iD], ngay = '';
+    if (v instanceof Date) ngay = v.toISOString().slice(0, 10);
+    else { const m = String(v || '').match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/); if (m) ngay = `${m[3]}-${m[2].padStart(2, '0')}-${m[1].padStart(2, '0')}`; }
+    if (!ngay) { err.push(code + ': thiếu ngày'); return; }
+    const src = String((iN >= 0 && r[iN]) || 'Nạp từ bản vẽ').slice(0, 60); nguon = nguon || src;
+    recs.push({ id:idOf(code + '|bt|nap'), ck:code, mod:'bt', ngay, at:'', d:{ ketThuc:'xong', nguon:src, ghiChu:String((iG >= 0 && r[iG]) || '').slice(0, 200) } });
+  });
+  return { recs, err, nguon };
 }
 
 // ---------- Nạp sổ hồ sơ ----------
@@ -3813,7 +3850,7 @@ const ckL = (ok, has) => has ? BOX(ok) + ' Đạt' : '☐ Đạt';
 // ---------- 13 biểu cọc ----------
 function bbCoc(X) {
   const { c, z, L, D, dv, kh, hh, tr, lt, bt, xe, gl, dep } = X, d = D(dv), b = D(bt), t = D(tr), l = D(lt), kp = Object.assign({}, X.m.kp || {}, b.kp || {}, X.kpr ? X.kpr.d : {});
-  const dX = isFinite(nv(d.xTt)) ? nv(d.xTt) - nv(d.xTk || c.x) : NaN, dY = isFinite(nv(d.yTt)) ? nv(d.yTt) - nv(d.yTk || c.y) : NaN, lim = (L.exy || 50) / 1000;
+  const dX = isFinite(nv(d.xTt)) ? nv(d.xTt) - nv(d.xTk || ckX(c)) : NaN, dY = isFinite(nv(d.yTt)) ? nv(d.yTt) - nv(d.yTk || ckY(c)) : NaN, lim = (L.exy || 50) / 1000;
   const zDay = isFinite(dep) ? gl - dep : NaN, matDat = isFinite(nv(d.matDat)) ? nv(d.matDat) : X.m.matDat;
   const ddRow = r => r ? [r, ...['kl', 'nhot', 'ph', 'cat'].map(k => f2(r.d[k], k === 'kl' ? 3 : k === 'ph' ? 1 : 0))] : null;
   const ddMini = (r, req) => TB(['Chỉ tiêu dung dịch', 'Yêu cầu', 'Kết quả kiểm tra'], [['Tỷ trọng (g/ml)', req[0], r ? f2(r.d.kl, 3) : ''], ['Độ nhớt (giây)', req[1], r ? f2(r.d.nhot, 0) : ''], ['pH', req[2], r ? f2(r.d.ph, 1) : ''], ['Hàm lượng cát (%)', req[3], r ? f2(r.d.cat, 1) : '']], [5, 3, 4]);
@@ -3825,7 +3862,7 @@ function bbCoc(X) {
   docs.push({ n:1, ngay:rDay(dv) || rDay(bt), land:0, ll:1, head:[['Dự án', X.I.duAn || ''], ['Gói thầu', X.I.goi || ''], ['Hạng mục', X.hm], ['Địa điểm', X.I.diaDiem || ''],
     { q:[['Tên cọc', c.code], ['Lần khoan', '01'], ['Loại cọc', c.type || ''], ['Đường kính', 'D' + Math.round((z.d || 1) * 1000)]] }],
     secs:[sec(1, 'Công tác chuẩn bị', [['Bắt đầu', at2(dv, d.cbTu)], ['Kết thúc', at2(dv, d.cbDen)]]),
-      sec(2, 'Lắp đặt Casing', [['Bắt đầu', at2(dv, d.tu)], ['Kết thúc', at2(dv, d.den)], ['X TK', f3(d.xTk || c.x), 'Y TK', f3(d.yTk || c.y)], ['X TT', f3(d.xTt), 'Y TT', f3(d.yTt)], ['ΔX', f3(dX), 'ΔY', f3(dY)],
+      sec(2, 'Lắp đặt Casing', [['Bắt đầu', at2(dv, d.tu)], ['Kết thúc', at2(dv, d.den)], ['X TK', f3(d.xTk || ckX(c)), 'Y TK', f3(d.yTk || ckY(c))], ['X TT', f3(d.xTt), 'Y TT', f3(d.yTt)], ['ΔX', f3(dX), 'ΔY', f3(dY)],
         ['CĐ đỉnh Casing', fz(d.ovZ) + ' m', 'Chiều dài casing', f2(d.ovL) + ' m'], ['CĐ mặt đất tự nhiên', fz(matDat) + ' m', 'Đường kính casing', (d.ovD || '') + ' m']]),
       sec(3, 'Kiểm tra dung dịch khoan lần 1', [['Bắt đầu', at2(dd1, dd1 && dd1.d.gio)]], ddMini(dd1, RQ)),
       sec(4, 'Quá trình khoan', [['Bắt đầu', at2(kh, D(kh).batDau)], ['Kết thúc', at2(kh, D(kh).ketThuc)], ['Chiều sâu kết thúc khoan thiết kế', f2(D(kh).sauTK || z.Lk) + ' m', 'Cao độ', fz(z.toe) + ' m'], ['Chiều sâu kết thúc khoan thực tế', f2(dep) + ' m', 'Cao độ', fz(zDay) + ' m'], ['CĐ đỉnh Casing', fz(gl) + ' m']]),
@@ -3842,7 +3879,7 @@ function bbCoc(X) {
       sec(14, 'Rút Casing và lấp đầu cọc', [['Rút casing', at2(bt, b.rutCasing)], ['Lấp đầu cọc', at2(bt, b.lapDau)]])] });
   // 002 Hố khoan
   docs.push({ n:2, ngay:rDay(dv), blocks:[TB(['Tọa độ cọc', 'Thiết kế (m)', 'Thực tế (m)', 'Sai số (m)', 'Dung sai (m)', 'Kết luận', 'Ghi nhận'],
-      [['X', f3(d.xTk || c.x), f3(d.xTt), f3(dX), '±' + f3(lim), ckL(Math.abs(dX) <= lim + 1e-9, isFinite(dX)), ''], ['Y', f3(d.yTk || c.y), f3(d.yTt), f3(dY), '±' + f3(lim), ckL(Math.abs(dY) <= lim + 1e-9, isFinite(dY)), '']], [2, 2, 2, 2, 1, 1, 2]),
+      [['X', f3(d.xTk || ckX(c)), f3(d.xTt), f3(dX), '±' + f3(lim), ckL(Math.abs(dX) <= lim + 1e-9, isFinite(dX)), ''], ['Y', f3(d.yTk || ckY(c)), f3(d.yTt), f3(dY), '±' + f3(lim), ckL(Math.abs(dY) <= lim + 1e-9, isFinite(dY)), '']], [2, 2, 2, 2, 1, 1, 2]),
     TB(['Đường kính', 'Thiết kế (mm)', 'Thực tế (mm)', 'Sai số (mm)', 'Dung sai (mm)', 'Kết luận', 'Ghi nhận'], [['X', Math.round(z.d * 1000), '', '', '≥0', '☐ Đạt', ''], ['Y', Math.round(z.d * 1000), '', '', '≥0', '☐ Đạt', '']], [2, 2, 2, 2, 1, 1, 2]),
     { k:'kv', rows:[['CĐ đỉnh Casing', fz(d.ovZ) + ' m', 'Đường kính trong casing', ''], ['CĐ mặt đất tự nhiên', fz(matDat) + ' m', 'Đường kính ngoài casing', d.ovD || ''], ['Chiều dài casing', f2(d.ovL) + ' m', '', '']] }] });
   // 003 Dung dịch
@@ -3885,7 +3922,7 @@ function bbCoc(X) {
     ['Chiều sâu khoan tính từ mặt đất tự nhiên (m)', isFinite(nv(matDat)) ? f2(nv(matDat) - z.toe) : '', isFinite(zDay) && isFinite(nv(matDat)) ? f2(nv(matDat) - zDay) : ''], ['Chiều dài ống chống (m)', '', f2(d.ovL)], ['Tổng chiều dài lồng thép (m)', '', ''],
     ['Thể tích bê tông (m³)', f2(X.vlt), f2(X.vtt)], ['Chênh lệch bê tông (m³) (so với thiết kế)', '', isFinite(X.vtt) ? f2(X.vtt - X.vlt) : ''], ['Thời gian khoan tạo lỗ (h.s)', '', isFinite(tK) ? hm(tK) : ''], ['Thời gian đổ bê tông (h.s)', '', isFinite(tB) ? hm(tB) : ''], ['Tổng thời gian thi công (h.s)', '', '']];
   docs.push({ n:13, land:1, ngay:rDay(bt), head:[['Dự án', X.I.duAn || ''], ['Gói thầu', X.I.goi || ''], ['Hạng mục', X.hm]], blocks:[
-    { k:'kv', rows:[['1. Tên cọc', c.code, '2. Vị trí cọc', `Xtk = ${f3(d.xTk || c.x)} · Ytk = ${f3(d.yTk || c.y)}`], ['3. Theo bản vẽ số', X.bv, '4. Ngày bắt đầu', dFull(rDay(dv) || rDay(kh))], ['5. Ngày hoàn thành', dFull(rDay(bt))], ['6. Thời tiết', b.thoiTiet || ''], ['Độ lệch tâm', `ΔX = ${f3(dX)} m · ΔY = ${f3(dY)} m`, 'Tọa độ thực tế', `Xtt = ${f3(d.xTt)} · Ytt = ${f3(d.yTt)}`]] },
+    { k:'kv', rows:[['1. Tên cọc', c.code, '2. Vị trí cọc', `Xtk = ${f3(d.xTk || ckX(c))} · Ytk = ${f3(d.yTk || ckY(c))}`], ['3. Theo bản vẽ số', X.bv, '4. Ngày bắt đầu', dFull(rDay(dv) || rDay(kh))], ['5. Ngày hoàn thành', dFull(rDay(bt))], ['6. Thời tiết', b.thoiTiet || ''], ['Độ lệch tâm', `ΔX = ${f3(dX)} m · ΔY = ${f3(dY)} m`, 'Tọa độ thực tế', `Xtt = ${f3(d.xTt)} · Ytt = ${f3(d.yTt)}`]] },
     TB(['TT', 'Đặc điểm cọc', 'Thiết kế', 'Thực tế'], rowsTH.map((r, i) => [i + 1].concat(r)), [1, 7, 2, 2], { cap:'TỔNG HỢP SỐ LIỆU CỌC' })], ket:'' });
   return docs;
 }
