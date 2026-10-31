@@ -1896,7 +1896,7 @@ body.pg-printing #pg-print{display:block;position:fixed;inset:0;z-index:9000;bac
 // ============================================================
 // CONFIG
 // ============================================================
-const APP_VERSION = '5.57.0';
+const APP_VERSION = '5.58.1';
 const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbw6Rmi80I7RI3ij2U7RdRF5pYuQTnPrwEmGmUZS5xpxzLwwVynfoFUujZe1lm6HS1ymxw/exec';
 // ============================================================
 
@@ -8133,7 +8133,7 @@ let listLimit = {nhap:100, xuat:100, dieuchinh:100};
 // ===== v5.18.0: CHỨC DANH & PHÂN QUYỀN (Admin cài trong app) =====
 const PERM_UI = [
   ['Màn hình được thấy', [['v_pyc','Phiếu yêu cầu',''],['v_home','Tổng quan',''],['v_nhap','Phiếu nhập (xem)',''],['v_xuat','Phiếu xuất (xem)',''],['v_ton','Tồn kho (số lượng)',''],['v_baocao','Báo cáo',''],['v_stat','Thống kê dự án đang làm','Chi phí, tiến độ của dự án được giao'],['v_all','Tổng hợp các dự án','Xem mọi dự án, so sánh, chi phí nhiều dự án'],['v_ver','Xem nội dung cập nhật phiên bản','Thông báo đầy đủ, chi tiết từng bản, lịch sử cập nhật']]],
-  ['Kho', [['k_nhap','Lập phiếu nhập',''],['k_xuat','Lập phiếu xuất (xuất thẳng)',''],['k_edit','Sửa / điều chỉnh phiếu',''],['k_kk','Kiểm kê',''],['k_dm','Thêm, sửa tên + nhóm vật tư / thiết bị','Đổi đơn vị và xóa: chỉ Admin'],['k_copy','Chép vật tư từ dự án khác',''],['k_bomuon','Duyệt bỏ thông tin mượn','Mặc định CHT, CHP, P.QLTB'],['k_hd','Ghi ngày máy bắt đầu hoạt động','Mặc định PP / TP QLTB — bật thêm cho cán bộ QLTB'],['k_loan','Cho mượn / trả dụng cụ',''],['k_meter','Ghi giờ máy thiết bị','Khi xuất dầu, vào / kết thúc công trình'],['k_thang','Nhập thẳng ra công trường (không dùng từ 5.55)','Từ 5.55 mọi hàng nhập đều là tồn kho — quyền này không còn tác dụng'],['k_gio','Chọn ngày giờ phiếu','Phiếu nhập / xuất / nhập nhanh. Số ngày được lùi: khung "Chọn ngày giờ phiếu" ở đầu trang này']]],
+  ['Kho', [['k_nhap','Lập phiếu nhập',''],['k_xuat','Lập phiếu xuất (xuất thẳng)',''],['k_edit','Sửa / điều chỉnh phiếu',''],['k_kk','Kiểm kê',''],['k_dm','Thêm, sửa tên + nhóm vật tư / thiết bị','Đổi đơn vị và xóa: chỉ Admin'],['k_napx','Nạp sổ nhập xuất từ Excel (gửi duyệt)','Phiếu chỉ vào kho khi Admin / người có quyền duyệt bấm Duyệt'],['k_dnap','Duyệt đợt nạp sổ Excel','Xem trước, duyệt và nạp / trả về / hoàn tác đợt nạp của thủ kho'],['k_copy','Chép vật tư từ dự án khác',''],['k_bomuon','Duyệt bỏ thông tin mượn','Mặc định CHT, CHP, P.QLTB'],['k_hd','Ghi ngày máy bắt đầu hoạt động','Mặc định PP / TP QLTB — bật thêm cho cán bộ QLTB'],['k_loan','Cho mượn / trả dụng cụ',''],['k_meter','Ghi giờ máy thiết bị','Khi xuất dầu, vào / kết thúc công trình'],['k_thang','Nhập thẳng ra công trường (không dùng từ 5.55)','Từ 5.55 mọi hàng nhập đều là tồn kho — quyền này không còn tác dụng'],['k_gio','Chọn ngày giờ phiếu','Phiếu nhập / xuất / nhập nhanh. Số ngày được lùi: khung "Chọn ngày giờ phiếu" ở đầu trang này']]],
   ['Giá & chi phí', [['g_view','Xem giá, chi phí',''],['g_price','Sửa bảng giá',''],['g_prog','Cập nhật tiến độ thi công','']]],
   ['Phiếu yêu cầu', [['y_tao','Tạo phiếu',''],['y_bs','Xin bổ sung ngoài định mức',''],['y_duyet','Duyệt phiếu',''],['y_giao','Giao hàng theo phiếu (kho)',''],['y_nhan','Xác nhận nhận hàng',''],['y_xem','Xem mọi phiếu của dự án','Tắt = chỉ thấy phiếu của mình']]],
   ['Xuất file', [['x_nxt','Xuất Excel NXT',''],['x_pyc','Xuất báo cáo phiếu YC','']]],
@@ -8144,7 +8144,7 @@ const V6 = ['v_pyc','v_home','v_nhap','v_xuat','v_ton','v_baocao'];
 const GROUP_UI = {
   g1:['① Phiếu YC', ['v_pyc','y_tao','y_bs','y_nhan','y_xem']], g2:['② Giám sát', ['v_pyc','y_xem']],
   g3:['③ Xem toàn bộ', V6.concat(['v_stat','g_view','y_xem','x_nxt','x_pyc'])],
-  g4:['④ Kho', V6.concat(['k_nhap','k_xuat','k_edit','k_kk','k_dm','k_copy','k_loan','y_giao','y_xem','x_nxt','x_pyc','k_meter','k_thang','k_gio'])],
+  g4:['④ Kho', V6.concat(['k_nhap','k_xuat','k_edit','k_kk','k_dm','k_copy','k_loan','y_giao','y_xem','x_nxt','x_pyc','k_meter','k_thang','k_gio','k_napx'])],
   g5:['⑤ Đầy đủ', V6.concat(['v_stat','g_view','g_prog','y_xem','x_nxt','x_pyc','k_meter'])],
   g6:['⑥ Lãnh đạo', V6.concat(['v_stat','v_all','g_view','y_xem','x_nxt','x_pyc'])],
   gq:['Quản lý (cũ)', PERM_KEYS.filter(k => k !== 'v_all')], ga:['Quản trị', PERM_KEYS]
@@ -10648,7 +10648,7 @@ function nxItemOf(nk) {                                         // → {itemId} 
 }
 function nxRender() {
   const b = document.getElementById('dp-nxt-body'); if (!b) return;
-  const T = ['Đọc file', 'Ghép cột', 'Khớp tên', 'Xem trước', 'Chênh lệch'];
+  const T = ['Đọc file', 'Ghép cột', 'Khớp tên', 'Xem trước', NX.sub ? 'Gửi duyệt' : 'Chênh lệch'];
   let h = `<div class="nx-bar">${T.map((t, i) => `<button class="${i + 1 === NX.step ? 'cur' : ''}" onclick="nxGo(${i + 1})"><i class="${i + 1 <= NX.step ? 'on' : ''}"></i><span>${i + 1}. ${t}</span></button>`).join('')}</div>`;
   h += [nxS1, nxS2, nxS3, nxS4, nxS5][NX.step - 1]();
   b.innerHTML = h; b.scrollTop = 0;
@@ -10692,7 +10692,7 @@ function nxS1() {
   }
   if (!I) h += `<div class="small" style="color:var(--text2);margin-bottom:12px"><span class="spin" style="display:inline-block;width:12px;height:12px;vertical-align:-2px"></span> Đang tải các đợt đã nạp…</div>`;
   else if (I.err) h += `<div class="nx-warn">⚠ ${escHtml(I.err)} — máy chủ cần bản 5.43.0 (dán Apps Script mới).</div>`;
-  else if (I.batches.length) h += `<div class="nx-card"><div class="nx-t">Các đợt đã nạp · ${escHtml(curProj)}</div>${I.batches.map(x => `<div class="nx-batch"><div style="flex:1;min-width:0"><b>${fmtNum(x.n)} phiếu</b> · ${escHtml(x.at || '')}<div class="small" style="color:var(--text2)">${escHtml(x.file || '')} · ${escHtml(x.by || '')}</div></div><button onclick="nxUndo('${escHtml(x.batch)}',${x.n})">Xóa đợt</button></div>`).join('')}</div>`;
+  else if (I.batches.length) h += `<div class="nx-card"><div class="nx-t">Các đợt đã nạp · ${escHtml(curProj)}</div>${I.batches.map(x => `<div class="nx-batch"><div style="flex:1;min-width:0"><b>${fmtNum(x.n)} phiếu</b> · ${escHtml(x.at || '')}<div class="small" style="color:var(--text2)">${escHtml(x.file || '')} · ${escHtml(x.gui || x.by || '')}${x.duyet ? ' · duyệt: ' + escHtml(x.duyet) : ''}</div></div>${typeof napCanD !== 'function' || napCanD() ? `<button onclick="nxUndo('${escHtml(x.batch)}',${x.n})">Xóa đợt</button>` : ''}</div>`).join('')}</div>`;
   h += `<div class="nx-act"><button class="btn-full btn-orange" onclick="nxGo(2)" ${NX.sheets.some(S => S.kind === 'so' && S.use) ? '' : 'disabled style="opacity:.5"'}>Tiếp: Ghép cột ›</button></div>`;
   return h;
 }
@@ -10757,7 +10757,7 @@ function nxS4() {
     <div class="split" style="font-size:16px;padding:8px 0 3px;border-top:1px solid var(--border);margin-top:4px;color:#C2410C"><b>Dòng mới sẽ nạp</b><b>${fmtNum(F.length)}</b></div>
     <div class="small" style="color:var(--text2);line-height:1.5;margin-top:6px">Mỗi dòng → 1 phiếu nhập / xuất đúng ngày, ghi NCC hoặc máy / nơi nhận, ghi chú gốc. Cả đợt xóa được ở bước 1 nếu nạp nhầm. Phiếu có ngày trước lần kiểm kê gần nhất của món sẽ không làm đổi tồn (như ghi bù).</div>
     ${mau.length ? `<div style="font-size:12.5px;font-weight:700;margin-top:10px">Vài dòng mẫu</div>${mau.map(r => { const dv = r.type === 'xuat' ? B.devOf(r.recv || r.party) : null; return `<div class="nx-row"><span class="d">${nxDmy(r.iso)}${r.fix ? '*' : ''}</span><span>${r.type === 'nhap' ? '📥' : '📤'}</span><span class="n">${escHtml(r.name)} ${r.type === 'nhap' ? '← ' + escHtml(r.party || '—') : '→ ' + (dv ? '🚜 ' + escHtml(dv.name) : escHtml(r.recv || r.party || '—'))}</span><b>${fmtNum(r.qty)} ${escHtml(r.unit)}</b></div>`; }).join('')}` : ''}</div>
-    <div class="nx-act"><button class="btn-full bk" onclick="nxGo(3)">‹ Quay lại</button><button class="btn-full btn-orange" onclick="nxRun()" ${F.length ? '' : 'disabled style="opacity:.5"'}>📥 Nạp ${fmtNum(F.length)} phiếu</button></div>`;
+    <div class="nx-act"><button class="btn-full bk" onclick="nxGo(3)">‹ Quay lại</button><button class="btn-full btn-orange" onclick="nxRun()" ${F.length ? '' : 'disabled style="opacity:.5"'}>${NX.sub ? '📤 Gửi duyệt ' : '📥 Nạp '}${fmtNum(F.length)} phiếu</button></div>`;
   if (!F.length && B.all.length) h += `<div class="nx-ok" style="margin-top:12px">Tất cả dòng trong file đã nạp trước đó. <a href="#" onclick="nxGo5();return false">Xem chênh lệch tồn ›</a></div>`;
   return h;
 }
@@ -10774,6 +10774,7 @@ async function nxRun() {
   const tmpNeed = new Set(rows.filter(x => x.tmp).map(x => x.tmp));
   const newItems = [...tmpNeed].map(nk => { const x = B.names[nk]; return { tmp:nk, name:x.name, unit:x.unit || 'Cái', cat:NX.cats[nk] || guessCat(x.name) }; });
   const maps = NX.sheets.filter(S => S.kind === 'so' && S.use && S.sig).map(S => ({ sig:S.sig, m:{ hdr:S.hdr, cols:S.cols, kieu:S.kieu } }));
+  if (NX.sub) return nxSubmit(batch, rows, newItems, maps);   // v5.58.0: thủ kho → gửi duyệt
   const CH = 500, idMap = {}; let added = 0, dup = 0, bad = 0;
   for (let i = 0; i < rows.length; i += CH) {
     showLoader(`Đang nạp ${fmtNum(Math.min(i + CH, rows.length))} / ${fmtNum(rows.length)} phiếu...`);
@@ -15728,6 +15729,151 @@ function bcMayThue(X) {
     'Tên NCC theo Danh mục nhà cung cấp dùng chung. Dòng tô vàng: máy thuê chưa ghi đơn vị cho thuê.']);
   bcSign(X, ws, r, n, ['NGƯỜI LẬP BIỂU', 'CÁN BỘ THIẾT BỊ', 'CHỈ HUY TRƯỞNG']);
   return { name:'Máy thuê theo NCC', ws, n:L.length };
+}
+</script>
+<script>// ===== v5.58.0 — THỦ KHO NẠP SỔ EXCEL → GỬI DUYỆT · ADMIN / P/TP.QLTB DUYỆT =====
+// Thủ kho (k_napx) làm đủ 5 bước như Admin, bước cuối "Gửi duyệt" (nxtSubmit) — chưa vào kho.
+// Người duyệt (Admin / k_dnap): Menu → Đợt nạp chờ duyệt → xem tóm tắt, nghi trùng, tồn trước → sau → Duyệt và nạp / Trả về.
+const napCanD = () => role === 'ADM' || hp('k_dnap');
+const napCanX = () => role === 'ADM' || hp('k_napx');
+let NAPB = { cho:0, tra:0 };
+function napSb() {
+  const ref = document.getElementById('sb-ncc') || [...document.querySelectorAll('.sidebar-item.need-admin')].find(e => /Danh mục P\.QLTB/.test(e.textContent));
+  if (!ref) return;
+  if (!document.getElementById('sb-napx')) {
+    ref.insertAdjacentHTML('afterend', '<div class="sidebar-item" id="sb-napx" style="display:none" onclick="closeSidebar();setTimeout(nxOpen,300)"><span class="sidebar-item-ico">📥</span>Nạp sổ từ Excel (gửi duyệt)<span class="sb-badge" id="sb-napx-n" style="display:none">0</span></div>'
+      + '<div class="sidebar-item" id="sb-napd" style="display:none" onclick="closeSidebar();setTimeout(napdOpen,300)"><span class="sidebar-item-ico">✅</span>Đợt nạp Excel chờ duyệt<span class="sb-badge" id="sb-napd-n" style="display:none">0</span></div>');
+    document.body.insertAdjacentHTML('beforeend', '<div class="detail-page" id="dp-napd"><div class="detail-header"><button class="back-btn" onclick="closeDp(\'dp-napd\')">‹</button><div class="detail-title">✅ Đợt nạp Excel chờ duyệt</div></div><div class="detail-body" id="dp-napd-body"></div></div>'
+      + `<style>.np-chip{display:inline-block;font-size:11.5px;font-weight:800;border-radius:10px;padding:2px 8px}.np-cho{background:#FFF3E0;color:#C25E00}.np-xong{background:#E7F6EC;color:#15803D}.np-tra{background:#FDECEC;color:#B42318}.np-huy{background:#EEF1F4;color:#667085}
+.np-g{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin:8px 0}.np-g div{background:#F3F6FA;border-radius:8px;padding:6px 4px;text-align:center}.np-g b{display:block;font-size:17px;color:var(--navy,#0056A4)}.np-g span{font-size:11px;color:var(--text2)}
+.np-t{width:100%;border-collapse:collapse;font-size:12.5px}.np-t th{background:#F3F6FA;text-align:left;padding:5px 4px;font-size:11.5px}.np-t td{border-bottom:1px solid var(--border);padding:5px 4px;vertical-align:top}
+.np-t tr.trung td{background:#FDECEC}.np-t tr.moi td{background:#FFF8E6}.np-t .r{text-align:right;white-space:nowrap}.np-wrap{max-height:340px;overflow:auto;border:1px solid var(--border);border-radius:8px}
+.np-chips{display:flex;gap:6px;flex-wrap:wrap;margin:4px 0 8px}.np-chips button{border:1px solid var(--border);background:#fff;border-radius:16px;padding:5px 11px;font-size:12.5px;font-weight:700}.np-chips button.on{background:var(--navy,#0056A4);color:#fff;border-color:transparent}</style>`);
+  }
+  const x = document.getElementById('sb-napx'), dd = document.getElementById('sb-napd');
+  x.style.display = role !== 'ADM' && hp('k_napx') ? '' : 'none';
+  dd.style.display = napCanD() ? '' : 'none';
+  const b1 = document.getElementById('sb-napx-n'), b2 = document.getElementById('sb-napd-n');
+  b1.textContent = NAPB.tra; b1.style.display = NAPB.tra ? '' : 'none';
+  b2.textContent = NAPB.cho; b2.style.display = NAPB.cho ? '' : 'none';
+}
+{ const _a = applyServer; applyServer = function (r) { _a.apply(this, arguments); try { if (r && r.nap) NAPB = r.nap; napSb(); } catch (e) {} }; }
+try { napSb(); } catch (e) {}
+
+// ---------- phía thủ kho: 5 bước như cũ, bước cuối gửi duyệt ----------
+{ const _o = nxOpen; nxOpen = async function () {
+  if (!napCanX()) { toast('Chức danh của bạn chưa được cấp quyền nạp sổ từ Excel'); return; }
+  NX.sub = role !== 'ADM'; NX.mine = null;
+  const r = await _o.apply(this, arguments);
+  const t = document.querySelector('#dp-nxt .detail-title'); if (t) t.textContent = NX.sub ? '📥 Nạp sổ từ Excel (gửi duyệt)' : '📥 Nạp sổ nhập xuất từ Excel';
+  if (NX.sub) napMine();
+  return r;
+}; }
+async function napMine() { const r = await api('nxtPend', { project:curProj }, 30000); NX.mine = r && r.success ? r.list.filter(x => x.mine && x.st !== 'huy') : []; if (NX.step === 1 || NX.step === 5) nxRender(); }
+const NP_ST = { cho:['np-cho', '⏳ Chờ duyệt'], xong:['np-xong', '✅ Đã vào kho'], tra:['np-tra', '↩ Bị trả về'], huy:['np-huy', 'Đã huỷ'] };
+function napMineHtml() {
+  const L = NX.mine; if (!L || !L.length) return '';
+  return `<div class="nx-card"><div class="nx-t">Đợt bạn đã gửi</div>${L.slice(0, 8).map(x => `<div class="nx-batch" style="align-items:flex-start"><div style="flex:1;min-width:0">
+    <span class="np-chip ${NP_ST[x.st][0]}">${NP_ST[x.st][1]}</span> <b>${fmtNum(x.nRows)} dòng</b> · ${escHtml(x.at)}
+    <div class="small" style="color:var(--text2)">${escHtml(x.file)} · ${escHtml(x.project)}${x.sum && x.sum.tu ? ' · ' + escHtml(x.sum.tu) + ' – ' + escHtml(x.sum.den) : ''}</div>
+    ${x.st === 'xong' ? `<div class="small" style="color:#15803D">${escHtml(x.dByName)} duyệt ${escHtml(x.dAt)} · ${fmtNum(+x.added || 0)} phiếu vào kho</div>` : ''}
+    ${x.st === 'tra' ? `<div class="small" style="color:#B42318"><b>Lý do (${escHtml(x.dByName)}):</b> ${escHtml(x.note)}<br>Sửa file rồi chọn lại file để gửi lần nữa.</div>` : ''}</div>
+    ${x.st === 'cho' ? `<button onclick="napCancel('${x.id}',1)">Huỷ</button>` : x.st === 'tra' ? `<button onclick="napCancel('${x.id}',0)">Đã đọc</button>` : ''}</div>`).join('')}</div>`;
+}
+async function napCancel(id, real) {
+  if (real && !confirm('Huỷ đợt đang chờ duyệt này?')) return;
+  showLoader('Đang lưu...'); const r = await api('nxtCancel', { id }, 30000); hideLoader();
+  if (!r || !r.success) { toast('⚠️ ' + ((r && r.error) || 'Lỗi')); return; }
+  NAPB.tra = Math.max(0, NAPB.tra - (real ? 0 : 1)); napSb(); napMine();
+}
+{ const _s1 = nxS1; nxS1 = function () { let h = _s1.apply(this, arguments);
+  if (NX.sub) h = `<div class="info-box" style="margin:0 0 12px">📤 Bạn gửi file để <b>Admin hoặc P/TP.QLTB duyệt</b>. Chỉ khi được duyệt, phiếu mới vào kho (người lập là bạn).</div>` + napMineHtml() + h;
+  return h; }; }
+{ const _s5 = nxS5; nxS5 = function () { return NX.sub ? napSentHtml() : _s5.apply(this, arguments); }; }
+async function nxSubmit(batch, rows, newItems, maps) {
+  showLoader(`Đang gửi ${fmtNum(rows.length)} dòng để duyệt...`);
+  const r = await api('nxtSubmit', { project:curProj, batch, file:NX.file, rows, newItems, maps }, 240000);
+  hideLoader();
+  if (!r || !r.success) { toast('⚠️ ' + ((r && r.error) || 'Mất kết nối — gửi lại')); return; }
+  NX.res = { sent:r }; NX.step = 5; nxRender(); napMine();
+}
+function napSentHtml() {
+  const s = NX.res && NX.res.sent; if (!s) return '<div class="nx-card">Chưa gửi.</div>';
+  const m = s.sum || {};
+  return `<div class="nx-ok"><b style="color:#15803D">✓ Đã gửi duyệt ${fmtNum(s.nRows)} dòng</b> (${fmtNum(m.nhap || 0)} nhập · ${fmtNum(m.xuat || 0)} xuất${m.tu ? ' · ' + escHtml(m.tu) + ' – ' + escHtml(m.den) : ''}).</div>
+    <div class="nx-card" style="line-height:1.55">Phiếu <b>chưa vào kho</b>. Admin hoặc P/TP.QLTB sẽ xem và duyệt.<br>• Được duyệt: phiếu vào kho, người lập là bạn.<br>• Bị trả về: có ghi lý do ở mục "Đợt bạn đã gửi" (Menu → Nạp sổ từ Excel). Sửa file rồi gửi lại — dòng đã vào kho app tự bỏ qua.
+      ${m.moi && m.moi.length ? `<br>• Có <b>${m.moi.length} món mới</b> (${m.moi.slice(0, 5).map(escHtml).join(', ')}${m.moi.length > 5 ? '…' : ''}) — người duyệt sẽ kiểm tra tên.` : ''}
+      ${m.dupApp ? `<br>• ${fmtNum(m.dupApp)} dòng đã có trong kho → bỏ qua.` : ''}</div>
+    ${napMineHtml()}<button class="btn-full btn-orange" onclick="closeDp('dp-nxt')">Xong</button>`;
+}
+
+// ---------- phía người duyệt ----------
+const ND = { list:null, cur:null, f:'', bo:true };
+function napdOpen() { ND.cur = null; openDp('dp-napd', napdRender); napdLoad(); }
+async function napdLoad() {
+  const r = await api('nxtPend', {}, 30000);
+  ND.list = r && r.success ? r.list : []; if (!r || !r.success) toast('⚠️ ' + ((r && r.error) || 'Không tải được'));
+  NAPB.cho = ND.list.filter(x => x.st === 'cho' && !x.mine).length; napSb(); napdRender();
+}
+function napdRender() {
+  const B = document.getElementById('dp-napd-body'); if (!B) return;
+  if (ND.cur) { B.innerHTML = napdReviewHtml(); return; }
+  if (!ND.list) { B.innerHTML = '<div class="pyc-hint">Đang tải…</div>'; return; }
+  const cho = ND.list.filter(x => x.st === 'cho'), xong = ND.list.filter(x => x.st !== 'cho');
+  B.innerHTML = `<div class="pyc-hint" style="text-align:left;margin-bottom:8px">Thủ kho nạp sổ nhập xuất từ Excel → gửi lên đây. Phiếu chỉ vào kho khi bạn bấm <b>Duyệt và nạp</b>.</div>
+    ${cho.length ? cho.map(napdCard).join('') : '<div class="nx-card">✓ Không có đợt nào chờ duyệt.</div>'}
+    ${xong.length ? `<div class="nx-t" style="margin-top:14px">Đã xử lý gần đây</div>` + xong.slice(0, 20).map(napdCard).join('') : ''}`;
+}
+function napdCard(x) {
+  const m = x.sum || {}, i = ND.list.indexOf(x);
+  return `<div class="nx-card" style="margin-bottom:8px"><div class="split"><b>${escHtml(x.project)}</b><span class="np-chip ${NP_ST[x.st][0]}">${NP_ST[x.st][1]}</span></div>
+    <div class="small" style="color:var(--text2);margin-top:2px">${escHtml(x.file)} · gửi: <b>${escHtml(x.byName)}</b> · ${escHtml(x.at)}</div>
+    <div style="margin-top:4px">${fmtNum(x.nRows)} dòng · ${fmtNum(m.nhap || 0)} nhập · ${fmtNum(m.xuat || 0)} xuất${m.tu ? ' · ' + escHtml(m.tu) + ' – ' + escHtml(m.den) : ''}${m.moi && m.moi.length ? ` · <b style="color:#C25E00">${m.moi.length} món mới</b>` : ''}</div>
+    ${x.st === 'xong' ? `<div class="small" style="color:#15803D">${escHtml(x.dByName)} duyệt ${escHtml(x.dAt)} · ${fmtNum(+x.added || 0)} phiếu vào kho</div>` : x.st === 'tra' ? `<div class="small" style="color:#B42318">${escHtml(x.dByName)} trả về: ${escHtml(x.note)}</div>` : ''}
+    ${x.st === 'cho' ? `<button class="btn-full btn-orange" style="margin-top:8px" onclick="napdView(${i})">Xem &amp; duyệt ›</button>` : ''}</div>`;
+}
+async function napdView(i) {
+  const x = ND.list[i]; if (!x) return;
+  showLoader('Đang đọc đợt nạp...'); const r = await api('nxtReview', { id:x.id }, 120000); hideLoader();
+  if (!r || !r.success) { toast('⚠️ ' + ((r && r.error) || 'Lỗi')); return; }
+  ND.cur = Object.assign(r, { x }); ND.f = ''; ND.bo = true; napdRender(); document.getElementById('dp-napd-body').scrollTop = 0;
+}
+function napdReviewHtml() {
+  const R = ND.cur, x = R.x, m = x.sum || {}, n = R.n || {};
+  const F = { '':() => 1, trung:r => r.trung, moi:r => r.moi, truoc:r => r.truoc }[ND.f] || (() => 1);
+  const rows = R.rows.filter(F), self = x.mine;
+  const chip = (k, t, c) => `<button class="${ND.f === k ? 'on' : ''}" onclick="ND.f='${k}';napdRender()">${t} (${c})</button>`;
+  return `<button class="btn-full" style="background:#fff;color:var(--navy,#0056A4);border:1.5px solid var(--navy,#0056A4);font-weight:700" onclick="ND.cur=null;napdRender()">‹ Danh sách đợt</button>
+  <div class="nx-card" style="margin-top:8px"><b>${escHtml(x.project)}</b> · ${escHtml(x.file)}<div class="small" style="color:var(--text2)">Gửi: <b>${escHtml(x.byName)}</b> · ${escHtml(x.at)}</div>
+    <div class="np-g"><div><b>${fmtNum(R.rows.length)}</b><span>dòng</span></div><div><b>${fmtNum(m.nhap || 0)}</b><span>nhập</span></div><div><b>${fmtNum(m.xuat || 0)}</b><span>xuất</span></div><div><b style="font-size:13px">${escHtml(m.tu || '')}<br>${escHtml(m.den || '')}</b><span>khoảng ngày</span></div></div>
+    ${n.moi ? `<div class="nx-warn" style="margin:6px 0"><b class="h">🆕 ${n.moi} món mới sẽ được tạo</b><br>${R.items.filter(s => s.moi).map(s => escHtml(s.name) + ' (' + escHtml(s.unit) + ')').join(', ')}<br><span class="small">Kiểm tra có phải gõ sai tên món đã có không (VD "Dầu D0" ↔ "Dầu DO"). Sai → Trả về để thủ kho sửa.</span></div>` : ''}
+    ${n.trung ? `<div class="nx-warn" style="margin:6px 0"><b class="h">⚠ ${n.trung} dòng nghi trùng phiếu đã có trên app</b> (cùng món, cùng ngày, cùng số lượng)<br><label style="display:flex;gap:6px;align-items:center;margin-top:4px"><input type="checkbox" ${ND.bo ? 'checked' : ''} onchange="ND.bo=this.checked"> Bỏ các dòng này khi nạp</label></div>` : ''}
+    ${n.truoc ? `<div class="small" style="color:var(--text2);margin:4px 0">ℹ ${n.truoc} dòng trước ngày kiểm kê: vẫn ghi vào sổ nhưng không đổi tồn (tồn đã chốt theo kiểm kê).</div>` : ''}
+    ${n.am ? `<div class="small" style="color:#B42318;margin:4px 0">⚠ ${n.am} món tồn sau nạp bị âm — xem bảng dưới.</div>` : ''}</div>
+  <div class="nx-card"><div class="nx-t">Tồn trước → sau khi nạp</div><div class="np-wrap"><table class="np-t"><tr><th>Món</th><th class="r">Tồn</th><th class="r">+/−</th><th class="r">Sau</th></tr>
+    ${R.items.map(s => `<tr class="${s.moi ? 'moi' : ''}"><td>${escHtml(s.name)} <span class="small" style="color:var(--text3)">${escHtml(s.unit)}</span></td><td class="r">${s.moi ? 'mới' : fmtNum(s.ton)}</td><td class="r">${s.delta > 0 ? '+' : ''}${fmtNum(s.delta)}</td><td class="r" style="${s.sau < 0 ? 'color:#B42318;font-weight:800' : ''}">${fmtNum(s.sau)}</td></tr>`).join('')}</table></div></div>
+  <div class="nx-card"><div class="nx-t">Các dòng</div><div class="np-chips">${chip('', 'Tất cả', R.rows.length)}${n.trung ? chip('trung', 'Nghi trùng', n.trung) : ''}${n.moi ? chip('moi', 'Món mới', R.rows.filter(r => r.moi).length) : ''}${n.truoc ? chip('truoc', 'Trước kiểm kê', n.truoc) : ''}</div>
+    <div class="np-wrap"><table class="np-t"><tr><th>Ngày</th><th></th><th>Món</th><th class="r">SL</th><th>NCC / nơi nhận / máy</th></tr>
+    ${rows.slice(0, 400).map(r => `<tr class="${r.trung ? 'trung' : r.moi ? 'moi' : ''}"><td>${escHtml(r.day)}</td><td>${r.type === 'nhap' ? '⬇ Nhập' : '⬆ Xuất'}</td><td>${escHtml(r.name)}</td><td class="r">${fmtNum(r.qty)} ${escHtml(r.unit)}</td><td>${escHtml(r.thietBi || r.party || '')}${r.note ? '<br><span class="small" style="color:var(--text3)">' + escHtml(r.note) + '</span>' : ''}</td></tr>`).join('')}</table></div>
+    ${rows.length > 400 ? `<div class="small" style="color:var(--text2)">Hiện 400 / ${fmtNum(rows.length)} dòng.</div>` : ''}</div>
+  ${self ? '<div class="nx-warn">Đợt do chính bạn gửi — cần Admin hoặc P/TP.QLTB khác duyệt.</div>' : ''}
+  <div class="nx-act"><button class="btn-full bk" onclick="napdReturn()">↩ Trả về</button><button class="btn-full btn-orange" onclick="napdApprove()" ${self ? 'disabled style="opacity:.5"' : ''}>✅ Duyệt và nạp</button></div>`;
+}
+async function napdApprove() {
+  const R = ND.cur, x = R.x, bo = ND.bo ? R.rows.filter(r => r.trung).map(r => r.i) : [];
+  if (!confirm(`Duyệt và nạp ${fmtNum(R.rows.length - bo.length)} phiếu vào kho ${x.project}?${bo.length ? `\n(bỏ ${bo.length} dòng nghi trùng)` : ''}\nNgười lập: ${x.byName}`)) return;
+  showLoader('Đang nạp vào kho...'); const r = await api('nxtApprove', { id:x.id, bo }, 300000); hideLoader();
+  if (!r || !r.success) { toast('⚠️ ' + ((r && r.error) || 'Lỗi')); return; }
+  toast(`✅ Đã nạp ${fmtNum(r.added)} phiếu${r.dup ? ' · ' + r.dup + ' dòng trùng bỏ qua' : ''}`);
+  ND.cur = null; if (x.project === curProj) { try { await syncAll(true); } catch (e) {} }
+  napdLoad();
+}
+async function napdReturn() {
+  const x = ND.cur.x, note = prompt('Lý do trả về (thủ kho sẽ thấy để sửa):', ''); if (note == null) return;
+  if (note.trim().length < 3) { toast('Ghi lý do rõ hơn'); return; }
+  showLoader('Đang lưu...'); const r = await api('nxtReturn', { id:x.id, note:note.trim() }, 60000); hideLoader();
+  if (!r || !r.success) { toast('⚠️ ' + ((r && r.error) || 'Lỗi')); return; }
+  toast('↩ Đã trả về cho ' + x.byName); ND.cur = null; napdLoad();
 }
 </script>
 
