@@ -1896,7 +1896,7 @@ body.pg-printing #pg-print{display:block;position:fixed;inset:0;z-index:9000;bac
 // ============================================================
 // CONFIG
 // ============================================================
-const APP_VERSION = '5.59.0';
+const APP_VERSION = '5.59.2';
 const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbw6Rmi80I7RI3ij2U7RdRF5pYuQTnPrwEmGmUZS5xpxzLwwVynfoFUujZe1lm6HS1ymxw/exec';
 // ============================================================
 
@@ -15364,7 +15364,7 @@ const xlBuf = async wb => { try { if (typeof bcStamp === 'function') await bcSta
 const LS_NCC = 'fecon_ncc_v1';
 let NCC = { rev:'', list:[] };
 try { const o = JSON.parse(localStorage.getItem(LS_NCC) || 'null'); if (o && Array.isArray(o.list)) NCC = o; } catch (e) {}
-const NCC_LOAI = { may:'Cho thuê máy', vt:'Vật tư', xe:'Vận chuyển', khac:'Khác' };
+const NCC_LOAI = { may:'Cho thuê máy', vt:'Vật tư', dau:'Dầu / nhớt', xe:'Vận chuyển', khac:'Khác' };   // v5.59.2: thêm Dầu / nhớt
 const nccN = s => normVN(String(s || '')).replace(/\s+/g, ' ').trim();
 const NCC_STOP = /^(cong ty|cty|ct|tnhh|co phan|cp|mtv|tm|dv|tmdv|xd|sx|va|hkd|dntn|chi nhanh|cn)$/;
 function nccIdx() {
@@ -15385,6 +15385,10 @@ function nccSet(list, rev) {
 }
 function nccOf(name) { const k = nccN(name); if (!k) return null; return nccIdx().find(o => o._k.includes(k)) || null; }
 function nccStd(name) { const s = String(name || '').trim(), o = nccOf(s); return o && o.tt !== 'an' ? o.ten : s; }
+function nccHit(o, k) {                                         // v5.59.1: mọi chữ gõ đều có trong 1 tên (không cần liền nhau)
+  if (o._k.some(x => x.includes(k)) || (o._m && o._m.includes(k)) || o._i.startsWith(k.replace(/\s/g, ''))) return true;
+  const w = k.split(' ').filter(Boolean); return w.length > 1 && o._k.some(x => w.every(t => x.includes(t)));
+}
 function nccMatch(q, loai) {
   const k = nccN(q), L = nccIdx().filter(o => o.tt !== 'an');
   if (!k) return L.slice().sort((a, b) => ((b.loai === loai) - (a.loai === loai)) || a.ten.localeCompare(b.ten, 'vi')).slice(0, 30).map(o => ({ o, s:1 }));
@@ -15394,6 +15398,7 @@ function nccMatch(q, loai) {
     o._k.forEach(x => { s = Math.max(s, x === k ? 100 : x.startsWith(k) ? 80 : (' ' + x).includes(' ' + k) ? 65 : x.includes(k) ? 45 : 0); });
     if (o._i && o._i.startsWith(k.replace(/\s/g, '')) && k.length >= 2) s = Math.max(s, 55);
     if (o._m && o._m.includes(k)) s = Math.max(s, 70);
+    if (!s && nccHit(o, k)) s = 40;
     if (s) out.push({ o, s:s + (loai && o.loai === loai ? 5 : 0) - (o.tt === 'cho' ? 3 : 0) });
   });
   return out.sort((a, b) => b.s - a.s).slice(0, 30);
@@ -15427,7 +15432,9 @@ function nccPop() {
 const nccOn = el => el && el.dataset && el.dataset.ncc !== undefined && (!el.dataset.h || el.dataset.h === 'thue') && el.style.display !== 'none';
 function nccShow(el) {
   const p = nccPop(); nccEl = el;
-  const q = el.value, loai = el.dataset.ncc, sug = (el._nccSug || []).filter(Boolean);
+  const q = el.value, sug = (el._nccSug || []).filter(Boolean);
+  let loai = el.dataset.ncc;
+  if (el.id === 'fn-ncc') { try { const it = (db.items || []).find(i => String(i.id) === String((document.getElementById('fn-item') || {}).value)); if (it && (it.cat === 'nhienLieu' || (typeof isFuelItem === 'function' && isFuelItem(it)))) loai = 'dau'; } catch (e) {} }   // v5.59.2: nhập dầu / nhớt → NCC dầu lên đầu
   let h = '';
   const k = nccN(q);
   const sg = sug.filter(s => !k || nccN(s).includes(k));
@@ -15499,7 +15506,8 @@ function nccWalk(o, add, d) {
   if (typeof o.donVi === 'string' && o.donVi.trim()) { o.donVi = nccStd(o.donVi); if (o.type === 'hire' || o.devType === 'hire' || o.hire) add(o.donVi, 'may'); }
   if (typeof o.supplierOrReceiver === 'string' && o.supplierOrReceiver.trim()) {
     o.supplierOrReceiver = nccStd(o.supplierOrReceiver);
-    if (o.type === 'nhap' && o.ct !== 've' && !o.thangCT) add(o.supplierOrReceiver, 'vt');
+    if (o.type === 'nhap' && o.ct !== 've' && !o.thangCT) { const it = o.itemId !== undefined ? (db.items || []).find(i => String(i.id) === String(o.itemId)) : null;
+      add(o.supplierOrReceiver, it && (it.cat === 'nhienLieu' || (typeof isFuelItem === 'function' && isFuelItem(it))) ? 'dau' : 'vt'); }
   }
   Object.keys(o).forEach(k => { if (o[k] && typeof o[k] === 'object') nccWalk(o[k], add, d + 1); });
 }
@@ -15537,17 +15545,26 @@ function nccRender() {
   const B = document.getElementById('dp-ncc-body'); if (!B) return;
   if (NV.scan) { B.innerHTML = nccScanHtml(); return; }
   const L = nccIdx(), cho = L.filter(o => o.tt === 'cho').length, an = L.filter(o => o.tt === 'an').length;
-  const k = nccN(NV.q);
-  const F = L.filter(o => NV.f === 'cho' ? o.tt === 'cho' : NV.f === 'an' ? o.tt === 'an' : NV.f ? o.loai === NV.f && o.tt !== 'an' : o.tt !== 'an')
-    .filter(o => !k || o._k.some(x => x.includes(k)) || (o._m && o._m.includes(k)) || o._i.startsWith(k))
-    .sort((a, b) => ((b.tt === 'cho') - (a.tt === 'cho')) || a.ten.localeCompare(b.ten, 'vi'));
   const chip = (v, t) => `<button class="${NV.f === v ? 'on' : ''}" onclick="NV.f='${v}';nccRender()">${t}</button>`;
+  // v5.59.1: ô tìm KHÔNG vẽ lại khi gõ (chỉ vẽ lại danh sách) — tránh lỗi bộ gõ tiếng Việt (Telex / Unikey) mất chữ, nhảy con trỏ
   B.innerHTML = `<div class="pyc-hint" style="text-align:left;margin-bottom:8px">Danh sách dùng chung cho mọi dự án. Thủ kho chọn tên ở phiếu nhập, máy vào, trả máy, phiếu xe → Excel cùng một tên. Tên gõ mới khi lập phiếu tự vào đây ở trạng thái <b>chờ duyệt</b>.</div>
-    ${NV.ed ? nccFormHtml(NV.ed) : `<div style="display:flex;gap:8px"><input type="search" placeholder="🔎 Tìm tên, tên khác, mã, chữ đầu…" value="${escHtml(NV.q)}" oninput="NV.q=this.value;nccRender();setTimeout(()=>{const i=document.querySelector('#dp-ncc-body input[type=search]');if(i){i.focus();i.setSelectionRange(i.value.length,i.value.length)}},0)" style="flex:1">
-      <button class="btn-ok" style="flex:none;padding:0 14px" onclick="NV.ed={};nccRender()">＋ Thêm</button></div>
+    ${NV.ed ? nccFormHtml(NV.ed) : `<div style="display:flex;gap:8px;align-items:center"><input type="search" id="ncc-q" class="ncc-q" autocomplete="off" placeholder="🔎 Tìm tên, tên khác, mã, chữ đầu…" value="${escHtml(NV.q)}" oninput="NV.q=this.value;if(!event.isComposing)nccListR()" oncompositionend="NV.q=this.value;nccListR()">
+      <button class="btn-ok" style="flex:none;padding:0 14px;min-height:42px" onclick="NV.ed={ten:NV.q.trim()};nccRender()">＋ Thêm</button></div>
     ${role === 'ADM' ? `<button class="btn-full" style="margin-top:8px;background:#fff;color:var(--navy,#0056A4);border:1.5px solid var(--navy,#0056A4);font-weight:700" onclick="nccScanRun()">🔎 Quét tên NCC cũ trong phiếu + máy → gộp về tên chuẩn</button>` : ''}
-    <div class="ncc-chips">${chip('', 'Tất cả (' + (L.length - an) + ')')}${cho ? chip('cho', '⏳ Chờ duyệt (' + cho + ')') : ''}${chip('may', 'Cho thuê máy')}${chip('vt', 'Vật tư')}${chip('xe', 'Vận chuyển')}${an ? chip('an', 'Đã ẩn (' + an + ')') : ''}</div>`}
-    ${F.map(nccCardHtml).join('') || '<div class="pyc-hint">Chưa có nhà cung cấp nào' + (role === 'ADM' ? ' — bấm "Quét tên NCC cũ" để lấy từ phiếu đã ghi.' : '.') + '</div>'}`;
+    <div class="ncc-chips">${chip('', 'Tất cả (' + (L.length - an) + ')')}${cho ? chip('cho', '⏳ Chờ duyệt (' + cho + ')') : ''}${chip('may', 'Cho thuê máy')}${chip('vt', 'Vật tư')}${chip('dau', 'Dầu / nhớt')}${chip('xe', 'Vận chuyển')}${an ? chip('an', 'Đã ẩn (' + an + ')') : ''}</div>`}
+    <div id="ncc-list"></div>
+    <style>.ncc-q{flex:1;min-width:0;height:42px;border:1.5px solid var(--border);border-radius:10px;padding:0 12px;font-size:15px;background:#fff;outline:none}.ncc-q:focus{border-color:var(--navy,#0056A4)}</style>`;
+  nccListR();
+}
+function nccListR() {
+  const E = document.getElementById('ncc-list'); if (!E) return;
+  const L = nccIdx(), k = nccN(NV.q);
+  const F = L.filter(o => NV.f === 'cho' ? o.tt === 'cho' : NV.f === 'an' ? o.tt === 'an' : NV.f ? o.loai === NV.f && o.tt !== 'an' : o.tt !== 'an')
+    .filter(o => !k || nccHit(o, k))
+    .sort((a, b) => ((b.tt === 'cho') - (a.tt === 'cho')) || a.ten.localeCompare(b.ten, 'vi'));
+  E.innerHTML = F.map(nccCardHtml).join('') || (k
+    ? `<div class="pyc-hint">Không tìm thấy “${escHtml(NV.q.trim())}”${NV.f ? ' trong nhóm đang lọc' : ''}.${nccCanEdit() ? ` <a href="javascript:void 0" onclick="NV.ed={ten:NV.q.trim()};nccRender()">＋ Thêm “${escHtml(NV.q.trim())}”</a>` : ''}</div>`
+    : '<div class="pyc-hint">Chưa có nhà cung cấp nào' + (role === 'ADM' ? ' — bấm "Quét tên NCC cũ" để lấy từ phiếu đã ghi.' : '.') + '</div>');
 }
 function nccCardHtml(o) {
   const i = NCC.list.indexOf(o);
