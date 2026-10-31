@@ -1896,7 +1896,7 @@ body.pg-printing #pg-print{display:block;position:fixed;inset:0;z-index:9000;bac
 // ============================================================
 // CONFIG
 // ============================================================
-const APP_VERSION = '5.59.3';
+const APP_VERSION = '5.59.5';
 const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbw6Rmi80I7RI3ij2U7RdRF5pYuQTnPrwEmGmUZS5xpxzLwwVynfoFUujZe1lm6HS1ymxw/exec';
 // ============================================================
 
@@ -13308,14 +13308,14 @@ function bcPut(ws, r, vals, fmts, h = 17) {
     const f = fmts[k];
     if (f === 'c') x.alignment = CEN; else if (f === 'l') x.alignment = LEFT; else if (f === 's') x.alignment = LEFT1;
     else if (f === 'd') { x.numFmt = BC.DATE; x.alignment = CEN; }
-    else if (BC_FMT[f]) { x.numFmt = BC_FMT[f]; x.alignment = RIGHT; }
+    else if (BC_FMT[f]) { const rv = v && typeof v === 'object' ? v.result : v; x.numFmt = f === 'n' && typeof rv === 'number' && Number.isInteger(rv) ? BC.NUM0 : BC_FMT[f]; x.alignment = RIGHT; }   // v5.59.5: 18 không hiện "18."
   });
   ws.getRow(r).height = h;
 }
 function bcTotal(ws, r, n, label, span, cells) {
   ws.mergeCells(r, 1, r, span); ws.getCell(r, 1).value = label;
   for (let k = 1; k <= n; k++) Object.assign(ws.getCell(r, k), { font:bcF(10.5, true), fill:bcFill(BC.TOT), border:BOX, alignment:k <= span ? CEN : RIGHT });
-  Object.entries(cells || {}).forEach(([k, [v, f]]) => { const x = ws.getCell(r, +k); x.value = v; x.numFmt = f; });
+  Object.entries(cells || {}).forEach(([k, [v, f]]) => { const x = ws.getCell(r, +k), rv = v && typeof v === 'object' ? v.result : v; x.value = v; x.numFmt = f === BC.NUM && typeof rv === 'number' && Number.isInteger(rv) ? BC.NUM0 : f; });
   ws.getRow(r).height = 18;
 }
 function bcNotes(ws, r, n, lines) {
@@ -13421,6 +13421,8 @@ function bcLoanNote(t) {
   if (l.status !== 'open' || rem <= 1e-9) return 'Đã trả xong';
   return '';
 }
+function bcLoanBo(t) { const l = bcLoanOf(t); return !!(l && (l.history || []).some(h => h.t === 'bo')); }
+const bcNoLinkNote = n => String(n || '').replace(/(^|\s*·\s*)Liên kết phiếu #\d+/g, '').replace(/^\s*·\s*/, '').trim();
 function bcLoanOpenQ(t) { const l = bcLoanOf(t); return l ? Math.max(0, Math.min(+t.qty || 0, loanRemain(l))) : (+t.qty || 0); }
 function bcLedger(X, wb, side) {
   const D = X.D, N = side === 'N';
@@ -13447,7 +13449,7 @@ function bcLedger(X, wb, side) {
     if (x.fixed) note = [note, `Đã sửa số: ghi ${bcVN(x.fixed[0], 3)} → đúng ${bcVN(x.fixed[1], 3)}`].filter(Boolean).join(' · ');
     if (x.t.thangCT && D.soById[x.t.thangCT]) note = [note, 'đi cặp ' + D.soById[x.t.thangCT]].filter(Boolean).join(' · ');
     if (x.it.ghost) note = [note, 'Vật tư đã xoá khỏi danh mục'].filter(Boolean).join(' · ');
-    { const ln = bcLoanNote(x.t); if (ln) note = [note, ln].filter(Boolean).join(' · '); }
+    if (bcLoanBo(x.t)) note = bcNoLinkNote(note);   // v5.59.4: mượn đã bỏ → không ghi chú tự sinh
     if (N) {
       v[C['Bên giao hàng'] - 1] = x.t.type === 'dieuchinh' ? '' : x.sv; v[C['Chứng từ'] - 1] = x.cts; v[cLoai - 1] = x.loai; v[C['Người lập'] - 1] = x.t.createdByName || '';
     } else {
@@ -13491,10 +13493,10 @@ function bcLedger(X, wb, side) {
 // ---------- nhiên liệu ----------
 function bcFuel(X) {
   const D = X.D, ws = X.wb.addWorksheet('Nhiên liệu'), name = 'Nhiên liệu';
-  const W = [5.5, 10.5, 6.5, 13.5, 32, 9.5, 9.5, 9.5, 10.5, 16, 8.5, 8.5, 11, 24];
+  const W = [5.5, 10.5, 6.5, 13.5, 32, 9.5, 9.5, 9.5, 10.5, 18, 9, 9, 28];   // v5.59.5: bỏ cột Ký nhận
   const n = bcSetup(X, ws, W, 'SỔ THEO DÕI NHẬP – CẤP PHÁT NHIÊN LIỆU CHO MÁY, THIẾT BỊ', 'Dầu DO, dầu nhớt, mỡ  ·  ' + X.R.label, { xSplit:5 });
   bcHead(ws, [['STT', 1], ['Ngày', 1], ['Giờ', 1], ['Số phiếu', 1], ['Máy, thiết bị nhận /\nnguồn nhập', 1], ['Giờ máy\n(đồng hồ)', 1], ['DẦU DO (lít)', 3, ['Nhập', 'Cấp', 'Tồn']],
-    ['DẦU NHỚT – MỠ', 3, ['Loại', 'Nhập', 'Cấp']], ['Ký nhận', 1], ['Ghi chú', 1]], ['A', 'B', 'C', 'D', 'E', '1', '2', '3', '4', 'F', '5', '6', 'G', 'H']);
+    ['DẦU NHỚT – MỠ', 3, ['Loại', 'Nhập', 'Cấp']], ['Ghi chú', 1]], ['A', 'B', 'C', 'D', 'E', '1', '2', '3', '4', 'F', '5', '6', 'G']);
   const fuelItems = Object.values(D.st).filter(s => D.fuelOf(s.it));
   const doItems = fuelItems.filter(s => D.doOf(s.it)), oilItems = fuelItems.filter(s => !D.doOf(s.it));
   const opDO = bcR(doItems.reduce((a, s) => a + s.open, 0));
@@ -13516,18 +13518,18 @@ function bcFuel(X) {
     const tm = (String(x.t.datetime || '').match(/\d{1,2}:\d{2}/) || [''])[0];
     if (x.isDO) doBal = bcR(doBal + (inn ? x.qty : -x.qty));
     let note = x.t.type === 'dieuchinh' ? (x.t.reason || x.t0.reason || 'Điều chỉnh') : x.note0;
-    if (!/^(Nhập mua|Nhập kho|Xuất dùng)$/.test(x.loai)) note = [x.loai + (x.sv && LOAN_T[x.t.type] ? ' · ' + x.sv : ''), note].filter(Boolean).join(' · ');
-    { const ln = bcLoanNote(x.t); if (ln) note = [note, ln].filter(Boolean).join(' · '); }
+    if (bcLoanBo(x.t)) note = bcNoLinkNote(note);                // v5.59.4: mượn đã bỏ → không ghi chú tự sinh
+    else if (!/^(Nhập mua|Nhập kho|Xuất dùng)$/.test(x.loai)) note = [x.loai + (x.sv && LOAN_T[x.t.type] ? ' · ' + x.sv : ''), note].filter(Boolean).join(' · ');
     if (x.fixed) note = [note, `Đã sửa số: ${bcVN(x.fixed[0], 2)} → ${bcVN(x.fixed[1], 2)}`].filter(Boolean).join(' · ');
     const v = [k + 1, bcXD(x.d), tm, x.so, who || (inn && x.t.type === 'nhap' ? 'Nhập kho (chưa ghi nhà cung cấp)' : ''), mtr,
       x.isDO && inn ? x.qty : '', x.isDO && !inn ? x.qty : '', { formula:`I${r - 1}+G${r}-H${r}`, result:doBal },
-      x.isDO ? '' : x.it.name, !x.isDO && inn ? x.qty : '', !x.isDO && !inn ? x.qty : '', '', note];
-    bcPut(ws, r, v, ['c', 'd', 'c', 'c', 's', 'n1', 'n0', 'n0', 'n0', 'l', 'n', 'n', 'c', 'l'], bcH([[note, 24], [v[9], 16]]));
+      x.isDO ? '' : x.it.name, !x.isDO && inn ? x.qty : '', !x.isDO && !inn ? x.qty : '', note];
+    bcPut(ws, r, v, ['c', 'd', 'c', 'c', 's', 'n1', 'n0', 'n0', 'n0', 'l', 'n', 'n', 'l'], bcH([[note, 24], [v[9], 16]]));
     ws.getCell(r, 9).font = bcF(10.5, false, false, '404040'); if (!x.isDO) ws.getCell(r, 9).numFmt = ';;;';
     if (inn) { for (let c = 1; c <= n; c++) ws.getCell(r, c).fill = bcFill(BC.BLUE); if (!who && x.t.type === 'nhap') ws.getCell(r, 5).font = bcF(10.5, false, true, BC.ORG); }
-    if (inn && x.t.type === 'nhap' && x.t.thietBi) { bcFlag(ws, r, 14, [note, '⚠ NHẬP mà ghi tên máy?'].filter(Boolean).join(' · '), BC.RED); warn.push(['nhap_may', x]); }
-    if (!inn && x.isDO && x.t.type === 'xuat' && !x.t.thietBi) { bcFlag(ws, r, 14, [note, '⚠ Chưa ghi máy nhận'].filter(Boolean).join(' · '), BC.RED); warn.push(['no_dev', x]); }
-    if (flagTxn[x.t.id] !== undefined) bcFlag(ws, r, 14, [note, `Vượt định mức +${flagTxn[x.t.id]}%`].filter(Boolean).join(' · '), BC.RED);
+    if (inn && x.t.type === 'nhap' && x.t.thietBi) { bcFlag(ws, r, 13, [note, '⚠ NHẬP mà ghi tên máy?'].filter(Boolean).join(' · '), BC.RED); warn.push(['nhap_may', x]); }
+    if (!inn && x.isDO && x.t.type === 'xuat' && !x.t.thietBi) { bcFlag(ws, r, 13, [note, '⚠ Chưa ghi máy nhận'].filter(Boolean).join(' · '), BC.RED); warn.push(['no_dev', x]); }
+    if (flagTxn[x.t.id] !== undefined) bcFlag(ws, r, 13, [note, `Vượt định mức +${flagTxn[x.t.id]}%`].filter(Boolean).join(' · '), BC.RED);
     r++;
   });
   if (!F.length) { bcEmptyRow(ws, r, n, 'Không có phiếu nhiên liệu trong kỳ'); r++; }
@@ -13538,7 +13540,15 @@ function bcFuel(X) {
     11:[{ formula:`SUM(K${f1}:K${f2})`, result:oN }, BC.NUM], 12:[{ formula:`SUM(L${f1}:L${f2})`, result:oX }, BC.NUM] });
   r++; const FC = r;
   bcTotal(ws, r, n, 'Tồn cuối kỳ dầu DO', 6, { 9:[{ formula:`I${r0}+G${FT}-H${FT}`, result:bcR(opDO + tN - tX) }, BC.NUM0] });
-  ws.autoFilter = `A9:N${f2}`;
+  { // v5.59.5: tồn cuối kỳ từng loại nhớt – mỡ (món có tồn hoặc có phát sinh trong kỳ)
+    const oils = oilItems.filter(s => Math.abs(s.close) > 1e-9 || Math.abs(s.open) > 1e-9 || s.P.length);
+    r++; bcTotal(ws, r, n, 'Tồn cuối kỳ nhớt – mỡ', 9, {});
+    ws.mergeCells(r, 10, r, n);
+    Object.assign(ws.getCell(r, 10), { value:oils.length ? oils.map(s => `${s.it.name}: ${bcVN(s.close, 2)} ${String(s.it.unit || '').toLowerCase()}`).join('  ·  ') : '—', alignment:{ horizontal:'left', vertical:'middle', wrapText:true } });
+    if (oils.some(s => s.close < -1e-9)) ws.getCell(r, 10).font = bcF(10.5, true, false, BC.RED);
+    ws.getRow(r).height = Math.max(18, 15 * Math.ceil(oils.length / 2));
+  }
+  ws.autoFilter = `A9:M${f2}`;
   r = bcNotes(ws, r + 2, n, [
     'Ghi chú: Tồn DO (cột 4) tự cộng trừ theo từng dòng — số âm tô đỏ là dấu hiệu thiếu phiếu nhập hoặc ghi nhầm Nhập / Xuất. Dòng nền xanh: nhập dầu vào kho. Giờ = giờ cấp dầu thực tế (thủ kho chỉnh khi nhập muộn). Giờ máy = số đồng hồ ghi khi cấp dầu.',
     doItems.length > 1 ? `Cột Dầu DO gộp ${doItems.length} mặt hàng: ${doItems.map(s => s.it.name).join(', ')}.` : '']);
@@ -13546,13 +13556,13 @@ function bcFuel(X) {
   ws.getRow(r).addPageBreak(); r += 1;
   ws.mergeCells(r, 1, r, n); Object.assign(ws.getCell(r, 1), { value:'TỔNG HỢP TIÊU HAO DẦU DO THEO MÁY, THIẾT BỊ', font:bcF(14, true, false, BC.NAVY), alignment:CEN }); ws.getRow(r).height = 26; r++;
   ws.mergeCells(r, 1, r, n); Object.assign(ws.getCell(r, 1), { value:`${X.R.label}, so với trung bình từ đầu dự án`, font:bcF(10.5, false, true), alignment:CEN }); r += 2;
-  const HB = [['STT', 1, 1], ['Máy, thiết bị', 4, 2], ['Lần cấp đầu tiên\n(từ đầu DA)', 1, 6], ['Số lần cấp\ntrong kỳ', 1, 7], ['DO cấp trong kỳ\n(lít)', 1, 8], ['Số ngày\ntính', 1, 9],
-    ['TB lít / ngày', 2, 10, ['Kỳ này', 'Từ đầu DA']], ['So với\nTB', 1, 12], ['Lít / giờ\n(theo giờ máy)', 1, 13], ['Đánh giá', 1, 14]];
+  const HB = [['STT', 1, 1], ['Máy, thiết bị', 3, 2], ['Lần cấp đầu tiên\n(từ đầu DA)', 1, 5], ['Số lần cấp\ntrong kỳ', 1, 6], ['DO cấp trong kỳ\n(lít)', 1, 7], ['Số ngày\ntính', 1, 8],
+    ['TB lít / ngày', 2, 9, ['Kỳ này', 'Từ đầu DA']], ['So với\nTB', 1, 11], ['Lít / giờ\n(theo giờ máy)', 1, 12], ['Đánh giá', 1, 13]];
   HB.forEach(([t, span, c, sub]) => { if (sub) { ws.mergeCells(r, c, r, c + span - 1); ws.getCell(r, c).value = t; sub.forEach((s, k) => ws.getCell(r + 1, c + k).value = s); } else { ws.mergeCells(r, c, r + 1, c + span - 1); ws.getCell(r, c).value = t; } });
   [r, r + 1].forEach(rr => { ws.getRow(rr).height = 24; for (let c = 1; c <= n; c++) Object.assign(ws.getCell(rr, c), { font:bcF(10.5, true, false, BC.NAVY), fill:bcFill(BC.HEAD), alignment:CEN, border:BOX }); });
   r += 2;
-  ws.mergeCells(r, 2, r, 5);
-  ['A', 'B', '', '', '', 'C', '1', '2', '3', '4 = 2 ÷ 3', '5', '6 = 4 ÷ 5 − 1', '7', 'D'].forEach((t, k) => Object.assign(ws.getCell(r, k + 1), { value:t || null, font:bcF(8.5, false, true, BC.GREY), alignment:CEN, border:BOX }));
+  ws.mergeCells(r, 2, r, 4);
+  ['A', 'B', '', '', 'C', '1', '2', '3', '4 = 2 ÷ 3', '5', '6 = 4 ÷ 5 − 1', '7', 'D'].forEach((t, k) => Object.assign(ws.getCell(r, k + 1), { value:t || null, font:bcF(8.5, false, true, BC.GREY), alignment:CEN, border:BOX }));
   r++; const b0 = r;
   const endD = bcXD(D.end), dayN = (a, b) => Math.round((b - a) / 864e5) + 1;
   const allDO = D.rows.filter(x => x.isDO && x.side === 'X' && x.t.type === 'xuat' && x.t.thietBi && !x.afterEnd && x.d);
@@ -13571,28 +13581,28 @@ function bcFuel(X) {
       const allq = o.L.reduce((a, x) => a + x.qty, 0), alld = dayN(first, endD), avgAll = Math.round(allq / alld * 10) / 10;
       const nIn = o.L.filter(x => x.inR && x.qty > 0).length, per = days ? o.q / days : 0, rel = avgAll ? per / avgAll - 1 : null;
       const S = o.d ? statsByDev[o.nm] : null, rate = o.d && +o.d.fuelRate;
-      const lph = S && S.avg ? `${bcVN(S.avg, 1)}${rate ? ' / ĐM ' + bcVN(rate, 1) : ''}` : 'Chưa có giờ máy';
+      const lph = S && S.avg ? `${bcVN(S.avg, 1)}${rate ? ' / ĐM ' + bcVN(rate, 1) : ''}` : S && S.ok ? `Cần thêm ${3 - S.ok} lần cấp có giờ máy` : 'Chưa có giờ máy';   // v5.59.5: có giờ máy nhưng chưa đủ 4 lần cấp
       const over = S && S.avg && rate && S.avg > rate * 1.2;
       const evalTxt = over ? 'Vượt định mức' : rel === null ? '—' : rel > 0.3 ? 'Cao bất thường' : rel < -0.3 ? 'Ít hoạt động' : 'Bình thường';
-      ws.mergeCells(r, 2, r, 5);
+      ws.mergeCells(r, 2, r, 4);
       const crit = `$E$${f1}:$E$${f2}`, rng = `$H$${f1}:$H$${f2}`;
-      const v = [k + 1, o.nm, undefined, undefined, undefined, first, { formula:`COUNTIFS(${crit},B${r},${rng},">0")`, result:nIn }, { formula:`SUMIFS(${rng},${crit},B${r})`, result:bcR(o.q) }, days,
-        { formula:`IFERROR(H${r}/I${r},0)`, result:Math.round(per * 10) / 10 }, avgAll, { formula:`IFERROR(J${r}/K${r}-1,"")`, result:rel === null ? '' : Math.round(rel * 1000) / 1000 }, lph,
-        over ? 'Vượt định mức' : { formula:`IF(L${r}="","—",IF(L${r}>0.3,"Cao bất thường",IF(L${r}<-0.3,"Ít hoạt động","Bình thường")))`, result:evalTxt }];
-      bcPut(ws, r, v, ['c', 's', 's', 's', 's', 'd', 'n0', 'n0', 'n0', 'n1', 'n1', 'p', 'c', 'c']);
-      ws.getCell(r, 12).numFmt = '+0%;-0%;0%'; ws.getCell(r, 8).font = bcF(10.5, true);
-      if (!(S && S.avg)) ws.getCell(r, 13).font = bcF(9.5, false, true, BC.GREY);
-      if (over) ws.getCell(r, 14).font = bcF(10.5, true, false, BC.RED);
+      const v = [k + 1, o.nm, undefined, undefined, first, { formula:`COUNTIFS(${crit},B${r},${rng},">0")`, result:nIn }, { formula:`SUMIFS(${rng},${crit},B${r})`, result:bcR(o.q) }, days,
+        { formula:`IFERROR(G${r}/H${r},0)`, result:Math.round(per * 10) / 10 }, avgAll, { formula:`IFERROR(I${r}/J${r}-1,"")`, result:rel === null ? '' : Math.round(rel * 1000) / 1000 }, lph,
+        over ? 'Vượt định mức' : { formula:`IF(K${r}="","—",IF(K${r}>0.3,"Cao bất thường",IF(K${r}<-0.3,"Ít hoạt động","Bình thường")))`, result:evalTxt }];
+      bcPut(ws, r, v, ['c', 's', 's', 's', 'd', 'n0', 'n0', 'n0', 'n1', 'n1', 'p', 'c', 'c']);
+      ws.getCell(r, 11).numFmt = '+0%;-0%;0%'; ws.getCell(r, 7).font = bcF(10.5, true);
+      if (!(S && S.avg)) ws.getCell(r, 12).font = bcF(9.5, false, true, BC.GREY);
+      if (over) ws.getCell(r, 13).font = bcF(10.5, true, false, BC.RED);
       devRows.push({ r, nm:o.nm, q:o.q, avgAll, days, per, rel, S, rate, over, d:o.d });
       r++;
     });
   });
   if (!active.length) { bcEmptyRow(ws, r, n, 'Không có lần cấp dầu DO cho máy trong kỳ'); r++; }
   const b1 = r - 1;
-  bcCF(ws, `N${b0}:N${b1}`, [bcExpr(`N${b0}="Cao bất thường"`, { bold:true, color:{ argb:'FFC00000' } }, 'FCE4D6'), bcExpr(`N${b0}="Ít hoạt động"`, { color:{ argb:'FF7F7F7F' } })]);
-  bcCF(ws, `L${b0}:L${b1}`, [bcExpr(`AND(ISNUMBER(L${b0}),L${b0}>0.3)`, { bold:true, color:{ argb:'FFC00000' } })]);
-  if (active.length) bcCF(ws, `H${b0}:H${b1}`, [bcBar()]);
-  bcTotal(ws, r, n, `Cộng: ${active.length} máy được cấp dầu trong kỳ`, 7, { 8:[{ formula:`SUM(H${b0}:H${b1})`, result:bcR(devRows.reduce((a, x) => a + x.q, 0)) }, BC.NUM0] });
+  bcCF(ws, `M${b0}:M${b1}`, [bcExpr(`M${b0}="Cao bất thường"`, { bold:true, color:{ argb:'FFC00000' } }, 'FCE4D6'), bcExpr(`M${b0}="Ít hoạt động"`, { color:{ argb:'FF7F7F7F' } })]);
+  bcCF(ws, `K${b0}:K${b1}`, [bcExpr(`AND(ISNUMBER(K${b0}),K${b0}>0.3)`, { bold:true, color:{ argb:'FFC00000' } })]);
+  if (active.length) bcCF(ws, `G${b0}:G${b1}`, [bcBar()]);
+  bcTotal(ws, r, n, `Cộng: ${active.length} máy được cấp dầu trong kỳ`, 6, { 7:[{ formula:`SUM(G${b0}:G${b1})`, result:bcR(devRows.reduce((a, x) => a + x.q, 0)) }, BC.NUM0] });
   r = bcNotes(ws, r + 2, n, [
     '(3) Số ngày tính = từ đầu kỳ (hoặc ngày cấp đầu tiên nếu máy mới vào) đến cuối kỳ. (5) Trung bình từ ngày cấp dầu đầu tiên của máy đến cuối kỳ. (6) "Cao bất thường" khi kỳ này cao hơn trung bình trên 30% — xem máy làm thêm ca hay hao hụt; "Ít hoạt động" khi thấp hơn 30%.',
     '(7) Lít / giờ = trung bình 3 lần cấp gần nhất theo số đồng hồ giờ máy (hoặc thời gian giữa 2 lần cấp khi máy chạy 24/24), kèm định mức P.QLTB (ĐM). Cao hơn định mức trên 20% → "Vượt định mức".']);
@@ -13627,7 +13637,7 @@ function bcNXT(X, LN, LX, FU) {
   cats.forEach(cid => {
     const its = list.filter(s => catKey(s) === cid).sort(nm); if (!its.length) return;
     const c = CATEGORIES.find(x => x.id === cid);
-    bcSection(ws, r, n, RO[gi++] || gi, String((c && c.name) || cid).toUpperCase(), its.length + ' mặt hàng'); r++;
+    bcSection(ws, r, n, RO[gi++] || gi, String((c && c.name) || 'Nhóm khác').toUpperCase(), its.length + ' mặt hàng'); r++;
     its.forEach((s, k) => {
       const it = s.it, P = s.P, fuel = D.fuelOf(it);
       const sumP = f => bcR(P.filter(f).reduce((a, x) => a + x.qty, 0));
@@ -13839,7 +13849,7 @@ function bcOverview(X, LN, LX, FU, NX, LO, apx) {
   const top = FU.devRows.slice().sort((a, b) => b.q - a.q).slice(0, 8), t0 = r;
   top.forEach(d => {
     ws.mergeCells(r, 2, r, 7); Object.assign(ws.getCell(r, 2), { value:d.nm, font:bcF(10.5), alignment:LEFT1 });
-    ws.mergeCells(r, 8, r, 11); Object.assign(ws.getCell(r, 8), { value:{ formula:`${bcQ(FU.name)}!H${d.r}`, result:bcR(d.q) }, numFmt:'#,##0', font:bcF(10.5, true), alignment:RIGHT });
+    ws.mergeCells(r, 8, r, 11); Object.assign(ws.getCell(r, 8), { value:{ formula:`${bcQ(FU.name)}!G${d.r}`, result:bcR(d.q) }, numFmt:'#,##0', font:bcF(10.5, true), alignment:RIGHT });
     ws.mergeCells(r, 12, r, 13); Object.assign(ws.getCell(r, 12), { value:{ formula:`IFERROR(H${r}/${bcQ(FU.name)}!H${FU.FT},0)`, result:FU.tX ? Math.round(d.q / FU.tX * 1000) / 1000 : 0 }, numFmt:'0%', font:bcF(9.5, false, false, BC.GREY), alignment:CEN });
     for (let c = 2; c <= 13; c++) ws.getCell(r, c).border = { bottom:bcHair };
     r++;
@@ -13881,6 +13891,11 @@ async function bcBuild() {
   const mine = new Set(wb.worksheets.map(w => w.id));
   try { BC_WB = wb; await _bcOldNxt(); } finally { BC_WB = null; }
   wb.worksheets.filter(w => !mine.has(w.id)).forEach(w => { if (!KEEP.includes(w.name)) wb.removeWorksheet(w.id); });
+  { // v5.59.5: kỳ không có phiếu yêu cầu → bỏ 2 sheet Tóm tắt / Phiếu yêu cầu (toàn số 0)
+    const pw = wb.worksheets.find(w => w.name === 'Phiếu yêu cầu'); let none = false;
+    if (pw) pw.eachRow(row => row.eachCell(c => { if (typeof c.value === 'string' && /^Không có phiếu yêu cầu/.test(c.value)) none = true; }));
+    if (none) wb.worksheets.filter(w => !mine.has(w.id) && (w.name === 'Phiếu yêu cầu' || w.name === 'Tóm tắt')).forEach(w => wb.removeWorksheet(w.id));
+  }
   const apx = []; if (LO) apx.push(LO.name); if (MT) apx.push(MT.name);
   wb.worksheets.filter(w => !mine.has(w.id)).forEach(w => { if (w.name === 'Đang hỏng') w.name = 'Hàng hư hỏng'; bcRestyle(X, w); apx.push(w.name);
     if ((R.from || R.to) && ['Hàng hư hỏng', 'Đối chiếu P.QLTB', 'Sửa chữa'].includes(w.name)) {          // v5.56.9: các sheet này không theo kỳ

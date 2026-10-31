@@ -1,4 +1,6 @@
-// FECON Kho + Thi công - Service Worker v5.59.3
+// FECON Kho + Thi công - Service Worker v5.59.5
+// 5.59.5: sổ nhiên liệu bỏ cột Ký nhận, thêm tồn cuối nhớt – mỡ, rà lỗi báo cáo
+// 5.59.4: Excel không ghi chú phiếu mượn đã bỏ
 // 5.59.3: Excel ghi rõ phiếu mượn đã bỏ thông tin mượn
 // 5.59.2: Danh mục NCC thêm loại Dầu / nhớt
 // 5.59.1: sửa ô tìm Danh mục NCC gõ tiếng Việt bị mất chữ
@@ -72,7 +74,7 @@
 //  - Mở app: lấy file từ bộ nhớ của bản đang dùng; thiếu file nào mới lấy từ mạng.
 //  - Có sw.js mới trên GitHub: tải sẵn bản mới vào bộ nhớ riêng nhưng KHÔNG đổi bản đang dùng.
 //  - Địa chỉ có ?fresh=... luôn lấy thẳng từ mạng (app dùng để kiểm tra / tải bản mới).
-const VERSION = '5.59.3';
+const VERSION = '5.59.5';
 const APP = 'fecon-app-', META = 'fecon-meta';
 const CORE = ['./', './index.html', './thicong.html', './danhmuc.html', './manifest.json', './icon-192.png', './icon-512.png', './icon-maskable-192.png', './icon-maskable-512.png', './bg-login.jpg'];
 
