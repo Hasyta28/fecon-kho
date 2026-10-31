@@ -1896,7 +1896,7 @@ body.pg-printing #pg-print{display:block;position:fixed;inset:0;z-index:9000;bac
 // ============================================================
 // CONFIG
 // ============================================================
-const APP_VERSION = '5.59.2';
+const APP_VERSION = '5.59.3';
 const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbw6Rmi80I7RI3ij2U7RdRF5pYuQTnPrwEmGmUZS5xpxzLwwVynfoFUujZe1lm6HS1ymxw/exec';
 // ============================================================
 
@@ -13412,6 +13412,16 @@ function bcData(R) {
 
 // ---------- sổ nhập / sổ xuất ----------
 const bcNoSv = (x, N) => !x.sv && !/^Điều chỉnh|Khai số|Tồn đầu|Về kho|thẳng/.test(x.loai) && (N || !x.t.thietBi);
+// v5.59.3: phiếu mượn đã bỏ thông tin mượn / đã trả xong → ghi rõ trên Excel (trước đây vẫn ghi như đang mượn)
+function bcLoanOf(t) { return t && LOAN_T[t.type] && t.refId ? (db.loans || []).find(l => String(l.id) === String(t.refId)) || null : null; }
+function bcLoanNote(t) {
+  const l = bcLoanOf(t); if (!l || (t.type !== 'chomuon' && t.type !== 'dimuon')) return '';
+  const bo = (l.history || []).filter(h => h.t === 'bo'), qb = bo.reduce((a, h) => a + (+h.q || 0), 0), rem = loanRemain(l);
+  if (qb > 0) { const h = bo[bo.length - 1]; return `Đã bỏ thông tin mượn ${bcVN(qb, 2)} ${String(l.unit || '').toLowerCase()}${h && h.at ? ' ngày ' + String(h.at).split(' ').pop() : ''} (không trả lại${h && h.note ? ': ' + String(h.note).replace(/^Theo [^·]*· /, '') : ''})${rem > 1e-9 ? ' · còn ' + bcVN(rem, 2) : ''}`; }
+  if (l.status !== 'open' || rem <= 1e-9) return 'Đã trả xong';
+  return '';
+}
+function bcLoanOpenQ(t) { const l = bcLoanOf(t); return l ? Math.max(0, Math.min(+t.qty || 0, loanRemain(l))) : (+t.qty || 0); }
 function bcLedger(X, wb, side) {
   const D = X.D, N = side === 'N';
   const L = D.P.filter(x => !x.fuel && x.side === side);
@@ -13437,6 +13447,7 @@ function bcLedger(X, wb, side) {
     if (x.fixed) note = [note, `Đã sửa số: ghi ${bcVN(x.fixed[0], 3)} → đúng ${bcVN(x.fixed[1], 3)}`].filter(Boolean).join(' · ');
     if (x.t.thangCT && D.soById[x.t.thangCT]) note = [note, 'đi cặp ' + D.soById[x.t.thangCT]].filter(Boolean).join(' · ');
     if (x.it.ghost) note = [note, 'Vật tư đã xoá khỏi danh mục'].filter(Boolean).join(' · ');
+    { const ln = bcLoanNote(x.t); if (ln) note = [note, ln].filter(Boolean).join(' · '); }
     if (N) {
       v[C['Bên giao hàng'] - 1] = x.t.type === 'dieuchinh' ? '' : x.sv; v[C['Chứng từ'] - 1] = x.cts; v[cLoai - 1] = x.loai; v[C['Người lập'] - 1] = x.t.createdByName || '';
     } else {
@@ -13506,6 +13517,7 @@ function bcFuel(X) {
     if (x.isDO) doBal = bcR(doBal + (inn ? x.qty : -x.qty));
     let note = x.t.type === 'dieuchinh' ? (x.t.reason || x.t0.reason || 'Điều chỉnh') : x.note0;
     if (!/^(Nhập mua|Nhập kho|Xuất dùng)$/.test(x.loai)) note = [x.loai + (x.sv && LOAN_T[x.t.type] ? ' · ' + x.sv : ''), note].filter(Boolean).join(' · ');
+    { const ln = bcLoanNote(x.t); if (ln) note = [note, ln].filter(Boolean).join(' · '); }
     if (x.fixed) note = [note, `Đã sửa số: ${bcVN(x.fixed[0], 2)} → ${bcVN(x.fixed[1], 2)}`].filter(Boolean).join(' · ');
     const v = [k + 1, bcXD(x.d), tm, x.so, who || (inn && x.t.type === 'nhap' ? 'Nhập kho (chưa ghi nhà cung cấp)' : ''), mtr,
       x.isDO && inn ? x.qty : '', x.isDO && !inn ? x.qty : '', { formula:`I${r - 1}+G${r}-H${r}`, result:doBal },
@@ -13645,8 +13657,8 @@ function bcNXT(X, LN, LX, FU) {
       bcPut(ws, r, v, ['c', 'c', 'l', 'c', 'n', 'n', 'n', 'n', 'n', 'n', ...(ct ? ['n', 'n'] : []), 'c', 'l'], String(it.name).length > 42 ? 30 : 17);
       ws.getCell(r, 10).font = bcF(10.5, true); if (ct) ws.getCell(r, 12).font = bcF(10.5, true);
       const notes = [];
-      const lo = fuel ? sumP(x => x.loai === 'Cho mượn') : 0;
-      if (lo) notes.push([`Có ${bcVN(lo, 2)} ${String(it.unit).toLowerCase()} cho DA khác mượn`, BC.ORG]);
+      const lo = fuel ? P.filter(x => x.loai === 'Cho mượn').reduce((a, x) => a + bcLoanOpenQ(x.t), 0) : 0;   // v5.59.3: chỉ phần chưa trả / chưa bỏ
+      if (lo > 1e-9) notes.push([`Còn ${bcVN(lo, 2)} ${String(it.unit).toLowerCase()} cho DA khác mượn chưa trả`, BC.ORG]);
       if (s.open < -1e-9) { notes.push(['Tồn đầu kỳ âm — cần kiểm kê', BC.RED]); negOpen.push(s); }
       else if (close < -1e-9) { notes.push(['Xuất vượt tồn — kiểm tra', BC.RED]); negClose.push(s); }
       else if (!D.from && Math.abs(s.open) > 1e-9) notes.push([`Tồn trên app chênh ${bcVN(s.open, 3)} so với tổng phiếu — chưa có phiếu tồn đầu, nên kiểm kê`, BC.ORG]);
@@ -13804,7 +13816,8 @@ function bcOverview(X, LN, LX, FU, NX, LO, apx) {
       apx.includes('Hàng hư hỏng') ? 'Hàng hư hỏng' : 'Tổng quan']);
   } catch (e) {}
   const lo = D.P.filter(x => /mượn|Nhận trả|Trả lại/.test(x.loai)), parties = [...new Set(lo.map(x => x.sv).filter(Boolean))];
-  if (lo.length) W_.push(['Lưu ý', `${lo.length} lượt mượn / trả trong kỳ` + (parties.length ? ` (${parties.slice(0, 3).join(', ')}${parties.length > 3 ? '…' : ''})` : '') + ' — đối chiếu với dự án / đơn vị bên kia.', 'Sổ xuất kho']);
+  const loOpen = lo.filter(x => { const l = bcLoanOf(x.t); return l ? l.status === 'open' && loanRemain(l) > 1e-9 : true; }).length, loBo = lo.filter(x => /^Đã bỏ/.test(bcLoanNote(x.t))).length;   // v5.59.3
+  if (lo.length) W_.push(['Lưu ý', `${lo.length} lượt mượn / trả trong kỳ` + (parties.length ? ` (${parties.slice(0, 3).join(', ')}${parties.length > 3 ? '…' : ''})` : '') + (loOpen ? ' — đối chiếu với dự án / đơn vị bên kia.' : ' — đã trả' + (loBo ? ' / bỏ thông tin mượn' : '') + ' xong, không còn nợ.'), 'Sổ xuất kho']);
   const od = (db.loans || []).filter(l => l.status === 'open' && loanOverdue(l) > 0);
   if (od.length) W_.push(['Lưu ý', `${od.length} phiếu mượn quá hạn trả: ` + od.slice(0, 3).map(l => `${l.itemName} (${l.party})`).join(', ') + (od.length > 3 ? '…' : '') + '.', LO ? LO.name : 'Sổ xuất kho']);
   const mx = D.P.filter(x => !x.fuel && x.side === 'X' && !x.sv && !x.t.thietBi && !/^Điều chỉnh|Khai số/.test(x.loai)).length;
