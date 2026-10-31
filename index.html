@@ -1896,7 +1896,7 @@ body.pg-printing #pg-print{display:block;position:fixed;inset:0;z-index:9000;bac
 // ============================================================
 // CONFIG
 // ============================================================
-const APP_VERSION = '5.58.1';
+const APP_VERSION = '5.59.0';
 const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbw6Rmi80I7RI3ij2U7RdRF5pYuQTnPrwEmGmUZS5xpxzLwwVynfoFUujZe1lm6HS1ymxw/exec';
 // ============================================================
 
@@ -12577,7 +12577,7 @@ function p9Render() {
     return `<div class="p9-pj${cl ? ' cl' : ''}"><div class="p9-h"><b>${escHtml(p.name)}</b>${tag}${p.name === curProj ? '<span class="p9-cur">đang mở</span>' : ''}</div>
       <div class="p9-st">${st}${cl ? ' · chỉ xem' : ''}</div>
       ${P9.list.some(x => 'siCand' in x) ? `<div class="p9-si">Đứng tên thay Admin: <b>${p.standIn ? escHtml(p.standIn.name) + (p.standIn.auto ? ' <small>(tự chọn)</small>' : '') : '<span style="color:#C92A2A">chưa chọn</span>'}</b> <a onclick="p9Si(${i})">Đổi</a>${p.standIn && !empty ? ` · <a onclick="p9SiFix(${i})">Đổi tên Admin trong dữ liệu cũ</a>` : ''}</div>` : ''}
-      ${!empty && P9.list.some(x => 'siCand' in x) ? `<div class="p9-si"><a onclick="p9Tc(${i})">Gộp phiếu nhập thẳng CT cũ</a> · <a onclick="p9Sc(${i})">Dọn khai số ở CT trùng</a> · <a onclick="p9Dl(${i})">Dọn máy vào trùng</a> · <a onclick="p9Pu(${i})">Xoá vật tư chưa dùng</a></div>` : ''}
+      ${!empty && P9.list.some(x => 'siCand' in x) ? `<div class="p9-si"><a onclick="p9Tc(${i})">Gộp phiếu nhập thẳng CT cũ</a> · <a onclick="p9Sc(${i})">Dọn khai số ở CT trùng</a> · <a onclick="p9Dl(${i})">Dọn máy vào trùng</a> · <a onclick="p9Pu(${i})">Xoá vật tư chưa dùng</a> · <a style="color:#B42318" onclick="p9Wipe(${i})">🗑 Xoá sạch dữ liệu kho</a></div>` : ''}
       <div class="p9-bt"><button type="button" onclick="p9Rename(${i})">✏️ Đổi tên</button>
         ${cl ? `<button type="button" onclick="p9Reopen(${i})">↩ Mở lại</button>` : `<button type="button" onclick="p9Close(${i})">📦 Đóng</button>`}
         <button type="button" class="${empty ? 'red' : 'off'}" ${empty ? '' : 'disabled'} onclick="p9Del(${i})">🗑 Xoá</button></div></div>`;
@@ -15729,6 +15729,33 @@ function bcMayThue(X) {
     'Tên NCC theo Danh mục nhà cung cấp dùng chung. Dòng tô vàng: máy thuê chưa ghi đơn vị cho thuê.']);
   bcSign(X, ws, r, n, ['NGƯỜI LẬP BIỂU', 'CÁN BỘ THIẾT BỊ', 'CHỈ HUY TRƯỞNG']);
   return { name:'Máy thuê theo NCC', ws, n:L.length };
+}
+</script>
+<script>// ===== v5.59.0 — ADMIN XOÁ SẠCH DỮ LIỆU KHO CỦA 1 DỰ ÁN (giữ dự án trống + Thi công) =====
+async function p9Wipe(i) {
+  const p = P9 && P9.list[i]; if (!p) return;
+  if (!navigator.onLine) { toast('📴 Cần có mạng'); return; }
+  showLoader('Đang đếm dữ liệu…'); const r = await api('pjWipe', { name:p.name, dry:1 }, 120000); hideLoader();
+  if (!r || !r.success) { toast('⚠️ ' + ((r && r.error) || 'Không đếm được') + (/không hợp lệ/i.test((r && r.error) || '') ? ' — máy chủ chưa lên 5.59.0' : '')); return; }
+  if (!r.total) { toast(p.name + ': không còn dữ liệu kho nào'); return; }
+  p9Sheet(`<div class="kl-h" style="color:#B42318">🗑 Xoá sạch dữ liệu kho · ${escHtml(p.name)}</div>
+    <div class="p9-tx">Xoá <b>${fmtNum(r.total)} dòng</b> của dự án này:</div>
+    <div style="max-height:34vh;overflow:auto;margin:6px 0">${r.list.map(x => `<div style="display:flex;justify-content:space-between;padding:5px 2px;border-bottom:1px solid var(--border)"><span>${escHtml(x.label)}</span><b>${fmtNum(x.n)}</b></div>`).join('')}</div>
+    <div class="p9-tx">✓ <b>Giữ</b>: dự án ${escHtml(p.name)} (trống, vẫn giao cho các tài khoản), dữ liệu Thi công, hạng mục, kế hoạch, cài đặt.<br>✓ <b>Không đụng</b> dự án khác — phiếu nhập từ ${escHtml(p.name)} ở dự án khác vẫn giữ.</div>
+    <div class="p9-w">Máy chủ sao lưu cả file và tạo file "Lưu trữ kho ${escHtml(p.name)}" (thư mục sao lưu trên Drive) chứa đúng các dòng bị xoá. Trong app không hoàn tác được.</div>
+    <div class="fg" style="margin-top:8px"><label>Gõ đúng tên dự án để xác nhận</label><input id="pw-cf" autocomplete="off" placeholder="${escHtml(p.name)}"></div>
+    <div class="p9-bb"><button type="button" class="p9-c" onclick="p9Close0()">Huỷ</button><button type="button" class="p9-ok" id="pw-go" style="background:#B42318">Xoá ${fmtNum(r.total)} dòng</button></div>`);
+  $9('pw-go').onclick = async () => {
+    const cf = $9('pw-cf').value.trim();
+    if (cf !== p.name) { toast('Gõ đúng tên dự án: ' + p.name); return; }
+    if (!confirm(`Xoá sạch ${r.total} dòng dữ liệu kho của ${p.name}?\nĐã có bản sao lưu + file lưu trữ.`)) return;
+    showLoader('Đang sao lưu, lưu trữ và xoá…'); const r2 = await api('pjWipe', { name:p.name, confirm:cf }, 300000); hideLoader();
+    if (!r2 || !r2.success) { toast('⚠️ ' + ((r2 && r2.error) || 'Không xoá được')); return; }
+    p9Sheet(`<div class="kl-h">✅ Đã xoá sạch dữ liệu kho · ${escHtml(p.name)}</div><div class="p9-tx">${fmtNum(r2.total)} dòng đã xoá. Dự án còn trống, nhập lại từ đầu được.</div>
+      ${r2.url ? `<div class="p9-tx"><a href="${escHtml(r2.url)}" target="_blank" rel="noopener">📄 Mở file lưu trữ</a></div>` : ''}
+      <div class="p9-bb"><button type="button" class="p9-ok" onclick="p9Close0();try{pjOpen()}catch(e){}">Xong</button></div>`);
+    if (p.name === curProj) { db.txnTotal = 0; db.txnLastId = ''; try { await syncAll(true); refreshCurrentView(false); } catch (e) {} }
+  };
 }
 </script>
 <script>// ===== v5.58.0 — THỦ KHO NẠP SỔ EXCEL → GỬI DUYỆT · ADMIN / P/TP.QLTB DUYỆT =====

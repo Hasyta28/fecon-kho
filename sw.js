@@ -1,4 +1,5 @@
-// FECON Kho + Thi công - Service Worker v5.58.1
+// FECON Kho + Thi công - Service Worker v5.59.0
+// 5.59.0: Admin xoá sạch dữ liệu kho 1 dự án
 // 5.58.1: Admin duyệt bỏ mượn ghi đúng người đứng tên
 // 5.58.0: Kho — thủ kho nạp sổ Excel gửi duyệt, Admin / P.QLTB duyệt
 // 5.57.0: Kho — danh mục nhà cung cấp dùng chung + xuất Excel khoá số liệu
@@ -68,7 +69,7 @@
 //  - Mở app: lấy file từ bộ nhớ của bản đang dùng; thiếu file nào mới lấy từ mạng.
 //  - Có sw.js mới trên GitHub: tải sẵn bản mới vào bộ nhớ riêng nhưng KHÔNG đổi bản đang dùng.
 //  - Địa chỉ có ?fresh=... luôn lấy thẳng từ mạng (app dùng để kiểm tra / tải bản mới).
-const VERSION = '5.58.1';
+const VERSION = '5.59.0';
 const APP = 'fecon-app-', META = 'fecon-meta';
 const CORE = ['./', './index.html', './thicong.html', './danhmuc.html', './manifest.json', './icon-192.png', './icon-512.png', './icon-maskable-192.png', './icon-maskable-512.png', './bg-login.jpg'];
 
