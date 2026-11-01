@@ -51,3 +51,9 @@ Giao cho trợ lý phụ khi phần việc LỚN và TÁCH RIÊNG được:
 - `viet-ma` (Sonnet): sửa code đúng theo danh sách đã chốt, nhiều chỗ / nhiều file, rồi báo lại đã sửa gì.
 
 Không giao: câu hỏi, tư vấn, sửa 1–2 chỗ nhỏ (Opus làm thẳng rẻ hơn, vì trợ lý phụ phải đọc lại từ đầu). Khi giao, ghi rõ trong lời giao: file, mốc `// =====`, tên hàm, việc cần làm, điều không được đụng tới. Sau khi trợ lý làm xong, Opus tự kiểm tra lại phần đã sửa trước khi báo người dùng.
+
+## Skill trong repo
+
+`.claude/skills/` có 4 skill (xem `.claude/skills/README.md`): frontend-design, design-auditor (chỉ chạy khi người dùng gọi tên), systematic-debugging, verification-before-completion. Khi skill nói khác `CLAUDE.md` thì làm theo `CLAUDE.md`.
+
+Sau khi sửa hoặc thêm màn hình / bố cục giao diện: hỏi người dùng một câu "Có chạy kiểm tra giao diện (design-auditor) không?". Chỉ chạy khi họ đồng ý (tốn ~40.000 token mỗi lần).
