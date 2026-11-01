@@ -55,3 +55,5 @@ Không giao: câu hỏi, tư vấn, sửa 1–2 chỗ nhỏ (Opus làm thẳng r
 ## Skill trong repo
 
 `.claude/skills/` có 4 skill (xem `.claude/skills/README.md`): frontend-design, design-auditor (chỉ chạy khi người dùng gọi tên), systematic-debugging, verification-before-completion. Khi skill nói khác `CLAUDE.md` thì làm theo `CLAUDE.md`.
+
+Sau khi sửa hoặc thêm màn hình / bố cục giao diện: hỏi người dùng một câu "Có chạy kiểm tra giao diện (design-auditor) không?". Chỉ chạy khi họ đồng ý (tốn ~40.000 token mỗi lần).
