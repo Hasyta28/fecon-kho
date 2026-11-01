@@ -1896,7 +1896,7 @@ body.pg-printing #pg-print{display:block;position:fixed;inset:0;z-index:9000;bac
 // ============================================================
 // CONFIG
 // ============================================================
-const APP_VERSION = '5.59.5';
+const APP_VERSION = '5.59.6';
 const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbw6Rmi80I7RI3ij2U7RdRF5pYuQTnPrwEmGmUZS5xpxzLwwVynfoFUujZe1lm6HS1ymxw/exec';
 // ============================================================
 
@@ -13230,7 +13230,7 @@ function x9Open() {
 const BC_LOGO = "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";
 </script>
 <script>// ===== v5.51.0 KHO — BÁO CÁO KHO EXCEL (khung mới, mẫu v2 người dùng duyệt 16/10/2026) =====
-// Tổng quan · Tổng hợp NXT · Sổ nhập kho · Sổ xuất kho · Nhiên liệu + phụ lục (Phiếu mượn chưa trả, Sửa chữa, Đối chiếu P.QLTB, Phiếu YC / cóc nối / kiểm kê, Hàng hư hỏng).
+// Tổng quan · Tổng hợp NXT · Sổ nhập – xuất (5.59.6: gộp 2 sổ) · Nhiên liệu + phụ lục (Phiếu mượn chưa trả, Sửa chữa, Đối chiếu P.QLTB, Phiếu YC / cóc nối / kiểm kê, Hàng hư hỏng).
 // Tồn tính đúng như app (ctFx: trong kho / ở công trường; effQty: phiếu Sửa số; kkAsDc: kiểm kê). File ghi sẵn kết quả công thức (mở trên Zalo vẫn thấy số).
 let BC_WB = null;
 function fnNoteCT() {                                                   // ô "Số chứng từ" → đầu ghi chú "CT: …"
@@ -13281,17 +13281,15 @@ function bcSetup(X, ws, widths, title, sub, o = {}) {
   ws.views = [o.xSplit !== undefined && o.xSplit !== 0 ? { state:'frozen', xSplit:0, ySplit:9, showGridLines:false, zoomScale:90 } : { showGridLines:false, zoomScale:90 }];   // v5.56.5: chỉ cố định dòng tiêu đề, không cố định cột
   return n;
 }
-function bcHead(ws, spec, nums, row = 7) {
+function bcHead(ws, spec, nums, row = 7) {   // v5.59.6: bỏ hàng mã cột (A B 1 2…) — tiêu đề gộp 3 dòng, nút lọc nằm ở đáy tiêu đề (dòng row + 2)
   let c = 1;
   spec.forEach(([t, span, sub]) => {
-    if (sub) { if (span > 1) ws.mergeCells(row, c, row, c + span - 1); ws.getCell(row, c).value = t; sub.forEach((s, k) => ws.getCell(row + 1, c + k).value = s); }
-    else { ws.mergeCells(row, c, row + 1, c + span - 1); ws.getCell(row, c).value = t; }
+    if (sub) { if (span > 1) ws.mergeCells(row, c, row, c + span - 1); ws.getCell(row, c).value = t; sub.forEach((s, k) => { ws.mergeCells(row + 1, c + k, row + 2, c + k); ws.getCell(row + 1, c + k).value = s; }); }
+    else { ws.mergeCells(row, c, row + 2, c + span - 1); ws.getCell(row, c).value = t; }
     c += span;
   });
   const n = c - 1;
-  [row, row + 1].forEach(r => { ws.getRow(r).height = r === row ? 22 : 30; for (let k = 1; k <= n; k++) Object.assign(ws.getCell(r, k), { font:bcF(10.5, true, false, BC.NAVY), fill:bcFill(BC.HEAD), alignment:CEN, border:BOX }); });
-  nums.forEach((t, k) => Object.assign(ws.getCell(row + 2, k + 1), { value:t, font:bcF(8.5, false, true, BC.GREY), alignment:CEN, border:BOX }));
-  ws.getRow(row + 2).height = 14;
+  [row, row + 1, row + 2].forEach(r => { ws.getRow(r).height = r === row ? 22 : r === row + 1 ? 22 : 16; for (let k = 1; k <= n; k++) Object.assign(ws.getCell(r, k), { font:bcF(10.5, true, false, BC.NAVY), fill:bcFill(BC.HEAD), alignment:CEN, border:BOX }); });
   return n;
 }
 function bcSection(ws, r, n, roman, text, extra) {
@@ -13490,43 +13488,124 @@ function bcLedger(X, wb, side) {
   return { name, ws, r1, r2, C, cLoai, kg };
 }
 
+// ---------- v5.59.6: SỔ NHẬP – XUẤT GỘP (cột Nhập / Xuất có nút lọc · SL nhập / SL xuất 2 cột → Tổng hợp NXT vẫn cộng bằng SUMIFS) ----------
+const BC_NX = 'Sổ nhập – xuất';
+function bcSvShow(x) {                                                  // bên giao / nhận: phiếu mượn dự án bỏ tên người đi kèm ("Dự án DA … · Tên")
+  let s = x.t.type === 'dieuchinh' ? '' : String(x.sv || '');
+  if (LOAN_T[x.t.type] && /^Dự án /.test(s)) s = s.split(/\s*·\s*/)[0];
+  return s;
+}
+function bcLoanLive(t) {                                                // phiếu mượn còn đang mượn (chưa trả xong, chưa bỏ thông tin mượn) lúc xuất file
+  if (!LOAN_T[t.type]) return false;
+  const l = bcLoanOf(t); if (!l) return true;
+  return l.status === 'open' && loanRemain(l) > 1e-9 && !(l.history || []).some(h => h.t === 'bo');
+}
+function bcLoanNoteNX(x, note) {                                        // còn mượn → ghi chú; đã trả / đã bỏ → không ghi chú
+  if (!LOAN_T[x.t.type]) return note;
+  if (!bcLoanLive(x.t)) return '';
+  const l = bcLoanOf(x.t), rem = l ? loanRemain(l) : 0;
+  return [bcNoLinkNote(note), (x.t.type === 'dimuon' || x.t.type === 'chomuon') && rem > 1e-9 ? `Đang mượn, còn ${bcVN(rem, 2)} ${String(l.unit || x.it.unit || '').toLowerCase()} chưa trả` : ''].filter(Boolean).join(' · ');
+}
+function bcLedgerNX(X) {
+  const D = X.D, L = D.P.filter(x => !x.fuel);
+  const kg = L.some(x => x.it.cat === 'thep');
+  const mn = typeof nccOf === 'function' && L.some(x => x.sv && nccOf(x.sv));
+  const cols = [['STT', 5.5], ['Ngày', 11], ['Số phiếu', 13.5], ['Tên vật tư, quy cách', 32], ['ĐVT', 7], ['SL nhập', 10], ['SL xuất', 10], ...(kg ? [['Quy đổi\n(kg)', 10]] : []),
+    ['Nhập / Xuất', 9.5], ['Loại', 16], ['NCC / NTP / Đội', 24], ...(mn ? [['Mã NCC', 11]] : []), ['Máy, thiết bị', 22], ...(D.ct ? [['Xuất từ', 11]] : []),
+    ...(L.some(x => x.cts || isPycRef(x.t.refId)) ? [['Chứng từ /\nPhiếu YC', 14]] : []), ['Người lập', 14], ...(L.some(x => x.t.xe) ? [['Xe', 18]] : []), ['Ghi chú', 26]];   // cột Chứng từ / Xe chỉ hiện khi có số liệu
+  const name = BC_NX, ws = X.wb.addWorksheet(name);
+  const n = bcSetup(X, ws, cols.map(c => c[1]), 'SỔ THEO DÕI NHẬP – XUẤT KHO VẬT TƯ', X.R.label + '  ·  không gồm nhiên liệu, dầu mỡ (xem sheet "Nhiên liệu")', { xSplit:4 });
+  bcHead(ws, cols.map(c => [c[0], 1]), []);
+  const C = {}; cols.forEach((c, k) => C[c[0].split('\n')[0]] = k + 1);
+  const cLoai = C['Loại'], cNote = C['Ghi chú'], cSv = C['NCC / NTP / Đội'], cNX = C['Nhập / Xuất'];
+  const fm = cols.map((c, i) => i === 0 ? 'c' : i === 1 ? 'd' : i === 2 ? 'c' : i === 3 ? 'l' : i === 4 ? 'c' : (i === 5 || i === 6 || (kg && i === 7)) ? 'n' : /^(Ghi chú|NCC|Máy|Loại|Chứng từ)/.test(c[0]) ? 'l' : 'c');
+  let r = 10, nN = 0, nX = 0, sN = 0, sX = 0, noSv = 0;
+  L.forEach((x, k) => {
+    const N = x.side === 'N', kgp = kg ? bcKgPer(x.it) : null, v = new Array(n).fill('');
+    v[0] = k + 1; v[1] = bcXD(x.d); v[2] = x.so; v[3] = x.it.name; v[4] = x.it.unit; v[5] = N ? x.qty : ''; v[6] = N ? '' : x.qty;
+    if (N) { nN++; sN += x.qty; } else { nX++; sX += x.qty; }
+    if (kg) v[7] = kgp ? { formula:`(F${r}+G${r})*${kgp}`, result:bcR(x.qty * kgp) } : (x.it.cat === 'thep' ? 'chưa quy đổi' : '');
+    let note = x.t.type === 'dieuchinh' ? (x.t.reason || x.t0.reason || (x.t0.type === 'kiemke' ? 'Kiểm kê' : '')) : x.note0;
+    if (note && note === x.sv) note = '';
+    note = bcLoanNoteNX(x, note);
+    if (x.fixed) note = [note, `Đã sửa số: ghi ${bcVN(x.fixed[0], 3)} → đúng ${bcVN(x.fixed[1], 3)}`].filter(Boolean).join(' · ');
+    if (x.t.thangCT && D.soById[x.t.thangCT]) note = [note, 'đi cặp ' + D.soById[x.t.thangCT]].filter(Boolean).join(' · ');
+    if (x.it.ghost) note = [note, 'Vật tư đã xoá khỏi danh mục'].filter(Boolean).join(' · ');
+    v[cNX - 1] = N ? 'Nhập' : 'Xuất'; v[cLoai - 1] = x.loai; v[cSv - 1] = bcSvShow(x);
+    if (mn) { const o = x.t.type === 'dieuchinh' ? null : nccOf(x.sv); v[C['Mã NCC'] - 1] = o ? o.ma || '' : ''; }
+    v[C['Máy, thiết bị'] - 1] = x.t.thietBi || '';
+    if (D.ct) v[C['Xuất từ'] - 1] = N ? '' : x.site ? 'Công trường' : 'Kho';
+    if (C['Chứng từ']) v[C['Chứng từ'] - 1] = [x.cts, isPycRef(x.t.refId) ? x.t.refId : ''].filter(Boolean).join(' · ');
+    v[C['Người lập'] - 1] = x.t.createdByName || ''; if (C['Xe']) v[C['Xe'] - 1] = x.t.xe || ''; v[cNote - 1] = note;
+    bcPut(ws, r, v, fm, bcH(cols.map((c, i) => [v[i] && typeof v[i] === 'object' ? '' : v[i], c[1]]).filter((_, i) => i !== 1 && i !== 5 && i !== 6)));
+    if (kg && !kgp && x.it.cat === 'thep') ws.getCell(r, 8).font = bcF(9.5, false, true, BC.ORG);
+    ws.getCell(r, cNX).font = bcF(10.5, true, false, N ? '1E7B34' : 'B42318');
+    const base = N ? /^Nhập (kho|mua)$/.test(x.loai) : x.loai === 'Xuất dùng';
+    if (!base) { for (let c = 1; c <= n; c++) ws.getCell(r, c).fill = bcFill(BC.SOFT); ws.getCell(r, cLoai).font = bcF(10.5, true, false, BC.ORG); }
+    if (bcNoSv(x, N)) { ws.getCell(r, cSv).fill = bcFill('FCE9C8'); noSv++; }
+    r++;
+  });
+  if (!L.length) { bcEmptyRow(ws, r, n, 'Không có phiếu nhập, xuất vật tư trong kỳ'); r++; }
+  const r1 = 10, r2 = r - 1;
+  bcTotal(ws, r, n, 'Cộng số lượng (lọc 1 vật tư để xem tổng)', 5, L.length ? { 6:[{ formula:`SUBTOTAL(9,F${r1}:F${r2})`, result:bcR(sN) }, BC.NUM], 7:[{ formula:`SUBTOTAL(9,G${r1}:G${r2})`, result:bcR(sX) }, BC.NUM] } : {});
+  ws.autoFilter = `A9:${bcCL(n)}${r2}`;
+  r = bcNotes(ws, r + 2, n, [
+    `Trong kỳ: ${nN} lượt nhập, ${nX} lượt xuất` + (noSv ? `; ${noSv} lượt chưa ghi NCC / NTP / Đội (ô tô vàng) — thủ kho bổ sung trên app.` : '.'),
+    'Cách xem: bấm nút lọc ở cột "Nhập / Xuất" để xem riêng phiếu nhập hoặc phiếu xuất; lọc cột "Tên vật tư" để xem một mặt hàng — dòng Cộng tự tính theo bộ lọc (nên lọc một mặt hàng khi cộng số lượng).',
+    'Dòng nền vàng nhạt là loại khác (mượn, nhận trả, điều chỉnh, luân chuyển, giải động, nhập / xuất thẳng CT, về kho từ CT). Số phiếu do app đánh theo ngày (PN = tăng tồn, PX = giảm tồn).'
+      + (D.ct ? ' "Xuất từ: Công trường" = xuất thẳng từ công trường (không trừ tồn trong kho).' : ''),
+    kg ? 'Quy đổi (kg) = số cây × kg/cây; kg/cây = 0,00617 × D² × chiều dài (đọc từ tên, vd "Thép cây D20 x 11,7m"). "chưa quy đổi" = tên chưa ghi đường kính / chiều dài.' : '']);
+  bcSign(X, ws, r, n, ['NGƯỜI LẬP BIỂU', 'THỦ KHO', 'CHỈ HUY TRƯỞNG']);
+  const base = { name, ws, r1, r2, C, cLoai, kg };
+  return { N:{ ...base, q:'F' }, X:{ ...base, q:'G' } };
+}
+
 // ---------- nhiên liệu ----------
 function bcFuel(X) {
   const D = X.D, ws = X.wb.addWorksheet('Nhiên liệu'), name = 'Nhiên liệu';
-  const W = [5.5, 10.5, 6.5, 13.5, 32, 9.5, 9.5, 9.5, 10.5, 18, 9, 9, 28];   // v5.59.5: bỏ cột Ký nhận
+  const W = [5.5, 10.5, 6.5, 13.5, 36, 9.5, 9.5, 9.5, 10.5, 18, 9, 9, 28];   // v5.59.5: bỏ cột Ký nhận · v5.59.6: cột E rộng hơn (tên máy xuống dòng)
   const n = bcSetup(X, ws, W, 'SỔ THEO DÕI NHẬP – CẤP PHÁT NHIÊN LIỆU CHO MÁY, THIẾT BỊ', 'Dầu DO, dầu nhớt, mỡ  ·  ' + X.R.label, { xSplit:5 });
-  bcHead(ws, [['STT', 1], ['Ngày', 1], ['Giờ', 1], ['Số phiếu', 1], ['Máy, thiết bị nhận /\nnguồn nhập', 1], ['Giờ máy\n(đồng hồ)', 1], ['DẦU DO (lít)', 3, ['Nhập', 'Cấp', 'Tồn']],
+  bcHead(ws, [['STT', 1], ['Ngày', 1], ['Giờ', 1], ['Số phiếu', 1], ['NCC / NTP / Đội ·\nMáy nhận', 1], ['Giờ máy\n(đồng hồ)', 1], ['DẦU DO (lít)', 3, ['Nhập', 'Cấp', 'Tồn']],
     ['DẦU NHỚT – MỠ', 3, ['Loại', 'Nhập', 'Cấp']], ['Ghi chú', 1]], ['A', 'B', 'C', 'D', 'E', '1', '2', '3', '4', 'F', '5', '6', 'G']);
   const fuelItems = Object.values(D.st).filter(s => D.fuelOf(s.it));
   const doItems = fuelItems.filter(s => D.doOf(s.it)), oilItems = fuelItems.filter(s => !D.doOf(s.it));
   const opDO = bcR(doItems.reduce((a, s) => a + s.open, 0));
+  ws.getColumn(3).hidden = true;                                        // v5.59.6: ẩn cột Giờ (giữ chỗ để công thức các sheet khác không lệch cột)
   let r = 10;
   const startTxt = D.from ? `Tồn đầu kỳ (đến hết ngày ${dmy(new Date(D.from.getTime() - 864e5))})` : 'Tồn đầu (chưa có phiếu)';
   ws.mergeCells(r, 2, r, 8); ws.getCell(r, 2).value = startTxt; ws.getCell(r, 9).value = opDO; ws.mergeCells(r, 10, r, n);
   const oilsOp = oilItems.filter(s => Math.abs(s.open) > 1e-9).map(s => `${s.it.name}: ${bcVN(s.open, 2)} ${s.it.unit}`);
-  ws.getCell(r, 10).value = 'Nhớt – mỡ: ' + (oilsOp.length ? oilsOp.join('; ') : '—');
+  ws.getCell(r, 10).value = 'Nhớt – mỡ: ' + (oilsOp.length ? oilsOp.join('; ') : '0');
   for (let c = 1; c <= n; c++) Object.assign(ws.getCell(r, c), { font:bcF(10.5, true, false, BC.NAVY), fill:bcFill(BC.SEC), border:BOX, alignment:LEFT });
-  Object.assign(ws.getCell(r, 9), { numFmt:BC.NUM0, alignment:RIGHT }); ws.getCell(r, 10).font = bcF(9.5, false, true, BC.NAVY);
+  Object.assign(ws.getCell(r, 9), { numFmt:'#,##0;[Red]-#,##0;0', alignment:RIGHT }); ws.getCell(r, 10).font = bcF(9.5, false, true, BC.NAVY);   // v5.59.6: tồn đầu 0 ghi số 0
   const r0 = r; r++;
   const F = D.P.filter(x => x.fuel);
   const statsByDev = {}, flagTxn = {};
   db.devices.forEach(d => { try { const S = fuelStats(d); if (S) { statsByDev[d.name] = S; S.flags.forEach(f => flagTxn[f.a.t.id] = f.pct); } } catch (e) {} });
   const warn = [];
   let doBal = opDO;
+  const devOf = nm => nm ? (db.devices || []).find(d => d.name === nm) : null;
+  const whoOf = x => {                                                  // v5.59.6: máy nhận (kèm NCC nếu máy thuê, mã P.QLTB) hoặc NCC / NTP / Đội giao
+    if (!x.t.thietBi) return bcSvShow(x);
+    const d = devOf(x.t.thietBi), nc = d && d.donVi ? (typeof nccStd === 'function' ? nccStd(d.donVi) : d.donVi) : '';
+    return x.t.thietBi + (d && d.type === 'hire' ? ` (thuê${nc ? ' ' + nc : ''})` : '') + (d && d.maQL ? ' · ' + d.maQL : '');
+  };
   F.forEach((x, k) => {
-    const inn = x.side === 'N', who = x.t.thietBi || x.sv, mtr = x.t.meter === '' || x.t.meter === undefined || x.t.meter === null || isNaN(+x.t.meter) ? '' : +x.t.meter;
+    const inn = x.side === 'N', who = whoOf(x), mtr = x.t.meter === '' || x.t.meter === undefined || x.t.meter === null || isNaN(+x.t.meter) ? '' : +x.t.meter;
     const tm = (String(x.t.datetime || '').match(/\d{1,2}:\d{2}/) || [''])[0];
     if (x.isDO) doBal = bcR(doBal + (inn ? x.qty : -x.qty));
     let note = x.t.type === 'dieuchinh' ? (x.t.reason || x.t0.reason || 'Điều chỉnh') : x.note0;
-    if (bcLoanBo(x.t)) note = bcNoLinkNote(note);                // v5.59.4: mượn đã bỏ → không ghi chú tự sinh
-    else if (!/^(Nhập mua|Nhập kho|Xuất dùng)$/.test(x.loai)) note = [x.loai + (x.sv && LOAN_T[x.t.type] ? ' · ' + x.sv : ''), note].filter(Boolean).join(' · ');
+    if (LOAN_T[x.t.type]) note = bcLoanLive(x.t) ? [x.loai, bcLoanNoteNX(x, note)].filter(Boolean).join(' · ') : '';   // v5.59.6: còn mượn mới ghi chú; đã trả / đã bỏ → không
+    else if (!/^(Nhập mua|Nhập kho|Xuất dùng)$/.test(x.loai)) note = [x.loai, note].filter(Boolean).join(' · ');
     if (x.fixed) note = [note, `Đã sửa số: ${bcVN(x.fixed[0], 2)} → ${bcVN(x.fixed[1], 2)}`].filter(Boolean).join(' · ');
-    const v = [k + 1, bcXD(x.d), tm, x.so, who || (inn && x.t.type === 'nhap' ? 'Nhập kho (chưa ghi nhà cung cấp)' : ''), mtr,
+    const v = [k + 1, bcXD(x.d), tm, x.so, who || (inn && x.t.type === 'nhap' ? '(chưa ghi NCC)' : ''), mtr,
       x.isDO && inn ? x.qty : '', x.isDO && !inn ? x.qty : '', { formula:`I${r - 1}+G${r}-H${r}`, result:doBal },
       x.isDO ? '' : x.it.name, !x.isDO && inn ? x.qty : '', !x.isDO && !inn ? x.qty : '', note];
-    bcPut(ws, r, v, ['c', 'd', 'c', 'c', 's', 'n1', 'n0', 'n0', 'n0', 'l', 'n', 'n', 'l'], bcH([[note, 24], [v[9], 16]]));
+    bcPut(ws, r, v, ['c', 'd', 'c', 'c', 'l', 'n', 'n0', 'n0', 'n0', 'l', 'n', 'n', 'l'], bcH([[note, 24], [v[9], 16], [v[4], 36]]));   // v5.59.6: tên máy xuống dòng · giờ máy số nguyên
     ws.getCell(r, 9).font = bcF(10.5, false, false, '404040'); if (!x.isDO) ws.getCell(r, 9).numFmt = ';;;';
-    if (inn) { for (let c = 1; c <= n; c++) ws.getCell(r, c).fill = bcFill(BC.BLUE); if (!who && x.t.type === 'nhap') ws.getCell(r, 5).font = bcF(10.5, false, true, BC.ORG); }
+    if (inn) { for (let c = 1; c <= n; c++) ws.getCell(r, c).fill = bcFill(BC.BLUE); if (!who && x.t.type === 'nhap') { ws.getCell(r, 5).font = bcF(10.5, false, true, BC.ORG); ws.getCell(r, 5).fill = bcFill('FCE9C8'); } }
+    if (!inn && x.isDO && x.t.type === 'xuat' && !x.t.thietBi) ws.getCell(r, 5).fill = bcFill('FCE9C8');
+    { const d = !inn && x.isDO && x.t.type === 'xuat' ? devOf(x.t.thietBi) : null; if (d && mUnit(d) === 'h' && mtr === '') ws.getCell(r, 6).fill = bcFill('FCE9C8'); }   // v5.59.6: thiếu giờ máy → vàng
     if (inn && x.t.type === 'nhap' && x.t.thietBi) { bcFlag(ws, r, 13, [note, '⚠ NHẬP mà ghi tên máy?'].filter(Boolean).join(' · '), BC.RED); warn.push(['nhap_may', x]); }
     if (!inn && x.isDO && x.t.type === 'xuat' && !x.t.thietBi) { bcFlag(ws, r, 13, [note, '⚠ Chưa ghi máy nhận'].filter(Boolean).join(' · '), BC.RED); warn.push(['no_dev', x]); }
     if (flagTxn[x.t.id] !== undefined) bcFlag(ws, r, 13, [note, `Vượt định mức +${flagTxn[x.t.id]}%`].filter(Boolean).join(' · '), BC.RED);
@@ -13550,7 +13629,7 @@ function bcFuel(X) {
   }
   ws.autoFilter = `A9:M${f2}`;
   r = bcNotes(ws, r + 2, n, [
-    'Ghi chú: Tồn DO (cột 4) tự cộng trừ theo từng dòng — số âm tô đỏ là dấu hiệu thiếu phiếu nhập hoặc ghi nhầm Nhập / Xuất. Dòng nền xanh: nhập dầu vào kho. Giờ = giờ cấp dầu thực tế (thủ kho chỉnh khi nhập muộn). Giờ máy = số đồng hồ ghi khi cấp dầu.',
+    'Ghi chú: cột Tồn DO tự cộng trừ theo từng dòng — số âm tô đỏ là dấu hiệu thiếu phiếu nhập hoặc ghi nhầm Nhập / Xuất. Dòng nền xanh: nhập dầu vào kho. Giờ máy = số đồng hồ ghi khi cấp dầu. Ô tô vàng = chưa ghi NCC / máy nhận / giờ máy — thủ kho bổ sung trên app.',
     doItems.length > 1 ? `Cột Dầu DO gộp ${doItems.length} mặt hàng: ${doItems.map(s => s.it.name).join(', ')}.` : '']);
   // ----- PHẦN B: TỔNG HỢP THEO MÁY -----
   ws.getRow(r).addPageBreak(); r += 1;
@@ -13560,10 +13639,7 @@ function bcFuel(X) {
     ['TB lít / ngày', 2, 9, ['Kỳ này', 'Từ đầu DA']], ['So với\nTB', 1, 11], ['Lít / giờ\n(theo giờ máy)', 1, 12], ['Đánh giá', 1, 13]];
   HB.forEach(([t, span, c, sub]) => { if (sub) { ws.mergeCells(r, c, r, c + span - 1); ws.getCell(r, c).value = t; sub.forEach((s, k) => ws.getCell(r + 1, c + k).value = s); } else { ws.mergeCells(r, c, r + 1, c + span - 1); ws.getCell(r, c).value = t; } });
   [r, r + 1].forEach(rr => { ws.getRow(rr).height = 24; for (let c = 1; c <= n; c++) Object.assign(ws.getCell(rr, c), { font:bcF(10.5, true, false, BC.NAVY), fill:bcFill(BC.HEAD), alignment:CEN, border:BOX }); });
-  r += 2;
-  ws.mergeCells(r, 2, r, 4);
-  ['A', 'B', '', '', 'C', '1', '2', '3', '4 = 2 ÷ 3', '5', '6 = 4 ÷ 5 − 1', '7', 'D'].forEach((t, k) => Object.assign(ws.getCell(r, k + 1), { value:t || null, font:bcF(8.5, false, true, BC.GREY), alignment:CEN, border:BOX }));
-  r++; const b0 = r;
+  r += 2; const b0 = r;                                                 // v5.59.6: bỏ hàng mã cột
   const endD = bcXD(D.end), dayN = (a, b) => Math.round((b - a) / 864e5) + 1;
   const allDO = D.rows.filter(x => x.isDO && x.side === 'X' && x.t.type === 'xuat' && x.t.thietBi && !x.afterEnd && x.d);
   const devs = {}; allDO.forEach(x => (devs[x.t.thietBi] = devs[x.t.thietBi] || []).push(x));
@@ -13604,8 +13680,8 @@ function bcFuel(X) {
   if (active.length) bcCF(ws, `G${b0}:G${b1}`, [bcBar()]);
   bcTotal(ws, r, n, `Cộng: ${active.length} máy được cấp dầu trong kỳ`, 6, { 7:[{ formula:`SUM(G${b0}:G${b1})`, result:bcR(devRows.reduce((a, x) => a + x.q, 0)) }, BC.NUM0] });
   r = bcNotes(ws, r + 2, n, [
-    '(3) Số ngày tính = từ đầu kỳ (hoặc ngày cấp đầu tiên nếu máy mới vào) đến cuối kỳ. (5) Trung bình từ ngày cấp dầu đầu tiên của máy đến cuối kỳ. (6) "Cao bất thường" khi kỳ này cao hơn trung bình trên 30% — xem máy làm thêm ca hay hao hụt; "Ít hoạt động" khi thấp hơn 30%.',
-    '(7) Lít / giờ = trung bình 3 lần cấp gần nhất theo số đồng hồ giờ máy (hoặc thời gian giữa 2 lần cấp khi máy chạy 24/24), kèm định mức P.QLTB (ĐM). Cao hơn định mức trên 20% → "Vượt định mức".']);
+    'Số ngày tính = từ đầu kỳ (hoặc ngày cấp đầu tiên nếu máy mới vào) đến cuối kỳ. TB từ đầu DA = trung bình từ ngày cấp dầu đầu tiên của máy đến cuối kỳ. "Cao bất thường" khi kỳ này cao hơn trung bình trên 30% — xem máy làm thêm ca hay hao hụt; "Ít hoạt động" khi thấp hơn 30%.',
+    'Lít / giờ = trung bình 3 lần cấp gần nhất theo số đồng hồ giờ máy (hoặc thời gian giữa 2 lần cấp khi máy chạy 24/24), kèm định mức P.QLTB (ĐM). Cao hơn định mức trên 20% → "Vượt định mức".']);
   bcSign(X, ws, r, n, ['NGƯỜI LẬP BIỂU', 'THỦ KHO', 'CÁN BỘ QLTB', 'CHỈ HUY TRƯỞNG']);
   return { name, ws, f1, f2, FT, FC, r0, doItems, oilItems, warn, devRows, tN, tX, close:bcR(opDO + tN - tX), F };
 }
@@ -13622,14 +13698,14 @@ function bcNXT(X, LN, LX, FU) {
   const cSt = ct ? 13 : 11, cNote = ct ? 14 : 12, cTot = ct ? 12 : 10;
   const qN = c => `${bcQ(LN.name)}!$${c}$${LN.r1}:$${c}$${LN.r2}`, qX = c => `${bcQ(LX.name)}!$${c}$${LX.r1}:$${c}$${LX.r2}`;
   const lN = bcCL(LN.cLoai), lX = bcCL(LX.cLoai), fromX = ct ? bcCL(LX.C['Xuất từ']) : null;
-  const sN = (r, ...cr) => `SUMIFS(${qN('F')},${qN('D')},$C${r}${cr.map(c => `,${qN(lN)},"${c}"`).join('')})`;
-  const sX = (r, ...cr) => `SUMIFS(${qX('F')},${qX('D')},$C${r}${cr.map(c => `,${qX(lX)},"${c}"`).join('')})`;
+  const sN = (r, ...cr) => `SUMIFS(${qN(LN.q || 'F')},${qN('D')},$C${r}${cr.map(c => `,${qN(lN)},"${c}"`).join('')})`;
+  const sX = (r, ...cr) => `SUMIFS(${qX(LX.q || 'F')},${qX('D')},$C${r}${cr.map(c => `,${qX(lX)},"${c}"`).join('')})`;
   const NOT_N = ['<>Đi mượn', '<>Nhận trả', '<>Điều chỉnh tăng', '<>Khai số ở CT'], NOT_X = ['<>Cho mượn', '<>Trả lại', '<>Điều chỉnh giảm', '<>Khai số ở CT'];
-  const fxX = r => `SUMIFS(${qX('F')},${qX('D')},$C${r}${NOT_X.map(c => `,${qX(lX)},"${c}"`).join('')}${ct ? `,${qX(fromX)},"Kho"` : ''})`;
+  const fxX = r => `SUMIFS(${qX(LX.q || 'F')},${qX('D')},$C${r}${NOT_X.map(c => `,${qX(lX)},"${c}"`).join('')}${ct ? `,${qX(fromX)},"Kho"` : ''})`;
   const qlF = qlOn();
   const fuelRef = FU.doItems.length === 1;
   const list = Object.values(D.st).filter(s => !s.it.ghost && (Math.abs(s.open) > 1e-9 || Math.abs(s.close) > 1e-9 || s.P.length || Math.abs(s.sClose) > 1e-9 || Math.abs(s.sOpen) > 1e-9));
-  const catKey = s => D.fuelOf(s.it) ? 'nhienLieu' : s.it.cat;
+  const catKey = s => D.fuelOf(s.it) ? 'nhienLieu' : CATEGORIES.some(c => c.id === s.it.cat) ? s.it.cat : 'khac';   // v5.59.6: nhóm lạ gộp một Nhóm khác
   const RO = ['I', 'II', 'III', 'IV', 'V', 'VI', 'VII', 'VIII', 'IX', 'X', 'XI', 'XII', 'XIII', 'XIV', 'XV'];
   const nm = (a, b) => String(a.it.name).localeCompare(String(b.it.name), 'vi', { numeric:true, sensitivity:'base' });
   const cats = CATEGORIES.map(c => c.id); list.forEach(s => { if (!cats.includes(catKey(s))) cats.push(catKey(s)); });
@@ -13651,7 +13727,7 @@ function bcNXT(X, LN, LX, FU) {
         xu = sumP(x => x.side === 'X' && !x.site && !/^(Cho mượn|Trả lại|Điều chỉnh giảm|Khai số ở CT)$/.test(x.loai));
         dc = bcR(sumP(x => x.loai === 'Điều chỉnh tăng') - sumP(x => x.loai === 'Điều chỉnh giảm'));
         mt = bcR(sumP(x => /^(Đi mượn|Nhận trả)$/.test(x.loai)) - sumP(x => /^(Cho mượn|Trả lại)$/.test(x.loai) && !x.site));
-        fN = `SUMIFS(${qN('F')},${qN('D')},$C${r}${NOT_N.map(c => `,${qN(lN)},"${c}"`).join('')})`; fX = fxX(r);
+        fN = `SUMIFS(${qN(LN.q || 'F')},${qN('D')},$C${r}${NOT_N.map(c => `,${qN(lN)},"${c}"`).join('')})`; fX = fxX(r);
         fD = `${sN(r, 'Điều chỉnh tăng')}-${sX(r, 'Điều chỉnh giảm')}`;
         fM = `${sN(r, 'Đi mượn')}+${sN(r, 'Nhận trả')}-${sX(r, 'Cho mượn')}-${sX(r, 'Trả lại')}`;
       }
@@ -13714,9 +13790,9 @@ function bcNXT(X, LN, LX, FU) {
     if (steel.some(s => !bcKgPer(s.it))) r = bcNotes(ws, r + 1, n, ['"chưa quy đổi": tên vật tư chưa ghi đường kính và chiều dài cây — nên đặt tên dạng "Thép cây D20 x 11,7m".']) - 1;
   }
   r = bcNotes(ws, r + 2, n, [
-    'Ghi chú: (1) Tồn đầu kỳ = tồn trong kho hiện tại trừ các phiếu phát sinh từ đầu kỳ đến nay. (2), (3), (4), (5) cộng tự động từ các sheet "Sổ nhập kho", "Sổ xuất kho", "Nhiên liệu" — sửa số ở sổ thì tổng hợp tự tính lại.',
-    '(2) Nhập gồm nhập mua, tồn đầu, nhận luân chuyển / giải động, nhập thẳng CT, về kho từ công trường. (3) Xuất gồm xuất dùng, luân chuyển, giải động, ra công trường, thanh lý hàng hỏng. (5) Mượn – trả: đi mượn, nhận trả (+); cho mượn, trả lại (−).'
-      + (ct ? ' (7) Ở công trường = thiết bị, vật tư phụ trợ đã mang ra công trường, vẫn thuộc dự án. Tình trạng xét theo cột Tổng.' : ''),
+    'Ghi chú: Tồn đầu kỳ = tồn trong kho hiện tại trừ các phiếu phát sinh từ đầu kỳ đến nay. Nhập, Xuất, Điều chỉnh, Mượn – trả cộng tự động từ sheet "' + BC_NX + '" và "Nhiên liệu" — sửa số ở sổ thì tổng hợp tự tính lại. Tồn cuối = Tồn đầu + Nhập − Xuất ± Điều chỉnh ± Mượn – trả.',
+    'Nhập gồm nhập mua, tồn đầu, nhận luân chuyển / giải động, nhập thẳng CT, về kho từ công trường. Xuất gồm xuất dùng, luân chuyển, giải động, ra công trường, thanh lý hàng hỏng. Mượn – trả: đi mượn, nhận trả (+); cho mượn, trả lại (−).'
+      + (ct ? ' Ở công trường = thiết bị, vật tư phụ trợ đã mang ra công trường, vẫn thuộc dự án. Tình trạng xét theo cột Tổng.' : ''),
     'Chỉ liệt kê mặt hàng còn tồn hoặc có phát sinh trong kỳ. Thép quy đổi: kg/cây = 0,00617 × D² × chiều dài (đọc từ tên vật tư).']);
   bcSign(X, ws, r, n, ['NGƯỜI LẬP BIỂU', 'THỦ KHO', 'CHỈ HUY TRƯỞNG']);
   return { name, ws, t1, t2, cSt, negOpen, negClose, low, list, steelTot };
@@ -13827,13 +13903,13 @@ function bcOverview(X, LN, LX, FU, NX, LO, apx) {
   } catch (e) {}
   const lo = D.P.filter(x => /mượn|Nhận trả|Trả lại/.test(x.loai)), parties = [...new Set(lo.map(x => x.sv).filter(Boolean))];
   const loOpen = lo.filter(x => { const l = bcLoanOf(x.t); return l ? l.status === 'open' && loanRemain(l) > 1e-9 : true; }).length, loBo = lo.filter(x => /^Đã bỏ/.test(bcLoanNote(x.t))).length;   // v5.59.3
-  if (lo.length) W_.push(['Lưu ý', `${lo.length} lượt mượn / trả trong kỳ` + (parties.length ? ` (${parties.slice(0, 3).join(', ')}${parties.length > 3 ? '…' : ''})` : '') + (loOpen ? ' — đối chiếu với dự án / đơn vị bên kia.' : ' — đã trả' + (loBo ? ' / bỏ thông tin mượn' : '') + ' xong, không còn nợ.'), 'Sổ xuất kho']);
+  if (lo.length) W_.push(['Lưu ý', `${lo.length} lượt mượn / trả trong kỳ` + (parties.length ? ` (${parties.slice(0, 3).join(', ')}${parties.length > 3 ? '…' : ''})` : '') + (loOpen ? ' — đối chiếu với dự án / đơn vị bên kia.' : ' — đã trả' + (loBo ? ' / bỏ thông tin mượn' : '') + ' xong, không còn nợ.'), BC_NX]);
   const od = (db.loans || []).filter(l => l.status === 'open' && loanOverdue(l) > 0);
-  if (od.length) W_.push(['Lưu ý', `${od.length} phiếu mượn quá hạn trả: ` + od.slice(0, 3).map(l => `${l.itemName} (${l.party})`).join(', ') + (od.length > 3 ? '…' : '') + '.', LO ? LO.name : 'Sổ xuất kho']);
+  if (od.length) W_.push(['Lưu ý', `${od.length} phiếu mượn quá hạn trả: ` + od.slice(0, 3).map(l => `${l.itemName} (${l.party})`).join(', ') + (od.length > 3 ? '…' : '') + '.', LO ? LO.name : BC_NX]);
   const mx = D.P.filter(x => !x.fuel && x.side === 'X' && !x.sv && !x.t.thietBi && !/^Điều chỉnh|Khai số/.test(x.loai)).length;
-  if (mx) W_.push(['Lưu ý', `${mx} lượt xuất vật tư chưa ghi bên nhận.`, 'Sổ xuất kho']);
+  if (mx) W_.push(['Lưu ý', `${mx} lượt xuất vật tư chưa ghi NCC / NTP / Đội nhận (ô vàng).`, BC_NX]);
   const mn = D.P.filter(x => !x.fuel && x.side === 'N' && !x.sv && !/^Điều chỉnh|Khai số/.test(x.loai)).length;
-  if (mn) W_.push(['Lưu ý', `${mn} lượt nhập vật tư chưa ghi bên giao hàng.`, 'Sổ nhập kho']);
+  if (mn) W_.push(['Lưu ý', `${mn} lượt nhập vật tư chưa ghi NCC / NTP / Đội giao (ô vàng).`, BC_NX]);
   if (!W_.length) W_.push(['—', 'Không phát hiện điểm bất thường theo các quy tắc kiểm tra của app.', '']);
   W_.forEach(([lv, t, sh]) => {
     Object.assign(ws.getCell(r, 2), { value:lv, font:bcF(10, true, false, lv === 'Cao' ? BC.RED : lv === 'TB' ? BC.ORG : BC.GREY), alignment:CEN });
@@ -13860,7 +13936,7 @@ function bcOverview(X, LN, LX, FU, NX, LO, apx) {
   // ----- mục lục -----
   band(r, 'NỘI DUNG BÁO CÁO'); r++;
   const TOC = [['Tổng hợp NXT', 'Tồn đầu, nhập, xuất, điều chỉnh, mượn – trả, tồn cuối từng mặt hàng theo nhóm' + (D.ct ? ' (trong kho + ở công trường)' : '') + (NX.steelTot !== null ? '; thép quy đổi kg' : '')],
-    ['Sổ nhập kho', 'Từng lượt nhập vật tư: ngày, số phiếu, bên giao hàng, chứng từ, loại nhập'], ['Sổ xuất kho', 'Từng lượt xuất vật tư: bên nhận, sử dụng cho, loại xuất, ký nhận'],
+    [BC_NX, 'Từng lượt nhập và xuất vật tư: ngày, số phiếu, NCC / NTP / Đội, máy, loại — bấm lọc cột Nhập / Xuất để xem riêng'],
     ['Nhiên liệu', 'Nhập – cấp dầu DO, nhớt, mỡ cho từng máy; tồn DO chạy theo ngày; tổng hợp lít/ngày, lít/giờ từng máy']]
     .concat(apx.map(a => [a, 'Phụ lục']));
   TOC.forEach(([sh, t], k) => {
@@ -13882,7 +13958,7 @@ async function bcBuild() {
   const m = String(P).match(/\(([^)]+)\)\s*$/); X.unit = 'BAN CHỈ HUY CÔNG TRƯỜNG ' + (m ? m[1] : P).toUpperCase();
   const wb = new ExcelJS.Workbook(); wb.creator = 'FECON Kho Vật Tư'; wb.created = d; X.wb = wb;
   X.logo = wb.addImage({ base64:BC_LOGO, extension:'png' });
-  const LN = bcLedger(X, wb, 'N'), LX = bcLedger(X, wb, 'X'), FU = bcFuel(X);
+  const NXL = bcLedgerNX(X), LN = NXL.N, LX = NXL.X, FU = bcFuel(X);   // v5.59.6: một sổ nhập – xuất
   const NX = bcNXT(X, LN, LX, FU);
   const LO = bcLoans(X);
   let MT = null; try { MT = bcMayThue(X); } catch (e) { console.error(e); }   // v5.57.0
@@ -13902,7 +13978,7 @@ async function bcBuild() {
       const rr = w.rowCount + 2; Object.assign(w.getCell(rr, 1), { value:`Lưu ý: số liệu sheet này tính đến lúc xuất file (${X.now}), không theo kỳ báo cáo đã chọn.`, font:bcF(10, false, true, BC.RED) }); } });
   bcOverview(X, LN, LX, FU, NX, LO, apx);
   // thứ tự: Tổng quan · Tổng hợp NXT · Sổ nhập · Sổ xuất · Nhiên liệu · phụ lục
-  const order = ['Tổng quan', 'Tổng hợp NXT', 'Sổ nhập kho', 'Sổ xuất kho', 'Nhiên liệu', ...apx];
+  const order = ['Tổng quan', 'Tổng hợp NXT', BC_NX, 'Nhiên liệu', ...apx];
   wb.worksheets.forEach(w => { const i = order.indexOf(w.name); w.orderNo = i < 0 ? 99 : i; });
   wb.views = [{ activeTab:0, firstSheet:0, visibility:'visible' }];
   return { wb, X, apx };
@@ -13916,7 +13992,7 @@ buildNxtWorkbook = async function () {
   lastExport = new File([buf], fname, { type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
   closeModal('modal-export');
   document.getElementById('xf-name').textContent = fname;
-  document.getElementById('xf-gom').textContent = 'Gồm: Tổng quan · Tổng hợp NXT · Sổ nhập kho · Sổ xuất kho · Nhiên liệu' + (apx.length ? ' · Phụ lục: ' + apx.join(' · ') : '');
+  document.getElementById('xf-gom').textContent = 'Gồm: Tổng quan · Tổng hợp NXT · ' + BC_NX + ' · Nhiên liệu' + (apx.length ? ' · Phụ lục: ' + apx.join(' · ') : '');
   document.getElementById('xf-share').style.display = navigator.canShare && navigator.canShare({ files:[lastExport] }) ? '' : 'none';
   openModal('modal-xfile');
 };
