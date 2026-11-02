@@ -1896,7 +1896,7 @@ body.pg-printing #pg-print{display:block;position:fixed;inset:0;z-index:9000;bac
 // ============================================================
 // CONFIG
 // ============================================================
-const APP_VERSION = '5.59.8';
+const APP_VERSION = '5.59.9';
 const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbw6Rmi80I7RI3ij2U7RdRF5pYuQTnPrwEmGmUZS5xpxzLwwVynfoFUujZe1lm6HS1ymxw/exec';
 // ============================================================
 
@@ -13548,7 +13548,8 @@ function bcLedgerNX(X) {
   });
   if (!L.length) { bcEmptyRow(ws, r, n, 'Không có phiếu nhập, xuất vật tư trong kỳ'); r++; }
   const r1 = 10, r2 = r - 1;
-  bcTotal(ws, r, n, 'Cộng số lượng (lọc 1 vật tư để xem tổng)', 5, L.length ? { 6:[{ formula:`SUBTOTAL(9,F${r1}:F${r2})`, result:bcR(sN) }, BC.NUM], 7:[{ formula:`SUBTOTAL(9,G${r1}:G${r2})`, result:bcR(sX) }, BC.NUM] } : {});
+  ws.getRow(r).height = 6; r++;   // v5.59.9: 1 hàng trống tách hàng Cộng khỏi bảng — lọc cột không ẩn mất hàng Cộng
+  bcTotal(ws, r, n, 'Cộng theo bộ lọc (lọc vật tư để xem tổng)', 5, L.length ? { 6:[{ formula:`SUBTOTAL(9,F${r1}:F${r2})`, result:bcR(sN) }, BC.NUM], 7:[{ formula:`SUBTOTAL(9,G${r1}:G${r2})`, result:bcR(sX) }, BC.NUM] } : {});
   ws.autoFilter = `A9:${bcCL(n)}${r2}`;
   r += 2;   // v5.59.8: bỏ ghi chú dưới sổ
   bcSign(X, ws, r, n, ['NGƯỜI LẬP BIỂU', 'THỦ KHO', 'CHỈ HUY TRƯỞNG']);
@@ -13608,7 +13609,9 @@ function bcFuel(X) {
     r++;
   });
   if (!F.length) { bcEmptyRow(ws, r, n, 'Không có phiếu nhiên liệu trong kỳ'); r++; }
-  const f1 = r0 + 1, f2 = r - 1, FT = r;
+  const f1 = r0 + 1, f2 = r - 1;
+  ws.getRow(r).height = 6; r++;   // v5.59.9: 1 hàng trống tách hàng Cộng khỏi bảng — lọc cột không ẩn mất hàng Cộng
+  const FT = r;
   const sum = c => F.filter(c).reduce((a, x) => a + x.qty, 0);
   const tN = bcR(sum(x => x.isDO && x.side === 'N')), tX = bcR(sum(x => x.isDO && x.side === 'X')), oN = bcR(sum(x => !x.isDO && x.side === 'N')), oX = bcR(sum(x => !x.isDO && x.side === 'X'));
   bcTotal(ws, r, n, 'Cộng phát sinh trong kỳ', 6, { 7:[{ formula:`SUM(G${f1}:G${f2})`, result:tN }, BC.NUM0], 8:[{ formula:`SUM(H${f1}:H${f2})`, result:tX }, BC.NUM0],
@@ -13758,6 +13761,7 @@ function bcNXT(X, LN, LX, FU) {
   const t2 = r - 1, sc = bcCL(cSt);
   bcCF(ws, `${sc}${t1}:${sc}${t2}`, [bcExpr(`${sc}${t1}="Âm"`, { bold:true, color:{ argb:'FFC00000' } }, 'F8CBAD'), bcExpr(`${sc}${t1}="Sắp hết"`, { bold:true, color:{ argb:'FFC55A11' } }, 'FCE4D6'),
     bcExpr(`${sc}${t1}="Hết"`, { color:{ argb:'FF7F7F7F' } })]);
+  ws.getRow(r).height = 6; r++;   // v5.59.9: 1 hàng trống tách hàng Cộng khỏi bảng — lọc cột không ẩn mất hàng Cộng
   bcTotal(ws, r, n, `Cộng: ${list.length} mặt hàng có tồn hoặc phát sinh trong kỳ`, n, {});
   ws.autoFilter = `A9:${bcCL(n)}${t2}`;
   // ----- bảng thép quy đổi kg -----
@@ -13958,9 +13962,10 @@ async function bcBuild() {
   const NXL = bcLedgerNX(X), LN = NXL.N, LX = NXL.X, FU = bcFuel(X);   // v5.59.6: một sổ nhập – xuất
   const NX = bcNXT(X, LN, LX, FU);
   const LO = bcLoans(X);
-  let MT = null; try { MT = bcMayThue(X); } catch (e) { console.error(e); }   // v5.57.0
+  let MT = null; try { MT = bcMayThue(X, FU); } catch (e) { console.error(e); }   // v5.57.0 · v5.59.9: Máy – thiết bị
   // phụ lục từ hàm cũ: Sửa chữa, Đối chiếu P.QLTB, Phiếu YC / cóc nối / kiểm kê, Hàng hư hỏng
-  const KEEP = ['Sửa chữa', 'Đối chiếu P.QLTB', 'Tóm tắt', 'Phiếu yêu cầu', 'Đối chiếu cóc nối', 'Kiểm kê', 'Đang hỏng'];
+  const KEEP = ['Sửa chữa', 'Tóm tắt',   // v5.59.9: bỏ sheet Đối chiếu P.QLTB
+    'Phiếu yêu cầu', 'Đối chiếu cóc nối', 'Kiểm kê', 'Đang hỏng'];
   const mine = new Set(wb.worksheets.map(w => w.id));
   try { BC_WB = wb; await _bcOldNxt(); } finally { BC_WB = null; }
   wb.worksheets.filter(w => !mine.has(w.id)).forEach(w => { if (!KEEP.includes(w.name)) wb.removeWorksheet(w.id); });
@@ -15851,40 +15856,46 @@ async function bcStamp(wb) {
   acts.insertAdjacentHTML('beforebegin', '<div class="pyc-hint" style="text-align:left;margin:4px 0 8px">🔒 <b>Khoá số liệu</b>: người nhận xem, lọc, sao chép được nhưng không sửa được số; cột Ghi chú vẫn ghi được. Dùng khi gửi lên Ban / P.QLTB / đối chiếu NCC.</div>');
 })();
 
-// ---------- Excel: sheet "Máy thuê theo NCC" ----------
+// ---------- Excel: sheet "Máy – thiết bị" (trước 5.59.9: "Máy thuê theo NCC") ----------
 function bcDay(s) { s = String(s || '').trim(); if (!s) return null; const m = s.match(/^(\d{4})-(\d{1,2})-(\d{1,2})/); if (m) return new Date(+m[1], +m[2] - 1, +m[3]); const d = parseVN(s); return d ? new Date(d.getFullYear(), d.getMonth(), d.getDate()) : null; }
-function bcMayThue(X) {
-  const L = (db.devices || []).filter(d => d.type === 'hire');
-  if (!L.length) return null;
+// v5.59.9: thay "Máy thuê theo NCC" bằng "Máy – thiết bị": mọi máy có mặt trong kỳ — I. máy công ty, sau đó máy thuê theo từng NCC; thêm Loại máy + Dầu DO trong kỳ
+const BC_MTB = 'Máy – thiết bị';
+function bcMayThue(X, FU) {
   const R = X.R, t0 = new Date(), today = new Date(t0.getFullYear(), t0.getMonth(), t0.getDate());
   const kFrom = R.from ? new Date(R.from.getFullYear(), R.from.getMonth(), R.from.getDate()) : null;
   const kTo = R.to && R.end ? new Date(R.end.getFullYear(), R.end.getMonth(), R.end.getDate()) : today;
   const days = d => { const a = bcDay(d.inDate), b = bcDay(d.outDate) || today; if (!a) return ''; const s = kFrom && kFrom > a ? kFrom : a, e = kTo < b ? kTo : b; return e < s ? 0 : Math.round((e - s) / 864e5) + 1; };
-  const G = {}; L.forEach(d => { const n = d.donVi ? nccStd(d.donVi) : ''; (G[n] = G[n] || []).push(d); });
+  const L = (db.devices || []).filter(d => days(d) !== 0);            // máy rời trước kỳ / vào sau kỳ: không liệt kê
+  if (!L.length) return null;
+  const DO = {}; ((FU && FU.devRows) || []).forEach(o => { DO[o.nm] = (DO[o.nm] || 0) + (+o.q || 0); });
+  const own = L.filter(d => d.type !== 'hire'), hire = L.filter(d => d.type === 'hire');
+  const G = {}; hire.forEach(d => { const k = d.donVi ? nccStd(d.donVi) : ''; (G[k] = G[k] || []).push(d); });
   const keys = Object.keys(G).sort((a, b) => !a ? 1 : !b ? -1 : a.localeCompare(b, 'vi'));
-  const ws = X.wb.addWorksheet('Máy thuê theo NCC');
-  const W = [5.5, 30, 12, 13, 13, 12, 12, 11, 22];
-  const n = bcSetup(X, ws, W, 'MÁY THUÊ THEO NHÀ CUNG CẤP', 'Số ngày tính trong kỳ: ' + X.R.label, { xSplit:0 });
-  bcHead(ws, [['STT', 1], ['Tên máy', 1], ['Mã P.QLTB', 1], ['Biển số / số hiệu', 1], ['Ngày vào', 1], ['Ngày ra', 1], ['Số ngày trong kỳ', 1], ['Còn ở CT', 1], ['Ghi chú', 1]], ['A', 'B', 'C', 'D', 'E', 'F', '1', 'G', 'H']);
-  let r = 10, stt = 0, tot = 0; const ROM = ['I', 'II', 'III', 'IV', 'V', 'VI', 'VII', 'VIII', 'IX', 'X', 'XI', 'XII', 'XIII', 'XIV', 'XV', 'XVI', 'XVII', 'XVIII', 'XIX', 'XX'];
-  keys.forEach((k, gi) => {
-    const o = k ? nccOf(k) : null, D = G[k].sort((a, b) => String(a.name).localeCompare(String(b.name), 'vi'));
+  const grp = (own.length ? [{ k:'__own', t:'MÁY CÔNG TY', D:own }] : []).concat(keys.map(k => { const o = k ? nccOf(k) : null;
+    return { k, t:'Thuê · ' + (k || 'Chưa ghi đơn vị cho thuê') + (o && o.ma ? '  ·  Mã ' + o.ma : '') + (o && o.sdt ? '  ·  ' + o.sdt : ''), D:G[k] }; }));
+  const ws = X.wb.addWorksheet(BC_MTB);
+  const W = [5.5, 30, 12, 13, 15, 12, 12, 10, 12, 9, 22];
+  const n = bcSetup(X, ws, W, 'TỔNG HỢP MÁY MÓC, THIẾT BỊ', 'Số ngày tính trong kỳ: ' + X.R.label, { xSplit:0 });
+  bcHead(ws, [['STT', 1], ['Tên máy', 1], ['Mã P.QLTB', 1], ['Biển số / số hiệu', 1], ['Loại máy', 1], ['Ngày vào', 1], ['Ngày ra', 1], ['Số ngày trong kỳ', 1], ['Dầu DO trong kỳ (lít)', 1], ['Còn ở CT', 1], ['Ghi chú', 1]]);
+  let r = 10, stt = 0, tot = 0; const r0 = r; const ROM = ['I', 'II', 'III', 'IV', 'V', 'VI', 'VII', 'VIII', 'IX', 'X', 'XI', 'XII', 'XIII', 'XIV', 'XV', 'XVI', 'XVII', 'XVIII', 'XIX', 'XX'];
+  grp.forEach((g, gi) => {
+    const D = g.D.slice().sort((a, b) => String(a.name).localeCompare(String(b.name), 'vi'));
     const sd = D.reduce((a, d) => a + (+days(d) || 0), 0); tot += sd;
-    bcSection(ws, r, n, ROM[gi] || String(gi + 1), (k || 'Chưa ghi đơn vị cho thuê') + (o && o.ma ? '  ·  Mã ' + o.ma : '') + (o && o.sdt ? '  ·  ' + o.sdt : '') + `  ·  ${D.length} máy · ${sd} ngày-máy`);
-    if (!k) for (let c = 1; c <= n; c++) ws.getCell(r, c).fill = bcFill('FCE9C8');
+    bcSection(ws, r, n, ROM[gi] || String(gi + 1), g.t + `  ·  ${D.length} máy · ${sd} ngày-máy`);
+    if (!g.k) for (let c = 1; c <= n; c++) ws.getCell(r, c).fill = bcFill('FCE9C8');
     r++;
     D.forEach(d => {
-      const a = bcDay(d.inDate), b = bcDay(d.outDate);
-      bcPut(ws, r, [++stt, d.name || '', d.maQL || '', d.plate || '', bcXD(a) || '', bcXD(b) || '', days(d), b ? '' : 'Còn', d.note || ''], ['c', 'l', 'c', 'c', 'd', 'd', 'n0', 'c', 'l']);
+      const a = bcDay(d.inDate), b = bcDay(d.outDate), q = DO[d.name];
+      bcPut(ws, r, [++stt, d.name || '', d.maQL || '', d.plate || '', devCatOf(d.cat).name || '', bcXD(a) || '', bcXD(b) || '', days(d), q ? bcR(q) : '', b ? '' : 'Còn', d.note || ''], ['c', 'l', 'c', 'c', 'l', 'd', 'd', 'n0', 'n', 'c', 'l']);
       r++;
     });
   });
-  bcTotal(ws, r, n, `Cộng: ${L.length} máy thuê · ${keys.filter(Boolean).length} nhà cung cấp · ${tot} ngày-máy trong kỳ`, n, {});
-  ws.autoFilter = `A9:${bcCL(n)}${r - 1}`;
-  r = bcNotes(ws, r + 2, n, ['Số ngày trong kỳ = từ ngày vào (hoặc đầu kỳ) đến ngày ra (hoặc cuối kỳ / hôm nay), tính cả 2 đầu. Dùng để đối chiếu hoá đơn thuê máy với NCC.',
-    'Tên NCC theo Danh mục nhà cung cấp dùng chung. Dòng tô vàng: máy thuê chưa ghi đơn vị cho thuê.']);
-  bcSign(X, ws, r, n, ['NGƯỜI LẬP BIỂU', 'CÁN BỘ THIẾT BỊ', 'CHỈ HUY TRƯỞNG']);
-  return { name:'Máy thuê theo NCC', ws, n:L.length };
+  const doT = bcR(L.reduce((a, d) => a + (DO[d.name] || 0), 0)), rE = r - 1;
+  ws.getRow(r).height = 6; r++;   // v5.59.9: 1 hàng trống tách hàng Cộng khỏi bảng — lọc cột không ẩn mất hàng Cộng
+  bcTotal(ws, r, n, `Cộng: ${L.length} máy (${own.length} công ty · ${hire.length} thuê${keys.filter(Boolean).length ? ' của ' + keys.filter(Boolean).length + ' NCC' : ''}) · ${tot} ngày-máy trong kỳ`, 8, { 9:[{ formula:`SUBTOTAL(9,I${r0}:I${rE})`, result:doT }, BC.NUM] });
+  ws.autoFilter = `A9:${bcCL(n)}${rE}`;
+  bcSign(X, ws, r + 2, n, ['NGƯỜI LẬP BIỂU', 'CÁN BỘ THIẾT BỊ', 'CHỈ HUY TRƯỞNG']);
+  return { name:BC_MTB, ws, n:L.length };
 }
 </script>
 <script>// ===== v5.59.0 — ADMIN XOÁ SẠCH DỮ LIỆU KHO CỦA 1 DỰ ÁN (giữ dự án trống + Thi công) =====
