@@ -1,4 +1,5 @@
-// FECON Kho + Thi công - Service Worker v5.59.8
+// FECON Kho + Thi công - Service Worker v5.59.9
+// 5.59.9: báo cáo Excel: bỏ sheet Đối chiếu P.QLTB · sheet Máy – thiết bị (mọi máy trong kỳ, thay Máy thuê theo NCC)
 // 5.59.8: báo cáo Excel bỏ mọi dòng ghi chú dưới sheet · mượn đã trả xong chỉ nhắc ở báo cáo tuần
 // 5.59.7: Tổng quan đếm máy đang ở công trường (bỏ máy đã rời) · Excel: hàng tự cao theo chữ xuống dòng
 // 5.59.6: báo cáo Excel: gộp Sổ nhập + Sổ xuất thành Sổ nhập – xuất (lọc Nhập / Xuất), bỏ hàng mã cột, sổ nhiên liệu ẩn cột Giờ, cột NCC / NTP / Đội · Máy nhận, ghi chú mượn chỉ khi còn mượn
@@ -77,7 +78,7 @@
 //  - Mở app: lấy file từ bộ nhớ của bản đang dùng; thiếu file nào mới lấy từ mạng.
 //  - Có sw.js mới trên GitHub: tải sẵn bản mới vào bộ nhớ riêng nhưng KHÔNG đổi bản đang dùng.
 //  - Địa chỉ có ?fresh=... luôn lấy thẳng từ mạng (app dùng để kiểm tra / tải bản mới).
-const VERSION = '5.59.8';
+const VERSION = '5.59.9';
 const APP = 'fecon-app-', META = 'fecon-meta';
 const CORE = ['./', './index.html', './thicong.html', './danhmuc.html', './manifest.json', './icon-192.png', './icon-512.png', './icon-maskable-192.png', './icon-maskable-512.png', './bg-login.jpg'];
 
