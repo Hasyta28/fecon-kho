@@ -13317,6 +13317,7 @@ function bcTotal(ws, r, n, label, span, cells) {
   ws.getRow(r).height = 18;
 }
 function bcNotes(ws, r, n, lines) {
+  return r;   // v5.59.7: người dùng bỏ mọi dòng ghi chú dưới các sheet báo cáo
   lines.filter(Boolean).forEach(t => {
     ws.mergeCells(r, 1, r, n); Object.assign(ws.getCell(r, 1), { value:t, font:bcF(9.5, false, true, '404040'), alignment:{ wrapText:true, vertical:'top' } });
     ws.getRow(r).height = t.length < 170 ? 15 : t.length < 340 ? 28 : 41; r++;
@@ -13549,12 +13550,7 @@ function bcLedgerNX(X) {
   const r1 = 10, r2 = r - 1;
   bcTotal(ws, r, n, 'Cộng số lượng (lọc 1 vật tư để xem tổng)', 5, L.length ? { 6:[{ formula:`SUBTOTAL(9,F${r1}:F${r2})`, result:bcR(sN) }, BC.NUM], 7:[{ formula:`SUBTOTAL(9,G${r1}:G${r2})`, result:bcR(sX) }, BC.NUM] } : {});
   ws.autoFilter = `A9:${bcCL(n)}${r2}`;
-  r = bcNotes(ws, r + 2, n, [
-    `Trong kỳ: ${nN} lượt nhập, ${nX} lượt xuất` + (noSv ? `; ${noSv} lượt chưa ghi NCC / NTP / Đội (ô tô vàng) — thủ kho bổ sung trên app.` : '.'),
-    'Cách xem: bấm nút lọc ở cột "Nhập / Xuất" để xem riêng phiếu nhập hoặc phiếu xuất; lọc cột "Tên vật tư" để xem một mặt hàng — dòng Cộng tự tính theo bộ lọc (nên lọc một mặt hàng khi cộng số lượng).',
-    'Dòng nền vàng nhạt là loại khác (mượn, nhận trả, điều chỉnh, luân chuyển, giải động, nhập / xuất thẳng CT, về kho từ CT). Số phiếu do app đánh theo ngày (PN = tăng tồn, PX = giảm tồn).'
-      + (D.ct ? ' "Xuất từ: Công trường" = xuất thẳng từ công trường (không trừ tồn trong kho).' : ''),
-    kg ? 'Quy đổi (kg) = số cây × kg/cây; kg/cây = 0,00617 × D² × chiều dài (đọc từ tên, vd "Thép cây D20 x 11,7m"). "chưa quy đổi" = tên chưa ghi đường kính / chiều dài.' : '']);
+  r += 2;   // v5.59.7: bỏ ghi chú dưới sổ
   bcSign(X, ws, r, n, ['NGƯỜI LẬP BIỂU', 'THỦ KHO', 'CHỈ HUY TRƯỞNG']);
   const base = { name, ws, r1, r2, C, cLoai, kg };
   return { N:{ ...base, q:'F' }, X:{ ...base, q:'G' } };
