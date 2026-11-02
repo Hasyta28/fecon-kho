@@ -1896,7 +1896,7 @@ body.pg-printing #pg-print{display:block;position:fixed;inset:0;z-index:9000;bac
 // ============================================================
 // CONFIG
 // ============================================================
-const APP_VERSION = '5.59.6';
+const APP_VERSION = '5.59.7';
 const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbw6Rmi80I7RI3ij2U7RdRF5pYuQTnPrwEmGmUZS5xpxzLwwVynfoFUujZe1lm6HS1ymxw/exec';
 // ============================================================
 
@@ -2735,7 +2735,7 @@ function renderHome(c) {
   const txns = filtTxns();
   const nhapT = txns.filter(t => t.type === 'nhap');
   const xuatT = txns.filter(t => t.type === 'xuat');
-  const own = db.devices.filter(d => d.type === 'own').length;
+  const devOn = db.devices.filter(d => !d.outDate), own = devOn.filter(d => d.type === 'own').length, devGone = db.devices.length - devOn.length;   // v5.59.7: chỉ đếm máy đang ở công trường
   const projLbl = curProj === 'all' ? 'Tất cả dự án' : curProj;
   const cats = catGroups();
   if (!homeCat || !cats.some(([c]) => c.id === homeCat)) homeCat = cats[0]?.[0].id || null;
@@ -2765,8 +2765,8 @@ function renderHome(c) {
       </div>
       <div class="stat-card" onclick="openDp('dp-devices-list')">
         <div class="stat-label blue">Thiết bị/Máy móc</div>
-        <div class="stat-val">${db.devices.length}</div>
-        <div class="stat-sub">${own} Cty · ${db.devices.length - own} thuê</div>
+        <div class="stat-val">${devOn.length}</div>
+        <div class="stat-sub">${own} Cty · ${devOn.length - own} thuê${devGone ? ' · ' + devGone + ' đã rời' : ''}</div>
         <span class="stat-arrow">›</span>
       </div>
     </div>
@@ -15461,7 +15461,45 @@ function xlNoEmo(wb) {                                          // làm sạch m
   } catch (e) {}
   return wb;
 }
-const xlBuf = async wb => { try { if (typeof bcStamp === 'function') await bcStamp(wb); } catch (e) { console.error(e); } return xlNoEmo(wb).xlsx.writeBuffer(); };   // v5.57.0: dấu nguồn + khoá số liệu
+// v5.59.7: ô chữ dài có xuống dòng → hàng tự cao đủ thấy hết chữ (Excel không tự giãn hàng khi mở file). Chỉ tăng, không thu nhỏ hàng đã đặt.
+function xlAutoH(wb) {
+  try {
+    (wb.worksheets || []).forEach(ws => {
+      const colW = c => { const w = ws.getColumn(c).width; return w > 0 ? w : 9; }, span = {};
+      Object.values(ws._merges || {}).forEach(m => { const g = m.model || m; if (g && g.top) span[g.top + ':' + g.left] = g; });
+      ws.eachRow({ includeEmpty:false }, (row, r) => {
+        let need = 0;
+        row.eachCell({ includeEmpty:false }, (c, k) => {
+          const al = c.alignment || {}; if (!al.wrapText || (c.isMerged && c.master !== c)) return;
+          const v = c.value; let t = '';
+          if (typeof v === 'string') t = v;
+          else if (v && Array.isArray(v.richText)) t = v.richText.map(x => x.text).join('');
+          else if (v && typeof v.text === 'string') t = v.text;
+          else if (v && v.formula !== undefined && typeof v.result === 'string') t = v.result;
+          if (!t) return;
+          const g = span[r + ':' + k]; if (g && g.bottom > g.top) return;      // ô gộp nhiều hàng (tiêu đề): giữ nguyên
+          let w = 0; for (let x = k; x <= (g ? g.right : k); x++) w += colW(x);
+          const f = c.font || {}, sz = +f.size || 11, cap = Math.max(3, Math.floor((w - 0.8) * (11 / sz) * (f.bold ? 0.95 : 1.05)));
+          let lines = 0;
+          String(t).split(/\r?\n/).forEach(par => {                           // xếp chữ theo từ như Excel
+            let cur = 0, n = 1;
+            par.split(/\s+/).filter(Boolean).forEach(wd => {
+              const L = wd.length;
+              if (!cur) { n += Math.floor((L - 1) / cap); cur = (L - 1) % cap + 1; }
+              else if (cur + 1 + L <= cap) cur += 1 + L;
+              else { n++; n += Math.floor((L - 1) / cap); cur = (L - 1) % cap + 1; }
+            });
+            lines += n;
+          });
+          need = Math.max(need, Math.ceil(lines * sz * 1.32 + 4));
+        });
+        if (need && need > (row.height || 15)) row.height = Math.min(409, need);
+      });
+    });
+  } catch (e) { console.error(e); }
+  return wb;
+}
+const xlBuf = async wb => { try { if (typeof bcStamp === 'function') await bcStamp(wb); } catch (e) { console.error(e); } return xlAutoH(xlNoEmo(wb)).xlsx.writeBuffer(); };   // v5.57.0: dấu nguồn + khoá số liệu · v5.59.7: hàng tự cao
 </script>
 <script>// ===== v5.57.0 — DANH MỤC NHÀ CUNG CẤP DÙNG CHUNG · XUẤT EXCEL KHOÁ SỐ LIỆU =====
 // Máy chủ gửi danh mục (ncc) khi nccRev đổi → lưu trên máy. Ô NCC có data-ncc="may|vt|xe" → bảng chọn gõ không dấu.
