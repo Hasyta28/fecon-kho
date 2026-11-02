@@ -13899,7 +13899,8 @@ function bcOverview(X, LN, LX, FU, NX, LO, apx) {
   } catch (e) {}
   const lo = D.P.filter(x => /mượn|Nhận trả|Trả lại/.test(x.loai)), parties = [...new Set(lo.map(x => x.sv).filter(Boolean))];
   const loOpen = lo.filter(x => { const l = bcLoanOf(x.t); return l ? l.status === 'open' && loanRemain(l) > 1e-9 : true; }).length, loBo = lo.filter(x => /^Đã bỏ/.test(bcLoanNote(x.t))).length;   // v5.59.3
-  if (lo.length) W_.push(['Lưu ý', `${lo.length} lượt mượn / trả trong kỳ` + (parties.length ? ` (${parties.slice(0, 3).join(', ')}${parties.length > 3 ? '…' : ''})` : '') + (loOpen ? ' — đối chiếu với dự án / đơn vị bên kia.' : ' — đã trả' + (loBo ? ' / bỏ thông tin mượn' : '') + ' xong, không còn nợ.'), BC_NX]);
+  const loWeek = !!(X.R && X.R.from && (X.R.end - X.R.from) <= 8 * 864e5);   // v5.59.7: kỳ tuần / ngày mới nhắc mượn đã trả xong; kỳ tháng, từ đầu DA thì đã trả hết → không nhắc
+  if (lo.length && (loOpen || loWeek)) W_.push(['Lưu ý', `${lo.length} lượt mượn / trả trong kỳ` + (parties.length ? ` (${parties.slice(0, 3).join(', ')}${parties.length > 3 ? '…' : ''})` : '') + (loOpen ? ' — đối chiếu với dự án / đơn vị bên kia.' : ' — đã trả' + (loBo ? ' / bỏ thông tin mượn' : '') + ' xong, không còn nợ.'), BC_NX]);
   const od = (db.loans || []).filter(l => l.status === 'open' && loanOverdue(l) > 0);
   if (od.length) W_.push(['Lưu ý', `${od.length} phiếu mượn quá hạn trả: ` + od.slice(0, 3).map(l => `${l.itemName} (${l.party})`).join(', ') + (od.length > 3 ? '…' : '') + '.', LO ? LO.name : BC_NX]);
   const mx = D.P.filter(x => !x.fuel && x.side === 'X' && !x.sv && !x.t.thietBi && !/^Điều chỉnh|Khai số/.test(x.loai)).length;
