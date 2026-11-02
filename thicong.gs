@@ -6,7 +6,7 @@
 // Ghi của Thi công KHÔNG làm tăng số phiên bản dữ liệu của Kho (điện thoại Kho không phải tải lại).
 // Thao tác: tcBoot · tcCk · tcList · tcSave · tcSign · tcDel · tcPhoto · tcGetPhoto · tcImportCk · tcCfgSave · tcKho · tcSeed · tcReset · tcAudit
 
-const TC_VERSION = '1.5.1';   // 1.5.1 (FECON 5.49.2): tên kho công ty lấy từ cài đặt gdKho (đổi tên được) · 1.5.0 (FECON 5.39.0): thêm loại bản ghi kp = Hạ kingpost
+const TC_VERSION = '1.8.0';   // 1.8.0 (FECON 5.56.15): sửa tcKho trả rỗng danh sách máy · cấu hình 'layout' (bố trí công trường) — CHT / kế hoạch / quản trị đều lưu được · 1.7.0 (FECON 5.56.13): tcImportRecs nhận d.nguon (ghi đúng nguồn, VD "MB highlight 26/10") thay vì luôn ghi "Sổ hồ sơ" · 1.6.0 (FECON 5.56.12): CHT/CHP (có cả quyền QA/QC + CHT) "Gửi & xác nhận luôn" bản ghi của mình — trừ điểm Hold (truoc, lt, kp), Nghiệm thu, Khối lượng; ghi rõ "tự xác nhận" · 1.5.1 (FECON 5.49.2): tên kho công ty lấy từ cài đặt gdKho (đổi tên được) · 1.5.0 (FECON 5.39.0): thêm loại bản ghi kp = Hạ kingpost
 const TC_PHOTO_FOLDER = 'FECON Thi công - Ảnh hiện trường';
 const TC_CK = { sheet:'TC_CauKien',
   cols:['id','project','loai','code','type','x','y','kv','truc','meta','status','step','flag','statusAt','updatedAt'],
@@ -31,6 +31,10 @@ const TC_MOD = {
 const TC_STEP = { dv:1, khoan:1, hh:1, dd:1, moinoi:1, truoc:1, lt:1, xe:1, bt:1 };     // công đoạn làm cấu kiện chuyển sang "đang làm"
 const TC_ST_LABEL = { mo:'Đang mở', nhap:'Nháp', gui:'Chờ kiểm tra', xn:'Đã xác nhận', tra:'Trả về', duyet:'Đã duyệt', dong:'Đã đóng', huy:'Đã hủy' };
 const TC_PERMS = ['t_xem','t_ghi','t_qa','t_cht','t_kh','t_qs','t_qt'];
+// 1.6.0: tự xác nhận — chỉ người có CẢ t_qa và t_cht (mặc định CHT, CHP, PD, Admin); điểm Hold + Nghiệm thu + Khối lượng luôn cần người thứ hai
+const TC_NOSELF = { truoc:1, lt:1, kp:1, nt:1, kl:1 };
+const TC_SELF_NOTE = 'tự xác nhận (CHT/CHP)';
+function tcSelfOk_(u, mod) { return !TC_NOSELF[mod] && (u.role === 'ADM' || (tcCan_(u, 't_qa') && tcCan_(u, 't_cht'))); }
 
 // ---------- CỔNG VÀO (gọi từ route của Kho) ----------
 function tcRoute_(action, d, u) {
@@ -41,7 +45,7 @@ function tcRoute_(action, d, u) {
   const needP = action !== 'tcPing';
   if (needP) { if (!P) return { success:false, error:'Thiếu dự án' }; mustAllow(u, P); }
   const W = { tcSave:'t_ghi', tcDel:'t_ghi', tcPhoto:'t_ghi', tcImportCk:'t_qt', tcImportRecs:'t_qt', tcCfgSave:'t_qt', tcSeed:'ADM', tcReset:'ADM' };
-  const need = W[action];
+  const need = action === 'tcCfgSave' && String(d.key || '') === 'layout' ? (tcCan_(u, 't_qt') ? 't_qt' : tcCan_(u, 't_cht') ? 't_cht' : 't_kh') : W[action];   // 1.8.0: CHT / kế hoạch sửa bố trí
   if (need === 'ADM' && u.role !== 'ADM') return { success:false, forbidden:true, error:'Chỉ Admin làm được thao tác này' };
   if (need && need !== 'ADM' && !tcCan_(u, need)) return { success:false, forbidden:true, error:'Bạn chưa được cấp quyền: ' + tcPermName_(need) };
   switch (action) {
@@ -209,7 +213,8 @@ function tcKho_(u, P, d) {                                       // dữ liệu 
   reqs = reqs.map(r => ({ id:r.id, kind:r.kind, ck:r.ckName, title:r.title, st:r.status, duyet:r.duyet, by:r.createdByName, at:r.datetime,
     lines:(r.lines || []).map(l => ({ n:l.name || l.itemName || '', u:l.unit || '', req:+l.req || 0, sent:+l.sent || 0, got:+l.got || 0 })) }));
   let dev = [];
-  try { dev = readTable_(TABLES.devices, P).filter(x => !x.outDate).map(x => ({ id:x.id, name:x.name, cat:x.cat, type:x.type, plate:x.plate, maQL:x.maQL, meterUnit:x.meterUnit, donVi:x.donVi, inDate:x.inDate })); } catch (e) {}
+  // 1.8.0: sửa lọc dự án (cột Dự án của ThietBi không phải cột 2 → trước luôn rỗng)
+  try { dev = readTable_(TABLES.devices, '').filter(x => String(x.project) === P && !x.outDate).map(x => ({ id:x.id, name:x.name, cat:x.cat, type:x.type, plate:x.plate, maQL:x.maQL, meterUnit:x.meterUnit, donVi:x.donVi, inDate:x.inDate })); } catch (e) {}
   return { success:true, reqs:reqs, devices:dev, stLabel:REQ_ST };
 }
 
@@ -237,6 +242,8 @@ function tcSave_(u, P, d) {
   const data = tcCleanData_(r0.d || {}) || {};
   const ngay = /^\d{4}-\d{2}-\d{2}$/.test(String(r0.ngay || '')) ? String(r0.ngay) : tcToday_();
   const submit = !!r0.submit;
+  const selfXn = submit && !!r0.selfXn;                          // 1.6.0: gửi + xác nhận trong cùng 1 lượt ghi
+  if (selfXn && !tcSelfOk_(u, mod)) fail(TC_NOSELF[mod] ? (TC_MOD[mod] + ' luôn cần người thứ hai xác nhận — dùng "Gửi kiểm tra"') : 'Chỉ CHT / CHP (có quyền QA/QC + CHT) được tự xác nhận');
   const sh = tcSheet_(TC_REC);
   const i = tcFind_(sh, id);
   const now = nowTxt();
@@ -264,18 +271,22 @@ function tcSave_(u, P, d) {
     o.sign.push({ act:'sua', by:u.id, byName:u.name, at:now, note:why, diff:diff.slice(0, 20) });
     o.d = data; o.ck = ck; o.ngay = ngay; o.rev++;
     if (submit && (o.st === 'nhap' || o.st === 'tra')) { o.st = 'gui'; o.sign.push({ act:'gui', by:u.id, byName:u.name, at:now }); }
+    if (selfXn && o.st === 'gui') { o.st = 'xn'; o.sign.push({ act:'xn', by:u.id, byName:u.name, role:u.role, at:now, note:o.by === u.id ? TC_SELF_NOTE : '', self:o.by === u.id ? 1 : 0 }); }
     if (locked && !submit) {}                                     // giữ trạng thái đã xác nhận, đã ghi lịch sử sửa
   } else {
     o = { id:id, ck:ck, mod:mod, st: submit ? 'gui' : (mod === 'sk' ? 'mo' : 'nhap'), ngay:ngay, d:data, by:u.id, byName:u.name, at:now, sign:[], rev:1, test:0 };
     if (mod === 'sk') o.st = submit ? 'gui' : 'mo';
     if (mod === 'kh' || mod === 'khbt' || mod === 'qt' || mod === 'dt' || mod === 'bc' || mod === 'tn') o.st = submit ? 'gui' : 'xn';     // không cần kiểm tra
     o.sign.push({ act: submit ? 'gui' : 'tao', by:u.id, byName:u.name, at:now });
+    if (selfXn && o.st === 'gui') { o.st = 'xn'; o.sign.push({ act:'xn', by:u.id, byName:u.name, role:u.role, at:now, note:TC_SELF_NOTE, self:1 }); }
   }
   tcWriteRec_(sh, i, { id:o.id, project:P, ck:o.ck, mod:mod, status:o.st, ngay:o.ngay, data:o.d, by:o.by, byName:o.byName, at:o.at,
     clientTime:clean(String(r0.clientTime || ''), 30), sign:o.sign, rev:o.rev, test:o.test || 0 });
   const ckSt = o.ck ? tcRestatus_(P, o.ck) : null;
-  writeLog(u, i >= 0 ? 'Thi công · sửa' : 'Thi công · ghi', P + ' · ' + (TC_MOD[mod] || mod) + (o.ck ? ' ' + o.ck : '') + (submit ? ' · gửi kiểm tra' : ''));
-  if (submit) tcNotify_(P, u, o, 'gui');
+  const selfDone = selfXn && o.st === 'xn';
+  writeLog(u, i >= 0 ? 'Thi công · sửa' : 'Thi công · ghi', P + ' · ' + (TC_MOD[mod] || mod) + (o.ck ? ' ' + o.ck : '') + (selfDone ? ' · gửi + ' + TC_SELF_NOTE : submit ? ' · gửi kiểm tra' : ''));
+  if (selfDone) tcNotify_(P, u, o, 'self');
+  else if (submit) tcNotify_(P, u, o, 'gui');
   if (mod === 'sk' && i < 0) tcNotify_(P, u, o, 'sk');
   return { success:true, rec:o, ck:ckSt };
 }
@@ -297,19 +308,20 @@ function tcSign_(u, P, d) {
   if (act === 'tra' && !tcCan_(u, 't_qa') && !tcCan_(u, 't_cht')) fail('Chỉ QA/QC hoặc CHT trả về được');
   else if (act !== 'tra' && !tcCan_(u, need) && !(act === 'dong' && tcCan_(u, 't_cht'))) fail('Bạn chưa được cấp quyền: ' + tcPermName_(need));
   if (act === 'huy' && o.by !== u.id && !tcCan_(u, 't_cht')) fail('Chỉ người lập hoặc CHT hủy được');
-  if ((act === 'xn' || act === 'duyet') && o.by === u.id && u.role !== 'ADM' && !d.self) fail('Không tự xác nhận bản ghi của chính mình — nhờ người khác có quyền');
+  const selfAct = (act === 'xn' || act === 'duyet') && o.by === u.id;                     // 1.6.0: bỏ cờ d.self tự do — chỉ CHT/CHP, trừ Hold / Nghiệm thu / Khối lượng
+  if (selfAct && (act === 'duyet' || !tcSelfOk_(u, o.mod))) fail(TC_NOSELF[o.mod] || act === 'duyet' ? 'Không tự xác nhận bản ghi của chính mình — ' + (TC_MOD[o.mod] || o.mod) + ' cần người thứ hai' : 'Không tự xác nhận bản ghi của chính mình — nhờ người khác có quyền');
   if (act === 'tra' && !note) fail('Nhập lý do trả về');
   const nx = { xn:'xn', tra:'tra', duyet:'duyet', dong:'dong', mo:'mo', huy:'huy', gui:'gui', nhan:o.st, phanhoi:o.st }[act];
   if (act === 'duyet' && o.st !== 'xn' && o.mod === 'nt') fail('Hồ sơ nghiệm thu cần QA/QC xác nhận trước khi CHT duyệt');
   o.st = nx;
-  o.sign.push({ act:act, by:u.id, byName:u.name, role:u.role, at:now, note:note });
+  o.sign.push(Object.assign({ act:act, by:u.id, byName:u.name, role:u.role, at:now, note:selfAct ? (note ? TC_SELF_NOTE + ' · ' + note : TC_SELF_NOTE) : note }, selfAct ? { self:1 } : {}));
   if (act === 'nhan' && o.mod === 'bg') { o.d.nhan = { by:u.id, byName:u.name, at:now }; }
   tcWriteRec_(sh, i, { id:o.id, project:P, ck:o.ck, mod:o.mod, status:o.st, ngay:o.ngay, data:o.d, by:o.by, byName:o.byName, at:o.at,
     clientTime:'', sign:o.sign, rev:o.rev, test:o.test });
   const ckSt = o.ck ? tcRestatus_(P, o.ck) : null;
   writeLog(u, 'Thi công · ' + ({ xn:'xác nhận', tra:'trả về', duyet:'duyệt', dong:'đóng', mo:'mở lại', huy:'hủy', gui:'gửi kiểm tra', nhan:'nhận ca', phanhoi:'phản hồi' })[act],
-    P + ' · ' + (TC_MOD[o.mod] || o.mod) + (o.ck ? ' ' + o.ck : '') + (note ? ' · ' + note : ''));
-  tcNotify_(P, u, o, act, note);
+    P + ' · ' + (TC_MOD[o.mod] || o.mod) + (o.ck ? ' ' + o.ck : '') + (selfAct ? ' · ' + TC_SELF_NOTE : '') + (note ? ' · ' + note : ''));
+  tcNotify_(P, u, o, selfAct ? 'self' : act, note);
   return { success:true, rec:o, ck:ckSt };
 }
 function tcDel_(u, P, d) {
@@ -374,6 +386,7 @@ function tcNotify_(P, u, o, act, note) {
       if (o.mod === 'nt') notify_(P, ['t_cht'], [], u.id, '📝 Hồ sơ nghiệm thu ' + o.ck + ' chờ CHT duyệt nội bộ');
     }
     else if (act === 'duyet') notify_(P, [], [o.by], u.id, '🏁 ' + u.name + ' đã duyệt ' + what);
+    else if (act === 'self') notify_(P, ['t_qa'], [], u.id, '☑️ ' + u.name + ' ' + TC_SELF_NOTE + ': ' + what + ' — QA/QC xem lại, sai thì "Trả về"');
     else if (act === 'sk') notify_(P, ['t_cht'], [], u.id, '⚠️ ' + u.name + ' ghi ' + (o.d.loai || 'sự kiện') + ': ' + String(o.d.tieuDe || '').slice(0, 120) + (o.ck ? ' · ' + o.ck : ''));
   } catch (e) {}
 }
@@ -453,22 +466,23 @@ function tcImportRecs_(u, P, d) {
   const rows = n > 0 ? sh.getRange(2, 1, n, W).getValues() : [];
   const at = {}; rows.forEach((r, i) => { if (r[0] !== '') at[String(r[0])] = i; });
   const now = nowTxt(); let add = 0, upd = 0, keep = 0, bad = 0;
+  const src = clean(String(d.nguon || ''), 60);                  // 1.7.0
   list.forEach(x => {
     const id = String(x.id || '').replace(/[^A-Za-z0-9_.-]/g, '').slice(0, 40), mod = String(x.mod || '');
     if (!id || !TC_MOD[mod] || (x.ck && !ck[String(x.ck)])) { bad++; return; }
     const ngay = /^\d{4}-\d{2}-\d{2}$/.test(String(x.ngay || '')) ? String(x.ngay) : tcToday_();
     const i = at[id];
     if (i !== undefined && (+rows[i][TC_REC.cols.indexOf('rev')] || 1) > 1) { keep++; return; }
-    const sign = [{ act:'nap', by:u.id, byName:u.name, at:now, note:'Nạp từ sổ hồ sơ Excel' + (x.at ? ' · thời điểm ' + clean(String(x.at), 20) : '') }];
-    const row = [id, P, clean(String(x.ck || ''), 40), mod, 'xn', ngay, JSON.stringify(tcCleanData_(x.d || {}) || {}), u.id, 'Sổ hồ sơ (Excel)', now, clean(String(x.at || ''), 30), JSON.stringify(sign), 1, 0].map(toCell);
+    const sign = [{ act:'nap', by:u.id, byName:u.name, at:now, note:(src ? 'Nạp từ ' + src : 'Nạp từ sổ hồ sơ Excel') + (x.at ? ' · thời điểm ' + clean(String(x.at), 20) : '') }];
+    const row = [id, P, clean(String(x.ck || ''), 40), mod, 'xn', ngay, JSON.stringify(tcCleanData_(x.d || {}) || {}), u.id, src || 'Sổ hồ sơ (Excel)', now, clean(String(x.at || ''), 30), JSON.stringify(sign), 1, 0].map(toCell);
     if (i !== undefined) { rows[i] = row; upd++; } else { rows.push(row); at[id] = rows.length - 1; add++; }
   });
   if (rows.length) sh.getRange(2, 1, rows.length, W).setValues(rows.map(r => r.map(v => v instanceof Date ? toCell(fromCell(v)) : (typeof v === 'string' && v !== '' && v[0] !== "'" ? toCell(v) : v))));
   if (d.last) tcRestatusMany_(P, null);
-  if (d.last) writeLog(u, 'Thi công · nạp sổ hồ sơ', P + ' · ' + (d.total || '') + ' bản ghi');
+  if (d.last) writeLog(u, src ? 'Thi công · nạp trạng thái' : 'Thi công · nạp sổ hồ sơ', P + ' · ' + (d.total || '') + ' bản ghi' + (src ? ' · nguồn ' + src : ''));
   return { success:true, add:add, upd:upd, keep:keep, bad:bad };
 }
-const TC_CFG_KEYS = { info:1, rot:1, levels:1, limits:1, res:1, docs:1, boq:1, itp:1, demo:1, types:1, kv:1, hold:1, poly:1, sec:1, ca:1 };
+const TC_CFG_KEYS = { layout:1, info:1, rot:1, levels:1, limits:1, res:1, docs:1, boq:1, itp:1, demo:1, types:1, kv:1, hold:1, poly:1, sec:1, ca:1 };
 function tcCfgSave_(u, P, d) {
   const key = String(d.key || '');
   if (!TC_CFG_KEYS[key]) fail('Mục cấu hình không hợp lệ');

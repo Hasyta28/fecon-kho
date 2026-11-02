@@ -1,4 +1,31 @@
-// ===== FECON SOUTH - Kho Vật Tư v5.50.0 =====
+// ===== FECON SOUTH - Kho Vật Tư v5.59.7 =====
+// v5.59.7: Tổng hợp dự án chỉ đếm máy đang ở công trường (bỏ máy đã rời)
+// v5.59.2: Danh mục NCC thêm loại "Dầu / nhớt" (dau)
+// v5.59.0: Admin xoá sạch dữ liệu kho của 1 dự án (pjWipe: xem trước, gõ tên xác nhận, sao lưu + file Lưu trữ, giữ Thi công + dự án trống)
+// v5.58.1: Admin đứng tên thay cả khi duyệt bỏ thông tin mượn / nhận trả / đóng phiếu mượn / duyệt đợt nạp Excel (lệnh không gửi kèm dự án)
+// v5.58.0: Thủ kho nạp sổ Excel → gửi duyệt (quyền k_napx) · Admin / P/TP.QLTB duyệt (k_dnap): nxtSubmit / nxtPend / nxtReview / nxtApprove / nxtReturn / nxtCancel · sheet NapExcel + NapExcelData
+// v5.57.0: Danh mục nhà cung cấp dùng chung (NhaCungCap) · nccSave / nccAdd (chờ duyệt) / nccScan / nccMerge (gộp tên cũ trong phiếu + máy) · getAll gửi ncc khi nccRev đổi
+// v5.56.11: getAll gửi hints (tên vật tư + máy mọi dự án, chỉ khi hintRev đổi) · purgeUnused (Admin xoá vật tư chưa dùng, sao lưu trước) · Chép vật tư chỉ Admin · createReq nhận newItem (tên dự án khác)
+// v5.56.10: Chép vật tư từ dự án khác ghi đủ cột theo bảng TonKho (trước ghi 11 cột / bảng 13 cột → lỗi "Số dòng/cột không khớp", chép không được)
+// v5.56.8: Phiếu mượn / cho mượn / trả / đóng nhận ngày giờ ghi trên phiếu (d.at, không giới hạn lùi, không cho tương lai); Admin sửa ngày mượn + ngày từng lần trả (editLoan: datetime, hist)
+// v5.56.6: Máy vào / ra — Admin sửa / xoá dòng (devLogEdit), dọn lần vào trùng (devLogDups, sao lưu trước), chặn Mở lại khi máy đang ở công trường, sửa ngày vào / ra của máy thì dòng Máy vào / ra đổi theo
+// v5.56.5: siteClean — Admin dọn dòng "Khai số ở CT" (số dương) bị tính trùng với xác nhận hàng cũ (tồn − số khai), sao lưu trước
+// v5.56.4: thangClean — Admin gộp phiếu nhập thẳng ra công trường cũ của 1 dự án (xoá phiếu xuất đi cặp + dòng xác nhận hàng cũ, sao lưu trước)
+// v5.56.3: dmMismatch (món trong kho cùng tên danh mục nhưng khác nhóm) + dmFixCats (Admin sửa nhóm theo danh mục, ghi nhật ký)
+// v5.56.2: danh mục tối đa 1000 món (trước 400); dmPublic nhớ tạm chia nhiều khoá (mỗi khoá ≤ 100 KB)
+// v5.56.1: ADMIN ĐỨNG TÊN THAY — mỗi dự án Admin chọn tài khoản đứng tên (setStandIn, tự lấy Thủ kho nếu dự án chỉ có 1); mọi lệnh ghi của Admin
+//   (Kho, Giải động; không Thi công) ghi tên người đó; Nhật ký giữ tên thật; siFix đổi tên Admin trong dữ liệu cũ (sao lưu trước). getAll / projAdmin gửi standIn.
+// v5.56.0: DANH MỤC CÓ HÌNH + MÃ + QR — DanhMucVT thêm mã (tự cấp theo nhóm, máy = mã P.QLTB), công khai, ảnh (Drive "FECON – Ảnh danh mục");
+//   tối đa 1000 món (5.56.2); dmFull / dmStock (đã đăng nhập), dmPublic / dmImg (không cần đăng nhập, chỉ tên · mã · nhóm · đơn vị · ảnh);
+//   dmImgFind (Admin: máy chủ tìm ảnh gợi ý trên Bing), dmImgSet (Admin duyệt ảnh mạng / tải ảnh), dmPhoto (thủ kho chụp ảnh thật), dmImgDel.
+// v5.55.2: phiếu chọn ngày giờ là phiếu bình thường — nhật ký không ghi "ghi bù"; giờ lập thật vẫn lưu ở cột Giờ trên máy (không hiện trên app). Bỏ khỏi VER_LOG.
+// v5.55.1: GHI BÙ NGÀY GIỜ PHIẾU — quyền mới k_gio (mặc định Thủ kho): chọn ngày giờ phiếu nhập / xuất / nhập nhanh (txTime).
+//   Không cho giờ tương lai; người không phải Admin lùi tối đa gioMax ngày (Script Property 'gioMax', 0 = không giới hạn, Admin đặt bằng setGioMax).
+//   Phiếu ghi bù: clientTime = giờ lập thật (app hiện nhãn "Ghi bù"); giờ trước mốc kiểm kê → ghi sổ, không đổi tồn (như Admin ghi bù trước đây).
+// v5.55.0: MỘT TỒN KHO — hàng nhập vào dự án (trong kho hay ngoài công trường) đều là tồn kho, chỉ phiếu xuất dùng / ra khỏi công trình mới trừ.
+//   Tự chuyển 1 lần (oneStock55): cột site cộng vào stock rồi để trống. ctFx_: ra / ve = không đổi tồn; ctra = trừ tồn; site / cu = cộng tồn.
+//   ctTrack_ luôn false; phiếu điều chỉnh mới ct 'cu' = hàng nhập thẳng ra công trường trước 5.55 còn chưa dùng (thủ kho xác nhận);
+//   cuMark: đánh dấu đã xem (không còn) theo dự án; getAll gửi one:1 + cuDone. Báo hỏng: không tách trong kho / ở công trường.
 // v5.50.0: BÁO HỎNG vật tư / thiết bị phụ trợ — trang HuHong; hongAdd / hongSet / hongMove; getAll gửi hong; qkBatch thêm loại 'hong'; ảnh gắn vào số báo hỏng
 // v5.49.2: kho công ty đổi tên được — projRename bỏ chặn, đổi tên kho công ty thì ghi Script Properties 'gdKho' (thicong.gs 1.5.1 đọc gdKho_()); getAll gửi gdKho
 // v5.49.1: đơn vị tính do Admin thêm / bỏ / xếp (setUnits, Script Properties 'units'; đơn vị đang có vật tư dùng không bỏ được); getAll gửi units
@@ -129,7 +156,7 @@ const SESSION_DAYS   = 30;           // Đăng nhập được nhớ bao nhiêu 
 const HASH_ROUNDS    = 300;          // Số vòng băm mật khẩu
 const MAX_PENDING    = 30;           // Tối đa bao nhiêu yêu cầu chờ duyệt (chống spam)
 const TZ = 'Asia/Ho_Chi_Minh';
-const SERVER_VERSION = '5.50.0';
+const SERVER_VERSION = '5.59.7';
 const PHOTO_FOLDER_NAME = 'FECON Kho - Ảnh biên bản';
 const PHOTO_MAX_BYTES = 4 * 1024 * 1024;
 
@@ -149,24 +176,26 @@ const TABLES = {
 };
 const TXN = { sheet:'GiaoDich',
   cols:['id','type','itemId','itemName','qty','unit','project','supplierOrReceiver','thietBi','datetime',
-        'note','reason','refId','createdBy','createdByName','clientTime','meter','meterNote','thangCT','ct','src'],
+        'note','reason','refId','createdBy','createdByName','clientTime','meter','meterNote','thangCT','ct','src','ma','xe'],
   head:['ID','Loại','Item ID','Tên vật tư','Số lượng','Đơn vị','Dự án','NCC/Người nhận','Thiết bị','Giờ máy chủ',
         'Ghi chú','Lý do điều chỉnh','Phiếu gốc','Người lập (ID)','Người lập','Giờ trên máy','Giờ máy / Km','Ghi chú đồng hồ','Thẳng CT (số phiếu đi cặp)',
         'Kiểu (ra = ra công trường · ctra = từ công trường ra khỏi CT · ngoai = từ kho ra khỏi CT · ve = công trường về kho · site = khai số ở CT)',
-        'Nạp từ Excel (đợt|khóa dòng)'] };
+        'Nạp từ Excel (đợt|khóa dòng)','Mã phiếu giấy (QR)','Xe (loại · biển số · tài xế)'] };
 // ===== v5.35.0: Ở CÔNG TRƯỜNG — mỗi vật tư có 2 số: Tồn kho (trong kho) + Ở công trường (đã xuất ra công trường, vẫn thuộc dự án) =====
 // ctFx_ → [Δ tồn kho, Δ ở công trường]. Thiết bị / vật tư phụ trợ tự theo dõi; cột theoDoi: 1 = luôn theo dõi, 0 = không, trống = theo nhóm.
-const CT_OK = { xuat:{ ra:1, ngoai:1, ctra:1 }, nhap:{ ve:1 }, dieuchinh:{ site:1 } };
+const CT_OK = { xuat:{ ra:1, ngoai:1, ctra:1 }, nhap:{ ve:1 }, dieuchinh:{ site:1, cu:1 } };
 const CT_LBL = { ra:'Ra công trường', ngoai:'Ra khỏi công trình (từ kho)', ctra:'Ra khỏi công trình (từ công trường)', ve:'Từ công trường về kho', site:'Khai số ở công trường' };
 function ctFx_(type, ct, q) {
   ct = String(ct || ''); q = +q || 0;
-  if (type === 'xuat') return ct === 'ra' ? [-q, q] : ct === 'ctra' ? [0, -q] : [-q, 0];
-  if (type === 'nhap') return ct === 've' ? [q, -q] : [q, 0];
-  if (type === 'dieuchinh') return ct === 'site' ? [0, q] : [q, 0];
+  // v5.55: một tồn kho — chuyển giữa kho và công trường không đổi tồn; [1] luôn 0
+  if (type === 'xuat') return ct === 'ra' ? [0, 0] : [-q, 0];
+  if (type === 'nhap') return ct === 've' ? [0, 0] : [q, 0];
+  if (type === 'dieuchinh') return [q, 0];
   return [(TXN_SIGN[type] || 0) * q, 0];
 }
 function ctOf_(type, ct) { return CT_OK[type] && CT_OK[type][String(ct || '')] ? String(ct) : ''; }
 function ctTrack_(row) {
+  return false;                                                  // v5.55: không còn theo dõi "ở công trường"
   const f = String(row[TABLES.items.cols.indexOf('theoDoi')]); if (f === '1') return true; if (f === '0') return false;
   return /^(tbPhuTro|vtPhuTro)$/.test(String(row[2]));
 }
@@ -195,13 +224,13 @@ const PERM = {
   editTxn:'admin', deleteTxn:'admin', editLoan:'admin', deleteLoan:'admin', getSummary:'xem',
   getCost:'xem', getPrices:'xem', setPrice:'ql', setProgress:'ql',
   remove:'ql', updateProjects:'ql', getLog:'ql',
-  createReq:'xem', approveReq:'xem', rejectReq:'xem', cancelReq:'xem', receiveReq:'xem', issueReq:'tk', addCount:'tk',
-  listItemsOf:'tk', copyItems:'tk',
+  createReq:'xem', approveReq:'xem', rejectReq:'xem', cancelReq:'xem', receiveReq:'xem', issueReq:'tk', addCount:'tk', reservePyc:'xem', paperReq:'tk', paperCancel:'xem', paperUndo:'admin', xeBatch:'tk', setXeTypes:'admin', pgInfo:'xem',
+  listItemsOf:'admin', copyItems:'admin', purgeUnused:'admin',
   setRolePerm:'admin', setProjCfg:'admin', setItemFlags:'admin', tgUnlink:'xem', tgTest:'xem',
   listUsers:'ql', setUserProjects:'ql', approveUser:'admin', rejectUser:'admin', updateUser:'admin', deleteUser:'admin', revokeUserSessions:'admin'
 };
-const READS = { projAdmin:1, qltbList:1, verLog:1, itemCatalog:1, deviceAdminLog:1, deviceCatalog:1, backupInfo:1, listItemsOf:1, me:1, getAll:1, getVersion:1, getLog:1, listUsers:1, getPhoto:1, getSummary:1, getCost:1, getPrices:1 };
-const IDEM = { createReq:1, issueReq:1, receiveReq:1, addCount:1, qkBatch:1 };   // v5.20.3: thao tác chống ghi trùng theo mã riêng (ck)
+const READS = { nccScan:1, nxtPend:1, nxtReview:1, dmMismatch:1, dmFull:1, dmStock:1, dmThumbs:1, pgInfo:1, projAdmin:1, qltbList:1, verLog:1, itemCatalog:1, deviceAdminLog:1, deviceCatalog:1, backupInfo:1, listItemsOf:1, me:1, getAll:1, getVersion:1, getLog:1, listUsers:1, getPhoto:1, getSummary:1, getCost:1, getPrices:1 };
+const IDEM = { createReq:1, issueReq:1, paperReq:1, reservePyc:1, xeBatch:1, receiveReq:1, addCount:1, qkBatch:1 };   // v5.20.3: thao tác chống ghi trùng theo mã riêng (ck)
 const NO_BUMP = { logout:1, changePassword:1, logoutOthers:1, backupNow:1, backupSetup:1 };
 
 // ---------- CỔNG VÀO ----------
@@ -224,14 +253,17 @@ function handleReq(e) {
 function route(action, data, token) {
   if (action === 'ping') return { success:true, app:'fecon-kho', sv:SERVER_VERSION, tc: typeof TC_VERSION !== 'undefined' ? TC_VERSION : '' };
   if (action === 'register') return withLock(() => register(data));
-  if (action === 'login') { if (!props_().getProperty('rolesMig515')) withLock(migrateRoles515_); const out = login(data); flushTg_(); return out; }      // v5.14: không khóa cả lượt đăng nhập
+  if (action === 'login') { if (!props_().getProperty('rolesMig515')) withLock(migrateRoles515_); if (!props_().getProperty('oneStock55')) withLock(migrateOneStock55_); const out = login(data); flushTg_(); return out; }      // v5.14: không khóa cả lượt đăng nhập
   if (action === 'logError') return logError(data, token);
+  if (action === 'dmPublic') return dmPublic_();                 // v5.56: trang Danh mục có hình công khai (không cần đăng nhập)
+  if (action === 'dmImg') return dmImgPub_(data || {});
 
   const u = auth(token);
   if (!u) return { success:false, auth:true, error:'Phiên đăng nhập đã hết hạn hoặc tài khoản bị khóa — vui lòng đăng nhập lại' };
   if (!PropertiesService.getScriptProperties().getProperty('rolesMig515')) { withLock(migrateRoles515_); ROLES_MEMO = null; const u2 = auth(token); if (u2) Object.assign(u, u2); }
   pjMapData_(data || {});                                        // v5.49: tên dự án cũ (đã đổi tên) → tên mới
   PJ_W = /^tc[A-Z]/.test(action) ? !!PJ_TCW[action] : /^gd[A-Z]/.test(action) ? action !== 'gdList' : !(READS[action] || PJ_RO[action]);
+  if (PJ_W && u.role === 'ADM' && !/^tc[A-Z]/.test(action) && action !== 'siFix' && action !== 'setStandIn') { try { siApply_(u, data || {}); } catch (e) {} }   // v5.56.1: Admin đứng tên thay
   if (PJ_W && data && data.linkP && pjIsClosed_(data.linkP)) return { success:false, error:'Dự án "' + data.linkP + '" đã đóng — không lập phiếu mượn với dự án này được' };
   if (/^tc[A-Z]/.test(action)) {                                 // v5.23: THI CÔNG (tệp thicong.gs cùng dự án)
     if (typeof tcRoute_ !== 'function') return { success:false, error:'Máy chủ chưa có phần Thi công — Admin dán thêm tệp thicong.gs vào dự án Apps Script rồi triển khai Phiên bản mới' };
@@ -245,6 +277,7 @@ function route(action, data, token) {
   if (!chk) return { success:false, error:'Thao tác không hợp lệ: ' + action };
   if (!chk(u, data || {})) return { success:false, forbidden:true, error:'Chức danh của bạn chưa được cấp quyền cho thao tác này' };
 
+  if (!PropertiesService.getScriptProperties().getProperty('oneStock55')) withLock(migrateOneStock55_);   // v5.55
   if (!PropertiesService.getScriptProperties().getProperty('projMig54')) withLock(migrateProjects);
   if (!PropertiesService.getScriptProperties().getProperty('flags513')) withLock(migrateFlags513_);
   if (!PropertiesService.getScriptProperties().getProperty('devBy516')) withLock(migrateDevBy516_);
@@ -259,6 +292,9 @@ function route(action, data, token) {
   if (READS[action]) {
     if (action === 'me') return Object.assign({ success:true }, extra(u, data));
     if (action === 'getAll') return getAll(u, data);
+    if (action === 'nccScan') return nccScan(u, data);
+    if (action === 'nxtPend') return nxtPend(u, data);
+    if (action === 'nxtReview') return nxtReview(u, data);
     if (action === 'getVersion') return Object.assign({ success:true, version:getVersion() }, extra(u, data));
     if (action === 'getLog') return getLog(u, data);
     if (action === 'listUsers') return listUsers(u);
@@ -274,11 +310,38 @@ function route(action, data, token) {
     if (action === 'verLog') return { success:true, log:VER_LOG };
     if (action === 'qltbList') return qltbList_(data);
     if (action === 'projAdmin') return projAdmin(u);                  // v5.49
+    if (action === 'pgInfo') return pgInfo(u, data);                  // v5.54
+    if (action === 'dmFull') return dmFull(u, data);                  // v5.56
+    if (action === 'dmMismatch') return dmMismatch(u);                // v5.56.3
+    if (action === 'dmStock') return dmStock(u, data);
+    if (action === 'dmThumbs') return dmThumbs(u, data);
+  }
+  if ((action === 'devLogDups' && data && !data.dry) || (action === 'devLogEdit' && data && data.del)) {   // v5.56.6
+    try { runBackup_('Trước khi xoá dòng Máy vào / ra ' + (data.project || '') + ' · ' + u.name); } catch (e) { return { success:false, error:'Không sao lưu được nên chưa xoá: ' + String(e && e.message || e).slice(0, 120) }; }
+  }
+  if (action === 'siteClean' && data && !data.dry) {               // v5.56.5
+    try { runBackup_('Trước khi dọn khai số ở CT trùng ' + data.project + ' · ' + u.name); } catch (e) { return { success:false, error:'Không sao lưu được nên chưa sửa: ' + String(e && e.message || e).slice(0, 120) }; }
+  }
+  if (action === 'thangClean' && data && !data.dry) {             // v5.56.4: sao lưu trước khi xoá phiếu thẳng CT cũ
+    try { runBackup_('Trước khi gộp phiếu nhập thẳng CT cũ ' + data.project + ' · ' + u.name); } catch (e) { return { success:false, error:'Không sao lưu được nên chưa xoá: ' + String(e && e.message || e).slice(0, 120) }; }
+  }
+  if (action === 'siFix' && data && !data.dry) {                  // v5.56.1: sao lưu trước khi đổi tên Admin trong dữ liệu cũ
+    try { runBackup_('Trước khi đổi tên Admin trong dữ liệu cũ ' + data.project + ' · ' + u.name); } catch (e) { return { success:false, error:'Không sao lưu được nên chưa đổi: ' + String(e && e.message || e).slice(0, 120) }; }
   }
   if (action === 'projRename' && data && !data.dry) {              // v5.49: sao lưu trước (ngoài khóa) rồi mới đổi tên
     try { runBackup_('Trước khi đổi tên dự án ' + data.from + ' → ' + data.to + ' · ' + u.name); } catch (e) { if (!data.noBackup) return { success:false, error:'Không sao lưu được nên chưa đổi tên: ' + String(e && e.message || e).slice(0, 120) }; }
   }
   if (action === 'backupNow') return backupNow(u);
+  if (action === 'dmImgSet') return dmImgSet(u, data);              // v5.56: tải ảnh ngoài khoá, ghi sheet trong khoá
+  if (action === 'dmPhoto') return dmPhoto(u, data);
+  if (action === 'dmImgFind') return dmImgFind(u, data);
+  if (action === 'purgeUnused' && data && !data.dry) {           // v5.56.11: sao lưu trước khi xoá vật tư chưa dùng
+    try { runBackup_('Trước khi xoá vật tư chưa dùng ' + (data.project || '') + ' · ' + u.name); } catch (e) { return { success:false, error:'Không sao lưu được nên chưa xoá: ' + String(e && e.message || e).slice(0, 120) }; }
+  }
+  if (action === 'pjWipe' && data && !data.dry) {                // v5.59.0: sao lưu cả file trước khi xoá sạch dữ liệu kho dự án
+    if (String(data.confirm || '') !== String(data.name || '')) return { success:false, error:'Gõ đúng tên dự án để xác nhận' };
+    try { runBackup_('Trước khi xoá sạch dữ liệu kho ' + (data.name || '') + ' · ' + u.name); } catch (e) { return { success:false, error:'Không sao lưu được nên chưa xoá: ' + String(e && e.message || e).slice(0, 200) }; }
+  }
   if (action === 'purgeItems') {                                 // v5.20: sao lưu trước (ngoài khóa) rồi mới xóa
     const P0 = String((data || {}).project || '');
     if (!P0 || String((data || {}).confirm || '') !== P0) return { success:false, error:'Gõ đúng tên dự án để xác nhận' };
@@ -308,6 +371,24 @@ function route(action, data, token) {
       case 'hongAdd':         r = hongAdd(u, data); break;             // v5.50.0
       case 'hongSet':         r = hongSet(u, data); break;
       case 'hongMove':        r = hongMove(u, data); break;
+      case 'cuMark':          r = cuMark(u, data); break;            // v5.55.0
+      case 'setGioMax':       r = setGioMax(u, data); break;         // v5.55.1
+      case 'dmImgDel':        r = dmImgDel(u, data); break;          // v5.56.0
+      case 'setStandIn':      r = setStandIn(u, data); break;        // v5.56.1
+      case 'siFix':           r = siFix(u, data); break;
+      case 'dmFixCats':       r = dmFixCats(u, data); break;         // v5.56.3
+      case 'thangClean':      r = thangClean(u, data); break;        // v5.56.4
+      case 'siteClean':       r = siteClean(u, data); break;         // v5.56.5
+      case 'devLogEdit':      r = devLogEdit(u, data); break;        // v5.56.6
+      case 'devLogDups':      r = devLogDups(u, data); break;        // v5.56.6
+      case 'nccSave':         r = nccSave(u, data); break;           // v5.57.0
+      case 'nccAdd':          r = nccAdd(u, data); break;
+      case 'nccMerge':        r = nccMerge(u, data); break;
+      case 'pjWipe':          r = pjWipe(u, data); break;            // v5.59.0
+      case 'nxtSubmit':       r = nxtSubmit(u, data); break;         // v5.58.0
+      case 'nxtApprove':      r = nxtApprove(u, data); break;
+      case 'nxtReturn':       r = nxtReturn(u, data); break;
+      case 'nxtCancel':       r = nxtCancel(u, data); break;
       case 'upsert':          r = upsert(u, data.table, data.rows || []); break;
       case 'setMinStock':     r = setMinStock(u, data); break;
       case 'remove':          r = removeRows(u, data.table, data.ids || []); break;
@@ -341,6 +422,12 @@ function route(action, data, token) {
       case 'cancelReq':       r = cancelReq(u, data); break;
       case 'issueReq':        r = issueReq(u, data); break;
       case 'receiveReq':      r = receiveReq(u, data); break;
+      case 'reservePyc':      r = reservePyc(u, data); break;      // v5.53 phiếu giấy
+      case 'paperReq':        r = paperReq(u, data); break;
+      case 'paperCancel':     r = paperCancel(u, data); break;
+      case 'paperUndo':       r = paperUndo(u, data); break;
+      case 'xeBatch':         r = xeBatch(u, data); break;          // v5.54
+      case 'setXeTypes':      r = setXeTypes(u, data); break;
       case 'addCount':        r = addCount(u, data); break;
       case 'nxtInfo':         r = nxtInfo(u, data); break;
       case 'nxtImport':       r = nxtImport(u, data); break;
@@ -351,6 +438,7 @@ function route(action, data, token) {
       case 'closeDevice':     r = closeDevice(u, data); break;
       case 'setTxnMeter':     r = setTxnMeter(u, data); break;
       case 'purgeItems':      r = purgeItems(u, data); break;
+      case 'purgeUnused':     r = purgeUnused(u, data); break;      // v5.56.11
       case 'setProjCfg':      r = setProjCfg(u, data); break;
       case 'setItemFlags':    r = setItemFlags(u, data); break;
       case 'tgUnlink':        r = tgUnlink(u); break;
@@ -428,7 +516,7 @@ function writeAll(sh, cols, rows) {
 function writeLog(u, action, detail, at) {
   try {
     const sh = sheetOf(LOG.sheet, LOG.head);
-    sh.appendRow([at || nowTxt(), u ? u.id : '', u ? u.name : '', u ? (ROLE_NAME[u.role] || u.role) : '', action, String(detail || '').slice(0, 500)].map(toCell));
+    sh.appendRow([at || nowTxt(), u ? u.id : '', u ? (u.realName ? u.realName + ' (đứng tên ' + u.name + ')' : u.name) : '', u ? (ROLE_NAME[u.role] || u.role) : '', action, String(detail || '').slice(0, 500)].map(toCell));
   } catch (e) {}
 }
 
@@ -782,8 +870,16 @@ function getAll(u, d) {
   Object.assign(res, { reqs:reqs, cauKien:String(d.ckv || '') !== ckv ? S.ck : undefined, ckv:ckv, projCfg:projCfg_(P), kkMoc:kkMoc_(), thangDS:thangDS_(),
     tg:{ bot:bot, linked:!!u.tgChat, link: bot ? 'https://t.me/' + bot + '?start=' + tgCode_(u.id) : '' }, cached:S._hit });
   try { const C = pjClosed_(); res.projClosed = Object.keys(C).filter(p => allowed.indexOf(p) >= 0).reduce((o, p) => (o[p] = C[p], o), {}); res.projAlias = pjAlias_(); res.units = unitsGet_(); res.gdKho = pjKho_(); } catch (e) {}
+  if (pgCanPrint_(u) || ADM(u) || hasP(u, 'k_nhap')) { res.pg = S.pg || []; res.pgIn = S.pgIn || []; }   // v5.53: dải mã phiếu giấy · v5.54: PX chờ nhận
+  try { res.xeTypes = xeTypes_(); } catch (e) {}
+  res.one = 1; res.cuDone = cuDone_(P);                          // v5.55: một tồn kho
+  res.gioMax = gioMax_();                                        // v5.55.1
+  try { if (u.role === 'ADM' || hasP(u, 'k_napx') || hasP(u, 'k_dnap')) res.nap = napBadge_(u); } catch (e) {}   // v5.58.0
+  try { const nr = nccRev_(); res.nccRev = nr; if (String(d.nccRev || '') !== nr) res.ncc = nccList_(); } catch (e) {}   // v5.57.0
+  try { const H = nameHints_(); res.hintRev = H.rev; if (String(d.hintRev || '') !== H.rev) res.hints = { items:H.items, devs:H.devs }; } catch (e) {}   // v5.56.11
+  if (u.role === 'ADM') { try { res.standIn = siInfo_(P) || 0; } catch (e) {} }   // v5.56.1
   try { res.hong = hongList_(P); } catch (e) {}   // v5.50 báo hỏng   // v5.49 · v5.49.1 đơn vị
-  try { const dr = dmRev_(); Object.assign(res, { cats:catsGet_(), dmRev:dr, dm: dr && String(d.dmRev || '') !== dr ? dmList_() : undefined }); } catch (e) {}   // v5.48: danh mục + nhóm dùng chung
+  try { const dr = dmRev_(); Object.assign(res, { cats:catsGet_(), dmHv:dmHv_(), dmRev:dr, dm: dr && String(d.dmRev || '') !== dr ? dmList_() : undefined }); } catch (e) {}   // v5.48: danh mục + nhóm dùng chung
   res.ms = Date.now() - t0;
   return res;
 }
@@ -841,18 +937,19 @@ function addTxn(u, t0) {
   const itemName = String(rows[i][1]), unit = String(rows[i][3]), itemProj = String(rows[i][6]);
   mustAllow(u, itemProj);                                       // chỉ ghi vào kho dự án được giao
 
-  let at = u.role === 'ADM' && t.txTime ? checkTime(t.txTime) : '';   // Admin chọn ngày giờ phiếu
+  let at = PAPER_CTX ? PAPER_CTX.at : gioAt_(u, t.txTime);      // Admin / quyền k_gio chọn ngày giờ phiếu (v5.55.1) · v5.54: giờ ghi trên phiếu giấy
+  const gb = !PAPER_CTX && !!at;
   if (!at && t.fillAt && t.type === 'xuat' && t.thietBi) at = fillAt_(t.fillAt);   // v5.46: giờ cấp dầu thực tế — thủ kho lùi tối đa 24 giờ
   const ct = ctOf_(t.type, t.ct), siteNow = +rows[i][ctSiteCol_() - 1] || 0;     // v5.35
-  if ((ct === 've' || ct === 'ctra') && qty > siteNow + 1e-9) fail('Ở công trường chỉ còn ' + siteNow + ' ' + unit + ' ' + itemName);
   const row = {
     id: t.id, type: t.type, ct: ct, itemId: t.itemId, itemName: itemName, qty: qty, unit: unit,
     project: itemProj, supplierOrReceiver: t.type === 'dieuchinh' ? '' : (t.supplierOrReceiver || ''),
     thietBi: t.thietBi || '', datetime: at || nowTxt(), note: t.note || '',
     reason: t.type === 'dieuchinh' ? t.reason : '', refId: t.type === 'dieuchinh' ? (t.refId || '') : '',
-    createdBy: u.id, createdByName: u.name, clientTime: at ? '' : String(t.datetime || '').slice(0, 40),
+    createdBy: u.id, createdByName: u.name, clientTime: gb ? nowTxt() : at ? '' : String(t.datetime || '').slice(0, 40),   // v5.55.1: ghi bù → giờ lập thật
     meter: t.type === 'xuat' && t.meter !== '' && t.meter !== undefined && !isNaN(+t.meter) ? +t.meter : '',   // v5.16: giờ máy / km khi xuất dầu
-    meterNote: t.type === 'xuat' ? clean(String(t.meterNote || ''), 120) : ''
+    meterNote: t.type === 'xuat' ? clean(String(t.meterNote || ''), 120) : '',
+    ma: PAPER_CTX ? clean(String(t.ma || ''), 30) : '', xe: PAPER_CTX ? PAPER_CTX.xe : ''
   };
   gd.appendRow(TXN.cols.map(c => toCell(row[c])));
 
@@ -872,7 +969,7 @@ function upsert(u, table, rows) {
   if (!T || table === 'devlog') fail('Bảng không hợp lệ: ' + table);
   const sh = sheetOf(T.sheet, T.head || T.cols);
   const values = readRows(sh, T.cols.length);
-  const vaoLogs = [];                                          // v5.21: máy mới có ngày vào → ghi Máy vào
+  const vaoLogs = [], dlSync = [];                                          // v5.21: máy mới có ngày vào → ghi Máy vào
   const idx = {}; values.forEach((r, i) => idx[String(r[0])] = i);
   const isQL = u.role === 'ADM' || u.role === 'QL' || (hasP(u, 'k_dm') && hasP(u, 'g_view'));   // v5.15
   let added = [], edited = [];
@@ -924,9 +1021,12 @@ function upsert(u, table, rows) {
       }
       o.meterUnit = ['h','km','none'].indexOf(String(o.meterUnit || '')) >= 0 ? String(o.meterUnit) : (exists ? String(values[i][c('meterUnit')] || 'h') : 'h');
       o.inMeter = o.inMeter === '' || o.inMeter === undefined || isNaN(+o.inMeter) ? '' : +o.inMeter;
+      if (exists) { const was = k => String(fromCell(values[i][c(k)]) ?? '');
+        dlSync.push({ id:String(o.id), vao: was('inDate') !== String(o.inDate ?? '') || was('inMeter') !== String(o.inMeter ?? ''), inDate:o.inDate, inMeter:o.inMeter, ra:false }); }
       if (exists && u.role === 'ADM') {                          // v5.19: Admin sửa được mọi thông tin; ghi nhật ký riêng số cũ → số mới
         ['outDate','outMeter','addedBy','addedAt'].forEach(k => { if (o[k] === undefined) o[k] = values[i][c(k)]; });
         o.outMeter = o.outMeter === '' || o.outMeter === undefined || isNaN(+o.outMeter) ? '' : +o.outMeter;
+        { const x = dlSync[dlSync.length - 1]; if (x && x.id === String(o.id) && o.outDate && (String(fromCell(values[i][c('outDate')]) ?? '') !== String(o.outDate) || String(fromCell(values[i][c('outMeter')]) ?? '') !== String(o.outMeter))) { x.ra = true; x.outDate = o.outDate; x.outMeter = o.outMeter; } }
         const LBL = { name:'tên', cat:'nhóm', type:'loại hình', fuelRate:'định mức dầu', plate:'số hiệu', note:'ghi chú', meterUnit:'đồng hồ', inDate:'ngày vào', inMeter:'số lúc vào',
           outDate:'ngày kết thúc', outMeter:'số lúc kết thúc', addedBy:'người thêm', addedAt:'ngày thêm' };
         const ch = Object.keys(LBL).filter(k => String(fromCell(values[i][c(k)]) ?? '') !== String(o[k] ?? '')).map(k => LBL[k] + ': ' + (fromCell(values[i][c(k)]) || '(trống)') + ' → ' + (o[k] === '' ? '(trống)' : o[k]));
@@ -949,6 +1049,7 @@ function upsert(u, table, rows) {
   });
   if (values.length) sh.getRange(2, 1, values.length, T.cols.length).setValues(values.map(r => r.map(toCell)));
   vaoLogs.forEach(devLog_);
+  dlSync.forEach(dlSyncFromDev_);                                 // v5.56.6: sửa ngày / số vào, ra của máy → dòng Máy vào / ra mới nhất đổi theo
   renames.forEach(x => renameDev_(u, x));
   qlLogs.forEach(t => writeLog(u, 'Đổi mã P.QLTB', t));
   if (added.length) writeLog(u, 'Thêm ' + TABLE_LABEL[table], added.join(', '));
@@ -1062,13 +1163,19 @@ function itemCtx(itemId) {
   return { tk:tk, gd:sheetOf(TXN.sheet, TXN.head), i:i, id:rows[i][0], name:String(rows[i][1]), unit:String(rows[i][3]),
            project:String(rows[i][6]), stock:+rows[i][4] || 0 };
 }
+function loanAt_(v) {                                         // v5.56.8: ngày giờ ghi trên phiếu mượn / trả (trống = bây giờ)
+  if (!v) return nowTxt();
+  const t = checkTime(v);
+  if (tms_(t) > Date.now() + 10 * 60e3) fail('Ngày giờ phiếu ở tương lai');
+  return t;
+}
 function writeLoanTxns(u, ctx, list) {            // list: [{id, type, qty(dương), party, note, reason, refId, clientTime}]
   const SIGN = { chomuon:-1, nhantra:1, dimuon:1, tralai:-1, nhap:1, xuat:-1 };
   let stock = ctx.stock;
   list.forEach(o => {
     if (!o.id) fail('Thiếu số phiếu kho');
     const row = { id:o.id, type:o.type, itemId:ctx.id, itemName:ctx.name, qty:o.qty, unit:ctx.unit, project:ctx.project,
-      supplierOrReceiver:o.party || '', thietBi:'', datetime:nowTxt(), note:o.note || '', reason:o.reason || '',
+      supplierOrReceiver:o.party || '', thietBi:'', datetime:o.at || nowTxt(), note:o.note || '', reason:o.reason || '',
       refId:o.refId || '', createdBy:u.id, createdByName:u.name, clientTime:String(o.clientTime || '').slice(0, 40) };
     ctx.gd.appendRow(TXN.cols.map(c => toCell(row[c])));
     stock = Math.round((stock + SIGN[o.type] * o.qty) * 100) / 100;
@@ -1094,9 +1201,9 @@ function addLoan(u, d0) {
   if (party.length < 2) fail(d.kind === 'cho' ? 'Ghi rõ người / đơn vị mượn' : 'Ghi rõ mượn của ai');
   const due = String(d.dueDate || '');
   if (due && !/^\d{4}-\d{2}-\d{2}$/.test(due)) fail('Hạn trả không hợp lệ');
-  const cho = d.kind === 'cho';
+  const cho = d.kind === 'cho', at = loanAt_(d.at);
   const loan = { id:String(d.id), kind:d.kind, itemType:d.itemType, party:party, phone:String(d.phone || '').slice(0, 30),
-    dueDate:due, note:String(d.note || '').slice(0, 500), createdBy:u.id, createdByName:u.name, datetime:nowTxt(),
+    dueDate:due, note:String(d.note || '').slice(0, 500), createdBy:u.id, createdByName:u.name, datetime:at,
     clientTime:String(d.datetime || '').slice(0, 40), returned:0, status:'open', closeQty:0, closeReason:'', history:[],
     ptype:['to','da','dv'].indexOf(String(d.ptype)) >= 0 ? String(d.ptype) : '', link:null, drop:null };
   let ctx = null;
@@ -1130,7 +1237,7 @@ function addLoan(u, d0) {
     loan.link = { p:lp, id:'', st:'cho' };
   }
   if (ctx) writeLoanTxns(u, ctx, [{ id:d.txnId, type:cho ? 'chomuon' : 'dimuon', qty:loan.qty, party:party,
-    note:loan.note, refId:loan.id, clientTime:d.datetime }]);
+    note:loan.note, refId:loan.id, clientTime:d.datetime, at:at }]);
   sh.appendRow(LOAN.cols.map(c => toCell(c === 'history' ? '[]' : (c === 'link' || c === 'drop') ? (loan[c] ? JSON.stringify(loan[c]) : '') : loan[c])));
   if (loan.link) notify_(loan.link.p, ['k_loan'], [], u.id, (cho ? '🤝 ' + loan.project + ' cho bạn mượn ' : '📝 ' + loan.project + ' báo đã mượn của bạn ') + loan.qty + ' ' + loan.unit + ' ' + loan.itemName + '\nMở app Kho → Tổng quan để xác nhận.');
   writeLog(u, cho ? 'Cho mượn' : 'Đi mượn', loan.qty + ' ' + loan.unit + ' ' + loan.itemName + (cho ? ' → ' : ' ← ') + party +
@@ -1151,7 +1258,8 @@ function returnLoan(u, d0, mirror) {
   const d = cleanObj(d0), lr = loanForUpdate(u, d);
   if (!lr) return { success:true, duplicate:true };
   const loan = lr.loan, cho = loan.kind === 'cho';
-  const remain = loanRem_(loan);
+  const remain = loanRem_(loan), at = loanAt_(d.at);
+  if (tms_(at) + 60e3 < tms_(loan.datetime)) fail('Ngày trả sớm hơn ngày mượn (' + loan.datetime + ')');
   const qty = loan.itemType === 'tb' ? remain : r3(d.qty);
   if (!(qty > 0)) fail('Số lượng trả phải lớn hơn 0');
   if (qty > remain + 1e-9) fail('Chỉ còn ' + remain + ' ' + loan.unit + ' chưa trả');
@@ -1159,11 +1267,11 @@ function returnLoan(u, d0, mirror) {
     const ctx = itemCtx(loan.itemId);
     if (!cho && qty > ctx.stock + 1e-9) fail('Tồn trong kho không đủ để trả lại — còn ' + ctx.stock + ' ' + ctx.unit);
     checkTxnIdsFree([d.id]);
-    writeLoanTxns(u, ctx, [{ id:d.id, type:cho ? 'nhantra' : 'tralai', qty:qty, party:loan.party, note:d.note, refId:loan.id, clientTime:d.datetime }]);
+    writeLoanTxns(u, ctx, [{ id:d.id, type:cho ? 'nhantra' : 'tralai', qty:qty, party:loan.party, note:d.note, refId:loan.id, clientTime:d.datetime, at:at }]);
   }
   loan.returned = r3(loan.returned + qty);
   if (loanRem_(loan) <= 1e-9) loan.status = +loan.closeQty > 0 ? 'closed' : 'done';
-  const hh = { id:String(d.id), t:'tra', q:qty, note:String(d.note || '').slice(0, 300), by:u.name, at:nowTxt() };
+  const hh = { id:String(d.id), t:'tra', q:qty, note:String(d.note || '').slice(0, 300), by:u.name, at:at };
   if (loan.link && loan.link.st === 'ok' && !mirror) { hh.lk = 'cho'; notify_(loan.link.p, ['k_loan'], [], u.id, '↩ ' + loan.project + (cho ? ' đã nhận trả ' : ' đã trả lại ') + qty + ' ' + loan.unit + ' ' + loan.itemName + '\nMở app Kho → Tổng quan để xác nhận.'); }
   if (mirror) hh.lk = 'ok';
   loan.history.push(hh);
@@ -1176,7 +1284,7 @@ function closeLoan(u, d0) {
   const d = cleanObj(d0), lr = loanForUpdate(u, d);
   if (!lr) return { success:true, duplicate:true };
   const loan = lr.loan, cho = loan.kind === 'cho';
-  const reason = String(d.reason || '').slice(0, 300);
+  const reason = String(d.reason || '').slice(0, 300), at = loanAt_(d.at);
   if (reason.length < 5) fail('Ghi rõ lý do đóng phiếu (mất, hỏng, đã dùng hết...)');
   const remain = r3(loan.qty - loan.returned);
   if (loan.itemType === 'vt' && remain > 0) {
@@ -1185,13 +1293,13 @@ function closeLoan(u, d0) {
     checkTxnIdsFree([d.id, d.id2]);
     // Phần không trả: cho mượn → quy đổi thành phiếu xuất; đi mượn → quy đổi thành phiếu nhập. Tồn không đổi.
     writeLoanTxns(u, ctx, cho
-      ? [{ id:d.id, type:'nhantra', qty:remain, party:loan.party, note:'Quy đổi khi đóng phiếu mượn', reason:reason, refId:loan.id, clientTime:d.datetime },
-         { id:d.id2, type:'xuat', qty:remain, party:loan.party, note:'Cho mượn không trả lại: ' + reason, refId:loan.id, clientTime:d.datetime }]
-      : [{ id:d.id, type:'tralai', qty:remain, party:loan.party, note:'Quy đổi khi đóng phiếu mượn', reason:reason, refId:loan.id, clientTime:d.datetime },
-         { id:d.id2, type:'nhap', qty:remain, party:loan.party, note:'Đi mượn không trả lại: ' + reason, refId:loan.id, clientTime:d.datetime }]);
+      ? [{ id:d.id, type:'nhantra', qty:remain, party:loan.party, note:'Quy đổi khi đóng phiếu mượn', reason:reason, refId:loan.id, clientTime:d.datetime, at:at },
+         { id:d.id2, type:'xuat', qty:remain, party:loan.party, note:'Cho mượn không trả lại: ' + reason, refId:loan.id, clientTime:d.datetime, at:at }]
+      : [{ id:d.id, type:'tralai', qty:remain, party:loan.party, note:'Quy đổi khi đóng phiếu mượn', reason:reason, refId:loan.id, clientTime:d.datetime, at:at },
+         { id:d.id2, type:'nhap', qty:remain, party:loan.party, note:'Đi mượn không trả lại: ' + reason, refId:loan.id, clientTime:d.datetime, at:at }]);
   }
   loan.status = 'closed'; loan.closeQty = remain; loan.closeReason = reason;
-  loan.history.push({ id:String(d.id), t:'dong', q:remain, note:reason, by:u.name, at:nowTxt() });
+  loan.history.push({ id:String(d.id), t:'dong', q:remain, note:reason, by:u.name, at:at });
   saveLoan(lr.sh, lr.i, loan);
   writeLog(u, 'Đóng phiếu mượn', loan.itemName + ' · ' + loan.party + ' · không trả ' + remain + ' ' + loan.unit + ' · Lý do: ' + reason + ' · phiếu #' + loan.id);
   return { success:true, status:'closed' };
@@ -1469,7 +1577,7 @@ function getSummary(u, d) {
   const drillByProj = {};
   (dvSh ? readRows(dvSh, DV.cols.length) : []).forEach(r => {
     if (r[0] === '') return; const p = P[String(r[7])]; if (!p) return;
-    p.devices++;
+    if (String(r[11] === undefined || r[11] === null ? '' : r[11]).trim() === '') p.devices++;   // v5.59.7: chỉ đếm máy đang ở công trường (chưa có ngày ra)
     if (String(r[2]) === 'mayKhoan') { p.drills++; (drillByProj[p.name] = drillByProj[p.name] || {})[String(r[1])] = 1; }
   });
   // tuần: 8 tuần gần nhất, tuần kết thúc hôm nay
@@ -1518,6 +1626,23 @@ const TXN_SIGN = { nhap:1, xuat:-1, dieuchinh:1, chomuon:-1, nhantra:1, dimuon:1
 function txnRev() { return +PropertiesService.getScriptProperties().getProperty('txnRev') || 0; }
 function bumpTxnRev() { PropertiesService.getScriptProperties().setProperty('txnRev', String(txnRev() + 1)); }
 // Ngày giờ Admin chọn: 'HH:mm[:ss] d/M/yyyy'
+// v5.55.1: ngày giờ phiếu do người lập chọn (ghi bù) — Admin hoặc quyền k_gio; không tương lai; không phải Admin lùi tối đa gioMax ngày (0 = không giới hạn)
+const gioMax_ = () => Math.max(0, Math.floor(+props_().getProperty('gioMax') || 0));
+function gioAt_(u, v) {
+  if (!v || !(u.role === 'ADM' || hasP(u, 'k_gio'))) return '';
+  const at = checkTime(v), ms = tms_(at);
+  if (ms > Date.now() + 5 * 60000) fail('Ngày giờ phiếu (' + at + ') ở tương lai');
+  const mx = gioMax_();
+  if (u.role !== 'ADM' && mx > 0 && ms < Date.now() - mx * 864e5) fail('Chỉ được chọn ngày phiếu lùi tối đa ' + mx + ' ngày — phiếu cũ hơn nhờ Admin nhập');
+  return at;
+}
+function setGioMax(u, d) {
+  const n = Math.floor(+d.days);
+  if (!(n >= 0) || n > 3650) fail('Số ngày không hợp lệ');
+  props_().setProperty('gioMax', String(n));
+  writeLog(u, 'Giới hạn chọn ngày giờ phiếu', n ? 'Tối đa ' + n + ' ngày' : 'Không giới hạn');
+  return { success:true, gioMax:n };
+}
 function checkTime(v) {
   const m = String(v || '').trim().match(/^(\d{1,2}):(\d{2})(?::(\d{2}))? (\d{1,2})\/(\d{1,2})\/(\d{4})$/);
   if (!m || +m[1] > 23 || +m[2] > 59 || +m[4] < 1 || +m[4] > 31 || +m[5] < 1 || +m[5] > 12) fail('Ngày giờ phiếu không hợp lệ');
@@ -1695,6 +1820,35 @@ function editLoan(u, d0) {
   if (d.phone !== undefined) loan.phone = String(d.phone).slice(0, 30);
   if (d.dueDate !== undefined) { if (d.dueDate && !/^\d{4}-\d{2}-\d{2}$/.test(d.dueDate)) fail('Hạn trả không hợp lệ'); loan.dueDate = String(d.dueDate || ''); }
   if (d.note !== undefined) loan.note = String(d.note).slice(0, 500);
+  // v5.56.8: Admin sửa ngày giờ mượn / từng lần trả → phiếu kho đi kèm đổi ngày theo, tồn tính lại theo mốc kiểm kê
+  const tmap = {}, ch = {}, chg = [];
+  if (d.datetime) { const t = loanAt_(d.datetime); if (t !== String(loan.datetime)) { chg.push('mượn ' + loan.datetime + ' → ' + t); loan.datetime = t; tmap['__loan'] = t; } }
+  (Array.isArray(d.hist) ? d.hist : []).forEach(x => {
+    const h = loan.history.find(h => String(h.id) === String(x.id)); if (!h || !x.at) return;
+    const t = loanAt_(x.at); if (t === String(h.at)) return;
+    chg.push((h.t === 'dong' ? 'đóng ' : 'trả ') + h.at + ' → ' + t); h.at = t; tmap[String(h.id)] = t;
+  });
+  if (Object.keys(tmap).length) {
+    const t0 = tms_(loan.datetime);
+    loan.history.forEach(h => { if (tms_(h.at) + 60e3 < t0) fail('Ngày ' + (h.t === 'dong' ? 'đóng' : 'trả') + ' ' + h.at + ' sớm hơn ngày mượn ' + loan.datetime); });
+    const gd = sheetOf(TXN.sheet, TXN.head), rows = readRows(gd, TXN.cols.length), di = TXN.cols.indexOf('datetime');
+    const hIds = {}; loan.history.forEach(h => hIds[String(h.id)] = 1);
+    rows.forEach((r, k) => {
+      if (String(r[12]) !== String(loan.id)) return;
+      const id = String(r[0]), ty = String(r[1]);
+      let nt = null;
+      if ((ty === 'chomuon' || ty === 'dimuon') && tmap['__loan']) nt = tmap['__loan'];
+      else if (tmap[id]) nt = tmap[id];
+      else { const h = loan.history.find(h => h.t === 'dong' && tmap[String(h.id)] && /^(nhap|xuat)$/.test(ty)); if (h) nt = tmap[String(h.id)]; }
+      if (!nt) return;
+      const old = String(fromCell(r[di]) || ''), itm = String(r[2]), eff = txnEffect(r);
+      const a = afterMoc_(itm, old), b = afterMoc_(itm, nt);
+      if (a !== b) ch[itm] = (ch[itm] || 0) + (b ? eff : -eff);
+      gd.getRange(k + 2, di + 1).setValue(toCell(nt));
+    });
+    applyStock(ch);
+    writeLog(u, 'Admin sửa ngày phiếu mượn', loan.itemName + ' · ' + loan.party + ' · ' + chg.join(' · ') + ' · phiếu #' + loan.id);
+  }
   saveLoan(lr.sh, lr.i, loan);
   // Nhật ký của phiếu mượn: đổi tên người mượn / hạn trả cho khớp
   const lg = logSheet();
@@ -2502,7 +2656,7 @@ function saveReq_(sh, i, r) {
 function nextReqId_() {
   const n = (+props_().getProperty('pycSeq') || 0) + 1;
   props_().setProperty('pycSeq', String(n));
-  return 'PYC-' + ('000' + n).slice(-4);
+  return 'PYC-' + String(n).padStart(4, '0');   // v5.53: quá 9999 vẫn đúng
 }
 function remain_(r) { return r.lines.reduce((a, l) => a + Math.max(0, (+l.req || 0) - (+l.sent || 0)), 0); }
 
@@ -2517,7 +2671,7 @@ function createReq(u, d0) {
     const ck = ckRows_(P).find(c => String(c.id) === String(d0.ckId));
     if (!ck) fail('Không tìm thấy cấu kiện');
     ckId = String(ck.id); ckName = String(ck.name);
-    const open = readTable_(REQ, P).filter(r => String(r.ckId) === ckId && r.status !== 'tuchoi' && r.status !== 'huy' && jparse_(r.opt, {}).base);
+    const open = readTable_(REQ, P).filter(r => String(r.ckId) === ckId && r.status !== 'tuchoi' && r.status !== 'huy' && jparse_(r.opt, {}).base && !jparse_(r.opt, {}).paper);
     const base = !open.length, map = {};
     if (base) {
       const ch = +d0.opt;
@@ -2525,6 +2679,10 @@ function createReq(u, d0) {
         fail('Chọn mức cho ' + (ck.optKind === 'coc' ? 'thép chờ đầu cọc' : 'mối nối trong phân đoạn') + ' trước khi gửi');
       const hh = projCfg_(P).haoHut;
       ckLines_(ck, ch, hh).forEach(l => map[l.size] = { req:l.sum, br:'Định mức ' + l.dm + (l.hh ? ' + hao hụt ' + l.hh : '') + (l.opt ? ' + tùy chọn ' + l.opt : '') });
+      const pp = {};                                             // v5.53.1: cóc đã cấp bằng phiếu giấy cho cấu kiện này → trừ khỏi phiếu gốc
+      readTable_(REQ, P).filter(r => String(r.ckId) === ckId && r.status !== 'tuchoi' && r.status !== 'huy').map(reqOut_).filter(r => r.opt && r.opt.paper)
+        .forEach(r => r.lines.forEach(l => { const s = (String(l.itemName).match(/D\d{2}/i) || [''])[0].toUpperCase(); if (s) pp[s] = (pp[s] || 0) + (+l.req || 0); }));
+      Object.keys(map).forEach(s => { if (pp[s]) { map[s].req = Math.max(0, map[s].req - pp[s]); map[s].br += ' − phiếu giấy đã cấp ' + pp[s]; } });
       opt = { base:1, kind:String(ck.optKind), choice:ch, text: ck.optKind === 'coc' ? 'Thép chờ đầu cọc: ' + OPT_COC[ch][1] : 'Mối nối trong phân đoạn: ' + OPT_TV[ch], haoHut:hh };
     } else opt = { base:0, text:'Xin bổ sung ngoài định mức (đã có ' + open[0].id + ')' };
     if (d0.bs) {
@@ -2536,14 +2694,25 @@ function createReq(u, d0) {
       const m = map[size] || { req:0, br:'' }; m.req += q; m.br = (m.br ? m.br + ' + ' : '') + 'bổ sung ' + q; map[size] = m;
       bs = { qty:q, size:size, reason:why, note:clean(String(d0.bs.note || ''), 200) };
     } else if (!base) fail('Cấu kiện ' + ckName + ' đã có phiếu ' + open[0].id + '. Bấm "Xin bổ sung" nếu cần thêm.');
+    if (!Object.keys(map).some(s => map[s].req > 0)) fail('Cấu kiện ' + ckName + ' đã cấp đủ định mức bằng phiếu giấy — bấm "Xin bổ sung" nếu cần thêm');
     Object.keys(map).sort().forEach(s => {
+      if (!(map[s].req > 0)) return;
       const it = cocItem_(items, s);
       if (!it) fail('Kho dự án chưa có vật tư cóc nối ' + s + ' — thêm vật tư trước');
       lines.push({ itemId:it[0], itemName:String(it[1]), unit:String(it[3]), req:map[s].req, sent:0, br:map[s].br });
     });
     title = (base ? 'Cóc nối · ' : 'Bổ sung cóc · ') + (ck.hm === 'coc' ? 'Cọc ' : 'Tấm ') + ckName;
   } else {
-    const it = items.find(r => String(r[0]) === String(d0.itemId));
+    let it = d0.itemId ? items.find(r => String(r[0]) === String(d0.itemId)) : null, newRow = null;
+    if (!it && d0.newItem && !d0.itemId) {                       // v5.56.11: tên dùng ở dự án khác → thêm vật tư (tồn 0) vào kho dự án khi gửi phiếu
+      const ni = d0.newItem, nm = clean(String(ni.name || ''), 120); if (nm.length < 2) fail('Tên vật tư không hợp lệ');
+      it = items.find(r => normName_(r[1]) === normName_(nm));
+      if (!it) {
+        const o = { id:Date.now() * 10 + Math.floor(Math.random() * 10), name:nm, cat:clean(String(ni.cat || 'vatLieu'), 40), unit:clean(String(ni.unit || ''), 20) || 'Cái', stock:0, minStock:0, project:P,
+          capThang:0, canMay:+ni.canMay === 1 ? 1 : 0, maQL:clean(String(ni.maQL || ''), 60), ngoaiDM:ni.ngoaiDM === '' || ni.ngoaiDM === undefined ? '' : +ni.ngoaiDM, site:0, theoDoi:'' };
+        newRow = T.cols.map(c => o[c] === undefined ? '' : o[c]); it = newRow;
+      }
+    }
     if (!it) fail('Vật tư không có trong kho dự án');
     if (+it[ci] === 1) fail('"' + it[1] + '" cấp thẳng cho tổ đội, không cần phiếu');
     const q = Math.round((+d0.qty || 0) * 1000) / 1000; if (!(q > 0)) fail('Số lượng phải lớn hơn 0');
@@ -2552,6 +2721,7 @@ function createReq(u, d0) {
       if (d0.may === 'chung') { const why = clean(String(d0.mayNote || ''), 120); if (!why) fail('Ghi lý do dùng chung'); may = 'Dùng chung (' + why + ')'; }
       else may = clean(String(d0.may), 80);
     }
+    if (newRow) { sheetOf(T.sheet, T.head).appendRow(newRow.map(toCell)); writeLog(u, 'Thêm vật tư', newRow[1] + ' · từ phiếu yêu cầu (tên dùng ở dự án khác)'); }
     lines.push({ itemId:it[0], itemName:String(it[1]), unit:String(it[3]), req:q, sent:0, br:'Nhập tay' + (may ? ' · ' + may : '') });
     title = String(it[1]) + (may ? ' · ' + may : '');
   }
@@ -2614,15 +2784,16 @@ function issueReq(u, d) {
   const send = Array.isArray(d.send) ? d.send : [];
   const T = TABLES.items, tk = sheetOf(T.sheet, T.head), items = readRows(tk, T.cols.length);
   const gd = sheetOf(TXN.sheet, TXN.head), now = nowTxt(), made = [];
-  const fillT = d.fillAt && r.may ? fillAt_(d.fillAt) : '';          // v5.46: giờ cấp dầu thực tế
+  const fillT = d.at ? String(d.at) : d.fillAt && r.may ? fillAt_(d.fillAt) : '';   // v5.46: giờ cấp dầu thực tế · v5.53.1: giờ ghi trên phiếu giấy
   const plan = r.lines.map((l, k) => {
     const q = Math.round((+send[k] || 0) * 1000) / 1000, rem = (+l.req || 0) - (+l.sent || 0);
     if (q < 0) fail('Số gửi không hợp lệ');
     if (q > rem + 1e-9) fail(l.itemName + ': giao vượt số chưa giao (' + rem + ')');
     const i = items.findIndex(z => String(z[0]) === String(l.itemId));
     if (i < 0) fail('Vật tư ' + l.itemName + ' không còn trong kho');
-    if (q > (+items[i][4] || 0) + 1e-9) fail('Không đủ tồn kho ' + l.itemName + ' (còn ' + (+items[i][4] || 0) + '). Kiểm kê nếu thực tế còn hàng.');
-    return { k:k, q:q, i:i };
+    const bm = !!fillT && !afterMoc_(l.itemId, fillT);              // v5.53.1: cấp trước mốc kiểm kê → số đếm đã tính, không đổi tồn
+    if (!bm && q > (+items[i][4] || 0) + 1e-9) fail('Không đủ tồn kho ' + l.itemName + ' (còn ' + (+items[i][4] || 0) + '). Kiểm kê nếu thực tế còn hàng.');
+    return { k:k, q:q, i:i, bm:bm };
   });
   if (!plan.some(p => p.q > 0)) fail('Nhập số lượng giao');
   const sig = plan.map(p => p.q).join('|'), dk = 'ISS_' + r.id, C = CacheService.getScriptCache();   // v5.20.3: giao trùng trong 2 phút → hỏi lại
@@ -2645,8 +2816,8 @@ function issueReq(u, d) {
       reason:'', refId: r.id, createdBy: u.id, createdByName: u.name, clientTime: '',
       meter: d.meter !== '' && d.meter !== undefined && !isNaN(+d.meter) ? +d.meter : '', meterNote: clean(String(d.meterNote || ''), 120) };
     gd.appendRow(TXN.cols.map(c => toCell(row[c])));
-    const v = Math.round(((+it[4] || 0) - p.q) * 100) / 100; tk.getRange(p.i + 2, 5).setValue(v); it[4] = v;
-    if (pct) { const sc = ctSiteCol_(), sv = Math.round(((+it[sc - 1] || 0) + p.q) * 1000) / 1000; tk.getRange(p.i + 2, sc).setValue(sv); it[sc - 1] = sv; }
+    if (!p.bm) { const v = Math.round(((+it[4] || 0) - p.q) * 100) / 100; tk.getRange(p.i + 2, 5).setValue(v); it[4] = v; }
+    if (pct && !p.bm) { const sc = ctSiteCol_(), sv = Math.round(((+it[sc - 1] || 0) + p.q) * 1000) / 1000; tk.getRange(p.i + 2, sc).setValue(sv); it[sc - 1] = sv; }
     l.sent = Math.round(((+l.sent || 0) + p.q) * 1000) / 1000; l.last = p.q; (l.px = l.px || []).push(String(row.id));
     made.push(row);
   });
@@ -2693,6 +2864,275 @@ function receiveReq(u, d) {
     notify_(r.project, ['y_giao'], [], u.id, (r.status === 'chohang' ? '📦 ' + r.id + ' còn thiếu, cần giao tiếp' : 'ℹ️ ' + r.id + ' người nhận đã nhận') +
       (adj.length ? '\nBên nhận báo thiếu: ' + adj.map(a => a.itemName + ' ' + a.qty).join(', ') + ' — đã hoàn kho, cần kiểm tra' : ''));
   return { success:true, req:r, txns:adj.map(m => TXN.cols.map(c => m[c])) };
+}
+
+// ---------- v5.53: PHIẾU YÊU CẦU GIẤY CÓ MÃ QR ----------
+// In phiếu trắng = giữ trước 1 dải số PYC liên tục (cùng dãy số phiếu trên app). Thủ kho chụp QR → nhập món → app lập phiếu YC + phiếu xuất.
+const PG = { sheet:'PhieuGiay',
+  cols:['id','project','status','batch','printedBy','printedByName','printedAt','reqId','usedBy','usedAt','note','kind','dest','data','recvAt','recvBy'],
+  head:['Mã phiếu giấy','Dự án','Trạng thái (phat / nhap / huy)','Đợt in','Người in (ID)','Người in','Lúc in','Phiếu YC','Người nhập','Lúc nhập','Ghi chú','Loại (pyc / pn / px)','Dự án nhận (PX chuyển dự án)','Nội dung (JSON)','Lúc dự án nhận quét','Người nhận'] };
+const PG_MAX = 200;
+function pgCode_(s) {                                         // v5.54: PYC / PN / PX; "PN-0012-3" → "PN-0012"
+  const m = String(s || '').toUpperCase().replace(/\s+/g, '').match(/(PYC|PN|PX)-?(\d{1,6})/);
+  return m ? m[1] + '-' + String(+m[2]).padStart(4, '0') : '';
+}
+function pgKind_(code) { const p = String(code).split('-')[0]; return p === 'PN' ? 'pn' : p === 'PX' ? 'px' : 'pyc'; }
+function pgNum_(id) { return +String(id).replace(/\D/g, '') || 0; }
+function pgOut_(r) { return [String(r.id), String(r.status), String(r.batch), String(r.printedByName), fromCell(r.printedAt), String(r.reqId || ''), fromCell(r.usedAt || ''), String(r.note || ''),
+  String(r.kind || 'pyc'), String(r.dest || ''), fromCell(r.recvAt || '')]; }
+function pgCanPrint_(u) { return hasP(u, 'y_giao') || hasP(u, 'y_duyet'); }
+function reservePyc(u, d) {
+  const P = String(d.project || ''); mustAllow(u, P);
+  const n = Math.round(+d.n || 0);
+  if (!(n >= 1 && n <= PG_MAX)) fail('Số phiếu in mỗi lần từ 1 đến ' + PG_MAX);
+  const kind = d.kind === 'pn' || d.kind === 'px' ? d.kind : 'pyc', pre = { pyc:'PYC', pn:'PN', px:'PX' }[kind], key = { pyc:'pycSeq', pn:'pnSeq', px:'pxSeq' }[kind];
+  if (kind === 'pn' && n > 100 || kind === 'px' && n > 50) fail('Mỗi lần in tối đa ' + (kind === 'pn' ? 100 : 50) + ' phiếu');
+  const start = (+props_().getProperty(key) || 0) + 1, end = start + n - 1;
+  props_().setProperty(key, String(end));
+  const now = nowTxt(), batch = pre + '-' + String(start).padStart(4, '0') + '→' + String(end).padStart(4, '0');
+  const rows = [];
+  for (let k = start; k <= end; k++) rows.push({ id:pre + '-' + String(k).padStart(4, '0'), project:P, status:'phat', batch:batch, kind:kind, dest:'', data:'', recvAt:'', recvBy:'',
+    printedBy:u.id, printedByName:u.name, printedAt:now, reqId:'', usedBy:'', usedAt:'', note:'' });
+  const sh = sheetOf(PG.sheet, PG.head), at = Math.max(2, sh.getLastRow() + 1);
+  sh.getRange(at, 1, rows.length, PG.cols.length).setValues(rows.map(r => PG.cols.map(c => toCell(r[c]))));
+  writeLog(u, { pyc:'In phiếu yêu cầu giấy', pn:'In phiếu nhập theo xe', px:'In biên bản giao nhận (xuất)' }[kind], n + ' phiếu ' + rows[0].id + ' → ' + rows[n - 1].id + ' · ' + P);
+  return { success:true, batch:batch, codes:rows.map(r => r.id), pg:rows.map(pgOut_) };
+}
+function pgFind_(code) {
+  const sh = sheetOf(PG.sheet, PG.head), rows = readRows(sh, PG.cols.length);
+  const i = rows.findIndex(r => String(r[0]) === code);
+  return { sh:sh, i:i, r: i < 0 ? null : rowToObj(PG.cols, rows[i]) };
+}
+function pgSave_(x) { x.sh.getRange(x.i + 2, 1, 1, PG.cols.length).setValues([PG.cols.map(c => toCell(x.r[c] === undefined ? '' : x.r[c]))]); }
+// Thủ kho nhập phiếu giấy: d = { code, project, kind:'vt'|'coc', itemId | (ckId, size), qty (SL yêu cầu), sent (SL thực xuất),
+//   may, mayNote, reqName, team, reqTime, reason (vượt định mức), note, fillAt, meter, meterNote }
+function paperReq(u, d) {
+  const P = String(d.project || ''); mustAllow(u, P);
+  const code = pgCode_(d.code); if (!code || pgKind_(code) !== 'pyc') fail('Mã phiếu không hợp lệ (dạng PYC-0123)');
+  const old = readRows(reqSheet_(), REQ.cols.length).find(r => String(r[0]) === code);
+  if (old) { const o = rowToObj(REQ.cols, old);
+    return { success:false, used:true, reqId:code, error:'Mã ' + code + ' đã nhập rồi (' + o.title + ' · ' + fromCell(o.datetime) + ') — mỗi mã chỉ dùng 1 lần' }; }
+  const g = pgFind_(code);
+  if (!g.r) fail('Mã ' + code + ' không có trong danh sách phiếu giấy đã in — kiểm tra lại mã');
+  if (String(g.r.project) !== P) fail('Mã ' + code + ' là phiếu của dự án ' + g.r.project + ', không dùng cho ' + P);
+  if (g.r.status === 'huy') fail('Mã ' + code + ' đã bị huỷ' + (g.r.note ? ' (' + g.r.note + ')' : ''));
+  if (g.r.status === 'nhap') return { success:false, used:true, reqId:g.r.reqId || code, error:'Mã ' + code + ' đã nhập rồi' };
+  const reqName = clean(String(d.reqName || ''), 60); if (!reqName) fail('Nhập người đề nghị (ghi trên phiếu)');
+  const at = checkTime(d.at), atD = txtDate_(at), age = Date.now() - atD.getTime();      // v5.53.1: giờ cấp ghi trên phiếu = giờ phiếu xuất
+  if (age < -10 * 60e3) fail('Ngày giờ trên phiếu ở tương lai — kiểm tra lại');
+  if (age > 30 * 864e5) fail('Phiếu quá 30 ngày — báo Admin ghi bù bằng phiếu xuất');
+  const team = clean(String(d.team || ''), 60);
+  const q = Math.round((+d.qty || 0) * 1000) / 1000, s = Math.round((+d.sent || 0) * 1000) / 1000;
+  if (!(q > 0)) fail('Nhập SL yêu cầu');
+  if (!(s > 0)) fail('Nhập SL thực xuất');
+  if (s > q + 1e-9) fail('SL thực xuất lớn hơn SL yêu cầu — sửa SL yêu cầu cho đúng phiếu');
+  const T = TABLES.items, items = readRows(sheetOf(T.sheet, T.head), T.cols.length).filter(r => r[0] !== '' && String(r[6]) === P);
+  const ci = T.cols.indexOf('capThang'), mi = T.cols.indexOf('canMay'), now = nowTxt();
+  let it, title, ckId = '', ckName = '', may = '', opt, bs = null, br = 'Phiếu giấy';
+  if (d.kind === 'coc') {
+    const ck = ckRows_(P).find(c => String(c.id) === String(d.ckId));
+    if (!ck) fail('Chọn mã cọc / panel');
+    const size = String(d.size || '').toUpperCase();
+    it = cocItem_(items, size); if (!it) fail('Kho dự án chưa có vật tư cóc nối ' + size);
+    ckId = String(ck.id); ckName = String(ck.name);
+    const all = readTable_(REQ, P).filter(r => String(r.ckId) === ckId && r.status !== 'tuchoi' && r.status !== 'huy').map(reqOut_);
+    const base = all.find(r => r.opt && r.opt.base && !r.opt.paper);
+    const choice = base && !base.opt.paper && base.opt.choice !== undefined && base.opt.choice !== '' ? +base.opt.choice : 2;   // chưa có phiếu gốc → lấy mức cao nhất
+    const dmL = ckLines_(ck, choice, projCfg_(P).haoHut).find(l => l.size === size), cap = dmL ? dmL.sum : 0;
+    const prev = all.reduce((a, r) => a + r.lines.filter(l => String(l.itemId) === String(it[0])).reduce((b, l) => b + (+l.req || 0), 0), 0);
+    const over = Math.round((prev + q - cap) * 1000) / 1000, why = clean(String(d.reason || ''), 120);
+    if (over > 0 && !why) return { success:false, overDm:true, cap:cap, prev:prev, over:over,
+      error:ckName + ' · ' + size + ': định mức ' + cap + ', đã cấp ' + prev + ', phiếu này ' + q + ' → vượt ' + over + '. Ghi lý do vượt định mức.' };
+    if (over > 0) bs = { qty:Math.min(q, over), size:size, reason:why, note:'Phiếu giấy ' + code };
+    br = 'Phiếu giấy · định mức ' + cap + (prev ? ' · đã cấp trước ' + prev : '') + (over > 0 ? ' · vượt ' + over : '');
+    opt = { base:0, paper:1, kind:String(ck.optKind), choice:choice, text:'Phiếu giấy' + (over > 0 ? ' · vượt định mức: ' + why : ''), haoHut:projCfg_(P).haoHut };
+    title = 'Cóc nối · ' + (ck.hm === 'coc' ? 'Cọc ' : 'Tấm ') + ckName;
+  } else {
+    it = items.find(r => String(r[0]) === String(d.itemId));
+    if (!it) fail('Vật tư không có trong kho dự án');
+    if (+it[mi] === 1) {
+      if (!d.may) fail('Chọn máy sử dụng (ghi trên phiếu)');
+      if (d.may === 'chung') { const why = clean(String(d.mayNote || ''), 120); if (!why) fail('Ghi lý do dùng chung'); may = 'Dùng chung (' + why + ')'; }
+      else may = clean(String(d.may), 80);
+    }
+    opt = { paper:1, text:'Phiếu giấy' };
+    title = String(it[1]) + (may ? ' · ' + may : '');
+  }
+  const bm = !afterMoc_(it[0], at);
+  if (!bm && s > (+it[4] || 0) + 1e-9) fail('Không đủ tồn kho ' + it[1] + ' (còn ' + (+it[4] || 0) + '). Kiểm kê nếu thực tế còn hàng.');
+  const who = reqName + (team ? ' · ' + team : '');
+  const r = { id:code, project:P, kind: d.kind === 'coc' ? 'coc' : 'vt', ckId:ckId, ckName:ckName, may:may, title:title,
+    lines:[{ itemId:it[0], itemName:String(it[1]), unit:String(it[3]), req:q, sent:0, br:br + (may ? ' · ' + may : '') }], opt:opt, bs:bs,
+    note:clean(String(d.note || ''), 300), status:'cho', duyet:'da', duyetBy:'Ký trên phiếu giấy', duyetAt:now, reject:'',
+    createdBy:u.id, createdByName:who, createdRole:'giay', datetime:at, clientTime:at,
+    log:[{ t:now, x:shortName_(u) + ' (Thủ kho) nhập phiếu giấy ' + code + ' · người đề nghị ' + who + ' · cấp lúc ' + at + (bm ? ' (trước mốc kiểm kê — không đổi tồn)' : '') }], test:'' };
+  const sh = reqSheet_(); saveReq_(sh, readRows(sh, 1).length, r);
+  const out = issueReq(u, { id:code, send:[s], force:1, at:at, meter:d.meter, meterNote:d.meterNote });
+  const x = loadReq_(code), r2 = x.r;
+  r2.lines.forEach(l => l.last = 0);
+  r2.status = 'xong';
+  r2.log.push({ t:now, x:'Người nhận ký trên phiếu giấy' + (s < q ? ' · thiếu ' + fmtQ_(q - s) + ' so với yêu cầu' : '') });
+  saveReq_(x.sh, x.i, r2);
+  g.r.status = 'nhap'; g.r.reqId = code; g.r.usedBy = u.name; g.r.usedAt = now; pgSave_(g);
+  if (bs) notify_(P, ['y_duyet'], [], u.id, '⚠ ' + code + ' (phiếu giấy) VƯỢT ĐỊNH MỨC\n' + title + ' · ' + it[1] + ': ' + q + '\nLý do: ' + bs.reason + '\nNgười đề nghị: ' + who);
+  writeLog(u, 'Nhập phiếu yêu cầu giấy', code + ' · ' + title + ' · YC ' + q + ' / xuất ' + s);
+  return { success:true, req:r2, txns:out.txns, pg:pgOut_(g.r), beforeMoc:bm };
+}
+// v5.53.1: Admin huỷ lần nhập phiếu giấy (nhập sai) → xoá phiếu xuất (hoàn tồn như Xoá phiếu), phiếu YC đổi số thành …-HUYn, mã về "chưa nhập"
+function paperUndo(u, d) {
+  const P = String(d.project || ''); mustAllow(u, P);
+  const code = pgCode_(d.code), why = clean(String(d.note || ''), 120);
+  if (!code) fail('Mã phiếu không hợp lệ'); if (!why) fail('Ghi lý do huỷ nhập');
+  if (pgKind_(code) !== 'pyc') return paperUndoXe_(u, P, code, why);
+  const x = loadReq_(code), r = x.r;
+  if (String(r.project) !== P) fail('Phiếu thuộc dự án khác');
+  if (!(r.opt && r.opt.paper)) fail('Chỉ huỷ nhập được phiếu giấy');
+  const dels = [];
+  r.lines.forEach(l => (l.px || []).forEach(id => { const o = deleteTxn(u, { id:id }); (o.deleted || []).forEach(k => dels.push(k)); }));
+  const n = readRows(reqSheet_(), 1).filter(z => String(z[0]).indexOf(code + '-HUY') === 0).length + 1, now = nowTxt();
+  r.id = code + '-HUY' + n; r.status = 'huy';
+  r.log.push({ t:now, x:shortName_(u) + ' (Admin) huỷ lần nhập: ' + why + ' · đã xoá phiếu xuất, hoàn tồn' });
+  saveReq_(x.sh, x.i, r);
+  const g = pgFind_(code);
+  if (g.r) { g.r.status = 'phat'; g.r.reqId = ''; g.r.usedBy = ''; g.r.usedAt = ''; g.r.note = 'Huỷ nhập lần ' + n + ': ' + why; pgSave_(g); }
+  writeLog(u, 'Huỷ nhập phiếu giấy', code + ' → ' + r.id + ' · ' + why);
+  return { success:true, req:r, oldId:code, deleted:dels, pg: g.r ? pgOut_(g.r) : null };
+}
+// v5.54: huỷ lần nhập PN / PX (hoặc lần nhận PX ở dự án nhận): xoá các phiếu nhập / xuất mang mã → hoàn tồn như Xoá phiếu
+function paperUndoXe_(u, P, code, why) {
+  const g = pgFind_(code); if (!g.r) fail('Không có mã ' + code);
+  const own = String(g.r.project) === P, isRecv = !own && String(g.r.dest) === P;
+  if (!own && !isRecv) fail('Mã thuộc dự án khác');
+  if (own && g.r.status !== 'nhap') fail('Mã ' + code + ' chưa nhập');
+  if (isRecv && !g.r.recvAt) fail('Dự án chưa nhận phiếu ' + code);
+  if (own && g.r.kind === 'px' && g.r.recvAt) fail('Dự án ' + g.r.dest + ' đã nhận ' + code + ' — dự án nhận huỷ lần nhận trước');
+  const gd = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(TXN.sheet), mc = TXN.cols.indexOf('ma'), pc = TXN.cols.indexOf('project');
+  const ids = (gd ? readRows(gd, TXN.cols.length) : []).filter(r => r[0] !== '' && String(r[pc]) === P && String(r[mc]).indexOf(code + '-') === 0).map(r => String(r[0]));
+  const dels = [];
+  ids.forEach(id => { const o = deleteTxn(u, { id:id }); (o.deleted || []).forEach(k => dels.push(k)); });
+  const tag = code + '-', lc = LOAN.cols.indexOf('note'), lp = LOAN.cols.indexOf('project');
+  const sh = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(LOAN.sheet), DV = TABLES.devices, dvs = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(DV.sheet);
+  const left = (sh ? readRows(sh, LOAN.cols.length).filter(r => String(r[lp]) === P && String(r[lc]).indexOf(tag) >= 0).length : 0)
+    + (dvs ? readRows(dvs, DV.cols.length).filter(r => String(r[DV.cols.indexOf('project')]) === P && String(r[DV.cols.indexOf('note')]).indexOf(tag) >= 0).length : 0);
+  if (isRecv) { g.r.recvAt = ''; g.r.recvBy = ''; }
+  else { g.r.status = 'phat'; g.r.reqId = ''; g.r.usedBy = ''; g.r.usedAt = ''; g.r.dest = ''; g.r.data = ''; }
+  g.r.note = 'Huỷ ' + (isRecv ? 'lần nhận' : 'lần nhập') + ': ' + why; pgSave_(g);
+  writeLog(u, 'Huỷ nhập phiếu giấy', code + ' · xoá ' + dels.length + ' phiếu · ' + why + (left ? ' · còn ' + left + ' dòng máy / mượn phải sửa tay' : ''));
+  return { success:true, oldId:code, deleted:dels, pg:pgOut_(g.r), left:left };
+}
+// Admin / CHT / CHP huỷ mã giấy chưa dùng (viết hỏng, mất)
+function paperCancel(u, d) {
+  const P = String(d.project || ''); mustAllow(u, P);
+  const why = clean(String(d.note || ''), 120); if (!why) fail('Ghi lý do huỷ (viết hỏng, mất…)');
+  const codes = (Array.isArray(d.codes) ? d.codes : [d.code]).map(pgCode_).filter(Boolean);
+  if (!codes.length) fail('Chọn mã cần huỷ');
+  const sh = sheetOf(PG.sheet, PG.head), rows = readRows(sh, PG.cols.length), now = nowTxt(), done = [];
+  codes.forEach(c => {
+    const i = rows.findIndex(r => String(r[0]) === c);
+    if (i < 0) fail('Không có mã ' + c);
+    const o = rowToObj(PG.cols, rows[i]);
+    if (String(o.project) !== P) fail('Mã ' + c + ' thuộc dự án khác');
+    if (o.status === 'nhap') fail('Mã ' + c + ' đã nhập phiếu — không huỷ được');
+    if (o.status === 'huy') return;
+    o.status = 'huy'; o.note = shortName_(u) + ' ' + now.split(' ')[1] + ': ' + why;
+    sh.getRange(i + 2, 1, 1, PG.cols.length).setValues([PG.cols.map(k => toCell(o[k]))]); done.push(pgOut_(o));
+  });
+  writeLog(u, 'Huỷ mã phiếu giấy', codes.join(', ') + ' · ' + why);
+  return { success:true, pg:done };
+}
+// Mã bị bỏ qua: trong cùng đợt in, mã sau đã nhập từ 3 ngày trước mà mã này vẫn chưa nhập → có thể đã cấp giấy mà chưa nhập app
+function pgSkipped_(rows, nowMs) {
+  const by = {}, out = [];
+  rows.forEach(r => (by[r.batch] = by[r.batch] || []).push(r));
+  Object.keys(by).forEach(b => {
+    let oldest = Infinity;
+    by[b].sort((a, c) => pgNum_(c.id) - pgNum_(a.id)).forEach(r => {
+      if (r.status === 'nhap') { const t = tms_(fromCell(r.usedAt)); if (t && t < oldest) oldest = t; }
+      else if (r.status === 'phat' && oldest < nowMs - 3 * 864e5) out.push(r.id);
+    });
+  });
+  return out.sort();
+}
+function pgTgDaily_() {
+  try {
+    const day = Utilities.formatDate(new Date(), TZ, 'yyyyMMdd'), h = +Utilities.formatDate(new Date(), TZ, 'H');
+    if (h < 8 || props_().getProperty('pgTgDay') === day) return;
+    props_().setProperty('pgTgDay', day);
+    const all = readTable_(PG), by = {};
+    all.forEach(r => (by[r.project] = by[r.project] || []).push(r));
+    Object.keys(by).forEach(P => {
+      const sk = pgSkipped_(by[P], Date.now());
+      if (sk.length) sendTg_(P, ['y_giao', 'y_duyet'], [], '', '🧾 PHIẾU GIẤY (YC / NHẬP / XUẤT) CHƯA NHẬP APP: ' + sk.length + ' mã\n' + sk.slice(0, 20).join(', ') + (sk.length > 20 ? ' …' : '') +
+        '\nCác mã sau đã nhập mà mã này chưa. Thủ kho nhập phiếu, hoặc CHT/CHP huỷ mã nếu viết hỏng / mất.');
+    });
+  } catch (e) { writeLog(null, 'Lỗi nhắc phiếu giấy', String(e && e.message || e)); }
+}
+
+// ---------- v5.54: PHIẾU NHẬP THEO XE (PN) · PHIẾU XUẤT RA KHỎI CÔNG TRÌNH (PX) — giấy có trước, mã QR ----------
+// Thủ kho quét mã → nhập các dòng → app ghi bằng qkBatch (giống Nhập/Xuất nhanh), mỗi dòng 1 phiếu, cột "ma" = PN-0012-1…
+// Giờ phiếu = giờ ghi trên giấy (PAPER_CTX). PX chuyển dự án: dự án nhận quét cùng mã để nhập (recv).
+var PAPER_CTX = null;
+const XE_TYPES_DEF = ['Tải', 'Ba gác', 'Xe máy', 'Ô tô', 'Đầu kéo'];
+function xeTypes_() { const L = jget_('xeTypes', null); return Array.isArray(L) && L.length ? L : XE_TYPES_DEF; }
+function setXeTypes(u, d) {
+  const L = (Array.isArray(d.list) ? d.list : []).map(x => clean(String(x || ''), 30)).filter(Boolean).slice(0, 15);
+  if (!L.length) fail('Danh sách loại xe trống');
+  jset_('xeTypes', L); writeLog(u, 'Sửa loại xe', L.join(', '));
+  return { success:true, xeTypes:L };
+}
+function paperAt_(v) {
+  const at = checkTime(v), age = Date.now() - txtDate_(at).getTime();
+  if (age < -10 * 60e3) fail('Ngày giờ trên phiếu ở tương lai — kiểm tra lại');
+  if (age > 30 * 864e5) fail('Phiếu quá 30 ngày — báo Admin ghi bù');
+  return at;
+}
+function pgData_(r) { return jparse_(r.data, {}) || {}; }
+function xeBatch(u, d) {
+  const P = String(d.project || ''); mustAllow(u, P);
+  const code = pgCode_(d.code), kind = pgKind_(code), recv = !!d.recv;
+  if (!code || (kind !== 'pn' && kind !== 'px')) fail('Mã phiếu không hợp lệ (dạng PN-0012 hoặc PX-0007)');
+  const g = pgFind_(code);
+  if (!g.r) fail('Mã ' + code + ' không có trong danh sách phiếu giấy đã in — kiểm tra lại mã');
+  if (recv) {
+    if (kind !== 'px' || String(g.r.dest) !== P) fail('Phiếu ' + code + ' không chuyển đến dự án ' + P);
+    if (g.r.status !== 'nhap') fail('Bên giao chưa xuất phiếu ' + code);
+    if (g.r.recvAt) return { success:false, used:true, error:'Phiếu ' + code + ' đã nhận lúc ' + fromCell(g.r.recvAt) + ' (' + g.r.recvBy + ')' };
+  } else {
+    if (String(g.r.project) !== P) fail('Mã ' + code + ' là phiếu của dự án ' + g.r.project + ', không dùng cho ' + P);
+    if (g.r.status === 'huy') fail('Mã ' + code + ' đã bị huỷ' + (g.r.note ? ' (' + g.r.note + ')' : ''));
+    if (g.r.status === 'nhap') return { success:false, used:true, error:'Mã ' + code + ' đã nhập lúc ' + fromCell(g.r.usedAt) + ' (' + g.r.usedBy + ') — mỗi mã chỉ dùng 1 lần' };
+  }
+  const at = paperAt_(d.at), xe = clean(String(d.xe || ''), 200);
+  const ops = Array.isArray(d.ops) ? d.ops : [];
+  ops.forEach((o, k) => {
+    const dd = o && o.d || {}, m = String(dd.ma || (dd.nhap && dd.nhap.ma) || '');
+    if (o && (o.k === 'txn' || o.k === 'thang') && m.indexOf(code + '-') !== 0) fail('Dòng ' + (k + 1) + ': thiếu mã ' + code);
+  });
+  if (kind === 'px' && !recv && d.dest && (projList().indexOf(String(d.dest)) < 0 || String(d.dest) === P)) fail('Dự án nhận không hợp lệ');
+  PAPER_CTX = { at:at, xe:xe };
+  let r;
+  try { r = qkBatch(u, { project:P, cmd:code + (xe ? ' · ' + xe : ''), ops:ops }); } finally { PAPER_CTX = null; }
+  if (!r || !r.success) return r;
+  const now = nowTxt();
+  if (recv) { g.r.recvAt = now; g.r.recvBy = u.name; }
+  else {
+    g.r.status = 'nhap'; g.r.reqId = code; g.r.usedBy = u.name; g.r.usedAt = now;
+    g.r.dest = kind === 'px' ? clean(String(d.dest || ''), 120) : '';
+    g.r.data = JSON.stringify({ at:at, xe:xe, h:clean(String(d.h || ''), 40), party:clean(String(d.party || ''), 120), lines:(Array.isArray(d.lines) ? d.lines : []).slice(0, 40).map(l => ({
+      name:clean(String(l.name || ''), 120), unit:clean(String(l.unit || ''), 20), qty:r3(l.qty), cat:clean(String(l.cat || ''), 30), ma:clean(String(l.maQL || ''), 40) })) }).slice(0, 45000);
+  }
+  pgSave_(g);
+  writeLog(u, recv ? 'Nhận phiếu chuyển dự án' : kind === 'pn' ? 'Nhập theo xe (phiếu giấy)' : 'Xuất ra khỏi công trình (phiếu giấy)', code + ' · ' + ops.length + ' dòng' + (xe ? ' · ' + xe : ''));
+  if (kind === 'px' && !recv && g.r.dest) notify_(g.r.dest, ['y_giao', 'k_nhap'], [], u.id, '📦 ' + code + ' chuyển đến từ dự án ' + P + '\n' +
+    pgData_(g.r).lines.map(l => l.name + ': ' + l.qty + ' ' + l.unit).slice(0, 12).join('\n') + '\nKhi hàng tới: quét mã QR trên biên bản để nhập kho.');
+  return { success:true, saved:r.saved, pg:pgOut_(g.r) };
+}
+function pgInfo(u, d) {
+  const code = pgCode_(d.code), g = pgFind_(code);
+  if (!g.r) return { success:false, error:'Không có mã ' + code };
+  const A = allowedProjects(u);
+  if (A.indexOf(String(g.r.project)) < 0 && A.indexOf(String(g.r.dest)) < 0) return { success:false, error:'Mã ' + code + ' thuộc dự án bạn không được giao' };
+  return { success:true, pg:pgOut_(g.r), project:String(g.r.project), data:pgData_(g.r) };
 }
 
 // ---------- Telegram ----------
@@ -2824,7 +3264,10 @@ function copyItems(u, d) {
     const key = normName_(r[1]);
     if (have[key]) { skip.push(String(r[1])); return; }
     have[key] = 1;
-    add.push([base + (k++), String(r[1]), String(r[2]), String(r[3]), 0, 0, to, +r[7] || 0, +r[8] || 0, String(r[9] || ''), r[10] === '' || r[10] === undefined ? '' : +r[10]]);
+    // v5.56.10: ghi đủ cột theo bảng hiện tại (trước ghi cứng 11 cột → bảng 13 cột báo "Số dòng/cột không khớp")
+    const o = { id:base + (k++), name:String(r[1]), cat:String(r[2]), unit:String(r[3]), stock:0, minStock:0, project:to, capThang:+r[7] || 0, canMay:+r[8] || 0,
+      maQL:String(r[9] || ''), ngoaiDM:r[10] === '' || r[10] === undefined ? '' : +r[10], site:0, theoDoi:r[12] === '' || r[12] === undefined ? '' : +r[12] };
+    add.push(T.cols.map(c => o[c] === undefined ? '' : o[c]));
   });
   if (add.length) sh.getRange(rows.length + 2, 1, add.length, T.cols.length).setValues(add.map(r => r.map(toCell)));
   if (add.length) writeLog(u, 'Chép vật tư từ dự án khác', from + ' → ' + to + ': ' + add.length + ' vật tư' + (skip.length ? ' (bỏ qua ' + skip.length + ' đã có)' : ''));
@@ -2836,7 +3279,7 @@ function copyItems(u, d) {
 // =====================================================================
 const PERMS = ['v_pyc','v_home','v_nhap','v_xuat','v_ton','v_baocao','v_stat','v_all',
   'k_nhap','k_xuat','k_edit','k_kk','k_dm','k_copy','k_loan','g_view','g_price','g_prog',
-  'y_tao','y_bs','y_duyet','y_giao','y_nhan','y_xem','x_nxt','x_pyc','k_meter','v_ver','k_thang','k_bomuon','k_hd',
+  'y_tao','y_bs','y_duyet','y_giao','y_nhan','y_xem','x_nxt','x_pyc','k_meter','v_ver','k_thang','k_bomuon','k_hd','k_gio','k_napx','k_dnap',
   't_xem','t_ghi','t_qa','t_cht','t_kh','t_qs','t_qt'];                                    // v5.23: Thi công
 // v5.23: quyền Thi công mặc định theo chức danh (Admin sửa lại được trong app)
 const TC_DEF = { TS:['t_xem','t_ghi'], SE:['t_xem','t_ghi'], EE:['t_xem','t_ghi'], HSE:['t_xem','t_ghi'], PE:['t_xem','t_ghi','t_kh'],
@@ -2848,7 +3291,7 @@ const ROLE_GROUPS = {
   g1: ['① Phiếu YC', ['v_pyc','y_tao','y_bs','y_nhan','y_xem']],
   g2: ['② Giám sát', ['v_pyc','y_xem']],
   g3: ['③ Xem toàn bộ', V_ALL6.concat(['v_stat','g_view','y_xem','x_nxt','x_pyc'])],
-  g4: ['④ Kho', V_ALL6.concat(['k_nhap','k_xuat','k_edit','k_kk','k_dm','k_copy','k_loan','y_giao','y_xem','x_nxt','x_pyc','k_meter','k_thang'])],
+  g4: ['④ Kho', V_ALL6.concat(['k_nhap','k_xuat','k_edit','k_kk','k_dm','k_copy','k_loan','y_giao','y_xem','x_nxt','x_pyc','k_meter','k_thang','k_gio','k_napx'])],
   g5: ['⑤ Đầy đủ', V_ALL6.concat(['v_stat','g_view','g_prog','y_xem','x_nxt','x_pyc','k_meter'])],
   g6: ['⑥ Lãnh đạo', V_ALL6.concat(['v_stat','v_all','g_view','y_xem','x_nxt','x_pyc'])],
   gq: ['Quản lý (cũ)', PERMS.filter(k => k !== 'v_all')],
@@ -2868,7 +3311,7 @@ function presetPerm_(code, group) {
   if (code === 'CM' || code === 'DCM') { o.y_tao = o.y_bs = o.y_duyet = o.y_nhan = 1; }
   if (code === 'ACC' || code === 'PD') o.k_meter = 0;           // v5.16: ghi giờ máy mặc định SK, DEQ, EQM, CM, DCM
   if (VER_ROLES.indexOf(code) >= 0) o.v_ver = 1;                 // v5.20.2: xem nội dung cập nhật phiên bản
-  if (code === 'DEQ' || code === 'EQM') o.k_hd = 1;              // v5.46: ghi ngày máy bắt đầu hoạt động — P.QLTB
+  if (code === 'DEQ' || code === 'EQM') { o.k_hd = 1; o.k_dnap = 1; }   // v5.58: duyệt nạp sổ Excel              // v5.46: ghi ngày máy bắt đầu hoạt động — P.QLTB
   (TC_DEF[code] || (group === 'ga' ? PERMS.filter(k => k.indexOf('t_') === 0) : ['t_xem'])).forEach(k => o[k] = 1);   // v5.23
   return o;
 }
@@ -2902,9 +3345,18 @@ function rolesAll_() {
     Object.keys(r).forEach(k => { const on = TC_DEF[k] || (k === 'ADM' ? PERMS.filter(x => x.indexOf('t_') === 0) : ['t_xem']); on.forEach(x => r[k].perm[x] = 1); });
     jset_('roles515', r); props_().setProperty('perm5230', '1');
   }
+  if (!props_().getProperty('perm5551')) {                      // v5.55.1: chọn ngày giờ phiếu (ghi bù) — mặc định Thủ kho
+    if (r.SK) r.SK.perm.k_gio = 1;
+    jset_('roles515', r); props_().setProperty('perm5551', '1');
+  }
   if (!props_().getProperty('perm5220')) {                      // v5.22: nhập thẳng ra công trường — mặc định chỉ Thủ kho
     if (r.SK) r.SK.perm.k_thang = 1;
     jset_('roles515', r); props_().setProperty('perm5220', '1');
+  }
+  if (!props_().getProperty('perm5580')) {                      // v5.58: thủ kho gửi duyệt nạp sổ Excel · PP/TP QLTB duyệt
+    if (r.SK) r.SK.perm.k_napx = 1;
+    ['DEQ','EQM'].forEach(k => { if (r[k]) r[k].perm.k_dnap = 1; });
+    jset_('roles515', r); props_().setProperty('perm5580', '1');
   }
   ROLES_MEMO = r; return r;
 }
@@ -2931,18 +3383,23 @@ const P_ = k => u => hasP(u, k);
 const ACT = {
   me:ANY, getAll:ANY, getVersion:ANY, logout:ANY, changePassword:ANY, getPhoto:ANY, tgUnlink:ANY, tgTest:ANY, logoutOthers:ANY,
   addTransaction:(u, d) => hasP(u, d.type === 'nhap' ? 'k_nhap' : d.type === 'xuat' ? 'k_xuat' : 'k_edit'),
-  addThang:P_('k_thang'), setThangDS:ADM, qkBatch:u => hasP(u, 'k_nhap') || hasP(u, 'k_xuat'), setDanhMuc:ADM, setCats:ADM, projAdmin:ADM, projRename:ADM, projDelete:ADM, projClose:ADM, setUnits:ADM, hongAdd:u => hasP(u, 'k_nhap') || hasP(u, 'k_xuat'), hongSet:u => hasP(u, 'k_nhap') || hasP(u, 'k_xuat'), hongMove:u => hasP(u, 'k_nhap') || hasP(u, 'k_xuat'),
+  addThang:P_('k_thang'), setThangDS:ADM, qkBatch:u => hasP(u, 'k_nhap') || hasP(u, 'k_xuat'), setDanhMuc:ADM, setCats:ADM, setStandIn:ADM, siFix:ADM, dmMismatch:ADM, dmFixCats:ADM, thangClean:ADM, siteClean:ADM, devLogEdit:ADM, devLogDups:ADM, dmFull:ANY, dmStock:ANY, dmThumbs:ANY, dmImgSet:ADM, dmImgDel:ADM, dmImgFind:ADM, dmPhoto:u => ADM(u) || hasP(u, 'k_nhap') || hasP(u, 'k_xuat'), projAdmin:ADM, projRename:ADM, projDelete:ADM, projClose:ADM, setUnits:ADM, hongAdd:u => hasP(u, 'k_nhap') || hasP(u, 'k_xuat'), hongSet:u => hasP(u, 'k_nhap') || hasP(u, 'k_xuat'), hongMove:u => hasP(u, 'k_nhap') || hasP(u, 'k_xuat'), cuMark:u => hasP(u, 'k_nhap') || hasP(u, 'k_xuat'), setGioMax:ADM,
   upsert:(u, d) => hasP(u, 'k_dm') || ADM(u),
+  nccSave:u => hasP(u, 'k_dm') || ADM(u), nccAdd:u => ADM(u) || ['k_nhap','k_xuat','k_dm','k_meter','k_loan'].some(k => hasP(u, k)), nccMerge:ADM, nccScan:ADM,
   setMinStock:u => ADM(u) || u.role === 'QL' || (hasP(u, 'k_dm') && hasP(u, 'g_view')),
   uploadPhoto:u => hasP(u, 'k_nhap') || hasP(u, 'k_xuat') || hasP(u, 'k_edit'),
   addLoan:P_('k_loan'), returnLoan:P_('k_loan'), closeLoan:P_('k_loan'),
   loanLinkAccept:P_('k_loan'), loanLinkReject:P_('k_loan'), dropReq:P_('k_loan'), dropDecide:P_('k_bomuon'), loanFix:P_('k_loan'), mergeItems:ADM, setDevStart:u => ADM(u) || hasP(u, 'k_hd'),
-  editTxn:ADM, deleteTxn:ADM, nxtInfo:ADM, nxtImport:ADM, nxtUndo:ADM, editLoan:ADM, deleteLoan:ADM,
+  editTxn:ADM, deleteTxn:ADM, nxtInfo:u => ADM(u) || hasP(u, 'k_napx') || hasP(u, 'k_dnap'), nxtImport:ADM, nxtUndo:u => ADM(u) || hasP(u, 'k_dnap'),
+  pjWipe:ADM,
+  nxtSubmit:u => ADM(u) || hasP(u, 'k_napx'), nxtPend:u => ADM(u) || hasP(u, 'k_napx') || hasP(u, 'k_dnap'), nxtReview:u => ADM(u) || hasP(u, 'k_napx') || hasP(u, 'k_dnap'),
+  nxtApprove:u => ADM(u) || hasP(u, 'k_dnap'), nxtReturn:u => ADM(u) || hasP(u, 'k_dnap'), nxtCancel:u => ADM(u) || hasP(u, 'k_napx'), editLoan:ADM, deleteLoan:ADM,
   getSummary:P_('v_all'), getCost:u => hasP(u, 'g_view'), getPrices:u => hasP(u, 'g_view'),
   setPrice:P_('g_price'), setProgress:P_('g_prog'),
   remove:u => hasP(u, 'k_dm') || ADM(u), updateProjects:ADM, getLog:ADM,
   createReq:P_('y_tao'), approveReq:P_('y_duyet'), rejectReq:u => hasP(u, 'y_giao') || hasP(u, 'y_duyet'), cancelReq:ANY, receiveReq:ANY,
-  issueReq:P_('y_giao'), closeDevice:P_('k_meter'), addCount:P_('k_kk'), listItemsOf:P_('k_copy'), copyItems:P_('k_copy'),
+  issueReq:P_('y_giao'), reservePyc:pgCanPrint_, paperReq:P_('y_giao'), paperCancel:u => ADM(u) || hasP(u, 'y_duyet'), paperUndo:ADM, xeBatch:u => hasP(u, 'k_nhap') || hasP(u, 'k_xuat'), setXeTypes:ADM, pgInfo:ANY,
+  closeDevice:P_('k_meter'), addCount:P_('k_kk'), listItemsOf:ADM, copyItems:ADM, purgeUnused:ADM,
   deviceCatalog:u => hasP(u, 'k_dm') || u.role === 'ADM', itemCatalog:u => hasP(u, 'k_dm') || u.role === 'ADM', purgeItems:ADM, setTxnMeter:u => ADM(u) || hasP(u, 'k_xuat') || hasP(u, 'k_meter'), deviceAdminLog:ADM, verLog:P_('v_ver'), qltbSave:ADM, qltbList:ANY,
   saveRole:ADM, deleteRole:ADM, backupInfo:ADM, backupNow:ADM, backupSetup:ADM, setProjCfg:ADM, setItemFlags:ADM,
   listUsers:ADM, setUserProjects:ADM, approveUser:ADM, rejectUser:ADM, updateUser:ADM, deleteUser:ADM, revokeUserSessions:ADM
@@ -3015,6 +3472,7 @@ function closeDevice(u, d) {
   const c = k => T.cols.indexOf(k) + 1, name = String(rows[i][1]);
   const P = String(rows[i][T.cols.indexOf('project')]), mq = String(rows[i][T.cols.indexOf('maQL')] || '');
   if (d.reopen) {                                               // v5.21: Mở lại = máy vào công trường lần nữa (ngày + số đồng hồ vào mới nếu có)
+    if (!rows[i][c('outDate') - 1]) fail('Máy đang ở công trường (chưa Kết thúc) — không ghi "Máy vào" lần nữa');   // v5.56.6: chặn ghi trùng
     if (mq && rows.some((r, k) => k !== i && String(r[T.cols.indexOf('project')]) === P && String(r[T.cols.indexOf('maQL')]) === mq && !r[c('outDate') - 1]))
       fail('Máy ' + mq + ' đang có mặt ở dự án (một dòng máy khác)');
     const inD = /^\d{4}-\d{2}-\d{2}$/.test(String(d.inDate || '')) ? String(d.inDate) : Utilities.formatDate(new Date(), TZ, 'yyyy-MM-dd');
@@ -3037,6 +3495,27 @@ function closeDevice(u, d) {
   return { success:true };
 }
 // Máy thêm từ trước: lấy người thêm + ngày thêm từ Nhật ký ("Thêm thiết bị")
+// v5.55: MỘT TỒN KHO — cộng số "ở công trường" vào tồn kho (1 lần)
+function migrateOneStock55_() {
+  if (props_().getProperty('oneStock55')) return;
+  const T = TABLES.items, sh = sheetOf(T.sheet, T.head), rows = readRows(sh, T.cols.length), sc = T.cols.indexOf('site');
+  let n = 0;
+  rows.forEach(r => { const s = +r[sc] || 0; if (r[0] !== '' && s) { r[4] = Math.round(((+r[4] || 0) + s) * 1000) / 1000; n++; } if (r[sc] !== '') r[sc] = ''; });
+  if (rows.length) { sh.getRange(2, 5, rows.length, 1).setValues(rows.map(r => [toCell(r[4])])); sh.getRange(2, sc + 1, rows.length, 1).setValues(rows.map(r => [''])); }
+  props_().setProperty('oneStock55', '1');
+  bumpVersion();
+  try { writeLog({ id:'', name:'Hệ thống', role:'ADM' }, 'Một tồn kho (5.55)', n + ' vật tư: số ở công trường đã cộng vào tồn kho'); } catch (e) {}
+}
+// v5.55: hàng nhập thẳng ra công trường trước 5.55 — thủ kho đã xem (không còn) → nhớ theo dự án
+function cuDone_(P) { try { return JSON.parse(props_().getProperty('cu55|' + P) || '[]'); } catch (e) { return []; } }
+function cuMark(u, d) {
+  const P = String(d.project || ''); mustAllow(u, P);
+  const L = cuDone_(P), add = (Array.isArray(d.ids) ? d.ids : []).map(String).filter(x => /^\d{1,20}$/.test(x));
+  add.forEach(x => { if (L.indexOf(x) < 0) L.push(x); });
+  props_().setProperty('cu55|' + P, JSON.stringify(L.slice(-2000)));
+  if (add.length) writeLog(u, 'Hàng cũ ở công trường', add.length + ' vật tư: không còn — ' + P);
+  return { success:true, cuDone:L };
+}
 function migrateDevBy516_() {
   if (props_().getProperty('devBy516')) return;
   const ss = SpreadsheetApp.getActiveSpreadsheet(), lg = ss.getSheetByName(LOG.sheet);
@@ -3189,6 +3668,9 @@ function snapBuild_(P) {
   if (ph) o.photos = readRows(ph, PHOTO.cols.length).filter(r => r[0] !== '' && String(r[7]) === P)
     .map(r => ({ id:r[0], txnId:r[1], fileId:String(r[2]), addedByName:String(r[5]), time:fromCell(r[6]) }));
   o.reqs = readTable_(REQ, P).map(reqOut_);
+  o.pg = readTable_(PG, P).map(pgOut_);                          // v5.53 phiếu giấy
+  o.pgIn = readTable_(PG).filter(r => String(r.kind) === 'px' && String(r.dest) === P && r.status === 'nhap' && !r.recvAt)
+    .map(r => ({ id:String(r.id), from:String(r.project), at:fromCell(r.usedAt), by:String(r.usedBy), data:pgData_(r) }));   // v5.54: PX chuyển đến chờ nhận
   o.ck = ckRows_(P).map(c => [String(c.id), String(c.hm), String(c.name), String(c.loai), String(c.banVe), String(c.fixed), String(c.optKind), +c.optN || 0]);
   return o;
 }
@@ -3203,6 +3685,7 @@ function snapGet_(P) {
 function GIU_AM() {
   try { projList().forEach(P => snapGet_(P)); } catch (e) {}
   if (typeof gdTgDaily_ === 'function') gdTgDaily_();          // v5.33: nhắc giải động qua Telegram mỗi sáng
+  pgTgDaily_();                                                  // v5.53: nhắc phiếu giấy chưa nhập (1 lần/ngày, không thêm hẹn giờ)
 }
 function CAI_DAT_giuAm() {
   ScriptApp.getProjectTriggers().filter(t => t.getHandlerFunction() === 'GIU_AM').forEach(t => ScriptApp.deleteTrigger(t));
@@ -3285,6 +3768,55 @@ function itemCatalog(u) {
   return { success:true, items:out };
 }
 // v5.20: Admin xóa toàn bộ danh mục vật tư của 1 dự án (chỉ khi dự án chưa có phiếu nào gắn với các vật tư đó)
+// v5.56.11 — GỢI Ý TÊN TỪ MỌI DỰ ÁN: vật tư + máy của tất cả dự án (kể cả đã đóng), trùng tên lấy dòng mới nhất (dưới cùng sheet)
+function nameHints_() {
+  const key = 'HINT|' + getVersion() + '|' + (props_().getProperty('snapGen') || '0');
+  let H = cacheGetJSON_(key); if (H) return H;
+  const ss = SpreadsheetApp.getActiveSpreadsheet(), I = TABLES.items, D = TABLES.devices;
+  const ci = (T, k) => T.cols.indexOf(k), num = v => v === '' || v === undefined || v === null ? '' : +v;
+  const im = {}, dm = {};
+  const shI = ss.getSheetByName(I.sheet);
+  (shI ? readRows(shI, I.cols.length) : []).forEach(r => {
+    const n = String(r[1] || '').trim(); if (!n || r[0] === '') return;
+    const k = normName_(n), o = im[k] = { n:n, c:String(r[ci(I, 'cat')] || ''), u:String(r[ci(I, 'unit')] || ''), ma:String(r[ci(I, 'maQL')] || ''),
+      nd:num(r[ci(I, 'ngoaiDM')]), cap:+r[ci(I, 'capThang')] || 0, may:+r[ci(I, 'canMay')] || 0, td:num(r[ci(I, 'theoDoi')]), p:String(r[ci(I, 'project')] || '') };
+    delete im[k]; im[k] = o;                                       // giữ thứ tự: tên dùng gần nhất ở cuối
+  });
+  const shD = ss.getSheetByName(D.sheet);
+  (shD ? readRows(shD, D.cols.length) : []).forEach(r => {
+    const n = String(r[1] || '').trim(); if (!n || r[0] === '') return;
+    const k = normName_(n), o = { n:n, c:String(r[ci(D, 'cat')] || ''), t:String(r[ci(D, 'type')] || 'own'), f:+r[ci(D, 'fuelRate')] || '', pl:String(r[ci(D, 'plate')] || ''),
+      mu:String(r[ci(D, 'meterUnit')] || 'h'), ma:String(r[ci(D, 'maQL')] || ''), nd:num(r[ci(D, 'ngoaiDM')]), dv:String(r[ci(D, 'donVi')] || ''), p:String(r[ci(D, 'project')] || '') };
+    delete dm[k]; dm[k] = o;
+  });
+  const items = Object.keys(im).map(k => im[k]), devs = Object.keys(dm).map(k => dm[k]);
+  H = { rev:sha(JSON.stringify([items, devs])).slice(0, 12), items:items, devs:devs };
+  cachePutJSON_(key, H);
+  return H;
+}
+// v5.56.11 — Admin xoá vật tư CHƯA DÙNG của 1 dự án (tồn 0, không có phiếu kho / phiếu mượn / phiếu yêu cầu / giá). dry = chỉ liệt kê
+function purgeUnused(u, d) {
+  const P = String(d.project || ''); if (!P) fail('Chưa chọn dự án');
+  const T = TABLES.items, sh = sheetOf(T.sheet, T.head), rows = readRows(sh, T.cols.length), pc = T.cols.indexOf('project');
+  const sc = T.cols.indexOf('stock'), si = T.cols.indexOf('site');
+  const mine = rows.filter(r => r[0] !== '' && String(r[pc]) === P);
+  const used = {};
+  const gd = sheetOf(TXN.sheet, TXN.head), n = gd.getLastRow() - 1, ic = TXN.cols.indexOf('itemId');
+  if (n > 0) gd.getRange(2, ic + 1, n, 1).getValues().forEach(r => used[String(r[0])] = 1);
+  const lsh = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(LOAN.sheet);
+  if (lsh) readRows(lsh, LOAN.cols.length).forEach(r => { if (String(r[2]) === 'vt') used[String(r[3])] = 1; });
+  const reqTxt = readTable_(REQ, P).map(r => String(r.lines || '')).join(' ');
+  try { readTable_(PRICE, P).forEach(r => used[String(r.itemId)] = 1); } catch (e) {}
+  const cand = mine.filter(r => !used[String(r[0])] && !(+r[sc]) && !(+r[si]) && reqTxt.indexOf(String(r[0])) < 0)
+    .map(r => ({ id:String(r[0]), name:String(r[1]), cat:String(r[2]), unit:String(r[3]) }));
+  if (d.dry) return { success:true, list:cand, total:mine.length };
+  const pick = {}; (Array.isArray(d.ids) ? d.ids : []).forEach(x => pick[String(x)] = 1);
+  const del = {}; cand.forEach(x => { if (pick[x.id]) del[x.id] = 1; });
+  const nDel = Object.keys(del).length; if (!nDel) return { success:true, removed:0, duplicate:true };
+  writeAll(sh, T.cols, rows.filter(r => r[0] !== '' && !(String(r[pc]) === P && del[String(r[0])])).map(r => rowToObj(T.cols, r)));
+  writeLog(u, 'Xoá vật tư chưa dùng', P + ': ' + nDel + ' vật tư (tồn 0, chưa có phiếu nào · đã sao lưu trước)');
+  return { success:true, removed:nDel };
+}
 function purgeItems(u, d) {
   const P = String(d.project || '');
   mustAllow(u, P);
@@ -3306,6 +3838,106 @@ function purgeItems(u, d) {
 // =====================================================================
 const QLTB = { sheet:'DM_QLTB', cols:['ma','kind','nhom','ma3','ma4','ma5','name','tenLoai','tenCT','maKT','cat','unit','plate','meterUnit','sl','soHuu','donVi','ncc','soHD'],
   head:['Mã P.QLTB','Loại (may = máy từng chiếc / vt = vật tư theo loại)','Mã 2','Mã 3','Mã 4','Mã 5 / quy cách','Tên trong app','Tên loại','Tên gọi công trường','Mã kế toán','Nhóm trong app','Đơn vị','Số hiệu / biển số','Đồng hồ','Số dòng trong file','Hình thức sở hữu','Đơn vị sở hữu','Nhà cung cấp / cho thuê','Số hợp đồng'] };
+// v5.56.6 — MÁY VÀO / RA: Admin sửa / xoá dòng · dọn lần vào trùng · đồng bộ với ngày vào / ra của máy
+function dlRead_() { const T = TABLES.devlog, sh = sheetOf(T.sheet, T.head); return { T:T, sh:sh, rows:readRows(sh, T.cols.length) }; }
+function dlKey_(r, T) { return String(fromCell(r[T.cols.indexOf('date')]) || '') + ' ' + String(tms_(fromCell(r[T.cols.indexOf('at')])) || 0).padStart(15, '0'); }
+function dlLatest_(L, devId, kind, skip) {                     // chỉ số dòng Máy vào / ra mới nhất của 1 máy
+  const T = L.T, ci = T.cols.indexOf('deviceId'), ki = T.cols.indexOf('kind'); let best = -1;
+  L.rows.forEach((r, k) => { if (k === skip || String(r[ci]) !== String(devId) || String(r[ki]) !== kind) return;
+    if (best < 0 || dlKey_(r, T) >= dlKey_(L.rows[best], T)) best = k; });
+  return best;
+}
+function dlSyncFromDev_(x) {                                    // sửa máy → dòng mới nhất đổi theo
+  if (!x.vao && !x.ra) return;
+  const L = dlRead_(), T = L.T, di = T.cols.indexOf('date') + 1, mi = T.cols.indexOf('meter') + 1;
+  const put = (k, date, meter) => { if (k < 0) return; if (date) L.sh.getRange(k + 2, di).setValue(toCell(String(date))); L.sh.getRange(k + 2, mi).setValue(meter === '' || meter === undefined ? '' : +meter); };
+  if (x.vao) put(dlLatest_(L, x.id, 'vao'), x.inDate, x.inMeter);
+  if (x.ra) put(dlLatest_(L, x.id, 'ra'), x.outDate, x.outMeter);
+}
+function dlDevRow_(devId) {
+  const T = TABLES.devices, sh = sheetOf(T.sheet, T.head), rows = readRows(sh, T.cols.length);
+  const i = rows.findIndex(r => String(r[0]) === String(devId));
+  return { T:T, sh:sh, i:i, row:i >= 0 ? rows[i] : null, c:k => T.cols.indexOf(k) + 1 };
+}
+function devLogEdit(u, d) {
+  const id = String(d.id || '');
+  const isDate = v => /^\d{4}-\d{2}-\d{2}$/.test(String(v || ''));
+  const meterOf = v => v === '' || v === undefined || v === null ? '' : (isNaN(+v) || +v < 0 ? fail('Số đồng hồ không hợp lệ') : +v);
+  if (/^[st]\d/.test(id) || d.synthetic) {                      // máy cũ (trước 5.29) chưa có dòng nhật ký → sửa thẳng ngày vào / kết thúc của máy
+    if (d.del) fail('Dòng này lấy từ ngày vào / kết thúc của máy — sửa trong chi tiết máy');
+    const D = dlDevRow_(d.devId || id.slice(1)); if (!D.row) fail('Không tìm thấy máy');
+    mustAllow(u, String(D.row[D.c('project') - 1]));
+    if (!isDate(d.date)) fail('Chọn ngày');
+    const vao = id[0] === 's' || d.kind === 'vao', m = meterOf(d.meter);
+    D.sh.getRange(D.i + 2, D.c(vao ? 'inDate' : 'outDate')).setValue(toCell(String(d.date)));
+    D.sh.getRange(D.i + 2, D.c(vao ? 'inMeter' : 'outMeter')).setValue(m);
+    writeLog(u, 'Admin sửa Máy ' + (vao ? 'vào' : 'ra'), String(D.row[1]) + ' · ' + d.date + (m !== '' ? ' · ' + m : ''));
+    return { success:true };
+  }
+  const L = dlRead_(), T = L.T, ci = k => T.cols.indexOf(k);
+  const k = L.rows.findIndex(r => String(r[0]) === id); if (k < 0) fail('Không tìm thấy dòng Máy vào / ra (có thể đã bị xoá)');
+  const r = L.rows[k], P = String(r[ci('project')]), devId = String(r[ci('deviceId')]), kind = String(r[ci('kind')]), name = String(r[ci('deviceName')]);
+  mustAllow(u, P);
+  const wasLatest = dlLatest_(L, devId, kind) === k, D = dlDevRow_(devId), oldD = String(fromCell(r[ci('date')]) || '');
+  if (d.del) {
+    if (wasLatest && D.row) {
+      if (kind === 'vao') { const j = dlLatest_(L, devId, 'vao', k);
+        if (j >= 0) { D.sh.getRange(D.i + 2, D.c('inDate')).setValue(toCell(String(fromCell(L.rows[j][ci('date')])))); D.sh.getRange(D.i + 2, D.c('inMeter')).setValue(L.rows[j][ci('meter')]); } }
+      else if (D.row[D.c('outDate') - 1]) {                     // xoá lần "Máy ra" cuối → máy trở lại đang ở công trường (nếu sau đó không vào lại)
+        const v = dlLatest_(L, devId, 'vao');
+        if (v < 0 || dlKey_(L.rows[v], T) < dlKey_(r, T)) {
+          const j = dlLatest_(L, devId, 'ra', k);
+          const nxt = j >= 0 && (v < 0 || dlKey_(L.rows[j], T) > dlKey_(L.rows[v], T)) ? L.rows[j] : null;
+          D.sh.getRange(D.i + 2, D.c('outDate')).setValue(nxt ? toCell(String(fromCell(nxt[ci('date')]))) : '');
+          D.sh.getRange(D.i + 2, D.c('outMeter')).setValue(nxt ? nxt[ci('meter')] : '');
+        }
+      }
+    }
+    L.sh.deleteRow(k + 2);
+    writeLog(u, 'Admin xoá Máy ' + (kind === 'vao' ? 'vào' : 'ra'), name + ' · ' + oldD + ' · ' + P);
+    return { success:true, deleted:1 };
+  }
+  if (!isDate(d.date)) fail('Chọn ngày');
+  const m = meterOf(d.meter), oldM = r[ci('meter')];
+  L.sh.getRange(k + 2, ci('date') + 1).setValue(toCell(String(d.date)));
+  L.sh.getRange(k + 2, ci('meter') + 1).setValue(m);
+  if (wasLatest && D.row && (kind === 'vao' || D.row[D.c('outDate') - 1])) {
+    D.sh.getRange(D.i + 2, D.c(kind === 'vao' ? 'inDate' : 'outDate')).setValue(toCell(String(d.date)));
+    D.sh.getRange(D.i + 2, D.c(kind === 'vao' ? 'inMeter' : 'outMeter')).setValue(m);
+  }
+  writeLog(u, 'Admin sửa Máy ' + (kind === 'vao' ? 'vào' : 'ra'), name + ' · ' + oldD + (oldM !== '' ? ' (' + oldM + ')' : '') + ' → ' + d.date + (m !== '' ? ' (' + m + ')' : '') + ' · ' + P);
+  return { success:true };
+}
+function devLogDups(u, d) {                                     // 2 lần "Máy vào" liền nhau, không có "Máy ra" ở giữa → giữ lần sớm nhất
+  const P = String(d.project || ''); if (projList().indexOf(P) < 0) fail('Không có dự án "' + P + '"');
+  const L = dlRead_(), T = L.T, ci = k => T.cols.indexOf(k), by = {};
+  L.rows.forEach((r, k) => { if (r[0] === '' || String(r[ci('project')]) !== P) return; (by[String(r[ci('deviceId')])] = by[String(r[ci('deviceId')])] || []).push(k); });
+  const out = [];
+  Object.keys(by).forEach(dev => {
+    const ks = by[dev].sort((a, b) => dlKey_(L.rows[a], T) < dlKey_(L.rows[b], T) ? -1 : 1); let keep = -1;
+    ks.forEach(k => { const kind = String(L.rows[k][ci('kind')]);
+      if (kind === 'ra') { keep = -1; return; }
+      if (keep < 0) { keep = k; return; }
+      const r = L.rows[k], q = L.rows[keep];
+      out.push({ id:String(r[0]), devId:dev, name:String(r[ci('deviceName')]), date:String(fromCell(r[ci('date')]) || ''), meter:r[ci('meter')], by:String(r[ci('by')]), at:String(fromCell(r[ci('at')]) || ''),
+        keepDate:String(fromCell(q[ci('date')]) || ''), keepMeter:q[ci('meter')], k:k, keepK:keep });
+    });
+  });
+  const pub = x => { const y = Object.assign({}, x); delete y.k; delete y.keepK; return y; };
+  if (d.dry) return { success:true, dry:true, list:out.map(pub) };
+  const want = {}; (Array.isArray(d.ids) ? d.ids : []).forEach(x => want[String(x)] = 1);
+  const go = out.filter(x => want[x.id]); if (!go.length) fail('Chưa chọn dòng nào');
+  go.forEach(x => {                                             // máy đang ở công trường: ngày vào của máy = lần vào được giữ
+    const D = dlDevRow_(x.devId); if (!D.row || D.row[D.c('outDate') - 1]) return;
+    const rest = by[x.devId].filter(k => !go.some(g => g.k === k));
+    const lastVao = rest.filter(k => String(L.rows[k][ci('kind')]) === 'vao').pop();
+    if (lastVao === undefined) return;
+    D.sh.getRange(D.i + 2, D.c('inDate')).setValue(toCell(String(fromCell(L.rows[lastVao][ci('date')])))); D.sh.getRange(D.i + 2, D.c('inMeter')).setValue(L.rows[lastVao][ci('meter')]);
+  });
+  deleteSheetRows(L.sh, go.map(x => x.k));
+  writeLog(u, 'Dọn Máy vào trùng', P + ': ' + go.map(x => x.name + ' ' + x.date).join(', ').slice(0, 460));
+  return { success:true, done:go.length, list:go.map(pub) };
+}
 function devLog_(o) {
   const T = TABLES.devlog, sh = sheetOf(T.sheet, T.head);
   sh.appendRow(T.cols.map(c => toCell(o[c] === undefined ? '' : o[c])));
@@ -3379,16 +4011,17 @@ function addThang(u, d0) {
   const it = rows.find(r => r[0] !== '' && String(r[0]) === String(n.itemId));
   if (!it) fail('Vật tư không tồn tại trong kho');
   const itemProj = String(it[6]); mustAllow(u, itemProj);
-  const at = u.role === 'ADM' && n.txTime ? checkTime(n.txTime) : '';
-  const when = at || nowTxt(), ct = at ? '' : String(n.datetime || '').slice(0, 40);
+  const at = PAPER_CTX ? PAPER_CTX.at : gioAt_(u, n.txTime);   // v5.55.1
+  const when = at || nowTxt(), ct = at ? (PAPER_CTX ? '' : nowTxt()) : String(n.datetime || '').slice(0, 40);
   const base = { itemId: it[0], itemName: String(it[1]), qty: qty, unit: String(it[3]), project: itemProj, thietBi:'', datetime: when,
-    reason:'', refId:'', createdBy: u.id, createdByName: u.name, clientTime: ct, meter:'', meterNote:'' };
+    reason:'', refId:'', createdBy: u.id, createdByName: u.name, clientTime: ct, meter:'', meterNote:'',
+    ma: PAPER_CTX ? clean(String(n.ma || ''), 30) : '', xe: PAPER_CTX ? PAPER_CTX.xe : '' };
   const rn = Object.assign({}, base, { id: n.id, type:'nhap', supplierOrReceiver: n.supplierOrReceiver || '', note: n.note || '', thangCT: String(x.id) });
-  const xct = x.ct === undefined ? (ctTrack_(it) ? 'ra' : '') : (x.ct === 'ra' ? 'ra' : '');   // v5.35: món theo dõi → ghi nhận ở công trường
+  const xct = 'ra';                                               // v5.55: app cũ gửi cặp thẳng → phiếu xuất 'ra' không trừ tồn, hàng vẫn là tồn kho
   const rx = Object.assign({}, base, { id: x.id, type:'xuat', ct: xct, supplierOrReceiver: x.supplierOrReceiver || '', note: x.note || '', thangCT: String(n.id) });
   gd.getRange(gd.getLastRow() + 1, 1, 2, TXN.cols.length).setValues([rn, rx].map(r => TXN.cols.map(c => toCell(r[c] === undefined ? '' : r[c]))));
   // tồn kho không đổi: +qty rồi −qty cùng một giờ · v5.35: món theo dõi → + ở công trường
-  if (xct) { const T2 = TABLES.items, tk2 = sheetOf(T2.sheet, T2.head), ri = rows.indexOf(it), sc = ctSiteCol_(); tk2.getRange(ri + 2, sc).setValue(Math.round(((+it[sc - 1] || 0) + qty) * 1000) / 1000); }
+  { const T2 = TABLES.items, tk2 = sheetOf(T2.sheet, T2.head), ri = rows.indexOf(it); tk2.getRange(ri + 2, 5).setValue(Math.round(((+it[4] || 0) + qty) * 100) / 100); }   // v5.55: cộng tồn
   writeLog(u, THANG_LOG, thangLogDetail_(rn, rx), at);
   return { success:true, ids:[String(rn.id), String(rx.id)], datetime: when };
 }
@@ -3444,6 +4077,7 @@ function qkBatch(u, d0) {
     }
     if (o.k === 'txn') {
       if (d.type !== 'nhap' && d.type !== 'xuat') fail(e + 'chỉ ghi được phiếu nhập hoặc xuất');
+      if (d.txTime && !PAPER_CTX) { try { gioAt_(u, d.txTime); } catch (er) { fail(e + er.message); } }   // v5.55.1: kiểm giờ ghi bù trước khi ghi
       if (!(q > 0)) fail(e + 'số lượng phải lớn hơn 0');
       const x = it(d.itemId), ct = ctOf_(d.type, d.ct), fx = ctFx_(d.type, ct, q);
       x.stock = r3(x.stock + fx[0]); x.site = r3(x.site + fx[1]);
@@ -3453,16 +4087,17 @@ function qkBatch(u, d0) {
     }
     if (o.k === 'thang') {
       const n = d.nhap || {}, qq = r3(n.qty);
+      if (n.txTime && !PAPER_CTX) { try { gioAt_(u, n.txTime); } catch (er) { fail(e + er.message); } }
       if (!(qq > 0)) fail(e + 'số lượng phải lớn hơn 0');
       if (!n.id || !d.xuat || !d.xuat.id || String(n.id) === String(d.xuat.id)) fail(e + 'thiếu số phiếu');
       const x = it(n.itemId);
-      if ((d.xuat.ct === undefined ? x.track : d.xuat.ct === 'ra')) x.site = r3(x.site + qq);
+      x.stock = r3(x.stock + qq);                                // v5.55: nhập thẳng = cộng tồn
       return;
     }
     if (o.k === 'hong') {                                        // v5.50: báo hỏng (không đổi tồn) — phải còn đủ hàng chưa báo hỏng
       if (!(q > 0)) fail(e + 'số lượng phải lớn hơn 0');
       if (String(d.reason || '').trim().length < 3) fail(e + 'ghi rõ hỏng gì');
-      const x = it(d.itemId), lc = d.loc === 'ct' ? 'ct' : 'kho';
+      const x = it(d.itemId), lc = 'kho';                         // v5.55: một tồn kho
       if (x.hong === undefined) { const H = hongRead_().rows; x.hong = { kho:hongOpenQty_(H, P, d.itemId, 'kho'), ct:hongOpenQty_(H, P, d.itemId, 'ct') }; }
       const free = r3((lc === 'ct' ? x.site : x.stock) - x.hong[lc]);
       if (q > free + 1e-9) fail(e + x.name + ': ' + (lc === 'ct' ? 'ở công trường' : 'trong kho') + ' chỉ còn ' + Math.max(0, free) + ' ' + x.unit + ' chưa báo hỏng');
@@ -3541,35 +4176,18 @@ function qkBatch(u, d0) {
 //   getAll chỉ gửi cả danh mục khi app chưa có đúng bản (d.dmRev). Nhóm (cats) nhỏ nên để Script Properties.
 //   Sửa danh mục KHÔNG đổi nhóm / đơn vị của vật tư đã có trong kho — chỉ dùng khi nhập món mới + tự chọn Vào kho / Thẳng ra công trường.
 // =====================================================================
-const DMVT = { sheet:'DanhMucVT', cols:['name','cat','unit','mode','by','at'],
-  head:['Tên vật tư (khớp cả tên bắt đầu bằng tên này)','Nhóm (mã)','Đơn vị','Khi nhập (k = vào kho · t = thẳng ra công trường)','Người sửa','Lúc sửa'] };
+const DMVT = { sheet:'DanhMucVT', cols:['name','cat','unit','mode','by','at','ma','pub','img','th','imgK','src','imgBy','imgAt'],
+  head:['Tên vật tư (khớp cả tên bắt đầu bằng tên này)','Nhóm (mã)','Đơn vị','Khi nhập (k = vào kho · t = thẳng ra công trường · m = máy)','Người sửa','Lúc sửa',
+        'Mã (v5.56: tự cấp theo nhóm, máy = mã P.QLTB)','Hiện công khai (1 / 0)','ID ảnh Drive','ID ảnh nhỏ','Loại ảnh (mh = minh hoạ · th = ảnh thật)','Nguồn ảnh','Người lưu ảnh','Lúc lưu ảnh'] };
 const CAT_BASE = ['nhienLieu','thep','cocNoi','ongSieuAm','capNang','gau','han','dien','ongNuoc','vatLieu','bhld','dungCu','tbPhuTro','vtPhuTro','khac'];
 const CAT_LOCK = { tbPhuTro:'Thiết bị phụ trợ', vtPhuTro:'Vật tư phụ trợ', khac:'Khác' };
 function dmRev_() { return props_().getProperty('dmRev') || ''; }
 function dmList_() {
   const sh = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(DMVT.sheet); if (!sh) return [];
-  return readRows(sh, DMVT.cols.length).filter(r => String(r[0]).trim() !== '').map(r => [String(r[0]), String(r[1]), String(r[2]), String(r[3]) === 't' ? 't' : 'k']);
+  return readRows(sh, DMVT.cols.length).filter(r => String(r[0]).trim() !== '' && String(r[3]) !== 'm').map(r => [String(r[0]), String(r[1]), String(r[2]), String(r[3]) === 't' ? 't' : 'k']);   // v5.56: bỏ dòng máy
 }
 function catsGet_() { return jget_('cats', null); }                          // null = app dùng 15 nhóm mặc định
 function catIds_() { const c = catsGet_(); return c ? c.map(x => x.id) : CAT_BASE.slice(); }
-function setDanhMuc(u, d) {
-  const L = Array.isArray(d.list) ? d.list : [];
-  if (L.length > 3000) fail('Danh mục tối đa 3000 tên');
-  const ids = catIds_(), seen = {}, rows = [];
-  L.forEach(x => {
-    if (!Array.isArray(x)) return;
-    const n = clean(String(x[0] || ''), 120).replace(/\s+/g, ' ').trim(), k = normKey_(n);
-    if (n.length < 2 || seen[k]) return; seen[k] = 1;
-    const c = String(x[1] || '');
-    rows.push([n, ids.indexOf(c) >= 0 ? c : '', clean(String(x[2] || ''), 20), x[3] === 't' ? 't' : 'k', u.name, nowTxt()]);
-  });
-  const sh = sheetOf(DMVT.sheet, DMVT.head), old = Math.max(0, sh.getLastRow() - 1);
-  if (rows.length) sh.getRange(2, 1, rows.length, DMVT.cols.length).setValues(rows.map(r => r.map(toCell)));   // ghi trước, xóa phần thừa sau
-  if (old > rows.length) sh.getRange(rows.length + 2, 1, old - rows.length, DMVT.cols.length).clearContent();
-  const rev = String(Date.now()); props_().setProperty('dmRev', rev);
-  writeLog(u, 'Danh mục vật tư', rows.length + ' tên · ' + rows.filter(r => r[3] === 't').length + ' thẳng ra công trường');
-  return { success:true, dmRev:rev, count:rows.length };
-}
 function setCats(u, d) {
   const L = Array.isArray(d.list) ? d.list : [];
   if (!L.length || L.length > 40) fail('Danh sách nhóm không hợp lệ (tối đa 40 nhóm)');
@@ -3591,6 +4209,409 @@ function setCats(u, d) {
   jset_('cats', out);
   writeLog(u, 'Nhóm vật tư', out.length + ' nhóm' + (gone.length ? ' · bỏ: ' + gone.join(', ') : ''));
   return { success:true, cats:out };
+}
+// =====================================================================
+// v5.56.0 — DANH MỤC CÓ HÌNH + MÃ + QR
+//   DanhMucVT thêm cột: ma (mã tự cấp theo nhóm, Admin sửa; máy = mã P.QLTB), pub (1 = hiện ở trang công khai), img / th (ID file Drive ảnh lớn / ảnh nhỏ),
+//   imgK (mh = ảnh minh hoạ lấy trên mạng, Admin duyệt · th = ảnh thật chụp ở kho), src (link ảnh gốc), imgBy, imgAt.
+//   Dòng mode 'm' = máy (mã P.QLTB). dmList_ (getAll · gợi ý tên) bỏ dòng máy → phiếu nhập / xuất không đổi.
+//   Tối đa DM_MAX món (dòng có nhóm + đơn vị, cộng máy). Tên ngắn kiểu "Thép" (không nhóm) là quy tắc gợi ý, không tính, không có mã.
+//   Trang công khai danhmuc.html gọi dmPublic / dmImg KHÔNG cần đăng nhập: chỉ tên, mã, nhóm, đơn vị, ảnh của món pub = 1.
+//   Ảnh lưu thư mục Drive "FECON – Ảnh danh mục", chia sẻ "ai có đường liên kết đều xem được" để trang công khai hiện ảnh.
+// =====================================================================
+const DM_MAX = 1000;                                            // v5.56.2: 400 → 1000 (người dùng chốt 22/10)
+const DM_PFX = { nhienLieu:'NL', thep:'TH', cocNoi:'CN', ongSieuAm:'SA', capNang:'NH', gau:'RG', han:'HC', dien:'DI', ongNuoc:'ON', vatLieu:'VL',
+  bhld:'BH', dungCu:'DC', tbPhuTro:'TB', vtPhuTro:'VP', khac:'KH', may:'MM' };
+const DM_FOLDER = 'FECON – Ảnh danh mục';
+function dmHv_() { return dmRev_() + '.' + (props_().getProperty('dmImgRev') || '0'); }
+function dmBumpImg_() { props_().setProperty('dmImgRev', String(Date.now())); try { CacheService.getScriptCache().removeAll(['dmPub', 'dmPubN'].concat([0, 1, 2, 3, 4, 5].map(i => 'dmPub' + i))); } catch (e) {} }
+function dmIsMon_(o) { return o.mode === 'm' || !!(o.cat && o.unit); }
+function dmRows_(sh) {
+  sh = sh || SpreadsheetApp.getActiveSpreadsheet().getSheetByName(DMVT.sheet); if (!sh) return [];
+  return readRows(sh, DMVT.cols.length).map((r, i) => { const o = rowToObj(DMVT.cols, r); DMVT.cols.forEach(c => o[c] = o[c] === undefined || o[c] === null ? '' : String(o[c])); o._r = i + 2; return o; })
+    .filter(o => o.name.trim() !== '');
+}
+function dmMa_(v) { return String(v || '').toUpperCase().replace(/\s+/g, '').replace(/[^A-Z0-9_.,\-]/g, '').slice(0, 40); }
+function dmPfx_(cat) {
+  if (DM_PFX[cat]) return DM_PFX[cat];
+  const c = (catsGet_() || []).find(x => x.id === cat), nm = normKey_(c ? c.name : cat).toUpperCase().replace(/[^A-Z ]/g, ' ').trim();
+  let p = nm.split(/\s+/).filter(Boolean).map(w => w[0]).join('').slice(0, 3);
+  if (p.length < 2) p = (nm.replace(/\s/g, '') + 'XX').slice(0, 2);
+  const taken = Object.keys(DM_PFX).filter(k => k !== cat).map(k => DM_PFX[k]).concat(['PN', 'PX', 'PYC']);   // tránh nhầm với mã phiếu giấy
+  let q = p, i = 2; while (taken.indexOf(q) >= 0) q = p + (i++);
+  return q;
+}
+function dmOut_(o) { return [o.ma, o.name, o.cat, o.unit, o.mode, o.pub === '0' || o.pub === 0 ? 0 : 1, o.img, o.th, o.imgK, o.src]; }
+function dmWrite_(sh, rows) {
+  const old = Math.max(0, sh.getLastRow() - 1), W = DMVT.cols.length;
+  if (rows.length) sh.getRange(2, 1, rows.length, W).setValues(rows.map(o => DMVT.cols.map(c => c === 'pub' ? (o.pub === 0 || o.pub === '0' ? 0 : 1) : toCell(String(o[c] === undefined ? '' : o[c])))));
+  if (old > rows.length) sh.getRange(rows.length + 2, 1, old - rows.length, W).clearContent();
+}
+// Lưu danh mục (thay setDanhMuc 5.48). list: [tên, nhóm, đơn vị, chế độ (k / t / m = máy), mã, công khai (1/0), tên cũ (khi đổi tên)]
+//   App cũ gửi 4 cột → giữ mã / công khai / ảnh theo tên và giữ các dòng máy.
+function setDanhMuc(u, d) {
+  const L = Array.isArray(d.list) ? d.list : [];
+  if (L.length > 3000) fail('Danh mục tối đa 3000 tên');
+  const v2 = +d.v >= 2, ids = catIds_(), seen = {}, rows = [], sh = sheetOf(DMVT.sheet, DMVT.head);
+  const old = dmRows_(sh), byK = {}; old.forEach(o => byK[normKey_(o.name)] = o);
+  L.forEach(x => {
+    if (!Array.isArray(x)) return;
+    const n = clean(String(x[0] || ''), 120).replace(/\s+/g, ' ').trim(), k = normKey_(n);
+    if (n.length < 2 || seen[k]) return; seen[k] = 1;
+    const mode = x[3] === 't' ? 't' : x[3] === 'm' ? 'm' : 'k', c = String(x[1] || '');
+    const o0 = byK[k] || (x[6] ? byK[normKey_(String(x[6]))] : null) || {};
+    rows.push({ name:n, cat: mode === 'm' ? (/^[A-Za-z]{2,24}$/.test(c) ? c : 'khac') : (ids.indexOf(c) >= 0 ? c : ''),
+      unit: clean(String(x[2] || ''), 20) || (mode === 'm' ? 'Chiếc' : ''), mode:mode, by:u.name, at:nowTxt(),
+      ma: v2 ? dmMa_(x[4]) : (o0.ma || ''), pub: v2 ? (String(x[5]) === '0' ? 0 : 1) : (o0.pub === '0' ? 0 : 1),
+      img:o0.img || '', th:o0.th || '', imgK:o0.imgK || '', src:o0.src || '', imgBy:o0.imgBy || '', imgAt:o0.imgAt || '' });
+  });
+  if (!v2) old.filter(o => o.mode === 'm' && !seen[normKey_(o.name)]).forEach(o => rows.push(o));
+  const mon = rows.filter(dmIsMon_).length;
+  if (mon > DM_MAX) fail('Danh mục tối đa ' + DM_MAX + ' món (vật tư + máy) — đang có ' + mon + '. Bỏ bớt rồi lưu lại');
+  const used = {};
+  rows.forEach(o => { if (!o.ma) return; const K = o.ma.toUpperCase(); if (used[K]) fail('Mã "' + o.ma + '" bị trùng: ' + used[K] + ' và ' + o.name); used[K] = o.name; });
+  const next = {};
+  rows.forEach(o => {
+    if (o.ma || !dmIsMon_(o)) return;
+    const p = dmPfx_(o.mode === 'm' ? 'may' : o.cat), re = new RegExp('^' + p + '-(\\d+)$');
+    if (next[p] === undefined) next[p] = Object.keys(used).reduce((m, K) => { const x = K.match(re); return x ? Math.max(m, +x[1]) : m; }, 0);
+    let ma; do { next[p]++; ma = p + '-' + String(next[p]).padStart(3, '0'); } while (used[ma]);
+    o.ma = ma; used[ma] = o.name;
+  });
+  const gone = old.filter(o => !rows.some(r => r === o || normKey_(r.name) === normKey_(o.name)) && !rows.some(r => r.img && r.img === o.img));
+  dmWrite_(sh, rows);
+  gone.forEach(o => [o.img, o.th].forEach(id => { if (id) try { DriveApp.getFileById(id).setTrashed(true); } catch (e) {} }));
+  const rev = String(Date.now()); props_().setProperty('dmRev', rev); dmBumpImg_();
+  writeLog(u, 'Danh mục vật tư', rows.length + ' tên · ' + mon + ' món có mã' + (rows.filter(r => r.mode === 'm').length ? ' · ' + rows.filter(r => r.mode === 'm').length + ' máy' : ''));
+  return { success:true, dmRev:rev, count:rows.length, mon:mon, hv:dmHv_(), rows:rows.map(dmOut_) };
+}
+function dmFull(u, d) {
+  const hv = dmHv_();
+  if (d && d.hv && String(d.hv) === hv) return { success:true, same:true, hv:hv };
+  return { success:true, hv:hv, max:DM_MAX, rows:dmRows_().map(dmOut_) };
+}
+// ---------- công khai (không cần đăng nhập) ----------
+function dmPublic_() {
+  const C = CacheService.getScriptCache(), nP = +C.get('dmPubN') || 0;   // v5.56.2: 1000 món > 100 KB → chia nhiều khoá
+  if (nP) { try { const g = C.getAll([...Array(nP).keys()].map(i => 'dmPub' + i)), s = [...Array(nP).keys()].map(i => g['dmPub' + i]); if (s.every(x => typeof x === 'string')) return JSON.parse(s.join('')); } catch (e) {} }
+  const out = { success:true, hv:dmHv_(), cats:catsGet_(),
+    rows:dmRows_().filter(o => dmIsMon_(o) && o.pub !== '0').map(o => [o.ma, o.name, o.cat, o.unit, o.mode === 'm' ? 1 : 0, o.th || o.img, o.img, o.imgK]) };
+  try { const js = JSON.stringify(out), P = {}; let n = 0; for (let i = 0; i < js.length && n < 6; i += 90000) P['dmPub' + (n++)] = js.slice(i, i + 90000);
+    if (n * 90000 >= js.length) { C.putAll(P, 600); C.put('dmPubN', String(n), 600); } } catch (e) {}
+  return out;
+}
+function dmImgPub_(d) {
+  const id = String((d && d.id) || '');
+  if (!/^[A-Za-z0-9_-]{2,80}$/.test(id)) return { success:false, error:'Mã ảnh không hợp lệ' };
+  const ok = dmRows_().some(o => dmIsMon_(o) && o.pub !== '0' && (o.img === id || o.th === id));
+  if (!ok) return { success:false, error:'Không có ảnh' };
+  const b = DriveApp.getFileById(id).getBlob();
+  return { success:true, data:'data:' + b.getContentType() + ';base64,' + Utilities.base64Encode(b.getBytes()) };
+}
+// ảnh nhỏ cho Excel (≤ 40 ảnh / lần, chỉ ảnh của danh mục)
+function dmThumbs(u, d) {
+  const ids = (Array.isArray(d.ids) ? d.ids : []).slice(0, 40).map(String), ok = {}, out = {};
+  dmRows_().forEach(o => { if (o.th) ok[o.th] = 1; if (o.img) ok[o.img] = 1; });
+  ids.forEach(id => { if (!ok[id]) return; try { const b = DriveApp.getFileById(id).getBlob(), by = b.getBytes(); if (by.length <= 400000) out[id] = 'data:' + b.getContentType() + ';base64,' + Utilities.base64Encode(by); } catch (e) {} });
+  return { success:true, data:out };
+}
+// v5.56.3: món trong kho (mọi dự án) cùng tên với danh mục nhưng khác nhóm → Admin xem và sửa theo danh mục
+function dmMismatch(u) {
+  const dm = {}; dmRows_().forEach(o => { if (o.mode !== 'm' && o.cat && o.unit) dm[normName_(o.name)] = o.cat; });
+  const T = TABLES.items, out = [];
+  readRows(sheetOf(T.sheet, T.head), T.cols.length).forEach(r => {
+    if (r[0] === '') return; const c = dm[normName_(r[1])];
+    if (c && String(r[2]) !== c) out.push({ id:r[0], project:String(r[6]), name:String(r[1]), unit:String(r[3]), cat:String(r[2]), dmCat:c, stock:+r[4] || 0 });
+  });
+  return { success:true, list:out };
+}
+function dmFixCats(u, d) {
+  const L = (Array.isArray(d.list) ? d.list : []).slice(0, 2000), ids = catIds_(), want = {};
+  L.forEach(x => { if (x && x.id !== undefined && ids.indexOf(String(x.cat)) >= 0) want[String(x.id)] = String(x.cat); });
+  const T = TABLES.items, sh = sheetOf(T.sheet, T.head), rows = readRows(sh, T.cols.length), col = rows.map(r => [r[2]]), done = [];
+  rows.forEach((r, i) => { const c = want[String(r[0])]; if (c && String(r[2]) !== c) { done.push(String(r[1]) + ' (' + r[6] + '): ' + r[2] + ' → ' + c); col[i][0] = c; } });
+  if (done.length) { sh.getRange(2, 3, col.length, 1).setValues(col); bumpVersion(); writeLog(u, 'Sửa nhóm theo danh mục', done.length + ' món · ' + done.join(', ').slice(0, 420)); }
+  return { success:true, fixed:done.length };
+}
+// ---------- tồn từng dự án (người đã đăng nhập) ----------
+function dmStock(u, d) {
+  const name = String(d.name || ''), k = normName_(name), ma = dmMa_(d.ma), allowed = allowedProjects(u), out = [];
+  if (!k) fail('Thiếu tên');
+  if (d.mode === 'm') {
+    const T = TABLES.devices, rows = readRows(sheetOf(T.sheet, T.head), T.cols.length);
+    rows.forEach(r => { const o = rowToObj(T.cols, r); if (o.id === '' || allowed.indexOf(String(o.project)) < 0) return;
+      if ((ma && dmMa_(o.maQL) === ma) || normName_(o.name) === k) out.push({ p:String(o.project), id:o.id, name:String(o.name), on: String(o.outDate || '') === '' ? 1 : 0, inDate:String(fromCell(o.inDate) || ''), outDate:String(fromCell(o.outDate) || '') }); });
+  } else {
+    const T = TABLES.items, rows = readRows(sheetOf(T.sheet, T.head), T.cols.length);
+    rows.forEach(r => { const o = rowToObj(T.cols, r); if (o.id === '' || allowed.indexOf(String(o.project)) < 0) return;
+      if (normName_(o.name) === k) out.push({ p:String(o.project), id:o.id, name:String(o.name), stock:+o.stock || 0, unit:String(o.unit) }); });
+  }
+  return { success:true, list:out };
+}
+// ---------- ảnh ----------
+function dmFolder_() {
+  const id = props_().getProperty('dmFolder');
+  if (id) { try { const f = DriveApp.getFolderById(id); if (!f.isTrashed || !f.isTrashed()) return f; } catch (e) {} }
+  const f = DriveApp.createFolder(DM_FOLDER); props_().setProperty('dmFolder', f.getId()); return f;
+}
+function dmShare_(f) { try { f.setSharing(DriveApp.Access.ANYONE_WITH_LINK, DriveApp.Permission.VIEW); } catch (e) {} return f; }
+function dmData_(s) {                                            // data:image/...;base64 → {bytes, type}
+  const m = String(s || '').match(/^data:(image\/(jpeg|png|webp));base64,(.+)$/); if (!m) return null;
+  const bytes = Utilities.base64Decode(m[3]); if (bytes.length > PHOTO_MAX_BYTES) fail('Ảnh quá lớn (tối đa 4MB)');
+  return { bytes:bytes, type:m[1] };
+}
+function dmBlobOk_(resp) {
+  try {
+    if (!resp || resp.getResponseCode() !== 200) return null;
+    const b = resp.getBlob(), t = String(b.getContentType() || '').toLowerCase(), by = b.getBytes();
+    if (!/^image\/(jpeg|jpg|png|webp|gif)/.test(t) || by.length < 800 || by.length > PHOTO_MAX_BYTES) return null;
+    return { bytes:by, type:t.replace('jpg', 'jpeg') };
+  } catch (e) { return null; }
+}
+const dmBing_ = (turl, w) => /^https:\/\/[a-z0-9.]*bing\.(net|com)\/th/i.test(turl || '') ? turl.replace(/&(w|h|c|rs|pid)=[^&]*/g, '') + '&w=' + w + '&h=' + w + '&c=7&rs=1' : '';
+function dmUrlOk_(s) { return /^https?:\/\/[^\s"'<>]{4,1500}$/i.test(String(s || '')) && !/^https?:\/\/(localhost|127\.|10\.|192\.168\.)/i.test(String(s)); }
+const DM_FETCH = { muteHttpExceptions:true, followRedirects:true, headers:{ 'User-Agent':'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0 Safari/537.36' } };
+// Admin chọn ảnh mạng (picks: [{name, url, turl}], tối đa 10) hoặc tải ảnh từ máy (name, data, thumb). Tải ảnh NGOÀI khoá, ghi sheet trong khoá.
+function dmImgSet(u, d) {
+  const sv = [], bad = [];
+  if (d.data) {
+    const full = dmData_(d.data); if (!full) fail('Ảnh không hợp lệ');
+    sv.push({ name:String(d.name || ''), full:full, thumb:dmData_(d.thumb) || full, k: d.k === 'mh' ? 'mh' : 'th', src:'' });
+  } else {
+    const P = (Array.isArray(d.picks) ? d.picks : []).slice(0, 10).filter(p => p && p.name && dmUrlOk_(p.url));
+    if (!P.length) fail('Chưa chọn ảnh');
+    const R1 = UrlFetchApp.fetchAll(P.map(p => Object.assign({ url:p.url }, DM_FETCH)));
+    const need = [];
+    P.forEach((p, i) => { const full = dmBlobOk_(R1[i]); const tb = dmBing_(p.turl, 320), tf = dmBing_(p.turl, 900);
+      sv.push({ name:String(p.name), full:full, k:'mh', src:String(p.url).slice(0, 500), tb:tb, tf:tf }); if (tb) need.push(i); if (!full && tf) need.push(-1 - i); });
+    const R2 = need.length ? UrlFetchApp.fetchAll(need.map(i => Object.assign({ url: i >= 0 ? sv[i].tb : sv[-1 - i].tf }, DM_FETCH))) : [];
+    need.forEach((i, j) => { const b = dmBlobOk_(R2[j]); if (i >= 0) sv[i].thumb = b; else if (b) sv[-1 - i].full = b; });
+    sv.forEach(s => { if (!s.full) { bad.push(s.name); s.skip = 1; } else if (!s.thumb) s.thumb = s.full; });
+  }
+  return dmSaveImgs_(u, sv.filter(s => !s.skip), bad);
+}
+function dmPhoto(u, d) {
+  const full = dmData_(d.data); if (!full) fail('Ảnh không hợp lệ');
+  return dmSaveImgs_(u, [{ name:String(d.name || ''), full:full, thumb:dmData_(d.thumb) || full, k:'th', src:'' }], []);
+}
+function dmSaveImgs_(u, sv, bad) {
+  const cur = dmRows_(), byK = {}; cur.forEach(o => byK[normKey_(o.name)] = o);
+  sv.forEach(s => { if (!byK[normKey_(s.name)]) fail('Không có "' + s.name + '" trong danh mục — Admin lưu danh mục trước'); });
+  const fd = sv.length ? dmFolder_() : null, at = Utilities.formatDate(new Date(), TZ, 'yyyy-MM-dd HHmm');
+  sv.forEach(s => {                                              // tạo file trước (ngoài khoá)
+    const o = byK[normKey_(s.name)], base = clean((o.ma ? o.ma + ' ' : '') + o.name, 90) + ' · ' + (s.k === 'th' ? 'ảnh thật' : 'minh hoạ') + ' ' + at;
+    const ext = t => t.indexOf('png') >= 0 ? '.png' : t.indexOf('webp') >= 0 ? '.webp' : t.indexOf('gif') >= 0 ? '.gif' : '.jpg';
+    const f1 = dmShare_(fd.createFile(Utilities.newBlob(s.full.bytes, s.full.type, base + ext(s.full.type))));
+    f1.setDescription((s.src ? 'Nguồn: ' + s.src + ' · ' : '') + 'Người lưu: ' + u.name);
+    s.img = f1.getId();
+    s.th = s.thumb === s.full ? s.img : dmShare_(fd.createFile(Utilities.newBlob(s.thumb.bytes, s.thumb.type, base + ' (nhỏ)' + ext(s.thumb.type)))).getId();
+  });
+  const res = withLock(() => {
+    const sh = sheetOf(DMVT.sheet, DMVT.head), rows = dmRows_(sh), trash = [], out = [];
+    sv.forEach(s => {
+      const o = rows.find(r => normKey_(r.name) === normKey_(s.name)); if (!o) { trash.push(s.img, s.th); return; }
+      [o.img, o.th].forEach(id => { if (id && id !== s.img && id !== s.th) trash.push(id); });
+      Object.assign(o, { img:s.img, th:s.th, imgK:s.k, src:s.src, imgBy:u.name, imgAt:nowTxt() });
+      const W = DMVT.cols.length; sh.getRange(o._r, 1, 1, W).setValues([DMVT.cols.map(c => c === 'pub' ? (o.pub === '0' ? 0 : 1) : toCell(String(o[c] || '')))]);
+      out.push(dmOut_(o));
+    });
+    if (out.length) { dmBumpImg_(); writeLog(u, 'Ảnh danh mục', out.map(r => r[1] + (r[8] === 'th' ? ' (ảnh thật)' : ' (minh hoạ)')).join(', ').slice(0, 450)); }
+    return { out:out, trash:trash };
+  });
+  res.trash.forEach(id => { if (id) try { DriveApp.getFileById(id).setTrashed(true); } catch (e) {} });
+  return { success:true, rows:res.out, bad:bad, hv:dmHv_() };
+}
+function dmImgDel(u, d) {
+  const sh = sheetOf(DMVT.sheet, DMVT.head), o = dmRows_(sh).find(r => normKey_(r.name) === normKey_(d.name));
+  if (!o) fail('Không có trong danh mục');
+  const ids = [o.img, o.th];
+  Object.assign(o, { img:'', th:'', imgK:'', src:'', imgBy:u.name, imgAt:nowTxt() });
+  sh.getRange(o._r, 1, 1, DMVT.cols.length).setValues([DMVT.cols.map(c => c === 'pub' ? (o.pub === '0' ? 0 : 1) : toCell(String(o[c] || '')))]);
+  ids.forEach(id => { if (id) try { DriveApp.getFileById(id).setTrashed(true); } catch (e) {} });
+  dmBumpImg_(); writeLog(u, 'Xoá ảnh danh mục', o.name);
+  return { success:true, row:dmOut_(o), hv:dmHv_() };
+}
+// Tìm ảnh gợi ý trên mạng (Bing hình ảnh) — list: [{n: tên, q: từ khoá}], tối đa 8 / lần, nhớ 6 giờ
+function dmImgFind(u, d) {
+  const L = (Array.isArray(d.list) ? d.list : []).slice(0, 8).filter(x => x && x.n), C = CacheService.getScriptCache(), res = {}, go = [];
+  L.forEach(x => { const q = clean(String(x.q || x.n), 120), key = 'dmF|' + normKey_(q).slice(0, 200), h = C.get(key);
+    if (h) { try { res[x.n] = JSON.parse(h); return; } catch (e) {} } go.push({ n:x.n, q:q, key:key }); });
+  if (go.length) {
+    const R = UrlFetchApp.fetchAll(go.map(g => Object.assign({ url:'https://www.bing.com/images/async?q=' + encodeURIComponent(g.q) + '&first=0&count=30&mmasync=1&setlang=vi&cc=VN' }, DM_FETCH)));
+    go.forEach((g, i) => {
+      let L2 = [];
+      try { if (R[i].getResponseCode() === 200) L2 = dmBingParse_(R[i].getContentText()); } catch (e) {}
+      res[g.n] = L2; if (L2.length) try { C.put(g.key, JSON.stringify(L2), 21600); } catch (e) {}
+    });
+  }
+  return { success:true, res:res };
+}
+function dmBingParse_(html) {
+  const out = [], seen = {}, re = /\sm="(\{[^"]*\})"/g, BAD = /tmdb|themoviedb|pinimg|fbcdn|facebook|instagram|tiktok|ytimg|youtube/i;
+  let m;
+  while ((m = re.exec(html)) && out.length < 6) {
+    let o; try { o = JSON.parse(m[1].replace(/&quot;/g, '"').replace(/&amp;/g, '&').replace(/&#39;/g, "'").replace(/&lt;/g, '<').replace(/&gt;/g, '>')); } catch (e) { continue; }
+    const mu = String(o.murl || ''), tu = String(o.turl || '');
+    if (!dmUrlOk_(mu) || BAD.test(mu) || seen[mu]) continue; seen[mu] = 1;
+    out.push([mu, dmUrlOk_(tu) ? tu : '', String(o.purl || '').slice(0, 300)]);
+  }
+  return out;
+}
+// =====================================================================
+// v5.56.1 — ADMIN ĐỨNG TÊN THAY: mỗi dự án Admin chọn 1 tài khoản (Script Property 'standIn' {dự án: id}); chưa chọn mà dự án có đúng 1 Thủ kho → tự lấy.
+//   Mọi lệnh GHI của Admin ở phần Kho / Giải động (không Thi công) chạy với u.name = tên người đứng tên (u.realName giữ tên thật) → phiếu, lịch sử,
+//   Telegram, báo cáo chỉ thấy tên người đứng tên. Nhật ký (NhatKy, chỉ Admin xem) ghi "tên thật (đứng tên …)". Phiếu vẫn giữ createdBy = ID Admin.
+//   siFix: đổi tên Admin trong dữ liệu cũ của 1 dự án (cột tên người + lịch sử JSON), sao lưu trước.
+// =====================================================================
+const SI_COLS = /^(createdByName|addedBy|addedByName|by|byName|printedByName|usedBy|recvBy|duyetBy|startBy|imgBy)$/;
+const SI_JSON = /^(history|log|hist|drop|link|opt|bs|data|lines)$/;
+function siMap_() { return jget_('standIn', {}) || {}; }
+function siUser_(P) {
+  const m = siMap_(), us = loadUsers().filter(x => x.status === 'active' && x.role !== 'ADM');
+  let x = m[P] ? us.find(y => String(y.id) === String(m[P]) && userProjects(y).indexOf(P) >= 0) : null;
+  if (!x && !m[P]) { const sk = us.filter(y => y.role === 'SK' && userProjects(y).indexOf(P) >= 0); if (sk.length === 1) x = sk[0]; }
+  return x || null;
+}
+function siInfo_(P) { const x = siUser_(String(P || '')); return x ? { id:x.id, name:String(x.name), role:x.role, auto: !siMap_()[P] } : null; }
+function siApply_(u, d) {
+  if (!u || u.role !== 'ADM' || u.realName) return;
+  let P = String((d && (d.project || (Array.isArray(d.rows) && d.rows[0] && d.rows[0].project) || d.p)) || '');
+  if (!P && d) {                                                   // v5.58.1: lệnh theo số phiếu mượn / đợt nạp (không gửi kèm dự án) → lấy dự án của phiếu
+    try { const k = d.loanId || d.src || d.id; const lr = k ? findLoanRow(k) : null; if (lr) P = String(lr.loan.project || ''); } catch (e) {}
+    if (!P && d.id) { try { const x = napRead_().rows.find(o => String(o.id) === String(d.id)); if (x) P = String(x.project); } catch (e) {} }
+  }
+  if (!P) return;
+  const x = siUser_(P); if (!x) return;
+  u.realName = u.name; u.name = String(x.name);
+}
+function setStandIn(u, d) {
+  const P = String(d.project || ''); if (projList().indexOf(P) < 0) fail('Không có dự án "' + P + '"');
+  const m = siMap_();
+  if (!d.userId) delete m[P];
+  else {
+    const x = loadUsers().find(y => String(y.id) === String(d.userId));
+    if (!x || x.status !== 'active' || x.role === 'ADM') fail('Tài khoản không hợp lệ');
+    if (userProjects(x).indexOf(P) < 0) fail(x.name + ' chưa được giao dự án ' + P);
+    m[P] = x.id;
+  }
+  jset_('standIn', m);
+  const info = siInfo_(P);
+  writeLog(u, 'Đứng tên thay Admin', P + ': ' + (info ? info.name + (info.auto ? ' (tự chọn)' : '') : 'không có'));
+  return { success:true, standIn:info };
+}
+function siAdmNames_() { const s = {}; loadUsers().filter(x => x.role === 'ADM').forEach(x => { if (x.name) s[String(x.name)] = 1; if (x.username) s[String(x.username)] = 1; }); return s; }
+// Đếm (dry) / đổi tên Admin trong dữ liệu cũ của dự án P
+function siFix(u, d) {
+  const P = String(d.project || ''); if (projList().indexOf(P) < 0) fail('Không có dự án "' + P + '"');
+  const x = siUser_(P); if (!x) fail('Dự án ' + P + ' chưa có người đứng tên — chọn trước');
+  const to = String(x.name), names = siAdmNames_(), ss = SpreadsheetApp.getActiveSpreadsheet(), out = [];
+  delete names[to];
+  const w = v => { let n = 0; const f = y => { if (typeof y === 'string') { if (names[y]) { n++; return to; } return y; } if (Array.isArray(y)) return y.map(f);
+    if (y && typeof y === 'object') Object.keys(y).forEach(k => y[k] = f(y[k])); return y; }; const r = f(v); return { n:n, v:r }; };
+  pjTables_().filter(t => !/^Thi công/.test(t.label)).forEach(t => {
+    const sh = ss.getSheetByName(t.sheet); if (!sh || sh.getLastRow() < 2) return;
+    const cs = t.cols.map((c, i) => [c, i]).filter(([c]) => SI_COLS.test(c) || SI_JSON.test(c)); if (!cs.length) return;
+    const pv = pjCol_(sh, t.pc + 1); let n = 0;
+    cs.forEach(([c, i]) => {
+      const col = pjCol_(sh, i + 1); let ch = 0;
+      col.forEach((r, k) => {
+        if (String(fromCell(pv[k][0])) !== P) return;
+        const v = r[0]; if (typeof v !== 'string' || v === '') return;
+        if (SI_COLS.test(c)) { if (names[v]) { n++; ch++; r[0] = toCell(to); } return; }
+        if (!Object.keys(names).some(nm => v.indexOf('"' + nm + '"') >= 0)) return;
+        try { const o = w(JSON.parse(v)); if (o.n) { n += o.n; ch++; r[0] = toCell(JSON.stringify(o.v)); } } catch (e) {}
+      });
+      if (ch && !d.dry) sh.getRange(2, i + 1, col.length, 1).setValues(col);
+    });
+    if (n) out.push({ label:t.label, n:n });
+  });
+  const total = out.reduce((s, o) => s + o.n, 0);
+  if (!d.dry && total) { bumpVersion(); try { bumpTxnRev(); } catch (e) {} writeLog(u, 'Đổi tên Admin trong dữ liệu cũ', P + ' → ' + to + ': ' + out.map(o => o.label + ' ' + o.n).join(', ')); }
+  return { success:true, dry:!!d.dry, to:to, total:total, list:out };
+}
+// =====================================================================
+// v5.56.4 — GỘP PHIẾU "NHẬP THẲNG RA CÔNG TRƯỜNG" CŨ (Admin, từng dự án) — người dùng chốt 22/10: xoá hẳn trong dữ liệu
+//   Xoá phiếu xuất đi cặp (thangCT) + phiếu "Sửa số" gắn kèm + dòng "Hàng cũ ở CT (xác nhận)" (dieuchinh ct 'cu'); phiếu nhập bỏ cặp → phiếu nhập thường.
+//   Mỗi món: X = tổng xuất đi cặp, C = tổng xác nhận còn. Đã xác nhận (có dòng cu hoặc bấm "không còn") → phần đã dùng X − C ghi 1 phiếu xuất dùng, tồn giữ nguyên.
+//   Chưa xác nhận → coi như còn đủ: tồn + X. Chưa xác nhận mà đã kiểm kê sau phiếu → bỏ qua (giữ nguyên, báo để thủ kho xác nhận).
+// =====================================================================
+function thangClean(u, d) {
+  const P = String(d.project || ''); if (projList().indexOf(P) < 0) fail('Không có dự án "' + P + '"');
+  const gd = sheetOf(TXN.sheet, TXN.head), rows = readRows(gd, TXN.cols.length), C_ = c => TXN.cols.indexOf(c);
+  const ci = { id:0, type:1, item:2, qty:4, proj:6, dt:9, ref:12, thang:C_('thangCT'), ct:C_('ct') };
+  const mine = rows.map((r, k) => [r, k]).filter(([r]) => r[0] !== '' && String(r[ci.proj]) === P);
+  const legs = mine.filter(([r]) => String(r[ci.type]) === 'xuat' && String(r[ci.thang] || '') !== '');
+  const legIds = {}; legs.forEach(([r]) => legIds[String(r[0])] = 1);
+  const fixes = mine.filter(([r]) => String(r[ci.type]) === 'dieuchinh' && legIds[String(r[ci.ref])]);
+  const cus = mine.filter(([r]) => String(r[ci.type]) === 'dieuchinh' && String(r[ci.ct]) === 'cu');
+  const marked = cuDone_(P);
+  const T = TABLES.items, ish = sheetOf(T.sheet, T.head), items = readRows(ish, T.cols.length);
+  const by = {};
+  const g = id => by[id] = by[id] || { id:id, X:0, C:0, legs:[], fixes:[], cus:[], last:'', first:Infinity };
+  legs.forEach(([r, k]) => { const o = g(String(r[ci.item])), q = +r[ci.qty] || 0; if (String(r[ci.ct] || '') === '') o.X += q; o.legs.push(k);
+    const t = tms_(fromCell(r[ci.dt])); if (t && t < o.first) o.first = t; if (!o.last || t > tms_(o.last)) o.last = String(fromCell(r[ci.dt])); });
+  fixes.forEach(([r, k]) => { const o = g(String(r[ci.item])); o.X -= +r[ci.qty] || 0; o.fixes.push(k); });   // phiếu sửa số gắn phiếu xuất: + là trả lại tồn
+  cus.forEach(([r, k]) => { const o = g(String(r[ci.item])); o.C += +r[ci.qty] || 0; o.cus.push(k); });
+  const out = [];
+  Object.keys(by).forEach(id => {
+    const o = by[id], it = items.find(r => String(r[0]) === id), conf = o.cus.length > 0 || marked.indexOf(id) >= 0;
+    o.X = r3(o.X); o.C = r3(o.C);
+    const kk = mine.some(([r]) => String(r[ci.type]) === 'kiemke' && String(r[ci.item]) === id && tms_(fromCell(r[ci.dt])) > o.first);
+    const skip = !conf && kk && o.X > 0;
+    const used = conf ? r3(Math.max(0, o.X - o.C)) : 0, delta = skip ? 0 : conf ? r3(o.X - o.C - used) : o.X;
+    out.push({ id:id, name:it ? String(it[1]) : '?', unit:it ? String(it[3]) : '', stock:it ? +it[4] || 0 : 0, nLegs:o.legs.length, nCu:o.cus.length, X:o.X, C:o.C,
+      conf:conf, used:used, delta:delta, after:it ? r3((+it[4] || 0) + delta) : 0, skip:skip, last:o.last, o:o });
+  });
+  out.sort((a, b) => a.name.localeCompare(b.name));
+  const pub = x => { const y = Object.assign({}, x); delete y.o; return y; };
+  if (d.dry || !out.length) return { success:true, dry:true, list:out.map(pub), legs:legs.length, cus:cus.length };
+  const go = out.filter(x => !x.skip), del = [], newRows = [], at = nowTxt();
+  let seq = 0;
+  go.forEach(x => {
+    x.o.legs.concat(x.o.fixes, x.o.cus).forEach(k => del.push(k));
+    if (x.used > 0) newRows.push({ id:Date.now() * 100 + 70 + (seq++ % 30), type:'xuat', itemId:x.id, itemName:x.name, qty:x.used, unit:x.unit, project:P, supplierOrReceiver:'',
+      thietBi:'', datetime:x.last || at, note:'Đã dùng trước 5.55 (theo xác nhận của thủ kho khi gộp phiếu nhập thẳng ra công trường)', reason:'', refId:'',
+      createdBy:u.id, createdByName:u.name, clientTime:at, meter:'', meterNote:'', thangCT:'', ct:'', src:'', ma:'', xe:'' });
+  });
+  const goLeg = {}; go.forEach(x => x.o.legs.forEach(k => goLeg[String(rows[k][0])] = 1));
+  mine.forEach(([r, k]) => { if (String(r[ci.type]) === 'nhap' && goLeg[String(r[ci.thang] || '')]) gd.getRange(k + 2, ci.thang + 1).setValue(''); });   // phiếu nhập → nhập thường
+  deleteSheetRows(gd, del);
+  newRows.forEach(o => gd.appendRow(TXN.cols.map(c => toCell(o[c] === undefined ? '' : o[c]))));
+  go.forEach(x => { if (!x.delta) return; const i = items.findIndex(r => String(r[0]) === x.id); if (i >= 0) ish.getRange(i + 2, 5).setValue(x.after); });
+  bumpTxnRev();
+  writeLog(u, 'Gộp phiếu nhập thẳng CT cũ', P + ': ' + go.length + ' món · xoá ' + del.length + ' phiếu' + (newRows.length ? ' · ' + newRows.length + ' phiếu xuất dùng (đã dùng trước 5.55)' : '') +
+    ' · ' + go.map(x => x.name + ' ' + x.X + (x.used ? ' (dùng ' + x.used + ')' : '') + (x.delta ? ' tồn ' + (x.delta > 0 ? '+' : '') + x.delta : '')).join(', ').slice(0, 380));
+  return { success:true, done:go.length, deleted:del.length, added:newRows.length, skipped:out.filter(x => x.skip).map(pub), list:go.map(pub) };
+}
+// v5.56.5: DỌN "KHAI SỐ Ở CT" TRÙNG — hàng nhập thẳng CT cũ được khai số ở công trường (dieuchinh ct 'site', số dương; 5.55 đã cộng vào tồn)
+//   rồi lại được xác nhận "hàng cũ" → tính 2 lần. Sau khi gộp phiếu nhập thẳng cũ, các dòng khai số dương là phần trùng: Admin tick món → xoá dòng, tồn − số đó.
+//   Món đã kiểm kê sau ngày khai số → bỏ qua (số đếm kiểm kê đã đúng).
+function siteClean(u, d) {
+  const P = String(d.project || ''); if (projList().indexOf(P) < 0) fail('Không có dự án "' + P + '"');
+  const gd = sheetOf(TXN.sheet, TXN.head), rows = readRows(gd, TXN.cols.length), ct = TXN.cols.indexOf('ct');
+  const mine = rows.map((r, k) => [r, k]).filter(([r]) => r[0] !== '' && String(r[6]) === P);
+  const T = TABLES.items, ish = sheetOf(T.sheet, T.head), items = readRows(ish, T.cols.length), by = {};
+  mine.forEach(([r, k]) => {
+    if (String(r[1]) !== 'dieuchinh' || String(r[ct]) !== 'site' || !(+r[4] > 0)) return;
+    const o = by[String(r[2])] = by[String(r[2])] || { id:String(r[2]), S:0, ks:[], first:Infinity };
+    o.S = r3(o.S + (+r[4] || 0)); o.ks.push(k); const t = tms_(fromCell(r[9])); if (t && t < o.first) o.first = t;
+  });
+  const out = Object.keys(by).map(id => {
+    const o = by[id], it = items.find(r => String(r[0]) === id), st = it ? +it[4] || 0 : 0;
+    const nIn = r3(mine.filter(([r]) => String(r[2]) === id && String(r[1]) === 'nhap').reduce((s, [r]) => s + (+r[4] || 0), 0));
+    const kk = mine.some(([r]) => String(r[1]) === 'kiemke' && String(r[2]) === id && tms_(fromCell(r[9])) > o.first);
+    return { id:id, name:it ? String(it[1]) : '?', unit:it ? String(it[3]) : '', S:o.S, n:o.ks.length, stock:st, nIn:nIn, after:r3(st - o.S), skip:kk, ks:o.ks };
+  }).sort((a, b) => a.name.localeCompare(b.name));
+  const pub = x => { const y = Object.assign({}, x); delete y.ks; return y; };
+  if (d.dry) return { success:true, dry:true, list:out.map(pub) };
+  const want = {}; (Array.isArray(d.ids) ? d.ids : []).forEach(x => want[String(x)] = 1);
+  const go = out.filter(x => !x.skip && want[x.id]); if (!go.length) fail('Chưa chọn món nào');
+  const del = []; go.forEach(x => x.ks.forEach(k => del.push(k)));
+  deleteSheetRows(gd, del);
+  go.forEach(x => { const i = items.findIndex(r => String(r[0]) === x.id); if (i >= 0) ish.getRange(i + 2, 5).setValue(x.after); });
+  bumpTxnRev();
+  writeLog(u, 'Dọn khai số ở CT trùng', P + ': ' + go.map(x => x.name + ' ' + x.stock + '→' + x.after).join(', ').slice(0, 460));
+  return { success:true, done:go.length, deleted:del.length, list:go.map(pub) };
 }
 // =====================================================================
 // v5.49.0 — QUẢN LÝ DỰ ÁN: đổi tên (mọi bảng Kho + Thi công + Giải động trong 1 lần), xoá dự án trống, đóng / mở lại
@@ -3679,7 +4700,7 @@ function projAdmin(u) {                                          // màn Quản 
   const hgOpen = {}; try { hongRead_().rows.forEach(o => { if (HONG_OPEN[o.state] && cnt[o.project]) hgOpen[o.project] = (hgOpen[o.project] || 0) + o.qty; }); } catch (e) {}   // v5.50
   const stockSum = {}; { const sh = ss.getSheetByName(TABLES.items.sheet); if (sh) readRows(sh, TABLES.items.cols.length).forEach(r => { const p = String(r[6]); if (!cnt[p] || r[0] === '') return; const s = (+r[4] || 0) + (+r[TABLES.items.cols.indexOf('site')] || 0); if (s > 0) { stockSum[p] = stockSum[p] || { n:0, q:0 }; stockSum[p].n++; stockSum[p].q += s; } }); }
   return { success:true, kho:pjKho_(), list:L.map(p => Object.assign({ name:p, closed:C[p] || null, rows:busy[p] || 0,
-    users:us.filter(x => userProjects(x).indexOf(p) >= 0).length, hongOpen:Math.round((hgOpen[p] || 0) * 1000) / 1000, stockN:(stockSum[p] || {}).n || 0, stockQ:Math.round(((stockSum[p] || {}).q || 0) * 1000) / 1000 }, cnt[p])) };
+    users:us.filter(x => userProjects(x).indexOf(p) >= 0).length, standIn:siInfo_(p), siCand:us.filter(x => x.role !== 'ADM' && userProjects(x).indexOf(p) >= 0).map(x => ({ id:x.id, name:String(x.name), role:x.role })), hongOpen:Math.round((hgOpen[p] || 0) * 1000) / 1000, stockN:(stockSum[p] || {}).n || 0, stockQ:Math.round(((stockSum[p] || {}).q || 0) * 1000) / 1000 }, cnt[p])) };
 }
 function projRename(u, d) {
   const from = String(d.from || ''); if (projList().indexOf(from) < 0) fail('Không có dự án "' + from + '"');
@@ -3766,7 +4787,7 @@ function hongList_(P) {
   const rows = hongRead_().rows.filter(o => o.project === P), open = rows.filter(o => HONG_OPEN[o.state]), shut = rows.filter(o => !HONG_OPEN[o.state]).slice(-300);
   return open.concat(shut).map(o => { const x = Object.assign({}, o); delete x._i; return x; });
 }
-function hongOpenQty_(rows, P, itemId, loc) { return rows.filter(o => o.project === P && String(o.itemId) === String(itemId) && o.loc === loc && HONG_OPEN[o.state]).reduce((s, o) => s + o.qty, 0); }
+function hongOpenQty_(rows, P, itemId, loc) { return rows.filter(o => o.project === P && String(o.itemId) === String(itemId) && HONG_OPEN[o.state]).reduce((s, o) => s + o.qty, 0); }   // v5.55: không tách nơi
 function hongItem_(P, itemId) {
   const T = TABLES.items, rows = readRows(sheetOf(T.sheet, T.head), T.cols.length);
   const r = rows.find(x => x[0] !== '' && String(x[0]) === String(itemId)); if (!r) fail('Vật tư không tồn tại trong kho');
@@ -3782,13 +4803,13 @@ function hongAdd(u, d) {
   const P = String(d.project || ''); mustAllow(u, P);
   const id = String(d.id || ''); if (!/^\d{6,20}$/.test(id)) fail('Thiếu số báo hỏng');
   const { sh, rows } = hongRead_(); if (rows.some(o => o.id === id)) return { success:true, duplicate:true };
-  const it = hongItem_(P, d.itemId), q = Math.round((+d.qty || 0) * 1000) / 1000, loc = d.loc === 'ct' ? 'ct' : 'kho';
+  const it = hongItem_(P, d.itemId), q = Math.round((+d.qty || 0) * 1000) / 1000, loc = 'kho';   // v5.55
   const st = ['cho', 'sua', 'bo'].indexOf(d.state) >= 0 ? d.state : 'cho';
   const reason = clean(String(d.reason || ''), 300).trim(), where = clean(String(d.where || ''), 120).trim();
   if (!(q > 0)) fail('Số lượng phải lớn hơn 0');
   if (reason.length < 3) fail('Ghi rõ hỏng gì');
-  const have = loc === 'ct' ? it.site : it.stock, used = hongOpenQty_(rows, P, it.id, loc), free = Math.round((have - used) * 1000) / 1000;
-  if (q > free + 1e-9) fail((loc === 'ct' ? 'Ở công trường' : 'Trong kho') + ' chỉ còn ' + Math.max(0, free) + ' ' + it.unit + ' ' + it.name + ' chưa báo hỏng');
+  const have = it.stock, used = hongOpenQty_(rows, P, it.id, loc), free = Math.round((have - used) * 1000) / 1000;
+  if (q > free + 1e-9) fail('Tồn kho chỉ còn ' + Math.max(0, free) + ' ' + it.unit + ' ' + it.name + ' chưa báo hỏng');
   const o = { id, project:P, itemId:it.id, itemName:it.name, unit:it.unit, qty:q, loc, state:st, reason, where, from:'', txnId:'', by:u.name, at:nowTxt(), upd:nowTxt(),
     hist:[{ t:st === 'bo' ? 'bo' : 'add', s:st, q, by:u.name, at:nowTxt(), w:where }] };
   if (st === 'bo') { o.txnId = String(d.txnId || (id + '1')); hongBoTxn_(u, o, o.txnId, reason); }
@@ -3825,7 +4846,7 @@ function hongMove(u, d) {
   if (key && rows.some(o => (o.hist || []).some(h => h.k === key))) return { success:true, duplicate:true };
   let left = Math.round((+d.qty || 0) * 1000) / 1000; if (!(left > 0)) fail('Số lượng không hợp lệ');
   const loc = d.loc === 'ct' ? 'ct' : 'kho', bo = !!d.bo, dest = clean(String(d.dest || ''), 120), destP = String(d.destP || '');
-  const src = rows.filter(o => o.project === P && String(o.itemId) === String(d.itemId) && o.loc === loc && HONG_OPEN[o.state]);
+  const src = rows.filter(o => o.project === P && String(o.itemId) === String(d.itemId) && HONG_OPEN[o.state]);   // v5.55: không tách nơi
   if (!src.length) return { success:true, moved:0 };
   const moved = []; let k = 0;
   src.forEach(o => {
@@ -3860,7 +4881,440 @@ const normKey_ = s => String(s || '').toLowerCase().normalize('NFD').replace(/[�
 //   bugs: [{t, loi, sua, thu:[[1 đã thử | 0 chưa thử, 'mô tả'], ...]}], txt (nội dung), thu (thử nghiệm chung), todo (người dùng cần làm gì), old (bản trước 5.28)
 // Bản mới nhất ở đầu. Thêm bản mới: chép 1 khối, sửa nội dung, Triển khai → Phiên bản mới TRƯỚC khi thay index.html trên GitHub.
 // =====================================================================
+// ===== v5.57.0: DANH MỤC NHÀ CUNG CẤP (dùng chung mọi dự án) =====
+// tt: '' = đang dùng · 'cho' = thủ kho gõ mới, chờ Admin duyệt · 'an' = ẩn (không gợi ý nữa)
+const NCC = { sheet:'NhaCungCap', cols:['id','ten','alias','ma','loai','sdt','lienHe','ghiChu','tt','by','at'],
+  head:['ID','Tên chuẩn','Tên khác (cách nhau dấu ;)','Mã NCC / MST','Loại (may = cho thuê máy · vt = vật tư · dau = dầu / nhớt · xe = vận chuyển · khac)','SĐT','Người liên hệ','Ghi chú','Trạng thái (trống = dùng · cho = chờ duyệt · an = ẩn)','Người tạo','Lúc tạo'] };
+const NCC_LOAI = { may:1, vt:1, dau:1, xe:1, khac:1 };   // v5.59.2: dau = dầu / nhớt
+function nccRead_() {
+  const sh = sheetOf(NCC.sheet, NCC.head);
+  return { sh:sh, rows:readRows(sh, NCC.cols.length).map(r => rowToObj(NCC.cols, r)).filter(o => String(o.id || '') !== '') };
+}
+function nccKeys_(o) { return [o.ten].concat(String(o.alias || '').split(';')).map(normName_).filter(Boolean); }
+function nccFind_(rows, name, skipId) {
+  const k = normName_(name); if (!k) return null;
+  return rows.find(o => String(o.id) !== String(skipId || '') && nccKeys_(o).indexOf(k) >= 0) || null;
+}
+function nccRev_() { return props_().getProperty('nccRev') || '1'; }
+function nccBump_() { props_().setProperty('nccRev', String((+nccRev_() || 1) + 1)); }
+function nccList_() { return nccRead_().rows; }
+function nccWrite_(sh, rows) { writeAll(sh, NCC.cols, rows); nccBump_(); }
+function nccAliasAdd_(o, names) {
+  const have = nccKeys_(o), al = String(o.alias || '').split(';').map(s => s.trim()).filter(Boolean);
+  names.forEach(n => { n = String(n || '').trim(); const k = normName_(n); if (k && have.indexOf(k) < 0) { al.push(n); have.push(k); } });
+  o.alias = al.join('; ');
+}
+function nccSave(u, d) {
+  const R = nccRead_(), x = cleanObj(d.rec || {}), rows = R.rows;
+  const ten = String(x.ten || '').trim();
+  if (ten.length < 2) fail('Nhập tên nhà cung cấp');
+  if (x.loai && !NCC_LOAI[x.loai]) fail('Loại NCC không hợp lệ');
+  let o = x.id ? rows.find(r => String(r.id) === String(x.id)) : null;
+  const dup = nccFind_(rows, ten, o && o.id);
+  if (dup) fail('Tên "' + ten + '" đã có trong danh mục: ' + dup.ten + (dup.tt === 'an' ? ' (đang ẩn)' : ''));
+  const aliasNew = String(x.alias || '').split(';').map(s => s.trim()).filter(Boolean);
+  aliasNew.forEach(a => { const c = nccFind_(rows, a, o && o.id); if (c) fail('Tên khác "' + a + '" đang thuộc NCC ' + c.ten); });
+  const isNew = !o;
+  if (isNew) { o = { id:'N' + Date.now().toString(36) + Math.random().toString(36).slice(2, 5), by:u.name, at:nowTxt(), tt:'' }; rows.push(o); }
+  const oldTen = o.ten, oldTt = o.tt;
+  ['ten','ma','loai','sdt','lienHe','ghiChu'].forEach(k => { if (x[k] !== undefined) o[k] = String(x[k] || '').trim().slice(0, 300); });
+  o.alias = aliasNew.join('; ');
+  if (oldTen && normName_(oldTen) !== normName_(ten)) nccAliasAdd_(o, [oldTen]);   // đổi tên: tên cũ thành tên khác để dữ liệu cũ vẫn khớp
+  if (x.tt !== undefined) o.tt = /^(cho|an)$/.test(x.tt) ? x.tt : '';
+  nccWrite_(R.sh, rows);
+  writeLog(u, isNew ? 'Thêm NCC' : 'Sửa NCC', o.ten + (oldTen && oldTen !== o.ten ? ' (cũ: ' + oldTen + ')' : '') + (oldTt === 'cho' && o.tt === '' ? ' · đã duyệt' : '') + (o.tt === 'an' ? ' · ẩn' : ''));
+  return { success:true, rec:o, ncc:rows, nccRev:nccRev_() };
+}
+function nccAdd(u, d) {                                          // thủ kho gõ tên mới khi lập phiếu → chờ Admin duyệt
+  const ten = String(clean(d.ten || '', 200) || '').trim();
+  if (ten.length < 2) return { success:true, skip:1 };
+  const R = nccRead_(), f = nccFind_(R.rows, ten);
+  if (f) return { success:true, rec:f, had:1 };
+  const o = { id:'N' + Date.now().toString(36) + Math.random().toString(36).slice(2, 5), ten:ten, alias:'', ma:'', loai:NCC_LOAI[d.loai] ? d.loai : '', sdt:'', lienHe:'', ghiChu:'Gõ mới khi lập phiếu' + (d.project ? ' · ' + clean(d.project, 60) : ''), tt:'cho', by:u.name, at:nowTxt() };
+  R.rows.push(o); nccWrite_(R.sh, R.rows);
+  writeLog(u, 'NCC mới (chờ duyệt)', ten);
+  return { success:true, rec:o, nccRev:nccRev_() };
+}
+// Tên lõi để so gần đúng: bỏ "công ty, TNHH, cổ phần…", dấu câu
+function nccCore_(s) {
+  return ' ' + normName_(s).replace(/[.,\-_/()&+]/g, ' ') + ' ';
+}
+function nccCoreW_(s) {
+  return nccCore_(s).replace(/ (cong ty|cty|ct|tnhh|co phan|cp|mtv|tm|dv|tmdv|xd|xay dung|thuong mai|dich vu|sx|san xuat|va|ho kinh doanh|hkd|doanh nghiep|dntn|tu nhan|chi nhanh|cn)(?= )/g, ' ').replace(/\s+/g, ' ').trim();
+}
+function nccSim_(a, b) {
+  if (!a || !b) return 0; if (a === b) return 1;
+  if (a.length >= 4 && b.length >= 4 && (a.indexOf(b) >= 0 || b.indexOf(a) >= 0)) return 0.9;
+  const m = a.length, n = b.length; let p = []; for (let j = 0; j <= n; j++) p[j] = j;
+  for (let i = 1; i <= m; i++) { const c = [i]; for (let j = 1; j <= n; j++) c[j] = Math.min(p[j] + 1, c[j - 1] + 1, p[j - 1] + (a[i - 1] === b[j - 1] ? 0 : 1)); p = c; }
+  return 1 - p[n] / Math.max(m, n);
+}
+function nccScan(u, d) {                                         // Admin: quét tên NCC đã gõ trong phiếu + máy móc mọi dự án
+  const ss = SpreadsheetApp.getActiveSpreadsheet(), R = nccRead_(), seen = {};
+  const add = (raw, src) => { raw = String(raw || '').trim(); const k = normName_(raw); if (k.length < 2) return; const g = seen[k] || (seen[k] = { key:k, raws:{}, n:0, src:{} }); g.raws[raw] = (g.raws[raw] || 0) + 1; g.n++; g.src[src] = (g.src[src] || 0) + 1; };
+  const gd = ss.getSheetByName(TXN.sheet), si = TXN.cols.indexOf('supplierOrReceiver'), ti = TXN.cols.indexOf('type'), ci = TXN.cols.indexOf('ct');
+  const tx = gd ? readRows(gd, TXN.cols.length) : [];
+  tx.forEach(r => { if (String(r[ti]) === 'nhap' && String(r[ci]) !== 've') add(r[si], 'nhap'); });
+  const D = TABLES.devices, sh = ss.getSheetByName(D.sheet), dv = D.cols.indexOf('donVi');
+  if (sh) readRows(sh, D.cols.length).forEach(r => add(r[dv], 'may'));
+  const keysAll = {}; Object.keys(seen).forEach(k => keysAll[k] = 1);
+  R.rows.forEach(o => nccKeys_(o).forEach(k => keysAll[k] = 1));
+  tx.forEach(r => { if (String(r[ti]) === 'xuat') { const k = normName_(r[si]); if (keysAll[k]) add(r[si], 'tra'); } });   // phiếu trả máy cho NCC
+  const cores = R.rows.filter(o => o.tt !== 'an').map(o => ({ o:o, c:nccKeys_(o).map(nccCoreW_) }));
+  const out = Object.keys(seen).map(k => {
+    const g = seen[k], raws = Object.keys(g.raws).sort((a, b) => g.raws[b] - g.raws[a]);
+    const hit = nccFind_(R.rows, raws[0]);
+    let sug = null, sc = 0;
+    if (!hit) { const c0 = nccCoreW_(raws[0]); cores.forEach(x => x.c.forEach(c => { const s = nccSim_(c0, c); if (s > sc) { sc = s; sug = x.o; } })); }
+    return { name:raws[0], raws:raws.map(r => ({ raw:r, n:g.raws[r] })), n:g.n, src:g.src, nccId:hit ? hit.id : '', nccTen:hit ? hit.ten : '', exact:hit && hit.ten === raws[0] ? 1 : 0,
+             sugId:sc >= 0.75 && sug ? sug.id : '', sugTen:sc >= 0.75 && sug ? sug.ten : '', score:Math.round(sc * 100) / 100, core:nccCoreW_(raws[0]) };
+  });
+  // nhóm các tên chưa khớp có cùng tên lõi (vd "Cty Hòa Phát" · "CÔNG TY TNHH HOÀ PHÁT")
+  const grp = {}; out.forEach(x => { if (!x.nccId && x.core) (grp[x.core] = grp[x.core] || []).push(x.name); });
+  out.forEach(x => { const gg = !x.nccId && grp[x.core]; x.cung = gg && gg.length > 1 ? gg.filter(n => n !== x.name) : []; });
+  out.sort((a, b) => (a.nccId ? 1 : 0) - (b.nccId ? 1 : 0) || b.n - a.n);
+  return { success:true, rows:out, ncc:R.rows };
+}
+function nccMerge(u, d) {                                        // Admin: gộp tên cũ về 1 NCC chuẩn (đổi trong phiếu + máy móc, mọi dự án)
+  const R = nccRead_(), rows = R.rows;
+  let to = rows.find(o => String(o.id) === String(d.to || ''));
+  if (!to && d.toNew) {
+    const ten = String(clean(d.toNew, 200) || '').trim(); if (ten.length < 2) fail('Nhập tên chuẩn');
+    to = nccFind_(rows, ten);
+    if (!to) { to = { id:'N' + Date.now().toString(36) + Math.random().toString(36).slice(2, 5), ten:ten, alias:'', ma:'', loai:NCC_LOAI[d.loai] ? d.loai : '', sdt:'', lienHe:'', ghiChu:'', tt:'', by:u.name, at:nowTxt() }; rows.push(to); }
+  }
+  if (!to) fail('Chọn NCC chuẩn để gộp vào');
+  const names = (d.names || []).map(n => String(n || '').trim()).filter(Boolean).slice(0, 200);
+  const fold = (d.ids || []).map(String).filter(id => id !== String(to.id));   // các bản ghi NCC trùng → gộp vào
+  rows.filter(o => fold.indexOf(String(o.id)) >= 0).forEach(o => names.push.apply(names, [o.ten].concat(String(o.alias || '').split(';'))));
+  const want = {}; names.forEach(n => { const k = normName_(n); if (k) want[k] = 1; });
+  if (!Object.keys(want).length && !fold.length) fail('Chưa chọn tên nào để gộp');
+  rows.forEach(o => { if (o !== to && fold.indexOf(String(o.id)) < 0) nccKeys_(o).forEach(k => { if (want[k]) fail('Tên "' + k + '" đang thuộc NCC khác: ' + o.ten + ' — gộp cả NCC đó (chọn ô bên cạnh)'); }); });
+  const ss = SpreadsheetApp.getActiveSpreadsheet(); let nT = 0, nD = 0;
+  const gd = ss.getSheetByName(TXN.sheet), si = TXN.cols.indexOf('supplierOrReceiver');
+  if (gd) { const tx = readRows(gd, TXN.cols.length); tx.forEach((r, k) => { if (want[normName_(r[si])] && String(r[si]) !== to.ten) { if (!d.dry) gd.getRange(k + 2, si + 1).setValue(toCell(to.ten)); nT++; } }); }
+  const D = TABLES.devices, sh = ss.getSheetByName(D.sheet), dv = D.cols.indexOf('donVi');
+  if (sh) readRows(sh, D.cols.length).forEach((r, k) => { if (want[normName_(r[dv])] && String(r[dv]) !== to.ten) { if (!d.dry) sh.getRange(k + 2, dv + 1).setValue(toCell(to.ten)); nD++; } });
+  if (d.dry) return { success:true, dry:1, nTxn:nT, nDev:nD, to:to.ten };
+  nccAliasAdd_(to, names);
+  if (to.tt === 'cho') to.tt = '';
+  const keep = rows.filter(o => fold.indexOf(String(o.id)) < 0);
+  nccWrite_(R.sh, keep);
+  if (nT) bumpTxnRev();
+  writeLog(u, 'Gộp NCC', Object.keys(want).length + ' tên → ' + to.ten + ' · ' + nT + ' dòng phiếu · ' + nD + ' máy' + (fold.length ? ' · gộp ' + fold.length + ' bản ghi NCC' : ''));
+  return { success:true, to:to, nTxn:nT, nDev:nD, ncc:keep, nccRev:nccRev_() };
+}
+
+// ===== v5.58.0: THỦ KHO NẠP SỔ EXCEL → GỬI DUYỆT · Admin / P/TP.QLTB (quyền k_dnap) duyệt mới vào kho =====
+// Đợt chờ duyệt lưu ở sheet NapExcel (thông tin) + NapExcelData (dữ liệu chia khúc ≤ 40.000 ký tự). Chỉ mục nhỏ ở props 'napIdx'.
+const NAP = { sheet:'NapExcel', cols:['id','project','batch','file','by','byName','at','st','note','dBy','dByName','dAt','nRows','sum','added','dup','bad'],
+  head:['ID','Dự án','Mã đợt','Tên file','Người gửi (ID)','Người gửi','Lúc gửi','Trạng thái (cho · tra · xong · huy)','Lý do trả về','Người duyệt (ID)','Người duyệt','Lúc duyệt','Số dòng','Tóm tắt','Đã nạp','Trùng bỏ qua','Lỗi bỏ qua'] };
+const NAPD = { sheet:'NapExcelData', cols:['id','k','data'], head:['ID đợt','Khúc','Dữ liệu (JSON)'] };
+const napCanD_ = u => u.role === 'ADM' || hasP(u, 'k_dnap');
+function napRead_() { const sh = sheetOf(NAP.sheet, NAP.head); return { sh:sh, rows:readRows(sh, NAP.cols.length).map(r => rowToObj(NAP.cols, r)).filter(o => String(o.id || '') !== '') }; }
+function napSaveMeta_(R) { writeAll(R.sh, NAP.cols, R.rows); napIdx_(R.rows); }
+function napIdx_(rows) { const o = {}; rows.filter(x => x.st === 'cho' || x.st === 'tra').forEach(x => o[x.id] = { p:String(x.project), st:x.st, by:String(x.by) }); jset_('napIdx', o); }
+function napData_(id) {
+  const sh = sheetOf(NAPD.sheet, NAPD.head), rows = readRows(sh, 3).filter(r => String(r[0]) === String(id)).sort((a, b) => +a[1] - +b[1]);
+  if (!rows.length) return null;
+  try { return JSON.parse(rows.map(r => String(r[2])).join('')); } catch (e) { return null; }
+}
+function napDataDel_(id) {
+  const sh = sheetOf(NAPD.sheet, NAPD.head), rows = readRows(sh, 3), keep = rows.filter(r => String(r[0]) !== String(id));
+  if (keep.length !== rows.length) writeAll(sh, NAPD.cols, keep.map(r => ({ id:r[0], k:r[1], data:String(r[2]) })));
+}
+function napTg_(users, text) {
+  users.filter(x => x && x.tgChat).forEach(x => { try { tgApi_('sendMessage', { chat_id:x.tgChat, text:text }); } catch (e) {} });
+}
+function napApprovers_(P) { return loadUsers().filter(x => x.status === 'active' && napCanD_(x) && allowedProjects(x).indexOf(P) >= 0); }
+// getAll: số đợt chờ duyệt (người duyệt) / bị trả về (người gửi)
+function napBadge_(u) {
+  const I = jget_('napIdx', {}), A = allowedProjects(u), D = napCanD_(u); let cho = 0, tra = 0;
+  Object.keys(I).forEach(id => { const x = I[id]; if (A.indexOf(x.p) < 0) return; if (x.st === 'cho' && D && x.by !== String(u.id)) cho++; if (x.st === 'tra' && x.by === String(u.id)) tra++; });
+  return { cho:cho, tra:tra };
+}
+function nxtSubmit(u, d) {
+  const P = String(d.project || ''); mustAllow(u, P);
+  const batch = clean(String(d.batch || ''), 40); if (!/^[A-Za-z0-9_-]{4,40}$/.test(batch)) fail('Mã đợt nạp không hợp lệ');
+  const rows = Array.isArray(d.rows) ? d.rows : []; if (!rows.length) fail('Không có dòng nào để gửi'); if (rows.length > 5000) fail('Mỗi đợt tối đa 5.000 dòng — chia file nhỏ hơn');
+  const R = napRead_();
+  if (R.rows.some(x => x.batch === batch)) fail('Đợt này đã gửi rồi');
+  // bỏ dòng đã có trong kho (nạp trước đó)
+  const gd = sheetOf(TXN.sheet, TXN.head), sc = nxtSrcCol_(), pc = TXN.cols.indexOf('project'), have = {};
+  readRows(gd, TXN.cols.length).forEach(r => { const v = String(r[sc] || ''); if (v && String(r[pc]) === P) have[v.slice(v.indexOf('|') + 1)] = 1; });
+  R.rows.filter(x => x.st === 'cho' && String(x.project) === P).forEach(x => { const o = napData_(x.id); (o && o.rows || []).forEach(y => have[String(y.k)] = 2); });
+  let dupApp = 0, dupWait = 0;
+  const fresh = rows.filter(x => { const h = have[String(x.k || '')]; if (h === 1) dupApp++; else if (h === 2) dupWait++; return !h; })
+    .map(x => ({ k:clean(String(x.k || ''), 40), itemId:x.itemId, tmp:x.tmp, type:x.type === 'nhap' ? 'nhap' : 'xuat', qty:+x.qty || 0, time:String(x.time || '').slice(0, 30),
+      party:clean(String(x.party || ''), 150), thietBi:clean(String(x.thietBi || ''), 150), note:clean(String(x.note || ''), 300) }));
+  if (!fresh.length) fail('Không có dòng mới: ' + (dupApp ? dupApp + ' dòng đã có trong kho' : '') + (dupWait ? (dupApp ? ', ' : '') + dupWait + ' dòng đang chờ duyệt ở đợt trước' : ''));
+  const newItems = (Array.isArray(d.newItems) ? d.newItems : []).slice(0, 500).map(x => ({ tmp:String(x.tmp || ''), name:clean(String(x.name || ''), 150), unit:clean(String(x.unit || ''), 30), cat:clean(String(x.cat || ''), 30) }))
+    .filter(x => fresh.some(y => y.tmp === x.tmp));
+  const ds = fresh.map(x => tms_(x.time)).filter(Boolean).sort((a, b) => a - b), fmt = t => Utilities.formatDate(new Date(t), TZ, 'd/M/yyyy');
+  const sum = { nhap:fresh.filter(x => x.type === 'nhap').length, xuat:fresh.filter(x => x.type === 'xuat').length, tu:ds.length ? fmt(ds[0]) : '', den:ds.length ? fmt(ds[ds.length - 1]) : '',
+    moi:newItems.map(x => x.name), dupApp:dupApp, dupWait:dupWait };
+  const id = 'D' + Date.now().toString(36);
+  const js = JSON.stringify({ rows:fresh, newItems:newItems, maps:Array.isArray(d.maps) ? d.maps.slice(0, 20) : [], file:clean(String(d.file || ''), 120) }), SZ = 40000, parts = [];
+  for (let i = 0; i < js.length; i += SZ) parts.push([id, parts.length, js.slice(i, i + SZ)]);
+  const sd = sheetOf(NAPD.sheet, NAPD.head); sd.getRange(sd.getLastRow() + 1, 1, parts.length, 3).setValues(parts.map(r => [r[0], r[1], r[2]]));
+  R.rows.push({ id:id, project:P, batch:batch, file:clean(String(d.file || ''), 120), by:u.id, byName:u.name, at:nowTxt(), st:'cho', note:'', dBy:'', dByName:'', dAt:'', nRows:fresh.length, sum:JSON.stringify(sum), added:'', dup:'', bad:'' });
+  napSaveMeta_(R);
+  writeLog(u, 'Gửi duyệt nạp sổ Excel', P + ' · ' + clean(String(d.file || ''), 120) + ' · ' + fresh.length + ' dòng (' + sum.nhap + ' nhập, ' + sum.xuat + ' xuất) · ' + sum.tu + ' – ' + sum.den);
+  napTg_(napApprovers_(P).filter(x => String(x.id) !== String(u.id)), '📥 ' + u.name + ' gửi duyệt nạp sổ Excel · ' + P + '\n' + fresh.length + ' dòng (' + sum.nhap + ' nhập, ' + sum.xuat + ' xuất), ' + sum.tu + ' – ' + sum.den + (sum.moi.length ? '\n' + sum.moi.length + ' món mới' : '') + '\nMở app → Menu → Đợt nạp chờ duyệt');
+  return { success:true, id:id, nRows:fresh.length, sum:sum };
+}
+function nxtPend(u, d) {
+  const R = napRead_(), A = allowedProjects(u), D = napCanD_(u);
+  const list = R.rows.filter(x => A.indexOf(String(x.project)) >= 0 && (D || String(x.by) === String(u.id)))
+    .map(x => Object.assign({}, x, { sum:(() => { try { return JSON.parse(x.sum || '{}'); } catch (e) { return {}; } })(), mine:String(x.by) === String(u.id) ? 1 : 0 }))
+    .sort((a, b) => (a.st === 'cho' ? 0 : 1) - (b.st === 'cho' ? 0 : 1) || tms_(b.at) - tms_(a.at)).slice(0, 80);
+  return { success:true, list:list, canD:D ? 1 : 0 };
+}
+function napGet_(u, id, needD) {
+  const R = napRead_(), x = R.rows.find(o => String(o.id) === String(id)); if (!x) fail('Không tìm thấy đợt nạp');
+  if (allowedProjects(u).indexOf(String(x.project)) < 0) fail('Bạn không được giao dự án "' + x.project + '"');
+  if (needD && !napCanD_(u)) fail('Chức danh của bạn chưa được cấp quyền duyệt nạp sổ');
+  if (!needD && !napCanD_(u) && String(x.by) !== String(u.id)) fail('Không xem được đợt của người khác');
+  return { R:R, x:x };
+}
+function nxtReview(u, d) {
+  const G = napGet_(u, d.id, false), x = G.x, P = String(x.project), o = napData_(x.id);
+  if (!o) return { success:true, meta:x, rows:[], items:[], gone:1 };
+  const T = TABLES.items, items = readRows(sheetOf(T.sheet, T.head), T.cols.length).filter(r => r[0] !== '' && String(r[6]) === P);
+  const byId = {}; items.forEach(r => byId[String(r[0])] = r);
+  const nm = {}; o.newItems.forEach(n => nm[n.tmp] = n);
+  // phiếu đã có trong app (không phải nạp từ Excel) → dò nghi trùng: cùng món, cùng ngày, cùng loại, cùng số lượng
+  const gd = sheetOf(TXN.sheet, TXN.head), sc = nxtSrcCol_(), ci = TXN.cols, app = {};
+  readRows(gd, ci.length).forEach(r => { if (String(r[ci.indexOf('project')]) !== P || String(r[sc] || '')) return;
+    const dt = String(fromCell(r[ci.indexOf('datetime')]) || '').split(' ').pop(), k = r[ci.indexOf('itemId')] + '|' + r[ci.indexOf('type')] + '|' + dt + '|' + (+r[ci.indexOf('qty')]); app[k] = (app[k] || 0) + 1; });
+  const delta = {};
+  const rows = o.rows.map((r, i) => {
+    const it = r.itemId !== undefined && r.itemId !== '' ? byId[String(r.itemId)] : null, n = r.tmp ? nm[r.tmp] : null;
+    const key = it ? String(it[0]) : 'tmp:' + r.tmp, day = String(r.time || '').split(' ').pop();
+    const dupK = it ? it[0] + '|' + r.type + '|' + day + '|' + (+r.qty) : '', trung = dupK && app[dupK] ? 1 : 0;
+    const truoc = it && !afterMoc_(it[0], r.time) ? 1 : 0;
+    if (!truoc) delta[key] = (delta[key] || 0) + (r.type === 'nhap' ? +r.qty : -r.qty);
+    return { i:i, day:day, type:r.type, name:it ? String(it[1]) : n ? n.name : '?', unit:it ? String(it[3]) : n ? n.unit : '', qty:+r.qty, party:r.party, thietBi:r.thietBi, note:r.note, moi:n ? 1 : 0, trung:trung, truoc:truoc };
+  });
+  const sumI = Object.keys(delta).map(k => { const it = k.indexOf('tmp:') === 0 ? null : byId[k], n = it ? null : nm[k.slice(4)], st = it ? +it[4] || 0 : 0;
+    return { name:it ? String(it[1]) : n ? n.name : '?', unit:it ? String(it[3]) : n ? n.unit : '', ton:st, delta:Math.round(delta[k] * 1000) / 1000, sau:Math.round((st + delta[k]) * 1000) / 1000, moi:it ? 0 : 1 }; })
+    .sort((a, b) => b.moi - a.moi || (a.sau < 0 ? -1 : 0) - (b.sau < 0 ? -1 : 0) || a.name.localeCompare(b.name));
+  return { success:true, meta:Object.assign({}, x, { sum:JSON.parse(x.sum || '{}') }), rows:rows, items:sumI, file:o.file,
+    n:{ trung:rows.filter(r => r.trung).length, truoc:rows.filter(r => r.truoc).length, moi:o.newItems.length, am:sumI.filter(s => s.sau < 0).length } };
+}
+function nxtApprove(u, d) {
+  const G = napGet_(u, d.id, true), x = G.x;
+  if (x.st !== 'cho') fail(x.st === 'xong' ? 'Đợt này đã được duyệt' : 'Đợt này không còn chờ duyệt');
+  if (String(x.by) === String(u.id)) fail('Không tự duyệt đợt của mình — cần Admin hoặc P/TP.QLTB khác duyệt');
+  const o = napData_(x.id); if (!o) fail('Mất dữ liệu đợt nạp — trả về để thủ kho gửi lại');
+  const sub = loadUsers().find(y => String(y.id) === String(x.by)) || u;
+  const su = Object.assign({}, sub, { realName:'' });
+  const skip = {}; (d.bo || []).forEach(i => skip[+i] = 1);             // người duyệt bỏ các dòng nghi trùng
+  const rows = o.rows.filter((r, i) => !skip[i]);
+  const CH = 600, idMap = {}; let added = 0, dup = 0, bad = 0;
+  for (let i = 0; i < rows.length; i += CH) {
+    const part = rows.slice(i, i + CH).map(r => r.tmp && idMap[r.tmp] ? Object.assign({}, r, { itemId:idMap[r.tmp], tmp:undefined }) : r);
+    const last = i + CH >= rows.length;
+    const r = nxtImport(su, { project:x.project, batch:x.batch, file:o.file, newItems:i === 0 ? o.newItems : [], rows:part, maps:last ? o.maps : [], last:last });
+    Object.assign(idMap, r.idMap || {}); added += r.added; dup += r.dup; bad += r.bad;
+  }
+  const meta = jget_('nxtBatch', {}); if (meta[x.batch]) { meta[x.batch].duyet = u.name; meta[x.batch].gui = x.byName; jset_('nxtBatch', meta); }
+  Object.assign(x, { st:'xong', dBy:u.id, dByName:u.name, dAt:nowTxt(), added:added, dup:dup + Object.keys(skip).length, bad:bad });
+  napSaveMeta_(G.R); napDataDel_(x.id);
+  writeLog(u, 'Duyệt nạp sổ Excel', x.project + ' · ' + x.file + ' · gửi: ' + x.byName + ' · nạp ' + added + ' phiếu' + (Object.keys(skip).length ? ' · bỏ ' + Object.keys(skip).length + ' dòng nghi trùng' : ''));
+  napTg_([sub].filter(y => y !== u), '✅ ' + u.name + ' đã duyệt đợt nạp sổ Excel ' + x.project + ' (' + x.file + '): ' + added + ' phiếu vào kho.');
+  return { success:true, added:added, dup:dup, bad:bad, skip:Object.keys(skip).length };
+}
+function nxtReturn(u, d) {
+  const G = napGet_(u, d.id, true), x = G.x, note = String(clean(d.note || '', 300) || '').trim();
+  if (x.st !== 'cho') fail('Đợt này không còn chờ duyệt');
+  if (note.length < 3) fail('Ghi lý do trả về để thủ kho sửa');
+  Object.assign(x, { st:'tra', note:note, dBy:u.id, dByName:u.name, dAt:nowTxt() });
+  napSaveMeta_(G.R); napDataDel_(x.id);
+  writeLog(u, 'Trả về đợt nạp sổ Excel', x.project + ' · ' + x.file + ' · gửi: ' + x.byName + ' · lý do: ' + note);
+  napTg_(loadUsers().filter(y => String(y.id) === String(x.by)), '↩ ' + u.name + ' trả về đợt nạp sổ Excel ' + x.project + ' (' + x.file + ').\nLý do: ' + note + '\nSửa file rồi gửi lại.');
+  return { success:true };
+}
+function nxtCancel(u, d) {
+  const R = napRead_(), x = R.rows.find(o => String(o.id) === String(d.id)); if (!x) fail('Không tìm thấy đợt nạp');
+  if (String(x.by) !== String(u.id) && u.role !== 'ADM') fail('Chỉ người gửi huỷ được');
+  if (x.st === 'cho') { x.st = 'huy'; napDataDel_(x.id); writeLog(u, 'Huỷ đợt nạp sổ Excel', x.project + ' · ' + x.file); }
+  else if (x.st === 'tra') x.st = 'huy';                               // đã đọc lý do → ẩn khỏi danh sách cần xem
+  else fail('Đợt đã duyệt — muốn gỡ thì nhờ Admin / P.QLTB hoàn tác');
+  napSaveMeta_(R);
+  return { success:true };
+}
+
+// ===== v5.59.0: ADMIN XOÁ SẠCH DỮ LIỆU KHO CỦA 1 DỰ ÁN (giữ dự án trống, giữ Thi công, không đụng dự án khác) =====
+// Xoá các dòng có cột Dự án = P ở: vật tư, máy, máy vào/ra, sửa chữa, ghi chú, phiếu nhập/xuất, phiếu mượn, ảnh biên bản, bảng giá, phiếu YC, phiếu giấy, giải động, báo hỏng, đợt nạp Excel.
+// Giữ: Thi công (TC_*), cấu kiện kho, hạng mục, kế hoạch, cài đặt dự án, người đứng tên, tài khoản được giao. Trước khi xoá: sao lưu cả file + file "Lưu trữ" chứa đúng các dòng bị xoá.
+function pjWipeTables_() {
+  const L = [['Vật tư', TABLES.items], ['Máy / thiết bị', TABLES.devices], ['Máy vào / ra', TABLES.devlog], ['Sửa chữa', TABLES.repairs], ['Ghi chú', TABLES.notes],
+    ['Phiếu nhập / xuất', TXN], ['Phiếu mượn', LOAN], ['Ảnh biên bản', PHOTO], ['Bảng giá', PRICE], ['Phiếu yêu cầu', REQ], ['Phiếu giấy (mã QR)', PG], ['Báo hỏng', HONG], ['Đợt nạp Excel', NAP]];
+  if (typeof GD !== 'undefined') L.push(['Danh sách giải động', GD]);
+  return L.map(x => ({ label:x[0], sheet:x[1].sheet, pc:x[1].cols.indexOf('project') })).filter(x => x.pc >= 0);
+}
+function pjWipeScan_(P) {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  return pjWipeTables_().map(t => {
+    const sh = ss.getSheetByName(t.sheet); if (!sh || sh.getLastRow() < 2) return Object.assign({ n:0 }, t);
+    const n = sh.getLastRow() - 1, nc = sh.getLastColumn(), vals = sh.getRange(2, 1, n, nc).getValues();
+    const del = vals.filter(r => String(fromCell(r[t.pc])) === P);
+    return Object.assign({ n:del.length, sh:sh, nc:nc, vals:vals }, t);
+  });
+}
+function pjWipe(u, d) {
+  const P = String(d.name || ''); if (projList().indexOf(P) < 0) fail('Không có dự án "' + P + '"');
+  const S = pjWipeScan_(P), total = S.reduce((a, t) => a + t.n, 0);
+  const list = S.filter(t => t.n).map(t => ({ label:t.label, n:t.n }));
+  if (d.dry) return { success:true, dry:1, total:total, list:list };
+  if (String(d.confirm || '') !== P) fail('Gõ đúng tên dự án để xác nhận');
+  if (!total) return { success:true, total:0, list:[] };
+  // 1) file Lưu trữ: mỗi bảng 1 sheet, đúng các dòng bị xoá (kèm dòng tiêu đề)
+  let url = '';
+  try {
+    const stamp = Utilities.formatDate(new Date(), TZ, 'yyyy-MM-dd HH\'h\'mm'), ar = SpreadsheetApp.create('Lưu trữ kho ' + P + ' ' + stamp);
+    S.filter(t => t.n).forEach((t, k) => {
+      const ws = k === 0 ? ar.getSheets()[0].setName(t.label) : ar.insertSheet(t.label);
+      const head = t.sh.getRange(1, 1, 1, t.nc).getValues()[0], rows = t.vals.filter(r => String(fromCell(r[t.pc])) === P);
+      ws.getRange(1, 1, 1, t.nc).setValues([head]);
+      for (let i = 0; i < rows.length; i += 5000) { const part = rows.slice(i, i + 5000).map(r => r.map(v => typeof v === 'string' && v !== '' ? "'" + v : v)); ws.getRange(i + 2, 1, part.length, t.nc).setValues(part); }
+    });
+    try { DriveApp.getFileById(ar.getId()).moveTo(bkFolder_()); } catch (e) {}
+    url = ar.getUrl();
+  } catch (e) { fail('Không tạo được file lưu trữ nên chưa xoá: ' + String(e && e.message || e).slice(0, 200)); }
+  // 2) xoá: ghi lại phần giữ (chuỗi giữ dạng văn bản), không đụng dòng dự án khác
+  const ids = {};
+  S.filter(t => t.n).forEach(t => {
+    if (t.sheet === TABLES.items.sheet) t.vals.forEach(r => { if (String(fromCell(r[t.pc])) === P) ids[String(r[0])] = 1; });
+    if (t.sheet === NAP.sheet) t.vals.forEach(r => { if (String(fromCell(r[t.pc])) === P) ids['nap:' + r[0]] = 1; });
+    const keep = t.vals.filter(r => String(fromCell(r[t.pc])) !== P).map(r => r.map(v => typeof v === 'string' && v !== '' ? "'" + v : v));
+    t.sh.getRange(2, 1, t.vals.length, t.nc).clearContent();
+    if (keep.length) t.sh.getRange(2, 1, keep.length, t.nc).setValues(keep);
+  });
+  // 3) dọn phụ: mốc kiểm kê của vật tư đã xoá · thông tin đợt nạp · dữ liệu đợt nạp chờ duyệt
+  try { const m = jget_('kkMoc', {}); let c = 0; Object.keys(m).forEach(k => { if (ids[k]) { delete m[k]; c++; } }); if (c) jset_('kkMoc', m); } catch (e) {}
+  try { const m = jget_('nxtBatch', {}); let c = 0; Object.keys(m).forEach(k => { if (m[k] && m[k].project === P) { delete m[k]; c++; } }); if (c) jset_('nxtBatch', m); } catch (e) {}
+  try { const sd = sheetOf(NAPD.sheet, NAPD.head), rows = readRows(sd, 3), keep = rows.filter(r => !ids['nap:' + r[0]]);
+    if (keep.length !== rows.length) writeAll(sd, NAPD.cols, keep.map(r => ({ id:r[0], k:r[1], data:String(r[2]) }))); napIdx_(napRead_().rows); } catch (e) {}
+  bumpTxnRev();
+  writeLog(u, 'Xoá sạch dữ liệu kho dự án', P + ' · ' + total + ' dòng (' + list.map(x => x.label + ' ' + x.n).join(', ') + ') · giữ Thi công + dự án trống · lưu trữ: ' + url);
+  return { success:true, total:total, list:list, url:url };
+}
+
 const VER_LOG = [
+ { v:'5.59.7', d:'02/11/2026', type:'fix', title:'Số máy không còn tính máy đã rời công trình · Excel báo cáo tự giãn hàng', who:'Mọi người · Admin · Lãnh đạo',
+   sum:['Tổng quan, thẻ Thiết bị/Máy móc: chỉ đếm máy đang ở công trường; dòng dưới ghi thêm số máy đã rời','Tổng hợp dự án: số máy và cột Máy trong Excel chỉ đếm máy đang ở công trường','File Excel xuất từ app: ô chữ dài xuống dòng thì hàng tự cao đủ thấy hết chữ, không phải kéo tay'] },
+ { v:'5.59.2', d:'31/10/2026', type:'up', title:'Danh mục nhà cung cấp: thêm loại Dầu / nhớt · ô tìm gõ tiếng Việt không mất chữ', who:'Thủ kho · Admin',
+   sum:['Loại NCC thêm "Dầu / nhớt" (cây xăng, đại lý dầu nhớt) — có nút lọc riêng','Phiếu nhập dầu, nhớt gõ tên NCC mới → tự xếp loại Dầu / nhớt khi chờ duyệt','Ô tìm Danh mục NCC gõ Unikey / Telex không còn mất chữ; tìm theo từng chữ ("petro minh" ra "Petrolimex Minh Hưng")'] },
+ { v:'5.59.0', d:'31/10/2026', type:'new', title:'Admin xoá sạch dữ liệu kho của một dự án (giữ dự án trống, giữ Thi công)', who:'Admin',
+   sum:['Quản lý dự án → dòng dự án → "Xoá sạch dữ liệu kho": xem trước số dòng từng mục (vật tư, máy, phiếu nhập / xuất, phiếu mượn, phiếu yêu cầu, giải động…) → gõ đúng tên dự án → Xoá','Máy chủ sao lưu cả file và tạo file "Lưu trữ kho …" chứa đúng các dòng bị xoá (thư mục sao lưu)','Không đụng dữ liệu dự án khác (phiếu nhập từ dự án này ở dự án khác vẫn giữ). Giữ Thi công, hạng mục, kế hoạch, cài đặt, tài khoản được giao'] },
+ { v:'5.58.1', d:'31/10/2026', type:'fix', title:'Duyệt bỏ thông tin mượn ghi đúng người đứng tên', who:'Admin · CHT/CHP · P.QLTB',
+   sum:['Admin duyệt bỏ thông tin mượn, nhận trả, đóng phiếu mượn: lịch sử phiếu và nhật ký ghi người đứng tên của dự án (trước đây hiện tên tài khoản Admin)'] },
+ { v:'5.58.0', d:'31/10/2026', type:'new', title:'Thủ kho nạp sổ nhập xuất từ Excel — Admin hoặc P/TP.QLTB duyệt mới vào kho',
+   who:'Thủ kho · P/TP.QLTB · Admin',
+   sum:['Thủ kho: Menu → "📥 Nạp sổ từ Excel (gửi duyệt)" → chọn file, ghép cột, khớp tên, xem trước → "Gửi duyệt". Chưa vào kho cho tới khi được duyệt','Người duyệt (Admin, PP/TP.QLTB): Menu → "Đợt nạp chờ duyệt" → xem số dòng nhập / xuất, khoảng ngày, món mới, tồn trước → sau, dòng nghi trùng với phiếu đã có trên app → Duyệt và nạp (bỏ được dòng nghi trùng) hoặc Trả về kèm lý do','Không tự duyệt đợt của mình. Báo qua Telegram cho người duyệt và người gửi','Phiếu nạp ghi người lập = thủ kho; Nhật ký ghi người gửi + người duyệt. Người duyệt hoàn tác được cả đợt','Quyền mới trong Phân quyền chức danh: "Nạp sổ từ Excel (gửi duyệt)" (mặc định Thủ kho) · "Duyệt đợt nạp sổ Excel" (mặc định PP/TP.QLTB)'] },
+ { v:'5.57.0', d:'30/10/2026', type:'new', title:'Danh mục nhà cung cấp dùng chung · Xuất Excel khoá số liệu',
+   who:'Thủ kho · Quản lý thiết bị · Admin · người xuất báo cáo',
+   sum:['Ô NCC / đơn vị cho thuê (phiếu nhập, máy vào, trả máy, phiếu xe): gõ vài chữ → chọn từ danh mục chung, gõ không dấu, tên viết tắt','Trả máy thuê: tự điền đúng NCC đã cho thuê máy đó','Tên mới gõ tay → lưu "chờ duyệt"; Admin duyệt hoặc gộp vào tên đúng','Admin: Quét tên cũ → gộp các cách viết khác nhau về 1 tên chuẩn (đổi luôn trong phiếu cũ + máy, có xem trước, ghi nhật ký)','Excel: cột NCC dùng tên chuẩn + cột Mã NCC; thêm sheet "Máy thuê theo NCC"','Xuất báo cáo có 2 nút: Xuất (cho chỉnh sửa) và 🔒 Xuất khoá số liệu (không sửa được số, vẫn lọc / sắp xếp / sao chép được; cột Ghi chú vẫn ghi được); tên file có _KHOA, góc trên ghi phiên bản app + dữ liệu'] },
+ { v:'5.56.11', d:'28/10/2026', type:'new', title:'Gợi ý tên vật tư, máy móc của mọi dự án khi gõ · ô ngày giờ phiếu hiện sẵn · Admin xoá vật tư chưa dùng',
+   who:'Thủ kho · Kỹ sư lập phiếu yêu cầu · Admin',
+   sum:['Phiếu nhập, phiếu đi mượn, phiếu yêu cầu: gõ tên → nhóm "🔁 Tên đã dùng ở dự án khác" (vật tư + máy). Chọn → tự điền nhóm, đơn vị, mã P.QLTB; vật tư chỉ được thêm vào kho khi lưu phiếu',
+        'Phiếu nhập / xuất: ô Ngày giờ phiếu nằm ngay dưới Số lượng, hiện sẵn giờ hiện tại; không chỉnh = ghi giờ bấm Lưu',
+        'Chép vật tư từ dự án khác: chỉ Admin. Admin: Quản lý dự án → "Xoá vật tư chưa dùng" (tồn 0, chưa có phiếu nào; sao lưu trước)'],
+   todo:['Dán Apps Script mới + Triển khai Phiên bản mới (máy chủ 5.56.11)', 'Thay index.html + sw.js + thicong.html trên GitHub', 'Admin: Quản lý dự án → DA Palm → Xoá vật tư chưa dùng (món đã chép ở 5.56.10)'] },
+ { v:'5.56.10', d:'28/10/2026', type:'bug', title:'Sửa lỗi chép vật tư từ dự án khác không được · báo cáo không lẫn dự án · chọn từ ngày – đến ngày',
+   who:'Thủ kho · Admin',
+   sum:['Chép vật tư từ dự án khác (VD TTHC → DA Palm) báo lỗi "Số dòng/cột không khớp" → nay chép được, kèm mã P.QLTB và cài đặt theo dõi ở công trường; tồn bắt đầu từ 0',
+        'Đổi dự án lúc đang đồng bộ không còn làm lẫn phiếu dự án khác (báo cáo Nhà hát ra phiếu TTHC). Máy đang lẫn tự tải lại',
+        'Xuất báo cáo Excel: ô Từ ngày / Đến ngày hiện sẵn, thêm Tháng trước, Tuần này từ thứ Hai, nhớ lựa chọn'],
+   todo:['Dán Apps Script mới + Triển khai Phiên bản mới (máy chủ 5.56.10)', 'Thay index.html + sw.js + thicong.html trên GitHub', 'Chép lại vật tư TTHC → DA Palm'] },
+ { v:'5.56.8', d:'26/10/2026', type:'up', title:'Phiếu mượn / cho mượn: chọn ngày giờ trên phiếu · Admin sửa ngày mượn, ngày trả',
+   who:'Thủ kho · Admin',
+   sum:['Lập phiếu cho mượn / đi mượn, nhận trả / trả lại, đóng phiếu: có ô "Ngày giờ ghi trên phiếu" (mặc định bây giờ, chọn lùi được, không cho ngày tương lai)',
+        'Admin: Sửa phiếu mượn → đổi ngày giờ mượn và ngày giờ từng lần trả. Phiếu kho đi kèm đổi ngày theo; tồn tính lại nếu vượt qua mốc kiểm kê. Ngày trả không được sớm hơn ngày mượn',
+        'Báo cáo Excel (Sổ nhập / xuất, Phiếu mượn chưa trả) lấy theo ngày đã chỉnh'],
+   todo:['Dán Apps Script mới + Triển khai Phiên bản mới (máy chủ 5.56.8)', 'Thay index.html + sw.js + thicong.html trên GitHub', 'Admin: sửa ngày các phiếu đi mượn TTHC (đèn pha, sling, dây điện) theo ngày mượn thật'] },
+ { v:'5.56.6', d:'23/10/2026', type:'bug', title:'Máy vào / ra: Admin sửa, xoá dòng · dọn lần vào trùng · sửa ngày máy thì lịch sử đổi theo',
+   who:'Admin',
+   sum:['Lịch sử nhập / xuất: dòng 🏗 Máy vào / Máy ra có nút ✏️ (sửa ngày, số đồng hồ) và 🗑 (xoá) cho Admin. Máy chủ sao lưu trước khi xoá',
+        'Admin: Quản lý dự án → "Dọn máy vào trùng": máy có 2 lần vào liền nhau (không có máy ra ở giữa) → giữ lần sớm nhất (VD SCC550A ở Nhà hát)',
+        'Máy đang ở công trường thì không ghi "Máy vào" thêm lần nữa (trước đây Mở lại / nhận máy lần 2 vẫn ghi → trùng)',
+        'Sửa ngày vào / số đồng hồ lúc vào trong chi tiết máy → dòng Máy vào gần nhất đổi theo (báo cáo không còn hiện ngày cũ)'],
+   todo:['Dán Apps Script mới + Triển khai Phiên bản mới (máy chủ 5.56.6)', 'Thay index.html + sw.js + thicong.html trên GitHub', 'Admin: Quản lý dự án → Dọn máy vào trùng (Nhà hát)'] },
+ { v:'5.56.5', d:'22/10/2026', type:'bug', title:'Sửa tồn tính trùng (khai số ở công trường + xác nhận hàng cũ) · bỏ cột cố định trong Excel',
+   who:'Admin',
+   sum:['Hàng nhập thẳng ra công trường cũ đã được "Khai số ở CT" (bản 5.55 cộng vào tồn) rồi lại được "Xác nhận hàng cũ" → tồn bị cộng 2 lần (VD Tank, Silo, Cừ ở Nhà hát)',
+        'Admin: Quản lý dự án → "Dọn khai số ở CT trùng" → xem tồn trước / sau từng món → tick → Sửa. Máy chủ sao lưu trước',
+        'File báo cáo Excel: bỏ cột cố định (đường kẻ dọc); vẫn giữ dòng tiêu đề cố định khi kéo xuống'],
+   todo:['Dán Apps Script mới + Triển khai Phiên bản mới (máy chủ 5.56.5)', 'Thay index.html + sw.js + thicong.html trên GitHub', 'Admin: Quản lý dự án → Dọn khai số ở CT trùng (Nhà hát)'] },
+ { v:'5.56.4', d:'22/10/2026', type:'up', title:'Gộp phiếu "nhập thẳng ra công trường" cũ · báo cáo đếm lượt nhập / xuất đúng',
+   who:'Admin · Thủ kho',
+   sum:['Admin: Quản lý dự án → "Gộp phiếu nhập thẳng CT cũ" → xem trước từng món → Gộp. Phiếu xuất đi cặp và dòng "Hàng cũ ở CT (xác nhận)" bị xoá; phiếu nhập thành phiếu nhập thường. Máy chủ sao lưu trước',
+        'Món thủ kho đã xác nhận còn ít hơn số nhập: phần đã dùng ghi 1 phiếu xuất dùng. Món chưa xác nhận: coi như còn đủ trong kho',
+        'Báo cáo kho: ô "Lượt nhập vào công trình" đếm mọi lượt hàng từ ngoài vào (mua, thuê, mượn, nhận từ dự án khác); ô "Lượt xuất" chỉ đếm xuất thật'],
+   todo:['Dán Apps Script mới + Triển khai Phiên bản mới (máy chủ 5.56.4)', 'Thay index.html + sw.js + thicong.html trên GitHub', 'Admin: Quản lý dự án → Gộp phiếu nhập thẳng CT cũ (Nhà hát, TTHC)'] },
+ { v:'5.56.3', d:'22/10/2026', type:'bug', title:'Sửa nhóm vật tư dễ hơn · sổ nhiên liệu đúng hơn',
+   who:'Admin · Thủ kho',
+   sum:['Thẻ kho có nút "✏️ Sửa" (đổi tên, nhóm, ngưỡng cảnh báo) — không phải vào Tổng quan → Loại vật tư nữa',
+        'Admin lưu Danh mục vật tư xong, app liệt kê món trong kho (mọi dự án) đang khác nhóm với danh mục → tick để sửa một lần. Nút "Đối chiếu nhóm hàng trong kho" trong Danh mục vật tư',
+        'Báo cáo kho: cột Dầu DO chỉ cộng món đơn vị Lít; món nhóm Nhiên liệu nhưng đơn vị Cont / Bộ / Cái… không vào sổ nhiên liệu và được ghi chú đỏ "kiểm tra lại nhóm"'],
+   todo:['Dán Apps Script mới + Triển khai Phiên bản mới (máy chủ 5.56.3)', 'Thay index.html + sw.js + thicong.html trên GitHub'] },
+ { v:'5.56.0', d:'21/10/2026', type:'new', title:'Danh mục có hình · mã từng món · tem QR',
+   who:'Admin · Thủ kho · mọi người',
+   sum:['Danh mục vật tư chung (tối đa 1.000 món, gồm cả máy): mỗi món có mã tự cấp theo nhóm (VD TH-001, NH-006), Admin sửa được; máy dùng mã P.QLTB',
+        'Menu → Danh mục có hình: ảnh, mã, nhóm, đơn vị; bấm 1 món xem tồn ở từng dự án, Lập phiếu xuất, Thẻ kho',
+        'Admin: Duyệt ảnh — máy chủ tự tìm ảnh trên mạng, chạm chọn rồi Lưu (ảnh lưu Drive "FECON – Ảnh danh mục", nhãn Ảnh minh hoạ). Thủ kho: Chụp ảnh thật để thay dần',
+        'Trang danh mục công khai (không cần đăng nhập, không có tồn kho / dự án / giá): in 1 mã QR cả danh mục để dán ở kho, cổng, văn phòng',
+        'In tem QR từng món 24 tem / tờ A4 (decal 70 × 37 mm). Quét tem bằng camera hoặc ô Quét QR trong app → mở đúng món',
+        'Excel danh mục có cột Mã và ảnh nhỏ',
+        'Báo cáo kho: món có chữ "dầu" trong tên nhưng không thuộc nhóm Nhiên liệu (VD Cont dầu) nay nằm đúng nhóm và có trong Sổ nhập / Sổ xuất'],
+   todo:['Dán Apps Script mới + Triển khai Phiên bản mới (máy chủ 5.56.0)', 'Tải 4 tệp lên GitHub (thêm tệp mới danhmuc.html)', 'Admin: Danh mục vật tư → Lưu (cấp mã) → Danh mục có hình → Duyệt ảnh'] },
+ { v:'5.55.0', d:'21/10/2026', type:'up', title:'Một tồn kho · xem phiếu giấy khi quét mã QR',
+   who:'Thủ kho · CHT/CHP · Admin · mọi người',
+   sum:['Hàng nhập vào dự án (trong kho hay ngoài công trường) đều là tồn kho; chỉ phiếu xuất dùng / ra khỏi công trình / cho mượn mới trừ. Bỏ "Thẳng ra công trường", "Ra công trường", "Về kho"',
+        'Số "ở công trường" của thiết bị / vật tư phụ trợ tự cộng vào tồn kho (máy chủ làm 1 lần). Phiếu cũ giữ nguyên, chỉ đổi nhãn',
+        'Hàng nhập thẳng ra công trường trước đây đã bị tính dùng hết: thẻ "Xác nhận hàng cũ chưa ghi tồn" ở Tổng quan — thủ kho ghi số còn chưa dùng để cộng lại vào tồn',
+        'Phiếu nhập theo xe (PN) in mới bỏ 2 ô Nhập kho / Thẳng ra công trường; phiếu đã in vẫn dùng được',
+        'Quét mã QR (camera điện thoại hoặc ô Quét phiếu QR) mã đã nhập → mở màn xem phiếu: ảnh phiếu tay, ngày giờ, người nhập, xe, các phiếu app đã lập. Mã dự án khác → tự đổi dự án. Admin huỷ cả lần nhập ngay tại đây'],
+   todo:['Dán Apps Script mới + Triển khai Phiên bản mới (máy chủ 5.55.0)', 'Thay index.html + sw.js + thicong.html trên GitHub', 'Thủ kho: Tổng quan → Xác nhận hàng cũ chưa ghi tồn'] },
+ { v:'5.54.1', d:'20/10/2026', type:'bug', title:'Sửa phông in, phiếu nhập theo xe, biên bản xuất gọn',
+   who:'Thủ kho · CHT/CHP',
+   sum:['Chữ có dấu (Ế, Ầ, Ấ, Ậ, Ư) in đậm đều trên điện thoại', 'Phiếu nhập theo xe: 3 hàng Xe / Biển số / Chứng từ kéo dài bằng hàng Nhà cung cấp',
+        'Biên bản xuất: bỏ hàng CMND, thời điểm, nội dung giao nhận, cột mã P.QLTB, cột tình trạng; đọc mã QR ảnh chụp cả tờ tốt hơn'],
+   todo:['Chỉ thay index.html + sw.js + thicong.html trên GitHub'] },
+ { v:'5.54.0', d:'20/10/2026', type:'new', title:'Phiếu nhập theo xe · Biên bản xuất ra khỏi công trình · quét QR ở Tổng quan',
+   who:'Thủ kho · CHT/CHP · Admin',
+   sum:['In phiếu nhập theo xe (2 phiếu / A4, mã PN) và biên bản giao nhận thiết bị khi xuất ra khỏi công trình (1 phiếu / A4, mã PX), có mã QR',
+        'Màn Nhập theo xe / Xuất theo xe: quét mã → thông tin xe → các dòng (nhóm tự nhảy) → kiểm tra → mỗi dòng 1 phiếu (PN-0012-1…), kèm ảnh, giờ theo phiếu',
+        'Xuất ra khỏi công trình: về kho / trả bên cho thuê / chuyển dự án / cho mượn. Chuyển dự án: dự án nhận quét cùng mã để nhập',
+        'Ô "Quét phiếu QR" ở Tổng quan, tự nhận phiếu YC / phiếu nhập / phiếu xuất',
+        'Lịch sử nhập / xuất: hiện mã phiếu giấy, tìm theo mã / biển số, lọc phiếu không có mã. Sổ nhập / xuất Excel: số phiếu = mã giấy, thêm cột Xe',
+        'Logo mới trên mọi bản in; phiếu YC bỏ dòng ghi chú dưới mã QR'],
+   todo:['Dán Apps Script mới + Triển khai Phiên bản mới (máy chủ 5.54.0)', 'Thay index.html + sw.js + thicong.html trên GitHub'] },
+ { v:'5.53.1', d:'19/10/2026', type:'fix', title:'Phiếu giấy: khớp với phiếu cóc, kiểm kê, báo cáo',
+   who:'Thủ kho · CHT/CHP · Admin',
+   sum:['Phiếu cóc giấy không còn chặn phiếu cóc trên app; phiếu gốc trên app tự trừ số cóc đã cấp bằng phiếu giấy',
+        'Đối chiếu cóc nối: định mức tính đúng mỗi cấu kiện 1 lần (cả cấu kiện chỉ có phiếu giấy)',
+        'Ngày giờ ghi trên phiếu giấy (bắt buộc) là giờ phiếu xuất; cấp trước mốc kiểm kê thì không trừ tồn lần nữa',
+        'Phiếu giấy nhập được cả vật tư cấp thẳng (thép, đai, kẽm…)',
+        'Admin huỷ được lần nhập phiếu giấy bị sai: hoàn tồn, mã về "chưa nhập" để nhập lại'],
+   todo:['Dán Apps Script mới + Triển khai Phiên bản mới (máy chủ 5.53.1)', 'Thay index.html + sw.js + thicong.html trên GitHub'] },
+ { v:'5.53.0', d:'19/10/2026', type:'new', title:'Phiếu yêu cầu giấy có mã QR',
+   who:'Thủ kho · CHT/CHP · Admin',
+   sum:['In phiếu yêu cầu trắng hàng loạt (4 phiếu / tờ A4), mỗi phiếu có mã QR + số PYC riêng, cùng dãy số với phiếu trên app',
+        'Thủ kho chụp mã QR trên phiếu giấy → nhập món, SL yêu cầu, SL thực xuất → app tự lập phiếu yêu cầu + phiếu xuất (kèm ảnh phiếu)',
+        'Phiếu cóc nối giấy: chọn mã cọc / panel, app cộng dồn theo cấu kiện và so định mức; vượt định mức phải ghi lý do, báo CHT/CHP',
+        'Mỗi mã dùng 1 lần: quét lại mã đã nhập → mở phiếu cũ; mã dự án khác / chưa in → báo lỗi',
+        'Theo dõi dải mã: đã in / đã nhập / chưa nhập / huỷ; CHT/CHP/Admin huỷ mã viết hỏng; Telegram nhắc mã bị bỏ qua quá 3 ngày',
+        'In lại phiếu đã lập trên app kèm mã QR'],
+   todo:['Dán Apps Script mới + Triển khai Phiên bản mới (máy chủ 5.53.0)', 'Thay index.html + sw.js + thicong.html trên GitHub'] },
+ { v:'5.51.1', d:'18/10/2026', type:'up', title:'Kho + Thi công: icon đồng bộ, gợi ý theo Danh mục vật tư',
+   who:'Mọi người · Admin',
+   sum:['Phiếu nhập: mục "Thiết bị & vật tư phụ trợ" và "Vật tư thông dụng" lấy từ Menu → Danh mục vật tư (Admin sửa là đổi theo, không cần cập nhật app). Phiếu xuất: gợi ý nhóm phụ trợ, cũng từ danh mục',
+        'Toàn bộ icon đổi sang kiểu đặc (cùng hình cũ), thêm icon cho các emoji còn sót; "Thẳng ra công trường" dùng hình xe tải. Icon nhóm vật tư / loại máy giữ nguyên',
+        'Bỏ emoji ở ô chọn, chữ mờ ô tìm kiếm (thay bằng icon kính lúp), file Excel xuất ra và nội dung gửi Zalo'],
+   todo:['Chỉ thay index.html + sw.js + thicong.html trên GitHub — không cần dán Apps Script'] },
  { v:'5.51.0', d:'16/10/2026', type:'up', title:'Kho: báo cáo Excel kiểu mới',
    who:'Thủ kho, CHT, QLTB',
    sum:['Nút Xuất Excel ra file "Báo cáo kho": Tổng quan (số chính, mục Cần kiểm tra tự phát hiện) · Tổng hợp NXT theo nhóm (có cột Ở công trường) · Sổ nhập kho · Sổ xuất kho · Nhiên liệu (tồn DO từng dòng, tổng hợp theo máy)',
