@@ -1896,7 +1896,7 @@ body.pg-printing #pg-print{display:block;position:fixed;inset:0;z-index:9000;bac
 // ============================================================
 // CONFIG
 // ============================================================
-const APP_VERSION = '5.59.7';
+const APP_VERSION = '5.59.8';
 const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbw6Rmi80I7RI3ij2U7RdRF5pYuQTnPrwEmGmUZS5xpxzLwwVynfoFUujZe1lm6HS1ymxw/exec';
 // ============================================================
 
@@ -13317,7 +13317,7 @@ function bcTotal(ws, r, n, label, span, cells) {
   ws.getRow(r).height = 18;
 }
 function bcNotes(ws, r, n, lines) {
-  return r;   // v5.59.7: người dùng bỏ mọi dòng ghi chú dưới các sheet báo cáo
+  return r;   // v5.59.8: người dùng bỏ mọi dòng ghi chú dưới các sheet báo cáo
   lines.filter(Boolean).forEach(t => {
     ws.mergeCells(r, 1, r, n); Object.assign(ws.getCell(r, 1), { value:t, font:bcF(9.5, false, true, '404040'), alignment:{ wrapText:true, vertical:'top' } });
     ws.getRow(r).height = t.length < 170 ? 15 : t.length < 340 ? 28 : 41; r++;
@@ -13550,7 +13550,7 @@ function bcLedgerNX(X) {
   const r1 = 10, r2 = r - 1;
   bcTotal(ws, r, n, 'Cộng số lượng (lọc 1 vật tư để xem tổng)', 5, L.length ? { 6:[{ formula:`SUBTOTAL(9,F${r1}:F${r2})`, result:bcR(sN) }, BC.NUM], 7:[{ formula:`SUBTOTAL(9,G${r1}:G${r2})`, result:bcR(sX) }, BC.NUM] } : {});
   ws.autoFilter = `A9:${bcCL(n)}${r2}`;
-  r += 2;   // v5.59.7: bỏ ghi chú dưới sổ
+  r += 2;   // v5.59.8: bỏ ghi chú dưới sổ
   bcSign(X, ws, r, n, ['NGƯỜI LẬP BIỂU', 'THỦ KHO', 'CHỈ HUY TRƯỞNG']);
   const base = { name, ws, r1, r2, C, cLoai, kg };
   return { N:{ ...base, q:'F' }, X:{ ...base, q:'G' } };
@@ -13899,7 +13899,7 @@ function bcOverview(X, LN, LX, FU, NX, LO, apx) {
   } catch (e) {}
   const lo = D.P.filter(x => /mượn|Nhận trả|Trả lại/.test(x.loai)), parties = [...new Set(lo.map(x => x.sv).filter(Boolean))];
   const loOpen = lo.filter(x => { const l = bcLoanOf(x.t); return l ? l.status === 'open' && loanRemain(l) > 1e-9 : true; }).length, loBo = lo.filter(x => /^Đã bỏ/.test(bcLoanNote(x.t))).length;   // v5.59.3
-  const loWeek = !!(X.R && X.R.from && (X.R.end - X.R.from) <= 8 * 864e5);   // v5.59.7: kỳ tuần / ngày mới nhắc mượn đã trả xong; kỳ tháng, từ đầu DA thì đã trả hết → không nhắc
+  const loWeek = !!(X.R && X.R.from && (X.R.end - X.R.from) <= 8 * 864e5);   // v5.59.8: kỳ tuần / ngày mới nhắc mượn đã trả xong; kỳ tháng, từ đầu DA thì đã trả hết → không nhắc
   if (lo.length && (loOpen || loWeek)) W_.push(['Lưu ý', `${lo.length} lượt mượn / trả trong kỳ` + (parties.length ? ` (${parties.slice(0, 3).join(', ')}${parties.length > 3 ? '…' : ''})` : '') + (loOpen ? ' — đối chiếu với dự án / đơn vị bên kia.' : ' — đã trả' + (loBo ? ' / bỏ thông tin mượn' : '') + ' xong, không còn nợ.'), BC_NX]);
   const od = (db.loans || []).filter(l => l.status === 'open' && loanOverdue(l) > 0);
   if (od.length) W_.push(['Lưu ý', `${od.length} phiếu mượn quá hạn trả: ` + od.slice(0, 3).map(l => `${l.itemName} (${l.party})`).join(', ') + (od.length > 3 ? '…' : '') + '.', LO ? LO.name : BC_NX]);
