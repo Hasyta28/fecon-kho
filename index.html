@@ -1896,7 +1896,7 @@ body.pg-printing #pg-print{display:block;position:fixed;inset:0;z-index:9000;bac
 // ============================================================
 // CONFIG
 // ============================================================
-const APP_VERSION = '5.59.9';
+const APP_VERSION = '5.59.10';
 const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbw6Rmi80I7RI3ij2U7RdRF5pYuQTnPrwEmGmUZS5xpxzLwwVynfoFUujZe1lm6HS1ymxw/exec';
 // ============================================================
 
@@ -16130,6 +16130,60 @@ async function napdReturn() {
   window.PI_ICON = function (e) { var d = document.createElement('span'); d.appendChild(icon(e)); return d.innerHTML; };
   if (document.body) start(); else document.addEventListener('DOMContentLoaded', start);
 })();
+</script>
+<script>// ===== v5.59.10 KHO — TỒN KHO: THẺ NHÓM TỰ NHẢY =====
+// Gõ tìm: tìm trên mọi nhóm; kết quả cùng 1 nhóm → tự bật thẻ nhóm đó, nhiều nhóm → "Tất cả". Xoá chữ tìm → về thẻ trước khi tìm.
+// Bấm 1 vật tư → bật thẻ nhóm của nó. Thẻ đang bật luôn được cuộn vào chỗ nhìn thấy. Bấm trúng biểu tượng trên thẻ vẫn sáng thẻ.
+let TK10_MAN = false, TK10_PREV = 'all';
+const tk10Ok = id => id && db.categories.some(x => x.id === id);
+tonItems = function () { return db.items.filter(i => ((tonQ && !TK10_MAN) || fCat === 'all' || i.cat === fCat) && matchQ(tonQ, i.name)); };
+function tk10List() {
+  const l = document.getElementById('ton-list'); if (!l) return;
+  l.innerHTML = renderTonRows(tonItems());
+  try { if (typeof hgDecorate === 'function') hgDecorate(); } catch (e) {}
+}
+function tk10Chips(smooth) {
+  let on = null;
+  document.querySelectorAll('.chip[onclick^="setTonFilter"]').forEach(ch => {
+    const id = (ch.getAttribute('onclick').match(/'([^']+)'/) || [])[1], y = id === fCat;
+    ch.classList.toggle('on', y); if (y) on = ch;
+  });
+  const row = on && on.parentElement; if (!row || !row.clientWidth) return;
+  const a = on.getBoundingClientRect(), b = row.getBoundingClientRect();
+  const left = Math.max(0, row.scrollLeft + (a.left - b.left) - (row.clientWidth - a.width) / 2);
+  try { row.scrollTo({ left, behavior: smooth ? 'smooth' : 'auto' }); } catch (e) { row.scrollLeft = left; }
+}
+setTonFilter = function (cat) {
+  fCat = cat; TK10_MAN = !!tonQ;
+  tk10Chips(true); tk10List();
+};
+{ const _tk10Q = setTonQ; setTonQ = function (v) {
+  v = v || '';
+  if (v && !tonQ) TK10_PREV = fCat;                                   // bắt đầu tìm: nhớ thẻ đang bật
+  TK10_MAN = false;
+  if (v) {
+    const cs = [...new Set(db.items.filter(i => matchQ(v, i.name)).map(i => i.cat))];
+    fCat = cs.length === 1 && tk10Ok(cs[0]) ? cs[0] : 'all';
+  } else if (tonQ) fCat = tk10Ok(TK10_PREV) ? TK10_PREV : 'all';
+  const r = _tk10Q.apply(this, arguments);
+  try { tk10Chips(true); } catch (e) {}
+  return r;
+}; }
+{ const _tk10RT = renderTon; renderTon = function () {
+  const r = _tk10RT.apply(this, arguments);
+  try { tk10Chips(false); setTimeout(() => tk10Chips(false), 60); } catch (e) {}
+  return r;
+}; }
+document.addEventListener('click', ev => {                             // bấm 1 vật tư → nhảy sang thẻ nhóm của nó
+  const el = ev.target.closest && ev.target.closest('#ton-list .progress-item[data-iid]'); if (!el) return;
+  const it = db.items.find(i => String(i.id) === el.dataset.iid); if (!it || !tk10Ok(it.cat) || it.cat === fCat) return;
+  const me = document.getElementById('me-' + it.id), open = me && me.style.display !== 'none';
+  fCat = it.cat; TK10_MAN = !!tonQ;
+  tk10Chips(true); tk10List();
+  const ne = document.querySelector(`#ton-list .progress-item[data-iid="${it.id}"]`); if (!ne) return;
+  if (open) { const m = document.getElementById('me-' + it.id); if (m) m.style.display = ''; }
+  try { ne.scrollIntoView({ block: 'nearest', behavior: 'smooth' }); } catch (e) {}
+});
 </script>
 </body>
 </html>
