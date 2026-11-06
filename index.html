@@ -1896,7 +1896,7 @@ body.pg-printing #pg-print{display:block;position:fixed;inset:0;z-index:9000;bac
 // ============================================================
 // CONFIG
 // ============================================================
-const APP_VERSION = '5.59.11';
+const APP_VERSION = '5.59.12';
 const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbw6Rmi80I7RI3ij2U7RdRF5pYuQTnPrwEmGmUZS5xpxzLwwVynfoFUujZe1lm6HS1ymxw/exec';
 // ============================================================
 
@@ -16260,6 +16260,103 @@ nxAdjust = async function () {
   await syncAll(true); hideLoader(); NX.chon = {};
   toast('✅ Đã kiểm kê ' + done + ' món — tồn kho tính tiếp từ số trong file'); nxRender();
 };
+</script>
+<script>// ===== v5.59.12 KHO — FILE KIỂM ĐẾM: MÓN MỚI + CHÊNH DƯƠNG → PHIẾU NHẬP · CHÊNH ÂM → KIỂM KÊ =====
+// Bước 5 khi file chỉ có bảng tồn (NX.tonOnly, chỉ Admin):
+//  • Món chưa có trên app → tạo món + 1 phiếu nhập = số trong file (ngày = ngày đầu ở cột Ngày, không có → hôm nay).
+//  • Món đã có, file > app → phiếu nhập bổ sung phần chênh. File < app → phiếu kiểm kê.
+//  • Phiếu nhập đi qua nxtImport (1 đợt nạp, Admin hoàn tác được ở bước 1). Sau đó món nào còn lệch (VD có mốc kiểm kê sau ngày nhập) → kiểm kê cho khớp.
+const NXK_PARTY = 'Kiểm đếm SL thực tế';
+function nxkDay(v) {                                             // ô Ngày → 'yyyy-mm-dd' (lấy ngày đầu nếu ghi "14/08 – 17/10/2026")
+  if (v instanceof Date && !isNaN(v)) return isoDay(v);
+  if (typeof v === 'number' && v > 20000 && v < 80000) { const d = new Date(Math.round((v - 25569) * 864e5)); return `${d.getUTCFullYear()}-${String(d.getUTCMonth() + 1).padStart(2, '0')}-${String(d.getUTCDate()).padStart(2, '0')}`; }
+  const s = String(v == null ? '' : v), m = s.match(/(\d{1,2})\s*[\/.-]\s*(\d{1,2})/), y = (s.match(/\b(20\d\d)\b/) || [])[1];
+  if (!m || !y || +m[2] < 1 || +m[2] > 12 || +m[1] < 1 || +m[1] > 31) return '';
+  return `${y}-${String(+m[2]).padStart(2, '0')}-${String(+m[1]).padStart(2, '0')}`;
+}
+{ const _sh = nxSheet; nxSheet = function (sn, A) {              // bảng tồn: nhận thêm cột Ngày
+  const S = _sh.apply(this, arguments);
+  if (S.kind === 'ton' && S.cols.date === undefined) (A[S.hdr] || []).forEach((c, i) => { const h = nxN(c); if (S.cols.date === undefined && h && h.length <= 40 && NXRE.date.test(h)) S.cols.date = i; });
+  return S;
+}; }
+nxTon = function (S) {
+  const c = S.cols, out = {};
+  for (let r = S.hdr + 1; r < S.A.length; r++) {
+    const R = S.A[r] || [], name = String(R[c.name] || '').replace(/\s+/g, ' ').trim(), t = R[c.ton];
+    if (!name || t === '' || t === undefined || isNaN(+t)) continue;
+    out[normVN(name)] = { name, nk:normVN(name), ton:Math.round(+t * 1000) / 1000, unit:c.unit === undefined ? '' : String(R[c.unit] || '').trim(), iso:c.date === undefined ? '' : nxkDay(R[c.date]) };
+  }
+  return out;
+};
+NX.cNew = null; NX.cats = NX.cats || {};
+function nxkInit(L) { if (NX.cNew) return; NX.cNew = {}; NX.chon = {}; L.miss.forEach(x => { if (x.ton > 0) NX.cNew[x.nk] = 1; }); L.list.filter(x => x.f >= 0).forEach(x => NX.chon[x.it.id] = 1); }
+function nxkCatOpt(sel) { return (db.categories || []).map(c => `<option value="${c.id}" ${c.id === sel ? 'selected' : ''}>${escHtml(c.name)}</option>`).join(''); }
+function nxkDm(iso) { return iso ? `${+iso.slice(8)}/${+iso.slice(5, 7)}` : 'hôm nay'; }
+{ const _o = nxTonGo; nxTonGo = function () { NX.cNew = null; NX.showNew = false; return _o.apply(this, arguments); }; }
+{ const _s5 = nxS5; nxS5 = function () {
+  if (!NX.tonOnly) return _s5.apply(this, arguments);
+  if (role !== 'ADM') return `<div class="nx-warn">Chỉ <b>Admin</b> lưu được file kiểm đếm (tạo món mới, phiếu nhập, kiểm kê).</div><button class="btn-full" onclick="nxGo(1)">‹ Quay lại</button>`;
+  const L = nxLech(); nxkInit(L);
+  const neu = L.miss.filter(x => x.ton > 0), zero = L.miss.length - neu.length;
+  const nN = neu.filter(x => NX.cNew[x.nk]).length, ch = L.list.filter(x => NX.chon[x.it.id] && x.f >= 0);
+  const nP = ch.filter(x => x.d > 0).length, nK = ch.filter(x => x.d < 0).length;
+  let h = `<div class="small" style="color:var(--text2);margin-bottom:8px">File: <b>${escHtml(NX.file)}</b> · ${fmtNum(L.nTon)} món có số · ${fmtNum(L.ok)} món đã khớp</div>`;
+  if (!neu.length && !L.list.length) return h + `<div class="nx-ok"><b style="color:#15803D">✓ Tồn tất cả món khớp file.</b></div><button class="btn-full btn-orange" onclick="closeDp('dp-nxt')">Xong</button>`;
+  if (neu.length) { const S = NX.showNew ? neu : neu.slice(0, 15);
+    h += `<div class="nx-card"><div class="nx-t">Món mới · ${neu.length} — tạo món + phiếu nhập</div><div class="small" style="color:var(--text2);margin-bottom:6px;line-height:1.5">Món có trong file, chưa có trên app. Phiếu nhập ghi đúng số trong file, ngày = ngày đầu ở cột Ngày, NCC "${NXK_PARTY}". App tự xếp nhóm theo tên — đổi nếu sai.</div>
+      ${S.map(x => `<div class="nx-row"><span class="d" style="width:22px;cursor:pointer;font-size:16px" onclick="nxkTgN('${escHtml(x.nk).replace(/'/g, '&#39;')}')">${NX.cNew[x.nk] ? '☑' : '☐'}</span><div class="n"><b>${escHtml(x.name)}</b> <span style="color:var(--text2)">· ${fmtNum(x.ton)} ${escHtml(x.unit || 'Cái')} · ${nxkDm(x.iso)}</span></div><select onchange="NX.cats['${escHtml(x.nk).replace(/'/g, '&#39;')}']=this.value">${nxkCatOpt(NX.cats[x.nk] || (NX.cats[x.nk] = guessCat(x.name)))}</select></div>`).join('')}
+      ${neu.length > S.length ? `<button class="btn-full" style="margin-top:8px;background:#fff;color:var(--text2);border:1.5px solid var(--border)" onclick="NX.showNew=true;nxRender()">Xem tất cả ${neu.length} món</button>` : ''}
+      ${zero ? `<div class="small" style="color:var(--text2);margin-top:6px">${zero} món mới có số 0 → không tạo.</div>` : ''}</div>`; }
+  if (L.list.length) h += `<div class="nx-card"><div class="nx-t">Món đã có, tồn chưa khớp · ${L.list.length}</div><div class="small" style="color:var(--text2);margin-bottom:6px;line-height:1.5">Lệch <b style="color:#15803D">+</b> → phiếu nhập bổ sung phần chênh. Lệch <b style="color:#B42318">−</b> → phiếu kiểm kê giảm tồn. Phiếu xuất cũ giữ nguyên.</div>
+    <div class="nx-lech" style="font-weight:800;font-size:11.5px;color:var(--text2);cursor:default"><span class="c"></span><span class="n">Món</span><span class="v">App</span><span class="v">File</span><span class="v">Lệch</span></div>
+    ${L.list.map(x => { const dis = x.f < 0, on = !dis && NX.chon[x.it.id]; return `<div class="nx-lech ${on ? 'on' : ''}" onclick="${dis ? '' : `nxChon(${x.it.id})`}"><span class="c">${dis ? '⛔' : on ? '☑' : '☐'}</span><span class="n">${escHtml(x.it.name)}<br><small style="color:var(--text2)">${x.d > 0 ? 'nhập bổ sung' : 'kiểm kê'}</small></span><span class="v">${fmtNum(x.app)}</span><span class="v">${fmtNum(x.f)}</span><span class="v dd" style="color:${x.d > 0 ? '#15803D' : '#B42318'}">${x.d > 0 ? '+' : ''}${fmtNum(x.d)}</span></div>`; }).join('')}</div>`;
+  h += `<div style="display:flex;gap:8px;margin-bottom:10px"><button class="btn-full" style="background:#fff;color:var(--navy,#0B2545);border:1.5px solid var(--border)" onclick="nxkAll(1)">Chọn tất cả</button><button class="btn-full" style="background:#fff;color:var(--navy,#0B2545);border:1.5px solid var(--border)" onclick="nxkAll(0)">Bỏ chọn</button></div>`;
+  const any = nN + nP + nK;
+  h += `<button class="btn-full btn-orange" onclick="nxkSave()" ${any ? '' : 'disabled style="opacity:.5"'}>💾 Lưu theo file: ${nN} món mới · ${nP} nhập bổ sung · ${nK} kiểm kê</button>
+    <button class="btn-full" style="margin-top:8px;background:#fff;color:var(--text2);border:1.5px solid var(--border)" onclick="closeDp('dp-nxt')">Đóng</button>`;
+  return h;
+}; }
+function nxkTgN(nk) { if (NX.cNew[nk]) delete NX.cNew[nk]; else NX.cNew[nk] = 1; nxRender(); }
+function nxkAll(on) { const L = nxLech(); NX.cNew = {}; NX.chon = {}; if (on) { L.miss.forEach(x => { if (x.ton > 0) NX.cNew[x.nk] = 1; }); L.list.filter(x => x.f >= 0).forEach(x => NX.chon[x.it.id] = 1); } nxRender(); }
+async function nxkSave() {
+  if (!navigator.onLine) { toast('📴 Cần có mạng'); return; }
+  const L = nxLech(), neu = L.miss.filter(x => x.ton > 0 && NX.cNew[x.nk]), ch = L.list.filter(x => NX.chon[x.it.id] && x.f >= 0);
+  const plus = ch.filter(x => x.d > 0), want = {}; ch.forEach(x => want[x.it.id] = x.f);
+  if (!neu.length && !ch.length) return;
+  if (!confirm(`Lưu theo file kiểm đếm?\n• ${neu.length} món mới: tạo món + phiếu nhập\n• ${plus.length} món: phiếu nhập bổ sung phần chênh\n• ${ch.length - plus.length} món: phiếu kiểm kê giảm tồn\nPhiếu xuất cũ giữ nguyên.`)) return;
+  const today = isoDay(new Date()), dayN = {}, note = 'Quy chiếu SL thực tế theo file kiểm đếm ' + NX.file;
+  const tm = iso => { iso = iso && iso <= today ? iso : today; const n = dayN[iso] = (dayN[iso] || 0) + 1, sec = 7 * 3600 + n * 7;
+    return `${String(Math.floor(sec / 3600)).padStart(2, '0')}:${String(Math.floor(sec % 3600 / 60)).padStart(2, '0')}:${String(sec % 60).padStart(2, '0')} ${+iso.slice(8)}/${+iso.slice(5, 7)}/${iso.slice(0, 4)}`; };
+  const ton = {}; NX.sheets.filter(S => S.kind === 'ton' && S.use).forEach(S => Object.assign(ton, nxTon(S)));
+  const isoOf = it => { const x = ton[normVN(it.name)] || Object.values(ton).find(t => nxCompact(t.name) === nxCompact(it.name)); return x ? x.iso : ''; };
+  const nowT = () => { const d = new Date(); return `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}:${String(d.getSeconds()).padStart(2, '0')} ${d.getDate()}/${d.getMonth() + 1}/${d.getFullYear()}`; };
+  const tmIt = it => { const iso = isoOf(it), moc = +(db.kkMoc || {})[String(it.id)] || 0;   // món có mốc kiểm kê sau ngày trong file → ghi phiếu nhập giờ hiện tại (sau mốc) để tồn và sổ khớp nhau
+    return moc && (!iso || new Date(+iso.slice(0, 4), +iso.slice(5, 7) - 1, +iso.slice(8), 23, 59).getTime() <= moc) ? nowT() : tm(iso); };
+  const rows = neu.map(x => ({ tmp:x.nk, k:'kd' + nxHash(x.nk + '|' + x.ton + '|' + NX.file), type:'nhap', qty:x.ton, time:tm(x.iso), party:NXK_PARTY, thietBi:'', note }))
+    .concat(plus.map(x => ({ itemId:x.it.id, k:'kd' + nxHash(x.it.id + '|' + x.app + '|' + x.f + '|' + NX.file), type:'nhap', qty:x.d, time:tmIt(x.it), party:NXK_PARTY, thietBi:'', note:note + ' (nhập bổ sung)' })));
+  const newItems = neu.map(x => ({ tmp:x.nk, name:x.name, unit:x.unit || 'Cái', cat:NX.cats[x.nk] || guessCat(x.name) }));
+  let nIn = 0;
+  if (rows.length) {
+    showLoader(`Đang tạo ${neu.length} món mới và ${rows.length} phiếu nhập...`);
+    const r = await api('nxtImport', { project:curProj, batch:'K' + Date.now().toString(36), file:NX.file, newItems, rows, maps:[], last:true }, 240000);
+    if (!r || !r.success) { hideLoader(); toast('⚠️ ' + ((r && r.error) || 'mất kết nối') + ' — chưa lưu gì, thử lại'); return; }
+    nIn = r.added;
+    showLoader('Đang tải lại dữ liệu kho...'); await syncAll(true);
+  }
+  // còn lệch (chênh âm, hoặc phiếu nhập trước mốc kiểm kê nên không đổi tồn) → kiểm kê cho đúng số file
+  const kk = nxLech().list.filter(x => want[x.it.id] !== undefined && x.f >= 0);
+  let nK = 0;
+  for (let i = 0; i < kk.length; i += 40) {
+    const part = kk.slice(i, i + 40);
+    showLoader(`Đang tạo phiếu kiểm kê... ${nK}/${kk.length} món`);
+    const r = await api('addCount', { items:part.map(x => ({ itemId:x.it.id, qty:x.f })), note, ck:'kd' + Date.now() + '_' + i, clientTime:nowStr() }, 120000);
+    if (!r || !r.success) { await syncAll(true); hideLoader(); NX.cNew = null; nxRender(); toast('⚠️ Kiểm kê dừng: ' + ((r && (r.error || r.reason)) || 'mất kết nối') + ` — đã nhập ${nIn} phiếu, kiểm kê ${nK} món. Mở lại file để làm tiếp phần còn lệch`); return; }
+    nK += part.length;
+  }
+  if (nK) await syncAll(true);
+  hideLoader(); NX.cNew = null; await nxInfoQuiet(); nxRender();
+  toast(`✅ Đã lưu: ${neu.length} món mới · ${nIn} phiếu nhập · ${nK} kiểm kê`);
+}
 </script>
 </body>
 </html>
