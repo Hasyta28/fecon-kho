@@ -1896,7 +1896,7 @@ body.pg-printing #pg-print{display:block;position:fixed;inset:0;z-index:9000;bac
 // ============================================================
 // CONFIG
 // ============================================================
-const APP_VERSION = '5.59.10';
+const APP_VERSION = '5.59.11';
 const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbw6Rmi80I7RI3ij2U7RdRF5pYuQTnPrwEmGmUZS5xpxzLwwVynfoFUujZe1lm6HS1ymxw/exec';
 // ============================================================
 
@@ -16184,6 +16184,82 @@ document.addEventListener('click', ev => {                             // bấm 
   if (open) { const m = document.getElementById('me-' + it.id); if (m) m.style.display = ''; }
   try { ne.scrollIntoView({ block: 'nearest', behavior: 'smooth' }); } catch (e) {}
 });
+</script>
+<script>// ===== v5.59.11 KHO — NẠP FILE KIỂM ĐẾM SL THỰC TẾ (chỉ cột Tồn) → PHIẾU KIỂM KÊ =====
+// File chỉ có Tên vật tư + Tồn / SL thực tế (không phải sổ nhập xuất) → bỏ qua bước 2–4, sang thẳng bước Chênh lệch.
+// Tích món → phiếu kiểm kê: tồn trong app = số trong file. Phiếu nhập / xuất cũ giữ nguyên. Gửi máy chủ từng phần 40 món.
+const NXTON_RE = /^(ton|ton kho|ton cuoi|ton cuoi ky|so ton|ton thuc te|sl thuc te|so luong thuc te|sl kiem ke|so luong kiem ke|so dem|sl dem|so luong dem)$/;
+{ const _sh = nxSheet; nxSheet = function (sn, A) {
+  const S = _sh.apply(this, arguments);
+  if (S.kind !== 'skip') return S;
+  for (let r = 0; r < Math.min(A.length, 40); r++) {             // bảng kiểm đếm: có cột tên + cột Tồn / SL thực tế
+    const m = {}; (A[r] || []).forEach((c, i) => { const h = nxN(c); if (!h || h.length > 40) return;
+      if (m.name === undefined && NXRE.name.test(h)) m.name = i;
+      if (m.unit === undefined && NXRE.unit.test(h)) m.unit = i;
+      if (m.ton === undefined && NXTON_RE.test(h)) m.ton = i; });
+    if (m.name !== undefined && m.ton !== undefined) { S.kind = 'ton'; S.use = true; S.why = ''; S.hdr = r; S.cols = m; break; }
+  }
+  return S;
+}; }
+function nxTonOnly() { return NX.sheets.some(S => S.kind === 'ton' && S.use) && !NX.sheets.some(S => S.kind === 'so' && S.use); }
+function nxTonGo() {
+  if (!nxTonOnly()) return;
+  NX.tonOnly = true; NX.B = null; NX.res = { added:0, dup:0, bad:0 }; NX.chon = {}; NX.step = 5; nxRender();
+}
+{ const _g = nxGo; nxGo = function (n) { NX.tonOnly = false; return _g.apply(this, arguments); }; }
+{ const _o = nxOpen; nxOpen = async function () { NX.tonOnly = false; return _o.apply(this, arguments); }; }
+{ const _f = nxFile; nxFile = async function () { NX.tonOnly = false; return _f.apply(this, arguments); }; }
+{ const _s1 = nxS1; nxS1 = function () {
+  let h = _s1.apply(this, arguments);
+  if (nxTonOnly()) h = h.replace(/<button class="btn-full btn-orange" onclick="nxGo\(2\)"[^>]*>[^<]*<\/button>/,
+    `<button class="btn-full btn-orange" onclick="nxTonGo()">Tiếp: So tồn với file ›</button>`)
+    .replace('<div class="nx-act">', `<div class="nx-warn" style="margin-top:4px">File chỉ có <b>bảng tồn / SL thực tế</b>: app không tạo phiếu nhập xuất, chỉ so tồn từng món với file. Món nào anh chị tích, app tạo phiếu <b>kiểm kê</b> đặt tồn bằng số trong file. Phiếu xuất cũ giữ nguyên.</div><div class="nx-act">`);
+  return h;
+}; }
+// so tồn: khớp tên đúng, rồi khớp bỏ dấu cách / ký tự ("Dây điện 3 x 2.5" = "Dây điện 3x2.5"); liệt kê món file chưa có trên app
+nxLech = function () {
+  const ton = {}; NX.sheets.filter(S => S.kind === 'ton' && S.use).forEach(S => Object.assign(ton, nxTon(S)));
+  const items = db.items.filter(i => i.project === curProj), byN = {}, byC = {};
+  items.forEach(i => { byN[normVN(i.name)] = i; const c = nxCompact(i.name); byC[c] = byC[c] === undefined ? i : null; });
+  const out = [], seen = new Set(), miss = [];
+  Object.keys(ton).forEach(nk => {
+    let it = byN[nk];
+    if (!it && NX.B && NX.B.names[nk] && NX.B.names[nk].near && NX.dec[nk] !== 0) it = NX.B.names[nk].near;
+    if (!it) it = byC[nxCompact(ton[nk].name)] || null;
+    if (!it) { miss.push(ton[nk]); return; }
+    if (seen.has(it.id)) return; seen.add(it.id);
+    const app = Math.round((+it.stock || 0) * 1000) / 1000, f = ton[nk].ton;
+    if (Math.abs(app - f) > 0.0005) out.push({ it, app, f, d:Math.round((f - app) * 1000) / 1000 });
+  });
+  return { list:out, nTon:Object.keys(ton).length, ok:seen.size - out.length, miss };
+};
+{ const _s5 = nxS5; nxS5 = function () {
+  if (!NX.tonOnly) return _s5.apply(this, arguments);
+  if (!hp('k_kk')) return `<div class="nx-warn">Chức danh của bạn chưa có quyền <b>Kiểm kê</b> nên không đặt tồn theo file được. Nhờ Admin cấp quyền hoặc làm giúp.</div><button class="btn-full" onclick="nxGo(1)">‹ Quay lại</button>`;
+  const sub = NX.sub; NX.sub = false;                            // file kiểm đếm: không qua duyệt sổ, đi thẳng phiếu kiểm kê (máy chủ kiểm quyền Kiểm kê)
+  let h; try { h = _s5.apply(this, arguments); } finally { NX.sub = sub; }
+  const L = nxLech();
+  if (L.miss.length) h = h.replace(/(<button[^>]*onclick="nxAdjust\(\)"|<button class="btn-full" style="margin-top:8px)/, `<div class="nx-warn"><b class="h">${L.miss.length} món trong file chưa có trên app — kiểm kê bỏ qua</b><br>${L.miss.map(x => '• ' + escHtml(x.name) + ': ' + fmtNum(x.ton)).join('<br>')}<br><small>Thêm món bằng Phiếu nhập, hoặc sửa tên trong file cho giống tên trên app rồi nạp lại.</small></div>$1`);
+  return `<div class="small" style="color:var(--text2);margin-bottom:8px">File: <b>${escHtml(NX.file)}</b> · ${fmtNum(L.nTon)} món có số</div>` + h;
+}; }
+nxAdjust = async function () {
+  const L = nxLech().list.filter(x => NX.chon[x.it.id] && x.f >= 0); if (!L.length) return;
+  if (!confirm(`Tạo phiếu kiểm kê cho ${L.length} món — tồn trong app sẽ đặt bằng số trong file? Phiếu nhập / xuất cũ giữ nguyên.`)) return;
+  const note = (NX.tonOnly ? 'Quy chiếu SL thực tế theo file kiểm đếm ' : 'Kiểm kê theo sổ Excel ') + NX.file, base = 'nx' + Date.now();
+  let done = 0;
+  for (let i = 0; i < L.length; i += 40) {
+    const part = L.slice(i, i + 40);
+    showLoader(`Đang tạo phiếu kiểm kê... ${done}/${L.length} món`);
+    const r = await api('addCount', { items:part.map(x => ({ itemId:x.it.id, qty:x.f })), note, ck:base + '_' + i, clientTime:nowStr() }, 120000);
+    if (!r || !r.success) {
+      await syncAll(true); hideLoader(); NX.chon = {}; nxRender();
+      toast('⚠️ ' + ((r && (r.error || r.reason)) || 'Không tạo được') + (done ? ` — đã lưu ${done} món, bấm lại để làm tiếp phần còn lại` : '')); return;
+    }
+    done += part.length;
+  }
+  await syncAll(true); hideLoader(); NX.chon = {};
+  toast('✅ Đã kiểm kê ' + done + ' món — tồn kho tính tiếp từ số trong file'); nxRender();
+};
 </script>
 </body>
 </html>
