@@ -1482,6 +1482,7 @@ body.pg-printing #pg-print{display:block;position:fixed;inset:0;z-index:9000;bac
     <div class="fg" id="et-reason-wrap"><label>Lý do điều chỉnh</label><input type="text" id="et-reason"></div>
     <div class="fg"><label>Ghi chú</label><textarea id="et-note" rows="2"></textarea></div>
     <div class="fg"><label>Ngày giờ phiếu</label><input type="datetime-local" id="et-time"></div>
+    <div class="fg" id="et-cb-wrap"><label>Người lập (tài khoản)</label><select id="et-cb"></select><div class="combo-hint" id="et-cb-hint"></div></div>
     <div class="modal-actions">
       <button class="btn-cancel" onclick="closeModal('modal-edit-txn')">Hủy</button>
       <button class="btn-ok" onclick="saveEditTxn()">Lưu thay đổi</button>
@@ -1896,7 +1897,7 @@ body.pg-printing #pg-print{display:block;position:fixed;inset:0;z-index:9000;bac
 // ============================================================
 // CONFIG
 // ============================================================
-const APP_VERSION = '5.59.13';
+const APP_VERSION = '5.59.14';
 const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbw6Rmi80I7RI3ij2U7RdRF5pYuQTnPrwEmGmUZS5xpxzLwwVynfoFUujZe1lm6HS1ymxw/exec';
 // ============================================================
 
@@ -2371,6 +2372,7 @@ function applyServer(r) {
   let rows = r.transactions || [];
   if (r.txnCols) rows = rows.map(a => { const o = {}; r.txnCols.forEach((c, i) => o[c] = a[i]); return o; });
   if (r.txnCols) db.ctOn = r.txnCols.indexOf('ct') >= 0;   // v5.35
+  if (r.txnCols) db.cbOn = r.txnCols.indexOf('cbOld') >= 0;   // v5.59.14: máy chủ cho Admin đổi người lập
   db.one = !!r.one; db.cuDone = (r.cuDone || []).map(String);   // v5.55: một tồn kho
   rows = rows.map(t => ({...t, id:+t.id, itemId:+t.itemId, qty:+t.qty||0, refId: t.refId ? (isPycRef(String(t.refId)) ? String(t.refId) : +t.refId) : ''}));
   const base = r.txnCols && r.txnFrom > 0 ? db.transactions.filter(t => !t._local).concat(rows) : rows;
@@ -3095,6 +3097,7 @@ function openTxn(id) {
       ${kv('Lý do', escHtml(t.reason || ''))}
       ${ref ? kv('Sửa cho phiếu', `<a onclick="openTxn(${ref.id})">${ref.type==='nhap'?'Nhập':'Xuất'} ${fmtNum(ref.qty)} · ${escHtml(ref.datetime||'')}</a>`) : (kk ? kv('Loại', 'Kiểm kê thực tế — mốc tính tồn kho') : dc ? kv('Loại', 'Điều chỉnh tồn') : '')}
       ${kv('Người lập', escHtml(t.createdByName || (t.createdBy ? '' : 'Dữ liệu cũ (trước khi có tài khoản)')) + (role === 'ADM' && me && String(t.createdBy) === String(me.id) && t.createdByName !== me.name ? ' <small style="color:#8A93A0">· Admin lập</small>' : ''))}
+      ${t.cbOld ? kv('Đổi người lập', `<small style="color:#8A93A0">Admin đã đổi người lập (lúc đầu: ${escHtml(t.cbOld)})</small>`) : ''}
       ${kv(t.createdByName ? 'Giờ máy chủ ghi nhận' : 'Thời gian', escHtml(t.datetime || ''))}
       ${late ? kv('Lập trên máy lúc', escHtml(t.clientTime) + ' (gửi khi có mạng)') : ''}
       ${kv('Số phiếu', '#' + t.id)}
@@ -5715,9 +5718,12 @@ function applyAdminOp(action, d) {
     if (t.type === 'xuat') t.thietBi = d.thietBi;
     if (t.type === 'dieuchinh') t.reason = d.reason;
     if (d.datetime) t.datetime = d.datetime;
+    cbApply(t, d);                                            // v5.59.14: đổi người lập
     (stockAdd(t.itemId, txnEffect(t)), siteAdd(t.itemId, siteEffect(t)));
     const pr = pairOf(t);                                     // v5.30: phiếu đi cặp đổi theo (vật tư, số lượng, ngày giờ)
     if (pr) { (stockAdd(pr.itemId, -txnEffect(pr)), siteAdd(pr.itemId, -siteEffect(pr))); Object.assign(pr, {itemId:t.itemId, itemName:t.itemName, unit:t.unit, qty:t.qty, datetime:t.datetime, clientTime:''}); (stockAdd(pr.itemId, txnEffect(pr)), siteAdd(pr.itemId, siteEffect(pr))); }
+    if (pr) cbApply(pr, d);
+    if (d.cbAll && t.ma) cbSameMa(t).forEach(x => cbApply(x, d));
   } else if (action === 'deleteTxn') {
     const t0 = db.transactions.find(x => x.id === d.id), roots = [d.id].concat(pairOf(t0) ? [pairOf(t0).id] : []);   // v5.30: xóa cả cặp
     const gone = db.transactions.filter(x => roots.includes(x.id) || (x.type === 'dieuchinh' && roots.includes(+x.refId)));
@@ -5845,6 +5851,7 @@ async function saveEditTxn() {
   const data = {id:t.id, itemId, qty,
     supplierOrReceiver:document.getElementById('et-party').value.trim(), thietBi:document.getElementById('et-dev').value,
     reason:document.getElementById('et-reason').value.trim(), note:document.getElementById('et-note').value.trim(), datetime:time};
+  if (!cbCollect(t, data)) return;                            // v5.59.14: người lập mới
   closeModal('modal-edit-txn');
   const ok = await pushAdmin('editTxn', data);
   if (ok === 'rejected') return;
@@ -16397,6 +16404,56 @@ async function nxkSave() {
   if (nK) await syncAll(true);
   hideLoader(); NX.cNew = null; await nxInfoQuiet(); nxRender();
   toast(`✅ Đã lưu: ${neu.length} món mới · ${nIn} phiếu nhập · ${nK} kiểm kê`);
+}
+</script>
+<script>// ===== v5.59.14 KHO — ADMIN ĐỔI NGƯỜI LẬP PHIẾU NHẬP / XUẤT / ĐIỀU CHỈNH =====
+// Màn Sửa phiếu có ô chọn tài khoản. Máy chủ (5.59.14) đổi createdBy + createdByName, ghi người lập trước vào cột cbOld + nhật ký.
+// Phiếu đi cặp (thẳng ra công trường) đổi theo; phiếu giấy cùng mã PN / PX hỏi đổi cả tờ (cbAll).
+const cbMa = t => String(t.ma || '').split('-').slice(0, 2).join('-');
+function cbSameMa(t) {
+  const m = cbMa(t); if (!m) return [];
+  return db.transactions.filter(x => x.id !== t.id && x.project === t.project && x.ma && cbMa(x) === m && String(x.id) !== String(t.thangCT || '') && String(x.thangCT || '') !== String(t.id));
+}
+function cbApply(x, d) {
+  if (!x || !d || !d.createdBy || String(d.createdBy) === String(x.createdBy || '')) return;
+  if (!x.cbOld) x.cbOld = x.createdByName || '(trống)';
+  x.createdBy = d.createdBy; x.createdByName = d.createdByName || '';
+}
+let cbUsers = null;
+function cbFill(t) {
+  const sel = document.getElementById('et-cb'), hint = document.getElementById('et-cb-hint'); if (!sel) return;
+  const cur = String(t.createdBy || ''), curName = t.createdByName || (cur ? '' : 'Dữ liệu cũ (chưa có tài khoản)');
+  let list = (cbUsers || []).filter(u => u.status === 'active' && u.role !== 'ADM' && (allProjRole(u.role) || (u.projects || []).includes(t.project)));
+  if (cbUsers && !list.length) list = cbUsers.filter(u => u.status === 'active' && u.role !== 'ADM');
+  list = list.filter(u => String(u.id) !== cur).sort((a, b) => String(a.name).localeCompare(String(b.name), 'vi'));
+  sel.innerHTML = `<option value="${escHtml(cur)}" data-name="${escHtml(t.createdByName || '')}">${escHtml(curName || '(trống)')} · đang ghi</option>`
+    + list.map(u => `<option value="${escHtml(u.id)}" data-name="${escHtml(u.name)}">${escHtml(u.name)} (@${escHtml(u.username)}) · ${escHtml(ROLE_NAME[u.role] || u.role || '')}</option>`).join('');
+  sel.disabled = !db.cbOn || !cbUsers;
+  hint.innerHTML = !db.cbOn ? '<span style="color:var(--red)">Máy chủ chưa lên 5.59.14 — chưa đổi được người lập</span>'
+    : !cbUsers ? (navigator.onLine ? 'Đang tải danh sách tài khoản…' : '<span style="color:var(--red)">Cần có mạng để đổi người lập</span>')
+    : (t.cbOld ? `<span style="color:var(--text2)">Người lập lúc đầu: ${escHtml(t.cbOld)}</span>` : '<span style="color:var(--text2)">Chọn tài khoản khác nếu phiếu ghi nhầm người lập</span>');
+}
+const _cbOpenEditTxn = openEditTxn;
+openEditTxn = function () {
+  _cbOpenEditTxn.apply(this, arguments);
+  const t = db.transactions.find(x => x.id === curTxnId), w = document.getElementById('et-cb-wrap');
+  if (!t || !w) return;
+  w.style.display = t.type === 'kiemke' ? 'none' : '';
+  cbFill(t);
+  if (db.cbOn && navigator.onLine) api('listUsers').then(r => {
+    if (r && r.success) cbUsers = r.users;
+    const t2 = db.transactions.find(x => x.id === curTxnId);
+    if (t2 && t2.id === t.id && document.getElementById('modal-edit-txn').style.display !== 'none') cbFill(t2);
+  });
+};
+function cbCollect(t, data) {
+  const sel = document.getElementById('et-cb'); if (!sel || sel.disabled) return true;
+  const id = sel.value; if (!id || id === String(t.createdBy || '')) return true;
+  const nm = sel.selectedOptions[0] ? sel.selectedOptions[0].dataset.name : '';
+  data.createdBy = id; data.createdByName = nm;
+  const same = t.ma ? cbSameMa(t) : [];
+  if (same.length) data.cbAll = confirm(`Phiếu giấy ${cbMa(t)} có thêm ${same.length} dòng khác.\nĐổi người lập cho cả ${same.length + 1} dòng cùng mã này thành "${nm}"?\n\nOK = đổi cả tờ · Huỷ = chỉ đổi dòng này`) ? 1 : 0;
+  return true;
 }
 </script>
 </body>
