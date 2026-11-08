@@ -1,4 +1,5 @@
-// ===== FECON SOUTH - Kho Vật Tư v5.59.14 =====
+// ===== FECON SOUTH - Kho Vật Tư v5.59.15 =====
+// v5.59.15: Admin đổi người lập hàng loạt (txnSetCreator: tối đa 500 phiếu nhập / xuất / điều chỉnh mỗi lần, phiếu đi cặp đổi theo, 1 dòng nhật ký)
 // v5.59.14: Admin đổi người lập phiếu nhập / xuất / điều chỉnh (editTxn nhận createdBy; phiếu đi cặp + cùng mã phiếu giấy đổi theo; cột mới cbOld ghi người lập trước; ghi nhật ký)
 // v5.59.7: Tổng hợp dự án chỉ đếm máy đang ở công trường (bỏ máy đã rời)
 // v5.59.2: Danh mục NCC thêm loại "Dầu / nhớt" (dau)
@@ -157,7 +158,7 @@ const SESSION_DAYS   = 30;           // Đăng nhập được nhớ bao nhiêu 
 const HASH_ROUNDS    = 300;          // Số vòng băm mật khẩu
 const MAX_PENDING    = 30;           // Tối đa bao nhiêu yêu cầu chờ duyệt (chống spam)
 const TZ = 'Asia/Ho_Chi_Minh';
-const SERVER_VERSION = '5.59.14';
+const SERVER_VERSION = '5.59.15';
 const PHOTO_FOLDER_NAME = 'FECON Kho - Ảnh biên bản';
 const PHOTO_MAX_BYTES = 4 * 1024 * 1024;
 
@@ -222,7 +223,7 @@ const PERM = {
   me:'xem', getAll:'xem', getVersion:'xem', logout:'xem', changePassword:'xem',
   addTransaction:'tk', addThang:'tk', setThangDS:'admin', upsert:'tk', setMinStock:'ql', uploadPhoto:'tk', getPhoto:'xem',
   addLoan:'tk', returnLoan:'tk', closeLoan:'tk', loanFix:'tk', mergeItems:'admin', setDevStart:'xem',
-  editTxn:'admin', deleteTxn:'admin', editLoan:'admin', deleteLoan:'admin', getSummary:'xem',
+  editTxn:'admin', txnSetCreator:'admin', deleteTxn:'admin', editLoan:'admin', deleteLoan:'admin', getSummary:'xem',
   getCost:'xem', getPrices:'xem', setPrice:'ql', setProgress:'ql',
   remove:'ql', updateProjects:'ql', getLog:'ql',
   createReq:'xem', approveReq:'xem', rejectReq:'xem', cancelReq:'xem', receiveReq:'xem', issueReq:'tk', addCount:'tk', reservePyc:'xem', paperReq:'tk', paperCancel:'xem', paperUndo:'admin', xeBatch:'tk', setXeTypes:'admin', pgInfo:'xem',
@@ -412,6 +413,7 @@ function route(action, data, token) {
       case 'mergeItems':      r = mergeItems(u, data); break;
       case 'dropDecide':      r = dropDecide(u, data); break;
       case 'editTxn':         r = editTxn(u, data); break;
+      case 'txnSetCreator':   r = txnSetCreator(u, data); break;   // v5.59.15
       case 'deleteTxn':       r = deleteTxn(u, data); break;
       case 'editLoan':        r = editLoan(u, data); break;
       case 'deleteLoan':      r = deleteLoan(u, data); break;
@@ -1801,6 +1803,32 @@ function cbPick_(d, old) {
   const t = loadUsers().find(x => x.id === String(d.createdBy));
   if (!t || t.status === 'pending') fail('Tài khoản người lập không tồn tại hoặc chưa được duyệt');
   return { id:t.id, name:t.name };
+}
+// v5.59.15: đổi người lập hàng loạt — ids: số phiếu (nhập / xuất / điều chỉnh), createdBy: tài khoản mới
+const CB_TYPES = { nhap:1, xuat:1, dieuchinh:1 };
+function txnSetCreator(u, d) {
+  const ids = (Array.isArray(d.ids) ? d.ids : []).map(String).filter(Boolean);
+  if (!ids.length) fail('Chưa chọn phiếu nào');
+  if (ids.length > 500) fail('Mỗi lần đổi tối đa 500 phiếu');
+  const cb = cbPick_({ createdBy:d.createdBy }, { createdBy:'\u0000' });
+  if (!cb) fail('Chưa chọn tài khoản');
+  const gd = sheetOf(TXN.sheet, TXN.head), rows = readRows(gd, TXN.cols.length), want = {}, tc = TXN.cols.indexOf('thangCT');
+  ids.forEach(x => want[x] = 1);
+  rows.forEach(r => { if (r[0] !== '' && want[String(r[0])] && String(r[tc] || '') !== '') want[String(r[tc])] = 1; });   // phiếu đi cặp đổi theo
+  let n = 0, skip = 0; const olds = {}, projs = {};
+  rows.forEach((r, k) => {
+    if (r[0] === '' || !want[String(r[0])]) return;
+    const o = rowToObj(TXN.cols, r);
+    if (!CB_TYPES[o.type]) { skip++; return; }
+    if (String(o.createdBy) === cb.id) return;
+    olds[o.createdByName || '(trống)'] = (olds[o.createdByName || '(trống)'] || 0) + 1; projs[o.project] = 1;
+    cbSet_(o, cb); gd.getRange(k + 2, 1, 1, TXN.cols.length).setValues([TXN.cols.map(c => toCell(o[c] === undefined ? '' : o[c]))]); n++;
+  });
+  if (n) {
+    writeLog(u, 'Đổi người lập phiếu', 'Hàng loạt ' + n + ' phiếu (' + Object.keys(projs).join(', ') + '): ' + Object.keys(olds).map(k => k + ' ' + olds[k]).join(', ') + ' → ' + cb.name);
+    bumpTxnRev();
+  }
+  return { success:true, n:n, skip:skip, createdBy:cb.id, createdByName:cb.name };
 }
 function cbSet_(o, cb) {
   if (String(o.cbOld || '') === '') o.cbOld = String(o.createdByName || '') || '(trống)';
@@ -3415,7 +3443,7 @@ const ACT = {
   uploadPhoto:u => hasP(u, 'k_nhap') || hasP(u, 'k_xuat') || hasP(u, 'k_edit'),
   addLoan:P_('k_loan'), returnLoan:P_('k_loan'), closeLoan:P_('k_loan'),
   loanLinkAccept:P_('k_loan'), loanLinkReject:P_('k_loan'), dropReq:P_('k_loan'), dropDecide:P_('k_bomuon'), loanFix:P_('k_loan'), mergeItems:ADM, setDevStart:u => ADM(u) || hasP(u, 'k_hd'),
-  editTxn:ADM, deleteTxn:ADM, nxtInfo:u => ADM(u) || hasP(u, 'k_napx') || hasP(u, 'k_dnap'), nxtImport:ADM, nxtUndo:u => ADM(u) || hasP(u, 'k_dnap'),
+  editTxn:ADM, txnSetCreator:ADM, deleteTxn:ADM, nxtInfo:u => ADM(u) || hasP(u, 'k_napx') || hasP(u, 'k_dnap'), nxtImport:ADM, nxtUndo:u => ADM(u) || hasP(u, 'k_dnap'),
   pjWipe:ADM,
   nxtSubmit:u => ADM(u) || hasP(u, 'k_napx'), nxtPend:u => ADM(u) || hasP(u, 'k_napx') || hasP(u, 'k_dnap'), nxtReview:u => ADM(u) || hasP(u, 'k_napx') || hasP(u, 'k_dnap'),
   nxtApprove:u => ADM(u) || hasP(u, 'k_dnap'), nxtReturn:u => ADM(u) || hasP(u, 'k_dnap'), nxtCancel:u => ADM(u) || hasP(u, 'k_napx'), editLoan:ADM, deleteLoan:ADM,
@@ -5228,6 +5256,8 @@ function pjWipe(u, d) {
 }
 
 const VER_LOG = [
+ { v:'5.59.15', d:'08/11/2026', type:'up', title:'Admin chọn nhiều phiếu, đổi người lập một lần', who:'Admin',
+   sum:['Tab Nhập / Xuất: nút "Chọn nhiều" → tick phiếu hoặc "Chọn tất cả đang hiện" (kết hợp ô tìm theo tên người lập)','Thanh trên cùng: chọn tài khoản → "Đổi người lập" (tối đa 500 phiếu mỗi lần, phiếu đi cặp đổi theo)','Nhật ký ghi 1 dòng cho cả lần đổi; chi tiết từng phiếu vẫn ghi người lập lúc đầu'] },
  { v:'5.59.14', d:'08/11/2026', type:'up', title:'Admin đổi người lập phiếu nhập / xuất', who:'Admin',
    sum:['Sửa phiếu (nhập, xuất, điều chỉnh): thêm ô "Người lập" chọn tài khoản thành viên','Phiếu nhập thẳng ra công trường đổi cả 2 phiếu; phiếu giấy theo xe (mã PN / PX) hỏi đổi cả tờ','Chi tiết phiếu ghi "Admin đổi người lập (trước: …)"; Nhật ký hoạt động ghi lại lần đổi'] },
  { v:'5.59.7', d:'02/11/2026', type:'fix', title:'Số máy không còn tính máy đã rời công trình · Excel báo cáo tự giãn hàng', who:'Mọi người · Admin · Lãnh đạo',

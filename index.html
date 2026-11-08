@@ -1897,7 +1897,7 @@ body.pg-printing #pg-print{display:block;position:fixed;inset:0;z-index:9000;bac
 // ============================================================
 // CONFIG
 // ============================================================
-const APP_VERSION = '5.59.14';
+const APP_VERSION = '5.59.15';
 const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbw6Rmi80I7RI3ij2U7RdRF5pYuQTnPrwEmGmUZS5xpxzLwwVynfoFUujZe1lm6HS1ymxw/exec';
 // ============================================================
 
@@ -16454,6 +16454,92 @@ function cbCollect(t, data) {
   const same = t.ma ? cbSameMa(t) : [];
   if (same.length) data.cbAll = confirm(`Phiếu giấy ${cbMa(t)} có thêm ${same.length} dòng khác.\nĐổi người lập cho cả ${same.length + 1} dòng cùng mã này thành "${nm}"?\n\nOK = đổi cả tờ · Huỷ = chỉ đổi dòng này`) ? 1 : 0;
   return true;
+}
+</script>
+<style>
+.cb9-bar{position:sticky;top:0;z-index:5;margin:0 14px 10px;padding:10px 12px;border-radius:12px;background:var(--card,#fff);border:1.5px solid #0056A4;box-shadow:0 2px 8px rgba(0,0,0,.08)}
+.cb9-bar .cb9-r{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.cb9-bar select{flex:1 1 180px;min-width:0;padding:8px;border-radius:8px;border:1px solid var(--border)}
+.cb9-bar button{padding:8px 12px;border-radius:8px;border:1px solid var(--border);background:var(--bg2,#F3F5F8);font-weight:600}
+.cb9-bar button.go{background:#0056A4;color:#fff;border-color:#0056A4}
+.cb9-bar button:disabled{opacity:.45}
+.cb9-n{font-weight:700;margin-bottom:8px}
+.cb9-ck{width:22px;height:22px;flex:0 0 22px;margin:0 10px 0 0;accent-color:#0056A4}
+.cb9-btn{margin:0 14px 10px;padding:7px 12px;border-radius:8px;border:1px dashed #0056A4;background:none;color:#0056A4;font-weight:600}
+</style>
+<script>// ===== v5.59.15 KHO — ADMIN CHỌN NHIỀU PHIẾU, ĐỔI NGƯỜI LẬP MỘT LẦN =====
+// Tab Nhập / Xuất: nút "Chọn nhiều" (Admin, máy chủ ≥ 5.59.15 — có cột cbOld) → ô tick từng phiếu + thanh chọn tài khoản → txnSetCreator (500 phiếu / lần).
+const CB9_T = {nhap:1, xuat:1, dieuchinh:1};
+const CB9 = {on:'', sel:new Set(), list:[]};
+const cb9Ok = () => can('admin') && db.cbOn;
+{ const _cb9TL = renderTxnList; renderTxnList = function (txns, type) {
+  if (CB9.on && CB9.on === type) CB9.list = txns.filter(t => CB9_T[t.type] && !t._loan && !LOAN_T[t.type] && (!(h9In === type && H9Q[type]) || h9Match(t, H9Q[type]))).map(t => t.id);
+  return _cb9TL.apply(this, arguments);
+}; }
+{ const _cb9HT = renderHistTab; renderHistTab = function (c, type) {
+  if (CB9.on && CB9.on !== type) cb9Reset();
+  _cb9HT.apply(this, arguments);
+  try { if (cb9Ok()) cb9Decorate(c, type); } catch (e) { console.warn(e); }
+}; }
+function cb9Reset() { CB9.on = ''; CB9.sel = new Set(); CB9.list = []; }
+function cb9Users() {
+  const P = curProj;
+  let l = (cbUsers || []).filter(u => u.status === 'active' && u.role !== 'ADM' && (P === 'all' || allProjRole(u.role) || (u.projects || []).includes(P)));
+  if (cbUsers && !l.length) l = cbUsers.filter(u => u.status === 'active' && u.role !== 'ADM');
+  return l.sort((a, b) => String(a.name).localeCompare(String(b.name), 'vi'));
+}
+function cb9Decorate(c, type) {
+  const head = c.querySelector('.hist-head'); if (!head) return;
+  if (!CB9.on) { head.insertAdjacentHTML('afterend', `<button class="cb9-btn" onclick="cb9Start('${type}')">☑ Chọn nhiều — đổi người lập</button>`); return; }
+  const anchor = c.querySelector('.h9-s') || head, sel = c.querySelector('.cb9-sel');
+  anchor.insertAdjacentHTML('afterend', `<div class="cb9-bar" id="cb9-bar">
+    <div class="cb9-n" id="cb9-n"></div>
+    <div class="cb9-r" style="margin-bottom:8px"><button onclick="cb9All()">Chọn tất cả đang hiện (${fmtNum(CB9.list.length)})</button><button onclick="cb9None()">Bỏ chọn</button><button onclick="cb9Stop()">Xong</button></div>
+    <div class="cb9-r"><select id="cb9-u">${cb9UOpts()}</select><button class="go" id="cb9-go" onclick="cb9Apply()">Đổi người lập</button></div>
+  </div>`);
+  c.querySelectorAll('.row-item[onclick^="openTxn("]').forEach(row => {
+    const id = +((row.getAttribute('onclick').match(/^openTxn\((\d+)\)/) || [])[1]); const t = id && db.transactions.find(x => x.id === id);
+    if (!t || !CB9_T[t.type] || LOAN_T[t.type]) return;
+    row.setAttribute('onclick', `cb9Tg(${id})`); row.dataset.cb9 = id;
+    row.insertAdjacentHTML('afterbegin', `<input type="checkbox" class="cb9-ck" ${CB9.sel.has(id) ? 'checked' : ''} onclick="event.stopPropagation();cb9Tg(${id})">`);
+  });
+  cb9Count();
+  if (!cbUsers && navigator.onLine) api('listUsers').then(r => { if (r && r.success) { cbUsers = r.users; const s = $h('cb9-u'); if (s) s.innerHTML = cb9UOpts(); cb9Count(); } });
+}
+function cb9UOpts() {
+  if (!cbUsers) return `<option value="">${navigator.onLine ? 'Đang tải danh sách tài khoản…' : 'Cần có mạng'}</option>`;
+  return '<option value="">— Chọn tài khoản người lập mới —</option>' + cb9Users().map(u => `<option value="${escHtml(u.id)}" data-name="${escHtml(u.name)}">${escHtml(u.name)} (@${escHtml(u.username)}) · ${escHtml(ROLE_NAME[u.role] || u.role || '')}</option>`).join('');
+}
+function cb9Count() {
+  const n = CB9.sel.size, el = $h('cb9-n'); if (el) el.textContent = n ? `Đã chọn ${fmtNum(n)} phiếu` : 'Bấm vào phiếu để chọn';
+  const go = $h('cb9-go'); if (go) go.disabled = !n || !cbUsers;
+}
+function cb9Start(type) { cb9Reset(); CB9.on = type; goTab('ls' + type); }
+function cb9Stop() { cb9Reset(); refreshCurrentView(false); }
+function cb9Tg(id) {
+  CB9.sel.has(id) ? CB9.sel.delete(id) : CB9.sel.add(id);
+  document.querySelectorAll(`.row-item[data-cb9="${id}"] .cb9-ck`).forEach(x => x.checked = CB9.sel.has(id));
+  cb9Count();
+}
+function cb9All() { CB9.list.forEach(id => CB9.sel.add(id)); document.querySelectorAll('.row-item[data-cb9] .cb9-ck').forEach(x => x.checked = true); cb9Count(); }
+function cb9None() { CB9.sel.clear(); document.querySelectorAll('.row-item[data-cb9] .cb9-ck').forEach(x => x.checked = false); cb9Count(); }
+async function cb9Apply() {
+  const s = $h('cb9-u'), uid = s && s.value; if (!uid) { toast('⚠️ Chọn tài khoản người lập mới'); return; }
+  const nm = s.selectedOptions[0].dataset.name, ids = [...CB9.sel];
+  if (!ids.length) return;
+  if (!navigator.onLine) { toast('📴 Cần có mạng'); return; }
+  const by = {}; ids.forEach(id => { const t = db.transactions.find(x => x.id === id); const k = (t && t.createdByName) || '(trống)'; by[k] = (by[k] || 0) + 1; });
+  if (!confirm(`Đổi người lập ${ids.length} phiếu thành "${nm}"?\n\nĐang ghi: ${Object.keys(by).map(k => k + ' (' + by[k] + ')').join(', ')}\n\nNhật ký ghi lại lần đổi; chi tiết từng phiếu vẫn ghi người lập lúc đầu.`)) return;
+  let n = 0;
+  for (let i = 0; i < ids.length; i += 500) {
+    showLoader(`Đang đổi người lập... ${n}/${ids.length}`);
+    const r = await api('txnSetCreator', {ids:ids.slice(i, i + 500), createdBy:uid}, 120000);
+    if (!r || !r.success) { hideLoader(); toast('⚠️ ' + ((r && (r.error || r.reason)) || 'mất kết nối') + (n ? ` — đã đổi ${n} phiếu` : ' — chưa đổi gì')); await syncAll(true); refreshCurrentView(false); return; }
+    n += r.n;
+  }
+  showLoader('Đang tải lại dữ liệu...'); await Promise.race([syncAll(true), new Promise(res => setTimeout(res, 15000))]); hideLoader();
+  cb9Reset(); refreshCurrentView(false);
+  toast(`✅ Đã đổi người lập ${n} phiếu → ${nm}`);
 }
 </script>
 </body>
