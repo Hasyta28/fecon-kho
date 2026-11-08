@@ -1897,7 +1897,7 @@ body.pg-printing #pg-print{display:block;position:fixed;inset:0;z-index:9000;bac
 // ============================================================
 // CONFIG
 // ============================================================
-const APP_VERSION = '5.59.13';
+const APP_VERSION = '5.59.14';
 const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbw6Rmi80I7RI3ij2U7RdRF5pYuQTnPrwEmGmUZS5xpxzLwwVynfoFUujZe1lm6HS1ymxw/exec';
 // ============================================================
 
@@ -2372,7 +2372,7 @@ function applyServer(r) {
   let rows = r.transactions || [];
   if (r.txnCols) rows = rows.map(a => { const o = {}; r.txnCols.forEach((c, i) => o[c] = a[i]); return o; });
   if (r.txnCols) db.ctOn = r.txnCols.indexOf('ct') >= 0;   // v5.35
-  if (r.txnCols) db.cbOn = r.txnCols.indexOf('cbOld') >= 0;   // v5.59.13: máy chủ cho Admin đổi người lập
+  if (r.txnCols) db.cbOn = r.txnCols.indexOf('cbOld') >= 0;   // v5.59.14: máy chủ cho Admin đổi người lập
   db.one = !!r.one; db.cuDone = (r.cuDone || []).map(String);   // v5.55: một tồn kho
   rows = rows.map(t => ({...t, id:+t.id, itemId:+t.itemId, qty:+t.qty||0, refId: t.refId ? (isPycRef(String(t.refId)) ? String(t.refId) : +t.refId) : ''}));
   const base = r.txnCols && r.txnFrom > 0 ? db.transactions.filter(t => !t._local).concat(rows) : rows;
@@ -5718,7 +5718,7 @@ function applyAdminOp(action, d) {
     if (t.type === 'xuat') t.thietBi = d.thietBi;
     if (t.type === 'dieuchinh') t.reason = d.reason;
     if (d.datetime) t.datetime = d.datetime;
-    cbApply(t, d);                                            // v5.59.13: đổi người lập
+    cbApply(t, d);                                            // v5.59.14: đổi người lập
     (stockAdd(t.itemId, txnEffect(t)), siteAdd(t.itemId, siteEffect(t)));
     const pr = pairOf(t);                                     // v5.30: phiếu đi cặp đổi theo (vật tư, số lượng, ngày giờ)
     if (pr) { (stockAdd(pr.itemId, -txnEffect(pr)), siteAdd(pr.itemId, -siteEffect(pr))); Object.assign(pr, {itemId:t.itemId, itemName:t.itemName, unit:t.unit, qty:t.qty, datetime:t.datetime, clientTime:''}); (stockAdd(pr.itemId, txnEffect(pr)), siteAdd(pr.itemId, siteEffect(pr))); }
@@ -5851,7 +5851,7 @@ async function saveEditTxn() {
   const data = {id:t.id, itemId, qty,
     supplierOrReceiver:document.getElementById('et-party').value.trim(), thietBi:document.getElementById('et-dev').value,
     reason:document.getElementById('et-reason').value.trim(), note:document.getElementById('et-note').value.trim(), datetime:time};
-  if (!cbCollect(t, data)) return;                            // v5.59.13: người lập mới
+  if (!cbCollect(t, data)) return;                            // v5.59.14: người lập mới
   closeModal('modal-edit-txn');
   const ok = await pushAdmin('editTxn', data);
   if (ok === 'rejected') return;
@@ -13364,6 +13364,9 @@ function bcKgPer(it) {
 
 // ---------- dữ liệu ----------
 const BC_FUEL_U = /^(lit|l|kg|hop|binh|can|phuy|thung|xo|tuyp|lon|chai)$/;   // v5.56.3: đơn vị của nhiên liệu, dầu mỡ
+// v5.59.13: bên nhận của phiếu ra khỏi dự án (chữ đã bỏ dấu): trả bên cho thuê / NCC → Xuất trả; chuyển dự án, về kho → Trung chuyển. Khác → Trung chuyển
+const BC_TRA_RE = /^tra( |$)|cho thue|^ncc( |$)/, BC_TC_RE = /^chuyen (du an|sang)|^ve kho/;
+const BC_KD_PARTY = 'Kiểm đếm SL thực tế', BC_KD_NOTE = /^Quy chiếu SL thực tế theo file kiểm đếm/;
 function bcData(R) {
   const from = R.from, to = R.to, end = R.end;
   const inR = d => !d || ((!from || d >= from) && (!to || d <= to));
@@ -13389,9 +13392,14 @@ function bcData(R) {
     else if (LOAN_T[t.type]) loai = { chomuon:'Cho mượn', nhantra:'Nhận trả', dimuon:'Đi mượn', tralai:'Trả lại' }[t.type];
     else if (t.type === 'nhap') loai = t.thangCT ? 'Nhập thẳng CT' : t.ct === 've' ? 'Về kho từ CT' : /^tồn đầu/i.test(sv) ? 'Tồn đầu'
       : 'Nhập kho';   // v5.56.7: mọi phiếu nhập thường = "Nhập kho" (mua, từ dự án khác, chưa ghi nguồn) — nguồn xem ở cột Bên giao hàng
-    else loai = t.thangCT ? 'Xuất thẳng CT' : /hư hỏng/i.test(sv) ? 'Thanh lý (hỏng)' : /giải động/i.test(t.note || '') ? 'Giải động'
-      : projSet.has(normVN(sv)) ? 'Xuất luân chuyển' : t.ct === 'ra' ? 'Ra công trường' : 'Xuất dùng';
-    rows.push({ t, t0, it, d, q, dk, ds, side, qty, site, loai, sv, cts, note0:bcNoteClean(note0, side), fuel:fuelOf(it), isDO:doOf(it), inR:inR(d), afterStart:afterStart(d), afterEnd:afterEnd(d),
+    else {   // v5.59.13: đồ ra khỏi dự án (phiếu "Ra khỏi công trình", giải động, bên nhận là dự án / kho / bên cho thuê) → Xuất trả · Trung chuyển, không còn rơi về "Xuất dùng"
+      const sn = normVN(sv), out = t.ct === 'ngoai' || t.ct === 'ctra' || /giải động/i.test(t.note || '') || projSet.has(sn) || BC_TRA_RE.test(sn) || BC_TC_RE.test(sn);
+      loai = t.thangCT ? 'Xuất thẳng CT' : /hư hỏng|thanh lý/i.test(sv) ? 'Thanh lý (hỏng)' : out ? (BC_TRA_RE.test(sn) ? 'Xuất trả' : 'Trung chuyển')
+        : t.ct === 'ra' ? 'Ra công trường' : 'Xuất dùng';
+    }
+    // v5.59.13: phiếu nạp từ file kiểm đếm SL thực tế (5.59.11–12) → báo cáo để trống NCC + Ghi chú (dữ liệu máy chủ giữ nguyên để hoàn tác)
+    const kd = normVN(t.supplierOrReceiver) === normVN(BC_KD_PARTY) || [t.note, t.reason, t0.note, t0.reason].some(z => BC_KD_NOTE.test(String(z || '')));
+    rows.push({ t, t0, it, d, q, dk, ds, side, qty, site, loai, sv:kd ? '' : sv, cts:kd ? '' : cts, note0:kd ? '' : bcNoteClean(note0, side), kd, fuel:fuelOf(it), isDO:doOf(it), inR:inR(d), afterStart:afterStart(d), afterEnd:afterEnd(d),
       fixed:(t.type === 'nhap' || t.type === 'xuat') && adj[t.id] ? [+t.qty, q] : null });
   });
   const ord = (a, b) => ((a.d ? a.d.getTime() : 0) - (b.d ? b.d.getTime() : 0)) || (+a.t.id - +b.t.id);
@@ -13417,7 +13425,7 @@ function bcData(R) {
 }
 
 // ---------- sổ nhập / sổ xuất ----------
-const bcNoSv = (x, N) => !x.sv && !/^Điều chỉnh|Khai số|Tồn đầu|Về kho|thẳng/.test(x.loai) && (N || !x.t.thietBi);
+const bcNoSv = (x, N) => !x.kd && !x.sv && !/^Điều chỉnh|Khai số|Tồn đầu|Về kho|thẳng/.test(x.loai) && (N || !x.t.thietBi);
 // v5.59.3: phiếu mượn đã bỏ thông tin mượn / đã trả xong → ghi rõ trên Excel (trước đây vẫn ghi như đang mượn)
 function bcLoanOf(t) { return t && LOAN_T[t.type] && t.refId ? (db.loans || []).find(l => String(l.id) === String(t.refId)) || null : null; }
 function bcLoanNote(t) {
@@ -13450,7 +13458,7 @@ function bcLedger(X, wb, side) {
     const kgp = kg ? bcKgPer(x.it) : null, v = new Array(n).fill('');
     v[0] = k + 1; v[1] = bcXD(x.d); v[2] = x.so; v[3] = x.it.name; v[4] = x.it.unit; v[5] = x.qty;
     if (kg) v[6] = kgp ? { formula:`F${r}*${kgp}`, result:bcR(x.qty * kgp) } : (x.it.cat === 'thep' ? 'chưa quy đổi' : '');
-    let note = x.t.type === 'dieuchinh' ? (x.t.reason || x.t0.reason || (x.t0.type === 'kiemke' ? 'Kiểm kê' : '')) : x.note0;
+    let note = x.kd ? '' : x.t.type === 'dieuchinh' ? (x.t.reason || x.t0.reason || (x.t0.type === 'kiemke' ? 'Kiểm kê' : '')) : x.note0;
     if (note && note === x.sv) note = '';
     if (x.fixed) note = [note, `Đã sửa số: ghi ${bcVN(x.fixed[0], 3)} → đúng ${bcVN(x.fixed[1], 3)}`].filter(Boolean).join(' · ');
     if (x.t.thangCT && D.soById[x.t.thangCT]) note = [note, 'đi cặp ' + D.soById[x.t.thangCT]].filter(Boolean).join(' · ');
@@ -13480,7 +13488,7 @@ function bcLedger(X, wb, side) {
   const noSv = cnt(x => bcNoSv(x, N)), noSvT = noSv ? `  ·  ${noSv} lượt chưa ghi ${N ? 'bên giao hàng' : 'bên nhận'} (ô tô vàng)` : '';
   const lab = (N ? `Cộng: ${L.length} lượt nhập  ·  ${cnt(x => /^Nhập (kho|mua)$/.test(x.loai))} nhập kho  ·  ${cnt(x => /mượn|trả/i.test(x.loai))} mượn / nhận trả  ·  ${cnt(x => /^Điều chỉnh|Khai số/.test(x.loai))} điều chỉnh`
     + (cnt(x => !/Nhập (kho|mua)|mượn|trả|Điều chỉnh|Khai số/i.test(x.loai)) ? `  ·  ${cnt(x => !/Nhập (kho|mua)|mượn|trả|Điều chỉnh|Khai số/i.test(x.loai))} loại khác` : '')
-    : `Cộng: ${L.length} lượt xuất  ·  ${cnt(x => x.loai === 'Xuất dùng')} xuất dùng  ·  ${cnt(x => /luân chuyển|Giải động/.test(x.loai))} luân chuyển / giải động  ·  ${cnt(x => /mượn|Trả lại/.test(x.loai))} cho mượn / trả lại`
+    : `Cộng: ${L.length} lượt xuất  ·  ${cnt(x => x.loai === 'Xuất dùng')} xuất dùng  ·  ${cnt(x => x.loai === 'Xuất trả')} xuất trả  ·  ${cnt(x => x.loai === 'Trung chuyển')} trung chuyển  ·  ${cnt(x => /mượn|Trả lại/.test(x.loai))} cho mượn / trả lại`
       + (cnt(x => /Ra công trường|thẳng|Thanh lý/.test(x.loai)) ? `  ·  ${cnt(x => /Ra công trường|thẳng|Thanh lý/.test(x.loai))} ra CT / thẳng CT / thanh lý` : '')) + noSvT;
   bcTotal(ws, r, n, lab, n, {});
   ws.autoFilter = `A9:${bcCL(n)}${r2}`;
@@ -13489,7 +13497,7 @@ function bcLedger(X, wb, side) {
     'Số phiếu do app đánh theo ngày (PN = phiếu làm tăng tồn). Chứng từ = số biên bản giao hàng / hoá đơn ghi khi lập phiếu; để trống thì điền tay khi in. Bấm nút lọc ở dòng tiêu đề để xem riêng một vật tư hoặc một nhà cung cấp.',
     kg ? 'Quy đổi (kg) = số cây × kg/cây; kg/cây = 0,00617 × D² × chiều dài (đọc từ tên, vd "Thép cây D20 x 11,7m"). "chưa quy đổi" = tên chưa ghi đường kính / chiều dài.' : '']
     : [
-    'Ghi chú: "Xuất luân chuyển" / "Giải động" = chuyển sang dự án / kho khác. "Ra công trường" = thiết bị, vật tư phụ trợ mang ra công trường, vẫn thuộc dự án (cột "Ở công trường" ở sheet Tổng hợp).'
+    'Ghi chú: "Xuất dùng" = dùng hết tại dự án. "Xuất trả" = trả bên cho thuê / NCC. "Trung chuyển" = chuyển sang dự án khác, về kho công ty (kể cả giải động). "Ra công trường" = thiết bị, vật tư phụ trợ mang ra công trường, vẫn thuộc dự án (cột "Ở công trường" ở sheet Tổng hợp).'
       + (D.ct ? ' "Xuất từ: Công trường" = xuất thẳng từ công trường (không trừ tồn trong kho).' : ''),
     'Cột "Ký nhận" để người nhận ký khi in sổ. Số phiếu do app đánh theo ngày (PX = phiếu làm giảm tồn).']);
   bcSign(X, ws, r, n, ['NGƯỜI LẬP BIỂU', 'THỦ KHO', 'CHỈ HUY TRƯỞNG']);
@@ -13533,7 +13541,7 @@ function bcLedgerNX(X) {
     v[0] = k + 1; v[1] = bcXD(x.d); v[2] = x.so; v[3] = x.it.name; v[4] = x.it.unit; v[5] = N ? x.qty : ''; v[6] = N ? '' : x.qty;
     if (N) { nN++; sN += x.qty; } else { nX++; sX += x.qty; }
     if (kg) v[7] = kgp ? { formula:`(F${r}+G${r})*${kgp}`, result:bcR(x.qty * kgp) } : (x.it.cat === 'thep' ? 'chưa quy đổi' : '');
-    let note = x.t.type === 'dieuchinh' ? (x.t.reason || x.t0.reason || (x.t0.type === 'kiemke' ? 'Kiểm kê' : '')) : x.note0;
+    let note = x.kd ? '' : x.t.type === 'dieuchinh' ? (x.t.reason || x.t0.reason || (x.t0.type === 'kiemke' ? 'Kiểm kê' : '')) : x.note0;
     if (note && note === x.sv) note = '';
     note = bcLoanNoteNX(x, note);
     if (x.fixed) note = [note, `Đã sửa số: ghi ${bcVN(x.fixed[0], 3)} → đúng ${bcVN(x.fixed[1], 3)}`].filter(Boolean).join(' · ');
@@ -13598,7 +13606,7 @@ function bcFuel(X) {
     const inn = x.side === 'N', who = whoOf(x), mtr = x.t.meter === '' || x.t.meter === undefined || x.t.meter === null || isNaN(+x.t.meter) ? '' : +x.t.meter;
     const tm = (String(x.t.datetime || '').match(/\d{1,2}:\d{2}/) || [''])[0];
     if (x.isDO) doBal = bcR(doBal + (inn ? x.qty : -x.qty));
-    let note = x.t.type === 'dieuchinh' ? (x.t.reason || x.t0.reason || 'Điều chỉnh') : x.note0;
+    let note = x.kd ? '' : x.t.type === 'dieuchinh' ? (x.t.reason || x.t0.reason || 'Điều chỉnh') : x.note0;
     if (LOAN_T[x.t.type]) note = bcLoanLive(x.t) ? [x.loai, bcLoanNoteNX(x, note)].filter(Boolean).join(' · ') : '';   // v5.59.6: còn mượn mới ghi chú; đã trả / đã bỏ → không
     else if (!/^(Nhập mua|Nhập kho|Xuất dùng)$/.test(x.loai)) note = [x.loai, note].filter(Boolean).join(' · ');
     if (x.fixed) note = [note, `Đã sửa số: ${bcVN(x.fixed[0], 2)} → ${bcVN(x.fixed[1], 2)}`].filter(Boolean).join(' · ');
@@ -13798,7 +13806,7 @@ function bcNXT(X, LN, LX, FU) {
   }
   r = bcNotes(ws, r + 2, n, [
     'Ghi chú: Tồn đầu kỳ = tồn trong kho hiện tại trừ các phiếu phát sinh từ đầu kỳ đến nay. Nhập, Xuất, Điều chỉnh, Mượn – trả cộng tự động từ sheet "' + BC_NX + '" và "Nhiên liệu" — sửa số ở sổ thì tổng hợp tự tính lại. Tồn cuối = Tồn đầu + Nhập − Xuất ± Điều chỉnh ± Mượn – trả.',
-    'Nhập gồm nhập mua, tồn đầu, nhận luân chuyển / giải động, nhập thẳng CT, về kho từ công trường. Xuất gồm xuất dùng, luân chuyển, giải động, ra công trường, thanh lý hàng hỏng. Mượn – trả: đi mượn, nhận trả (+); cho mượn, trả lại (−).'
+    'Nhập gồm nhập mua, tồn đầu, nhận luân chuyển / giải động, nhập thẳng CT, về kho từ công trường. Xuất gồm xuất dùng, xuất trả, trung chuyển, ra công trường, thanh lý hàng hỏng. Mượn – trả: đi mượn, nhận trả (+); cho mượn, trả lại (−).'
       + (ct ? ' Ở công trường = thiết bị, vật tư phụ trợ đã mang ra công trường, vẫn thuộc dự án. Tình trạng xét theo cột Tổng.' : ''),
     'Chỉ liệt kê mặt hàng còn tồn hoặc có phát sinh trong kỳ. Thép quy đổi: kg/cây = 0,00617 × D² × chiều dài (đọc từ tên vật tư).']);
   bcSign(X, ws, r, n, ['NGƯỜI LẬP BIỂU', 'THỦ KHO', 'CHỈ HUY TRƯỞNG']);
@@ -13869,7 +13877,7 @@ function bcOverview(X, LN, LX, FU, NX, LO, apx) {
   const band = (r, text) => { ws.mergeCells(r, 2, r, 13); Object.assign(ws.getCell(r, 2), { value:text, font:bcF(12, true, false, 'FFFFFF'), fill:bcFill(BC.NAVY), alignment:{ horizontal:'left', vertical:'middle', indent:1 } }); ws.getRow(r).height = 20; };
   let r = 8; band(r, 'SỐ LIỆU CHÍNH TRONG KỲ'); r += 2;
   ws.getRow(r).height = 34; ws.getRow(r + 1).height = 18;
-  const IN_T = ['Nhập mua', 'Nhập kho', 'Nhập thẳng CT', 'Đi mượn', 'Nhận trả', 'Nhận luân chuyển', 'Nhận giải động'], OUT_T = ['Xuất dùng', 'Xuất luân chuyển', 'Giải động', 'Thanh lý (hỏng)', 'Cho mượn', 'Trả lại'];   // v5.56.4
+  const IN_T = ['Nhập mua', 'Nhập kho', 'Nhập thẳng CT', 'Đi mượn', 'Nhận trả', 'Nhận luân chuyển', 'Nhận giải động'], OUT_T = ['Xuất dùng', 'Xuất trả', 'Trung chuyển', 'Thanh lý (hỏng)', 'Cho mượn', 'Trả lại'];   // v5.56.4
   const nN = LN.r2 >= LN.r1 ? D.P.filter(x => !x.fuel && x.side === 'N' && IN_T.includes(x.loai)).length : 0, nX = LX.r2 >= LX.r1 ? D.P.filter(x => !x.fuel && x.side === 'X' && OUT_T.includes(x.loai)).length : 0;
   const cntIf = (L, T) => `SUMPRODUCT(COUNTIF(${bcQ(L.name)}!$${bcCL(L.cLoai)}$${L.r1}:$${bcCL(L.cLoai)}$${L.r2},{${T.map(x => '"' + x + '"').join(',')}}))`;
   const nNeg = NX.list.filter(s => { const ct = D.ct ? s.sClose : 0; return ((s.close + ct) < -1e-9); }).length;
@@ -13880,6 +13888,23 @@ function bcOverview(X, LN, LX, FU, NX, LO, apx) {
   tile(r, 10, { formula:`${bcQ(FU.name)}!I${FU.FC}`, result:FU.close }, '#,##0;[Red]-#,##0', 'Tồn dầu DO cuối kỳ (lít)');
   tile(r, 12, { formula:`COUNTIF(${bcQ(NX.name)}!$${bcCL(NX.cSt)}$${NX.t1}:$${bcCL(NX.cSt)}$${NX.t2},"Âm")`, result:nNeg }, '0', 'Mặt hàng tồn cuối âm', BC.RED, 'FDF0EA');
   r += 3;
+  // v5.59.13: hàng ô số NHỚT (mọi loại nhớt đơn vị lít cộng chung; mỡ kg không cộng) — đặt thẳng dưới 3 ô dầu DO
+  const NH = FU.oilItems.filter(s => /nh(ớ|o)t/i.test(s.it.name || '') && /^lit$/.test(normVN(s.it.unit || '')));
+  const nhNm = new Set(NH.map(s => s.it.name)), nhF = FU.F.filter(x => nhNm.has(x.it.name));
+  const nhN = bcR(nhF.filter(x => x.side === 'N').reduce((a, x) => a + x.qty, 0)), nhX = bcR(nhF.filter(x => x.side === 'X').reduce((a, x) => a + x.qty, 0));
+  const nhOp = bcR(NH.reduce((a, s) => a + s.open, 0));
+  if (NH.length) {
+    const crit = `{${[...nhNm].map(x => '"' + bcStr(x) + '"').join(',')}}`, J = `${bcQ(FU.name)}!$J$${FU.f1}:$J$${FU.f2}`;
+    const fS = c => FU.f2 >= FU.f1 ? `SUMPRODUCT(SUMIFS(${bcQ(FU.name)}!$${c}$${FU.f1}:$${c}$${FU.f2},${J},${crit}))` : '0';
+    const nf = v => Number.isInteger(v) ? '#,##0' : '#,##0.0#';   // Excel: "#,##0.##" để lại dấu chấm sau số chẵn
+    ws.getRow(r).height = 34; ws.getRow(r + 1).height = 18;
+    tile(r, 6, { formula:fS('K'), result:nhN }, nf(nhN), 'Nhớt nhập (lít)');
+    tile(r, 8, { formula:fS('L'), result:nhX }, nf(nhX), 'Nhớt cấp cho máy (lít)');
+    tile(r, 10, { formula:`${nhOp}+F${r}-H${r}`, result:bcR(nhOp + nhN - nhX) }, nf(bcR(nhOp + nhN - nhX)) + ';[Red]-' + nf(bcR(nhOp + nhN - nhX)), 'Tồn nhớt cuối kỳ (lít)');
+    ws.mergeCells(r, 2, r + 1, 5); Object.assign(ws.getCell(r, 2), { value:'NHỚT', font:bcF(13, true, false, BC.NAVY), alignment:{ horizontal:'right', vertical:'middle', indent:1 } });
+    ws.mergeCells(r, 12, r + 1, 13); Object.assign(ws.getCell(r, 12), { value:NH.length > 1 ? `Gộp ${NH.length} loại nhớt` : NH[0].it.name, font:bcF(9, false, true, BC.GREY), alignment:{ horizontal:'left', vertical:'middle', wrapText:true, indent:1 } });
+    r += 3;
+  }
   // ----- cần kiểm tra -----
   band(r, 'CẦN KIỂM TRA'); r++;
   const W_ = [], dd = x => x.d ? `${bcP2(x.d.getDate())}/${bcP2(x.d.getMonth() + 1)}` : '';
@@ -13914,9 +13939,9 @@ function bcOverview(X, LN, LX, FU, NX, LO, apx) {
   if (lo.length && (loOpen || loWeek)) W_.push(['Lưu ý', `${lo.length} lượt mượn / trả trong kỳ` + (parties.length ? ` (${parties.slice(0, 3).join(', ')}${parties.length > 3 ? '…' : ''})` : '') + (loOpen ? ' — đối chiếu với dự án / đơn vị bên kia.' : ' — đã trả' + (loBo ? ' / bỏ thông tin mượn' : '') + ' xong, không còn nợ.'), BC_NX]);
   const od = (db.loans || []).filter(l => l.status === 'open' && loanOverdue(l) > 0);
   if (od.length) W_.push(['Lưu ý', `${od.length} phiếu mượn quá hạn trả: ` + od.slice(0, 3).map(l => `${l.itemName} (${l.party})`).join(', ') + (od.length > 3 ? '…' : '') + '.', LO ? LO.name : BC_NX]);
-  const mx = D.P.filter(x => !x.fuel && x.side === 'X' && !x.sv && !x.t.thietBi && !/^Điều chỉnh|Khai số/.test(x.loai)).length;
+  const mx = D.P.filter(x => !x.fuel && !x.kd && x.side === 'X' && !x.sv && !x.t.thietBi && !/^Điều chỉnh|Khai số/.test(x.loai)).length;
   if (mx) W_.push(['Lưu ý', `${mx} lượt xuất vật tư chưa ghi NCC / NTP / Đội nhận (ô vàng).`, BC_NX]);
-  const mn = D.P.filter(x => !x.fuel && x.side === 'N' && !x.sv && !/^Điều chỉnh|Khai số/.test(x.loai)).length;
+  const mn = D.P.filter(x => !x.fuel && !x.kd && x.side === 'N' && !x.sv && !/^Điều chỉnh|Khai số/.test(x.loai)).length;
   if (mn) W_.push(['Lưu ý', `${mn} lượt nhập vật tư chưa ghi NCC / NTP / Đội giao (ô vàng).`, BC_NX]);
   if (!W_.length) W_.push(['—', 'Không phát hiện điểm bất thường theo các quy tắc kiểm tra của app.', '']);
   W_.forEach(([lv, t, sh]) => {
@@ -13941,6 +13966,22 @@ function bcOverview(X, LN, LX, FU, NX, LO, apx) {
   if (!top.length) { ws.mergeCells(r, 2, r, 13); Object.assign(ws.getCell(r, 2), { value:'Không có lần cấp dầu DO cho máy trong kỳ', font:bcF(10.5, false, true, BC.GREY) }); r++; }
   else bcCF(ws, `H${t0}:H${r - 1}`, [bcBar()]);
   r++;
+  // ----- v5.59.13: nhớt theo máy -----
+  if (NH.length) {
+    band(r, 'NHỚT CẤP THEO MÁY TRONG KỲ (lít)'); r++;
+    const g = {}; nhF.filter(x => x.side === 'X').forEach(x => { const k = JSON.stringify([x.t.thietBi || '', x.it.name]); g[k] = (g[k] || 0) + x.qty; });
+    const L = Object.entries(g).map(([k, q]) => { const [m, it] = JSON.parse(k); return { m, it, q:bcR(q) }; }).sort((a, b) => b.q - a.q);
+    const n0 = r;
+    L.forEach(o => {
+      ws.mergeCells(r, 2, r, 7); Object.assign(ws.getCell(r, 2), { value:o.m || '(không ghi máy)', font:o.m ? bcF(10.5) : bcF(10.5, false, true, BC.GREY), alignment:LEFT1 });
+      ws.mergeCells(r, 8, r, 10); Object.assign(ws.getCell(r, 8), { value:o.it, font:bcF(10, false, false, '404040'), alignment:LEFT1 });
+      ws.mergeCells(r, 11, r, 13); Object.assign(ws.getCell(r, 11), { value:o.q, numFmt:Number.isInteger(o.q) ? '#,##0' : '#,##0.0#', font:bcF(10.5, true), alignment:RIGHT });
+      for (let c = 2; c <= 13; c++) ws.getCell(r, c).border = { bottom:bcHair };
+      r++;
+    });
+    if (!L.length) { ws.mergeCells(r, 2, r, 13); Object.assign(ws.getCell(r, 2), { value:'Không có lần cấp nhớt trong kỳ', font:bcF(10.5, false, true, BC.GREY) }); r++; }
+    r++;
+  }
   // ----- mục lục -----
   band(r, 'NỘI DUNG BÁO CÁO'); r++;
   const TOC = [['Tổng hợp NXT', 'Tồn đầu, nhập, xuất, điều chỉnh, mượn – trả, tồn cuối từng mặt hàng theo nhóm' + (D.ct ? ' (trong kho + ở công trường)' : '') + (NX.steelTot !== null ? '; thép quy đổi kg' : '')],
@@ -16365,8 +16406,8 @@ async function nxkSave() {
   toast(`✅ Đã lưu: ${neu.length} món mới · ${nIn} phiếu nhập · ${nK} kiểm kê`);
 }
 </script>
-<script>// ===== v5.59.13 KHO — ADMIN ĐỔI NGƯỜI LẬP PHIẾU NHẬP / XUẤT / ĐIỀU CHỈNH =====
-// Màn Sửa phiếu có ô chọn tài khoản. Máy chủ (5.59.13) đổi createdBy + createdByName, ghi người lập trước vào cột cbOld + nhật ký.
+<script>// ===== v5.59.14 KHO — ADMIN ĐỔI NGƯỜI LẬP PHIẾU NHẬP / XUẤT / ĐIỀU CHỈNH =====
+// Màn Sửa phiếu có ô chọn tài khoản. Máy chủ (5.59.14) đổi createdBy + createdByName, ghi người lập trước vào cột cbOld + nhật ký.
 // Phiếu đi cặp (thẳng ra công trường) đổi theo; phiếu giấy cùng mã PN / PX hỏi đổi cả tờ (cbAll).
 const cbMa = t => String(t.ma || '').split('-').slice(0, 2).join('-');
 function cbSameMa(t) {
@@ -16388,7 +16429,7 @@ function cbFill(t) {
   sel.innerHTML = `<option value="${escHtml(cur)}" data-name="${escHtml(t.createdByName || '')}">${escHtml(curName || '(trống)')} · đang ghi</option>`
     + list.map(u => `<option value="${escHtml(u.id)}" data-name="${escHtml(u.name)}">${escHtml(u.name)} (@${escHtml(u.username)}) · ${escHtml(ROLE_NAME[u.role] || u.role || '')}</option>`).join('');
   sel.disabled = !db.cbOn || !cbUsers;
-  hint.innerHTML = !db.cbOn ? '<span style="color:var(--red)">Máy chủ chưa lên 5.59.13 — chưa đổi được người lập</span>'
+  hint.innerHTML = !db.cbOn ? '<span style="color:var(--red)">Máy chủ chưa lên 5.59.14 — chưa đổi được người lập</span>'
     : !cbUsers ? (navigator.onLine ? 'Đang tải danh sách tài khoản…' : '<span style="color:var(--red)">Cần có mạng để đổi người lập</span>')
     : (t.cbOld ? `<span style="color:var(--text2)">Người lập lúc đầu: ${escHtml(t.cbOld)}</span>` : '<span style="color:var(--text2)">Chọn tài khoản khác nếu phiếu ghi nhầm người lập</span>');
 }

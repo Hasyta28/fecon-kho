@@ -1,5 +1,6 @@
-// FECON Kho + Thi công - Service Worker v5.59.13
-// 5.59.13: Admin đổi người lập phiếu nhập / xuất (máy chủ 5.59.13)
+// FECON Kho + Thi công - Service Worker v5.59.14
+// 5.59.14: Admin đổi người lập phiếu nhập / xuất (máy chủ 5.59.14)
+// 5.59.13: Báo cáo Excel — cột Loại phiếu xuất: Xuất dùng / Xuất trả / Trung chuyển; Tổng quan thêm Nhớt
 // 5.59.12: File kiểm đếm — món mới + chênh dương → phiếu nhập, chênh âm → kiểm kê
 // 5.59.11: Nạp sổ Excel nhận file kiểm đếm (chỉ cột Tồn / SL thực tế) → phiếu kiểm kê đặt tồn theo file
 // 5.59.10: Tồn kho — gõ tìm / bấm vật tư tự nhảy sang thẻ nhóm, thẻ đang bật luôn cuộn vào chỗ nhìn thấy
@@ -82,7 +83,7 @@
 //  - Mở app: lấy file từ bộ nhớ của bản đang dùng; thiếu file nào mới lấy từ mạng.
 //  - Có sw.js mới trên GitHub: tải sẵn bản mới vào bộ nhớ riêng nhưng KHÔNG đổi bản đang dùng.
 //  - Địa chỉ có ?fresh=... luôn lấy thẳng từ mạng (app dùng để kiểm tra / tải bản mới).
-const VERSION = '5.59.13';
+const VERSION = '5.59.14';
 const APP = 'fecon-app-', META = 'fecon-meta';
 const CORE = ['./', './index.html', './thicong.html', './danhmuc.html', './manifest.json', './icon-192.png', './icon-512.png', './icon-maskable-192.png', './icon-maskable-512.png', './bg-login.jpg'];
 

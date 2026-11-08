@@ -1,5 +1,5 @@
-// ===== FECON SOUTH - Kho Vật Tư v5.59.13 =====
-// v5.59.13: Admin đổi người lập phiếu nhập / xuất / điều chỉnh (editTxn nhận createdBy; phiếu đi cặp + cùng mã phiếu giấy đổi theo; cột mới cbOld ghi người lập trước; ghi nhật ký)
+// ===== FECON SOUTH - Kho Vật Tư v5.59.14 =====
+// v5.59.14: Admin đổi người lập phiếu nhập / xuất / điều chỉnh (editTxn nhận createdBy; phiếu đi cặp + cùng mã phiếu giấy đổi theo; cột mới cbOld ghi người lập trước; ghi nhật ký)
 // v5.59.7: Tổng hợp dự án chỉ đếm máy đang ở công trường (bỏ máy đã rời)
 // v5.59.2: Danh mục NCC thêm loại "Dầu / nhớt" (dau)
 // v5.59.0: Admin xoá sạch dữ liệu kho của 1 dự án (pjWipe: xem trước, gõ tên xác nhận, sao lưu + file Lưu trữ, giữ Thi công + dự án trống)
@@ -157,7 +157,7 @@ const SESSION_DAYS   = 30;           // Đăng nhập được nhớ bao nhiêu 
 const HASH_ROUNDS    = 300;          // Số vòng băm mật khẩu
 const MAX_PENDING    = 30;           // Tối đa bao nhiêu yêu cầu chờ duyệt (chống spam)
 const TZ = 'Asia/Ho_Chi_Minh';
-const SERVER_VERSION = '5.59.13';
+const SERVER_VERSION = '5.59.14';
 const PHOTO_FOLDER_NAME = 'FECON Kho - Ảnh biên bản';
 const PHOTO_MAX_BYTES = 4 * 1024 * 1024;
 
@@ -1760,7 +1760,7 @@ function editTxn(u, d0) {
     datetime: d.datetime ? checkTime(d.datetime) : String(old.datetime || ''),
     clientTime: ''
   });
-  const cb = cbPick_(d, old);                                  // v5.59.13: Admin đổi người lập
+  const cb = cbPick_(d, old);                                  // v5.59.14: Admin đổi người lập
   if (cb) cbSet_(nw, cb);
   gd.getRange(i + 2, 1, 1, TXN.cols.length).setValues([TXN.cols.map(c => toCell(nw[c] === undefined ? '' : nw[c]))]);
   rewriteTxnLog(old, nw);
@@ -1782,7 +1782,7 @@ function editTxn(u, d0) {
       lg.getRange(k + 2, 1).setValue(toCell(String(nw.datetime))); lg.getRange(k + 2, 6).setValue(toCell(thangLogDetail_(rn, rx).slice(0, 500))); } });
   }
   let cbN = 0;
-  if (cb && d.cbAll && String(old.ma || '') !== '') {            // v5.59.13: phiếu giấy nhiều dòng cùng mã → đổi cả tờ
+  if (cb && d.cbAll && String(old.ma || '') !== '') {            // v5.59.14: phiếu giấy nhiều dòng cùng mã → đổi cả tờ
     const pre = String(old.ma).split('-').slice(0, 2).join('-') + '-', mc = TXN.cols.indexOf('ma'), pc = TXN.cols.indexOf('project');
     rows.forEach((r, k) => {
       if (k === i || k === j || r[0] === '' || String(r[pc]) !== String(old.project) || String(r[mc]).indexOf(pre) !== 0 && String(r[mc]) !== pre.slice(0, -1)) return;
@@ -1795,7 +1795,7 @@ function editTxn(u, d0) {
   bumpTxnRev();
   return { success:true, datetime:nw.datetime, createdBy:cb ? cb.id : undefined, createdByName:cb ? cb.name : undefined, cbN:cbN };
 }
-// v5.59.13: chọn tài khoản người lập mới (chỉ khi app gửi createdBy khác người lập hiện tại)
+// v5.59.14: chọn tài khoản người lập mới (chỉ khi app gửi createdBy khác người lập hiện tại)
 function cbPick_(d, old) {
   if (d.createdBy === undefined || d.createdBy === null || String(d.createdBy) === '' || String(d.createdBy) === String(old.createdBy)) return null;
   const t = loadUsers().find(x => x.id === String(d.createdBy));
@@ -5228,7 +5228,7 @@ function pjWipe(u, d) {
 }
 
 const VER_LOG = [
- { v:'5.59.13', d:'08/11/2026', type:'up', title:'Admin đổi người lập phiếu nhập / xuất', who:'Admin',
+ { v:'5.59.14', d:'08/11/2026', type:'up', title:'Admin đổi người lập phiếu nhập / xuất', who:'Admin',
    sum:['Sửa phiếu (nhập, xuất, điều chỉnh): thêm ô "Người lập" chọn tài khoản thành viên','Phiếu nhập thẳng ra công trường đổi cả 2 phiếu; phiếu giấy theo xe (mã PN / PX) hỏi đổi cả tờ','Chi tiết phiếu ghi "Admin đổi người lập (trước: …)"; Nhật ký hoạt động ghi lại lần đổi'] },
  { v:'5.59.7', d:'02/11/2026', type:'fix', title:'Số máy không còn tính máy đã rời công trình · Excel báo cáo tự giãn hàng', who:'Mọi người · Admin · Lãnh đạo',
    sum:['Tổng quan, thẻ Thiết bị/Máy móc: chỉ đếm máy đang ở công trường; dòng dưới ghi thêm số máy đã rời','Tổng hợp dự án: số máy và cột Máy trong Excel chỉ đếm máy đang ở công trường','File Excel xuất từ app: ô chữ dài xuống dòng thì hàng tự cao đủ thấy hết chữ, không phải kéo tay'] },
