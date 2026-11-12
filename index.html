@@ -1898,7 +1898,7 @@ body.pg-printing #pg-print{display:block;position:fixed;inset:0;z-index:9000;bac
 // ============================================================
 // CONFIG
 // ============================================================
-const APP_VERSION = '5.59.18';
+const APP_VERSION = '5.60.0';
 const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbw6Rmi80I7RI3ij2U7RdRF5pYuQTnPrwEmGmUZS5xpxzLwwVynfoFUujZe1lm6HS1ymxw/exec';
 // ============================================================
 
@@ -8285,7 +8285,7 @@ function meterBoxHtml(pfx, d) {
   return `<div class="mt-box" id="${pfx}-mbox">
     <div class="mt-h"><b>${mUnit(d) === 'km' ? 'Số km hiện tại' : 'Số đồng hồ giờ máy'} </b><span>${last !== null && last !== undefined ? 'Lần trước: ' + fmtNum(last) + ' ' + mSfx(d) : 'Chưa có số trước'}</span></div>
     <input type="number" inputmode="decimal" id="${pfx}-meter" placeholder="Đọc số trên đồng hồ" oninput="meterCheck('${pfx}',${d.id})">
-    <div class="mt-msg" id="${pfx}-mmsg" style="color:#C2410C">⚠️ Chưa có giờ máy — bổ sung trong 7 ngày (chi tiết máy)</div>
+    <div class="mt-msg" id="${pfx}-mmsg" style="color:var(--text2)">Không bắt buộc — để trống vẫn lưu được</div>
     <label class="mt-ck"><input type="checkbox" id="${pfx}-broken" onchange="meterCheck('${pfx}',${d.id})"> Đồng hồ hỏng / không đọc được</label>
     <input id="${pfx}-breason" placeholder="Lý do (bắt buộc), VD: mặt đồng hồ vỡ" style="display:none">
     ${fillAtHtml(pfx)}
@@ -8299,7 +8299,7 @@ function meterCheck(pfx, devId) {
   g('breason').style.display = broken ? '' : 'none'; g('meter').style.display = broken ? 'none' : '';
   let ok = false, msg = '', bad = false;
   if (broken) { ok = !!(g('breason').value || '').trim() || true; msg = ''; }
-  else if (raw === '') { ok = true; msg = '⚠️ Chưa có giờ máy — bổ sung trong 7 ngày (chi tiết máy)'; }   // v5.46
+  else if (raw === '') { ok = true; msg = 'Không bắt buộc — để trống vẫn lưu được'; }   // v5.46 · v5.60.0: bỏ nhắc bổ sung 7 ngày
   else if (isNaN(v) || v < 0) { msg = 'Số không hợp lệ'; bad = true; }
   else if (last !== null && last !== undefined && v < last && !reset) { msg = `Nhỏ hơn lần trước (${fmtNum(last)}). Kiểm tra lại, hoặc tích "Đồng hồ đã thay"`; bad = true; }
   else { ok = true; msg = last !== null && last !== undefined && !reset ? `Chạy ${fmtNum(Math.round((v - last) * 10) / 10)} ${mSfx(d)} từ lần đổ trước` : 'OK'; }
@@ -11357,7 +11357,7 @@ const projDevs = () => db.devices.filter(d => curProj === 'all' || !d.project ||
 function mdData() {
   const D = projDevs(), miss = [], over = [], idle = D.filter(devIdle);
   D.forEach(d => {
-    if (mUnit(d) !== 'none' && !d.outDate) devFuels(d).forEach(x => { if (x.m === null && !isBrokenNote(x.t.meterNote) && (role === 'ADM' || fuelTxnAge(x.t) <= 7)) miss.push({ d, x }); });
+    // v5.60.0: giờ máy không bắt buộc — không còn nhắc "cấp dầu chưa có giờ máy"
     const S = fuelStats(d); if (S) S.flags.filter(x => Date.now() - x.b.at <= 7 * 864e5).forEach(x => over.push({ d, x }));
   });
   return { miss, over, idle };
@@ -13621,7 +13621,7 @@ function bcFuel(X) {
     ws.getCell(r, 9).font = bcF(10.5, false, false, '404040'); if (!x.isDO) ws.getCell(r, 9).numFmt = ';;;';
     if (inn) { for (let c = 1; c <= n; c++) ws.getCell(r, c).fill = bcFill(BC.BLUE); if (!who && x.t.type === 'nhap') { ws.getCell(r, 5).font = bcF(10.5, false, true, BC.ORG); ws.getCell(r, 5).fill = bcFill('FCE9C8'); } }
     if (!inn && x.isDO && x.t.type === 'xuat' && !x.t.thietBi) ws.getCell(r, 5).fill = bcFill('FCE9C8');
-    { const d = !inn && x.isDO && x.t.type === 'xuat' ? devOf(x.t.thietBi) : null; if (d && mUnit(d) === 'h' && mtr === '') ws.getCell(r, 6).fill = bcFill('FCE9C8'); }   // v5.59.6: thiếu giờ máy → vàng
+    // v5.60.0: bỏ tô vàng ô thiếu giờ máy (giờ máy không bắt buộc)
     if (inn && x.t.type === 'nhap' && x.t.thietBi) { bcFlag(ws, r, 13, [note, '⚠ NHẬP mà ghi tên máy?'].filter(Boolean).join(' · '), BC.RED); warn.push(['nhap_may', x]); }
     if (!inn && x.isDO && x.t.type === 'xuat' && !x.t.thietBi) { bcFlag(ws, r, 13, [note, '⚠ Chưa ghi máy nhận'].filter(Boolean).join(' · '), BC.RED); warn.push(['no_dev', x]); }
     if (flagTxn[x.t.id] !== undefined) bcFlag(ws, r, 13, [note, `Vượt định mức +${flagTxn[x.t.id]}%`].filter(Boolean).join(' · '), BC.RED);
@@ -13930,7 +13930,7 @@ function bcOverview(X, LN, LX, FU, NX, LO, apx) {
   const now = Date.now();
   const noM = {}; FU.F.filter(x => x.isDO && x.side === 'X' && x.t.type === 'xuat' && x.t.thietBi && (x.t.meter === '' || x.t.meter === undefined || x.t.meter === null) && x.d && now - x.d.getTime() > 7 * 864e5)
     .forEach(x => { const d = db.devices.find(z => z.name === x.t.thietBi); if (d && mUnit(d) === 'h') noM[d.name] = (noM[d.name] || 0) + 1; });
-  Object.entries(noM).forEach(([k, c]) => W_.push(['TB', `${k}: ${c} lần cấp dầu chưa ghi giờ máy (quá hạn bổ sung 7 ngày).`, 'Nhiên liệu']));
+  // v5.60.0: giờ máy không bắt buộc — bỏ cảnh báo "chưa ghi giờ máy"
   if (NX.low.length) W_.push(['TB', `${NX.low.length} mặt hàng sắp hết: ` + names4(NX.low, s => s.it.name) + '.', 'Tổng hợp NXT']);
   try {
     const hs = (db.hong || []).filter(o => o.state === 'sua' && (typeof hgSince === 'function' ? hgSince(o) : 0) > 30);
@@ -17282,5 +17282,444 @@ async function q7WipeAll() {
 { const _o = openQlMap; openQlMap = function () { q7G = 'chua'; q7Q = ''; q7Sel.clear(); return _o.apply(this, arguments); }; }
 </script>
 
+<style>/* v5.60.0 Nhiên liệu riêng */
+.nl-tile{width:100%;margin:10px 0 0;border:0;border-radius:var(--r,12px);background:#C4521F;color:#fff;display:flex;align-items:center;gap:14px;padding:16px;text-align:left;font-family:inherit;cursor:pointer;box-shadow:0 2px 10px rgba(16,24,40,.08)}
+.nl-tile:active{transform:scale(.98)}
+.nl-tile .nl-ti{width:44px;height:44px;border-radius:12px;background:rgba(255,255,255,.18);display:flex;align-items:center;justify-content:center;font-size:24px;flex:none}
+.nl-tile b{display:block;font-size:18px;font-weight:800}.nl-tile small{display:block;font-size:13px;opacity:.95;margin-top:2px}
+.nl-tile .nl-ar{margin-left:auto;font-size:24px;opacity:.9}
+.nl-chips{display:flex;gap:8px;padding:0 14px 10px}
+.nl-chips button{flex:1;min-height:44px;border-radius:22px;border:1.5px solid var(--border);background:#fff;font-weight:700;font-size:15px;font-family:inherit;color:var(--text)}
+.nl-chips button.on{background:var(--primary);border-color:var(--primary);color:#fff}
+.nl-chips button.nl-fu.on{background:#C4521F;border-color:#C4521F}
+#dp-nl .detail-body{padding:12px 14px 120px}
+.nl-hbtn{margin-left:auto;min-height:38px;padding:0 12px;border-radius:19px;border:1.5px solid #C4521F;background:#FFF4EC;color:#A3400F;font-weight:700;font-size:13px;font-family:inherit;white-space:nowrap}
+.nl-stock{font-size:13px;color:var(--text2);margin:2px 0 10px;line-height:1.5}
+.nl-q{width:100%;box-sizing:border-box;height:46px;border:1.5px solid var(--border);border-radius:10px;padding:0 12px;font-size:16px;background:#fff;outline:none;font-family:inherit}
+.nl-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin-top:10px}
+@media (min-width:700px){.nl-grid{grid-template-columns:repeat(3,minmax(0,1fr))}}
+@media (min-width:1000px){.nl-grid{grid-template-columns:repeat(4,minmax(0,1fr))}}
+.nl-card{position:relative;display:flex;flex-direction:column;text-align:left;border:1.5px solid var(--border);border-radius:14px;background:#fff;padding:0;overflow:hidden;font-family:inherit;color:var(--text);cursor:pointer}
+.nl-card.on{border:2.5px solid #1E8449}
+.nl-card b{display:block;padding:8px 10px 0;font-size:15px;line-height:1.25}
+.nl-card small{display:block;padding:2px 10px 10px;font-size:12px;color:var(--text2)}
+.nl-cph{height:118px;background:#DDE3EA;display:flex;align-items:center;justify-content:center;overflow:hidden}
+.nl-cph img,.nl-dph img,.nl-mini img{width:100%;height:100%;object-fit:cover;display:block}
+.nl-ph0{flex-direction:column;gap:4px;color:#5A6675;background:#EEF1F4}
+.nl-ph0 svg{width:48px;height:48px}.nl-ph0 small{font-size:11px;padding:0}
+.nl-ok{position:absolute;top:8px;right:8px;background:#1E8449;color:#fff;font-weight:800;font-size:14px;padding:4px 10px;border-radius:14px}
+.nl-other{align-items:center;justify-content:center;min-height:170px;border-style:dashed;color:var(--text2);font-weight:700;font-size:15px;text-align:center;padding:10px}
+.nl-foot{position:absolute;left:0;right:0;bottom:0;background:#fff;border-top:1px solid var(--border);padding:12px 14px calc(env(safe-area-inset-bottom,0px) + 14px);display:flex;align-items:center;gap:12px;z-index:2}
+.nl-foot small{display:block;font-size:13px;color:var(--text2)}.nl-foot b{display:block;font-size:18px;font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.nl-foot b span{font-size:13px;font-weight:600;color:var(--text2)}
+.nl-save{min-height:54px;padding:0 20px;border:0;border-radius:12px;background:#1E8449;color:#fff;font-size:17px;font-weight:800;font-family:inherit;margin-left:auto;white-space:nowrap}
+.nl-save[disabled]{opacity:.6}
+.nl-mh{display:flex;align-items:center;gap:12px;margin-bottom:10px}
+.nl-mini{width:64px;height:48px;border-radius:10px;overflow:hidden;background:#DDE3EA;flex:none;display:flex;align-items:center;justify-content:center}
+.nl-mini.nl-ph0 svg{width:30px;height:30px}.nl-mini.nl-ph0 small{display:none}
+.nl-mh b{display:block;font-size:17px}.nl-mh small{display:block;font-size:12px;color:var(--text2)}
+.nl-fis{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:10px}
+.nl-fi{min-height:46px;padding:4px 14px;border-radius:10px;border:1.5px solid var(--border);background:#fff;font-weight:700;font-size:15px;font-family:inherit;color:var(--text);text-align:left;line-height:1.2}
+.nl-fi small{display:block;font-weight:500;font-size:11px;color:var(--text2)}
+.nl-fi.on{background:#1A2332;border-color:#1A2332;color:#fff}.nl-fi.on small{color:#D5DCE4}
+.nl-big{background:#fff;border:2.5px solid #F26522;border-radius:16px;padding:8px 14px 10px;text-align:center}
+.nl-big.nh{border-color:var(--primary)}
+.nl-big .k{font-size:13px;font-weight:700;color:var(--text2)}
+.nl-big .v{font-size:72px;font-weight:800;line-height:1.05;letter-spacing:-1px;font-variant-numeric:tabular-nums;word-break:break-all}
+.nl-big .v span{font-size:22px;font-weight:700;color:var(--text2);margin-left:6px;letter-spacing:0}
+.nl-big .s{font-size:12px;color:var(--text2)}
+.nl-big .s.bad{color:#B42318;font-weight:700}
+.nl-qk{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;margin-top:10px}
+.nl-qk button{min-height:46px;border:1.5px solid #F26522;border-radius:10px;background:#FFF4EC;color:#A3400F;font-size:16px;font-weight:800;font-family:inherit}
+.nl-qk.nh button{border-color:var(--primary);background:#EAF2FA;color:var(--primary)}
+.nl-qk button.nl-same{border-color:var(--border);background:#fff;color:var(--text);font-size:13px;font-weight:700}
+.nl-kp{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin-top:10px}
+.nl-kp button{min-height:58px;border:0;border-radius:12px;background:#fff;box-shadow:0 1px 0 #D5DCE4;font-size:28px;font-weight:700;font-family:inherit;color:var(--text)}
+.nl-kp button:active{background:#E3ECF7}
+.nl-row2{display:flex;gap:10px;margin-top:12px;align-items:flex-end}
+.nl-row2 .fg{flex:1;margin:0}
+.nl-row2 label,.nl-fl{display:block;font-size:12px;color:var(--text2);margin-bottom:3px;font-weight:600}
+.nl-row2 input,.nl-in{width:100%;box-sizing:border-box;height:44px;border:1.5px solid var(--border);border-radius:10px;padding:0 10px;font-size:15px;background:#fff;font-family:inherit}
+.nl-btns{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin-top:14px}
+.nl-btns button{min-height:56px;border-radius:12px;font-size:16px;font-weight:800;font-family:inherit}
+.nl-btns .a{border:1.5px solid #1E8449;background:#fff;color:#1E8449}.nl-btns .b{border:0;background:#1E8449;color:#fff}
+.nl-btns .c{border:0;background:var(--primary);color:#fff;grid-column:1 / -1}
+.nl-rm{display:block;margin:12px auto 0;background:none;border:0;color:#B42318;font-weight:700;font-size:14px;font-family:inherit;min-height:40px}
+.nl-dhead{margin:-14px -14px 12px;background:#fff;padding-bottom:12px;border-bottom:1px solid var(--border)}
+.nl-dph{height:220px;background:#DDE3EA;display:flex;align-items:center;justify-content:center;overflow:hidden;cursor:zoom-in}
+.nl-dph.nl-ph0{cursor:default}.nl-dph.nl-ph0 svg{width:72px;height:72px}
+.nl-dsub{font-size:12px;color:var(--text2);padding:8px 14px 0}
+.nl-dbtn{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;padding:10px 14px 0}
+.nl-dbtn button,.nl-go{min-height:48px;border-radius:12px;font-size:15px;font-weight:800;font-family:inherit}
+.nl-dbtn .nl-b1{border:0;background:var(--primary);color:#fff}.nl-dbtn .nl-b2{border:1.5px solid var(--primary);background:#fff;color:var(--primary)}
+.nl-go{display:block;width:calc(100% - 28px);margin:10px 14px 0;border:0;background:#F26522;color:#fff}
+.nl-empty{padding:30px 10px;text-align:center;color:var(--text2);font-size:14px;line-height:1.5}
+#rx-title{display:flex;align-items:center;gap:8px}
+</style>
+<script>// ===== v5.60.0 — NHIÊN LIỆU RIÊNG: ô Cấp nhiên liệu · chọn máy có ảnh · số lít to · nhập dầu xe bồn · chip Vật tư / Nhiên liệu · ảnh máy · phiếu xuất gọn · giờ máy không nhắc =====
+// Dữ liệu: dùng chung phiếu nhập / xuất + tồn kho như cũ (không có loại phiếu mới). Ảnh máy: db.devPh {idMáy: {th, img, by, at}} từ getAll (máy chủ 5.60.0).
+const nlFuel = it => !!it && (it.cat === 'nhienLieu' || ((!it.cat || it.cat === 'khac') && isFuelItem(it))) && /^(lit|l|kg|hop|binh|can|phuy|thung|xo|tuyp|lon|chai)$/.test(normVN(it.unit || ''));
+const nlTxnFuel = t => { const it = db.items.find(i => i.id === t.itemId); return it ? nlFuel(it) : !!t.itemName && isFuelItem({ name:t.itemName }); };
+const NL = { step:'grid', q:'', cart:[], cur:null, nh:null, busy:false };
+const NLC = { nhap:'vt', xuat:'vt' };                          // chip ở tab Phiếu nhập / Phiếu xuất
+const nlCanPh = () => role === 'ADM' || ['QL', 'DEQ', 'EQM'].includes(role);
+const nlN = s => { const v = +String(s || '').replace(',', '.'); return isFinite(v) ? v : 0; };
+const nlItems = () => {
+  const use = {}; db.transactions.forEach(t => { if (t.type === 'xuat' || t.type === 'nhap') use[t.itemId] = (use[t.itemId] || 0) + 1; });
+  return db.items.filter(nlFuel).sort((a, b) => (isDieselItem(b) - isDieselItem(a)) || ((use[b.id] || 0) - (use[a.id] || 0)) || a.name.localeCompare(b.name, 'vi'));
+};
+const nlTime = t => { const d = parseVN(t.datetime); return d ? d.getTime() : 0; };
+function nlLast(name) {
+  let best = null; if (!name) return null;
+  db.transactions.forEach(t => { if (t.type === 'xuat' && t.thietBi === name && nlTxnFuel(t) && (!best || nlTime(t) > nlTime(best))) best = t; });
+  return best;
+}
+function nlWhen(t) {
+  const d = parseVN(t.datetime); if (!d) return '';
+  const day = x => new Date(x.getFullYear(), x.getMonth(), x.getDate()).getTime(), n = Math.round((day(new Date()) - day(d)) / 864e5);
+  return n <= 0 ? 'hôm nay ' + String(d.getHours()).padStart(2, '0') + ':' + String(d.getMinutes()).padStart(2, '0') : n === 1 ? 'hôm qua' : n + ' ngày trước';
+}
+function nlDevs() {
+  const since = Date.now() - 30 * 864e5, cnt = {};
+  db.transactions.forEach(t => { if (t.type === 'xuat' && t.thietBi && nlTime(t) >= since && nlTxnFuel(t)) cnt[t.thietBi] = (cnt[t.thietBi] || 0) + 1; });
+  return projDevs().filter(devActive).sort((a, b) => ((cnt[b.name] || 0) - (cnt[a.name] || 0)) || a.name.localeCompare(b.name, 'vi'));
+}
+function nlToday() {
+  const t0 = new Date(); t0.setHours(0, 0, 0, 0); const devs = new Set(); let dO = 0;
+  filtTxns().forEach(t => { if (t.type === 'xuat' && nlTime(t) >= t0.getTime() && nlTxnFuel(t)) { devs.add(t.thietBi || t.supplierOrReceiver || '?'); const it = db.items.find(i => i.id === t.itemId); if (it && isDieselItem(it)) dO += effQty(t); } });
+  const doStock = db.items.filter(i => nlFuel(i) && isDieselItem(i) && /^lit$/.test(normVN(i.unit || ''))).reduce((s, i) => s + (+i.stock || 0), 0);
+  return { n:devs.size, dO, doStock };
+}
+
+// ---------- ảnh máy: tải 1 lần qua máy chủ, giữ trong IndexedDB (xem được khi mất mạng) ----------
+const DVPH_MEM = {}, DVPH_Q = {};
+const devPh = d => (d && db.devPh && db.devPh[d.id]) || null;
+function devPhTag(d, cls) {
+  const p = devPh(d), ico = (typeof ICONS !== 'undefined' && ICONS[devCatOf(d && d.cat).svg]) || '';
+  if (!p || !p.th) return `<div class="${cls} nl-ph0">${ico}<small>Chưa có ảnh</small></div>`;
+  const src = DVPH_MEM[p.th];
+  return `<div class="${cls}">${src ? `<img src="${src}" alt="Ảnh ${escHtml(d.name)}">` : `<img data-dvph="${escHtml(p.th)}" alt="Ảnh ${escHtml(d.name)}">`}</div>`;
+}
+async function devPhGet(id) {
+  if (DVPH_MEM[id]) return DVPH_MEM[id];
+  try { const v = await PDB.get('dv_' + id); if (v) return (DVPH_MEM[id] = v); } catch (e) {}
+  if (!token || navigator.onLine === false) return '';
+  if (!DVPH_Q[id]) DVPH_Q[id] = (async () => {
+    const r = await api('devPhImg', { id }, 30000);
+    if (r && r.success && r.data) { DVPH_MEM[id] = r.data; try { await PDB.put('dv_' + id, r.data); } catch (e) {} return r.data; }
+    delete DVPH_Q[id]; return '';
+  })();
+  return DVPH_Q[id];
+}
+function devPhPump(root) {
+  (root || document).querySelectorAll('img[data-dvph]').forEach(async el => {
+    const id = el.dataset.dvph; el.removeAttribute('data-dvph');
+    const src = await devPhGet(id);
+    if (src) el.src = src; else { const w = el.parentElement; el.remove(); if (w) w.classList.add('nl-ph0'); }
+  });
+}
+{ const _nlAS = applyServer; applyServer = function (r) {
+  const out = _nlAS.apply(this, arguments);
+  try { if (r && Array.isArray(r.devPh)) { db.devPh = {}; r.devPh.forEach(a => { db.devPh[+a[0]] = { th:String(a[1] || ''), img:String(a[2] || ''), by:String(a[3] || ''), at:String(a[4] || '') }; }); } } catch (e) {}
+  return out;
+}; }
+function devPhPick(id, cam) {
+  const inp = document.createElement('input'); inp.type = 'file'; inp.accept = 'image/*'; if (cam) inp.setAttribute('capture', 'environment');
+  inp.onchange = () => { const f = inp.files && inp.files[0]; if (f) devPhUp(id, f); };
+  inp.click();
+}
+async function devPhUp(id, f) {
+  if (!nlCanPh()) { toast('⚠️ Chỉ Quản lý và Admin được thay ảnh máy'); return; }
+  if (navigator.onLine === false) { toast('📴 Cần có mạng để lưu ảnh máy'); return; }
+  showLoader('Đang lưu ảnh máy…');
+  let data, thumb;
+  try { data = await compressImage(f, 1280, 0.8); thumb = await compressImage(f, 560, 0.7); } catch (e) { hideLoader(); toast('⚠️ ' + e.message); return; }
+  const r = await api('devPhoto', { id, data, thumb }, 90000); hideLoader();
+  if (!r || !r.success) { const er = (r && r.error) || 'Không lưu được ảnh'; toast('⚠️ ' + (/không hợp lệ: devPhoto/.test(er) ? 'Máy chủ cần bản 5.60.0 — Admin dán Apps Script mới' : er)); return; }
+  const a = r.ph || []; db.devPh = db.devPh || {};
+  db.devPh[+a[0]] = { th:String(a[1] || ''), img:String(a[2] || ''), by:String(a[3] || ''), at:String(a[4] || '') };
+  if (a[1]) { DVPH_MEM[a[1]] = thumb; try { await PDB.put('dv_' + a[1], thumb); } catch (e) {} }
+  if (r.version && r.prevVersion === serverVer) serverVer = r.version;
+  saveLocal(); toast('✅ Đã lưu ảnh máy');
+  if (document.getElementById('dp-device')?.classList.contains('show') && currentDeviceId === id) renderDeviceDetail(id);
+  if (document.getElementById('dp-nl')?.classList.contains('show')) nlRender();
+}
+function nlDevHead(d) {
+  const p = devPh(d);
+  return `<div class="nl-dhead">${devPhTag(d, 'nl-dph')}${p ? `<div class="nl-dsub">Ảnh cập nhật ${escHtml(p.at)}${p.by ? ' · ' + escHtml(p.by) : ''}</div>` : ''}
+    ${nlCanPh() ? `<div class="nl-dbtn"><button type="button" class="nl-b1" onclick="devPhPick(${d.id},1)">📷 Chụp ảnh mới</button><button type="button" class="nl-b2" onclick="devPhPick(${d.id},0)">🖼 Chọn từ máy</button></div>` : ''}
+    ${!d.outDate && curProj !== 'all' && hp('k_xuat') && can('tk') ? `<button type="button" class="nl-go" onclick="nlOpen(${d.id})">⛽ Cấp nhiên liệu cho máy này</button>` : ''}</div>`;
+}
+{ const _nlDD = renderDeviceDetail; renderDeviceDetail = function (id) {
+  const out = _nlDD.apply(this, arguments);
+  try {
+    const d = db.devices.find(x => x.id === id), B = document.getElementById('dp-device-body');
+    if (d && B && !B.querySelector('.nl-dhead')) { B.insertAdjacentHTML('afterbegin', nlDevHead(d)); devPhPump(B);
+      const im = B.querySelector('.nl-dph'); if (im) im.onclick = () => { const i = im.querySelector('img'); if (i && i.src) openViewer(i.src); }; }
+  } catch (e) { console.warn(e); }
+  return out;
+}; }
+
+// ---------- Tổng quan: ô Cấp nhiên liệu riêng dưới Nhập kho / Xuất kho ----------
+{ const _nlHome = renderHome; renderHome = function (c) {
+  const out = _nlHome.apply(this, arguments);
+  try {
+    const g = c.querySelector('.act-grid');
+    if (g && curProj && curProj !== 'all' && hp('k_xuat') && !c.querySelector('.nl-tile')) {
+      const T = nlToday();
+      g.insertAdjacentHTML('afterend', `<button type="button" class="nl-tile need-tk" onclick="nlOpen()"><span class="nl-ti">⛽</span><span><b>Cấp nhiên liệu</b><small>Hôm nay: ${fmtNum(T.n)} máy · ${fmtNum(Math.round(T.dO))} L DO · Tồn DO ${fmtNum(Math.round(T.doStock))} L</small></span><span class="nl-ar">›</span></button>`);
+    }
+  } catch (e) { console.warn(e); }
+  return out;
+}; }
+
+// ---------- màn Cấp nhiên liệu ----------
+document.body.insertAdjacentHTML('beforeend', `<div class="detail-page" id="dp-nl"><div class="detail-header"><button class="back-btn" onclick="nlBack()" aria-label="Quay lại">‹</button><div class="detail-title" id="dp-nl-title">⛽ Cấp nhiên liệu</div><span id="dp-nl-act" style="margin-left:auto"></span></div><div class="detail-body" id="dp-nl-body"></div><div id="dp-nl-foot"></div></div>`);
+formPhotos.nl = [];
+function nlOpen(devId) {
+  if (!curProj || curProj === 'all') { toast('⚠️ Chọn một dự án trước'); return; }
+  if (!hp('k_xuat') || !can('tk')) { toast('⚠️ Bạn chưa được cấp quyền xuất kho'); return; }
+  const keep = document.getElementById('dp-nl').classList.contains('show');
+  if (!keep) Object.assign(NL, { step:'grid', q:'', cart:[], cur:null, nh:null });
+  if (devId) { const d = db.devices.find(x => x.id === devId); if (d) nlCurFor(d); }
+  openDp('dp-nl', nlRender);
+}
+function nlDefItem(name) {
+  const L = nlItems(), lt = nlLast(name);
+  if (lt && L.some(i => i.id === lt.itemId)) return lt.itemId;
+  return (L.find(i => isDieselItem(i) && +i.stock > 0) || L.find(i => +i.stock > 0) || L[0] || {}).id || 0;
+}
+function nlCurFor(d) {
+  const c = NL.cart.find(x => x.devId === d.id);
+  NL.cur = c ? { ...c, qs:String(c.qty) } : { devId:d.id, other:'', itemId:nlDefItem(d.name), qs:'', meter:'' };
+  NL.step = 'pad';
+}
+function nlBack() {
+  if (NL.step === 'pad' || NL.step === 'nhap') { NL.step = 'grid'; NL.cur = null; nlRender(); return; }
+  if (NL.cart.length && !confirm(`Còn ${NL.cart.length} máy đã nhập số lít nhưng CHƯA LƯU. Bỏ không lưu?`)) return;
+  NL.cart = []; closeDp('dp-nl');
+}
+function nlRender() {
+  const B = document.getElementById('dp-nl-body'), F = document.getElementById('dp-nl-foot'), A = document.getElementById('dp-nl-act'), T = document.getElementById('dp-nl-title');
+  if (!B) return;
+  if (NL.step === 'nhap') { T.textContent = '⛽ Nhập dầu · xe bồn về'; A.innerHTML = ''; F.innerHTML = ''; B.innerHTML = nlNhapHtml(); renderFormPhotos('nl'); nlPadUpd(); B.scrollTop = 0; return; }
+  if (NL.step === 'pad') { T.textContent = '⛽ Cấp nhiên liệu'; A.innerHTML = ''; F.innerHTML = ''; B.innerHTML = nlPadHtml(); devPhPump(B); nlPadUpd(); B.scrollTop = 0; return; }
+  T.textContent = '⛽ Cấp nhiên liệu';
+  A.innerHTML = hp('k_nhap') ? `<button type="button" class="nl-hbtn" onclick="nlNhapOpen()">+ Nhập dầu</button>` : '';
+  const st = nlItems().filter(i => +i.stock > 0).map(i => `${escHtml(i.name)} <b>${fmtNum(i.stock)}</b> ${escHtml(i.unit)}`);
+  B.innerHTML = `<div class="nl-stock">${st.length ? 'Tồn: ' + st.join(' · ') : 'Kho chưa có nhiên liệu — bấm "+ Nhập dầu xe bồn" khi dầu về'}</div>
+    <label class="nl-fl" for="nl-q">Tìm máy</label><input type="search" id="nl-q" class="nl-q" autocomplete="off" placeholder="Tên máy, biển số…" value="${escHtml(NL.q)}" oninput="NL.q=this.value;nlGridList()">
+    <div class="nl-stock" style="margin:8px 0 0">Máy hay cấp nằm trên đầu · bấm máy để nhập số lít, cấp nhiều máy rồi lưu 1 lần</div>
+    <div class="nl-grid" id="nl-grid"></div>`;
+  nlGridList(); nlFoot();
+}
+function nlGridList() {
+  const E = document.getElementById('nl-grid'); if (!E) return;
+  const q = normVN(NL.q || ''), toks = q.split(/\s+/).filter(Boolean);
+  const L = nlDevs().filter(d => !toks.length || toks.every(w => normVN(d.name + ' ' + (d.plate || '') + ' ' + (d.maQL || '')).includes(w)));
+  const unitOf = id => (db.items.find(i => i.id === id) || {}).unit || '';
+  E.innerHTML = L.map(d => {
+    const c = NL.cart.find(x => x.devId === d.id), lt = nlLast(d.name);
+    return `<button type="button" class="nl-card ${c ? 'on' : ''}" onclick="nlPick(${d.id})">${devPhTag(d, 'nl-cph')}${c ? `<span class="nl-ok">✓ ${fmtNum(c.qty)} ${escHtml(unitOf(c.itemId))}</span>` : ''}
+      <b>${escHtml(d.name)}${d.type === 'hire' ? ' <span style="font-weight:600;color:#C4521F">(thuê)</span>' : ''}</b><small>${lt ? `Lần trước: ${fmtNum(effQty(lt))} ${escHtml(lt.unit || '')} · ${nlWhen(lt)}` : 'Chưa cấp lần nào'}</small></button>`;
+  }).join('') + NL.cart.filter(x => !x.devId).map(x => `<button type="button" class="nl-card on" onclick="nlPickOther('${escHtml(x.key)}')"><div class="nl-cph nl-ph0"><small>Ngoài danh sách</small></div><span class="nl-ok">✓ ${fmtNum(x.qty)} ${escHtml(unitOf(x.itemId))}</span><b>${escHtml(x.other)}</b><small>Máy / xe ngoài danh sách</small></button>`).join('')
+    + (toks.length && !L.length ? `<div class="nl-empty" style="grid-column:1 / -1">Không thấy máy "${escHtml(NL.q)}"</div>` : '')
+    + `<button type="button" class="nl-card nl-other" onclick="nlPickOther()">＋ Máy / xe ngoài danh sách<br><small>VD: xe của nhà thầu phụ</small></button>`;
+  devPhPump(E);
+}
+function nlFoot() {
+  const F = document.getElementById('dp-nl-foot'); if (!F) return;
+  if (!NL.cart.length || NL.step !== 'grid') { F.innerHTML = ''; return; }
+  const sum = {}; NL.cart.forEach(x => { const it = db.items.find(i => i.id === x.itemId); const k = it ? it.name : '?'; sum[k] = (sum[k] || 0) + x.qty; });
+  const u = n => (db.items.find(i => i.name === n) || {}).unit || '';
+  F.innerHTML = `<div class="nl-foot"><div style="min-width:0"><small>Đã nhập ${NL.cart.length} máy</small>${Object.entries(sum).map(([n, q]) => `<b class="nl-fs">${fmtNum(q)} ${escHtml(u(n))} <span>${escHtml(n)}</span></b>`).join('')}</div><button type="button" class="nl-save" onclick="nlSave()" ${NL.busy ? 'disabled' : ''}>Lưu ${NL.cart.length} phiếu</button></div>`;
+}
+function nlPick(id) { const d = db.devices.find(x => x.id === id); if (!d) return; nlCurFor(d); nlRender(); }
+function nlPickOther(key) {
+  const c = key ? NL.cart.find(x => x.key === key) : null;
+  NL.cur = c ? { ...c, qs:String(c.qty) } : { devId:0, other:'', itemId:nlDefItem(''), qs:'', meter:'' };
+  NL.step = 'pad'; nlRender();
+}
+function nlFisHtml(sel, fn) {
+  const L = nlItems();
+  if (!L.length) return `<div class="nl-empty">Kho chưa có mặt hàng nhiên liệu (Dầu DO, xăng, nhớt…).<br>Thêm bằng Nhập kho như bình thường, chọn nhóm "Nhiên liệu &amp; Dầu mỡ".</div>`;
+  return `<div class="nl-fis">${L.map(i => `<button type="button" class="nl-fi ${i.id === sel ? 'on' : ''}" onclick="${fn}(${i.id})">${escHtml(i.name)}<small>Tồn ${fmtNum(i.stock)} ${escHtml(i.unit)}</small></button>`).join('')}</div>`;
+}
+function nlKpHtml() {
+  return `<div class="nl-kp">${['1','2','3','4','5','6','7','8','9',',','0','⌫'].map(k => `<button type="button" onclick="nlKey('${k}')" aria-label="${k === '⌫' ? 'Xoá' : k}">${k}</button>`).join('')}</div>`;
+}
+function nlPadHtml() {
+  const C = NL.cur, d = C.devId ? db.devices.find(x => x.id === C.devId) : null, lt = d ? nlLast(d.name) : null;
+  const it = db.items.find(i => i.id === C.itemId), mOn = d && it && isDieselItem(it) && mUnit(d) !== 'none', lm = d ? lastMeter(d) : null;
+  const n = NL.cart.filter(x => x.key !== nlKeyOf(C)).length;
+  return `<div class="nl-mh">${d ? devPhTag(d, 'nl-mini') : ''}<div style="flex:1;min-width:0">${d ? `<b>${escHtml(d.name)}</b><small>${lt ? `Lần trước ${fmtNum(effQty(lt))} ${escHtml(lt.unit || '')} · ${escHtml(lt.datetime || '')}` : 'Chưa cấp lần nào'}</small>`
+      : `<label class="nl-fl" for="nl-other">Tên máy / xe nhận (bắt buộc)</label><input id="nl-other" class="nl-in" autocomplete="off" placeholder="VD: Xe bơm bê tông Hòa Phát" value="${escHtml(C.other || '')}" oninput="NL.cur.other=this.value">`}</div></div>
+    ${nlFisHtml(C.itemId, 'nlSetItem')}
+    <div class="nl-big"><div class="k">SỐ ${it ? escHtml(String(it.unit || '').toUpperCase()) : 'LÍT'}</div><div class="v" id="nl-qv">0</div><div class="s" id="nl-qs"></div></div>
+    <div class="nl-qk"><button type="button" onclick="nlAddQ(50)">+50</button><button type="button" onclick="nlAddQ(100)">+100</button><button type="button" onclick="nlAddQ(200)">+200</button>
+      <button type="button" class="nl-same" onclick="nlSame()" ${lt ? '' : 'disabled'}>Như lần trước</button></div>
+    ${nlKpHtml()}
+    <div class="nl-row2">
+      ${mOn ? `<div class="fg"><label for="nl-m">${escHtml(mLbl(d))} (không bắt buộc)</label><input id="nl-m" type="number" inputmode="decimal" placeholder="${lm !== null && lm !== undefined ? 'Trước: ' + fmtNum(lm) : 'Số đồng hồ'}" value="${escHtml(String(C.meter || ''))}" oninput="NL.cur.meter=this.value"></div>` : ''}
+      ${nlTimeHtml()}
+    </div>
+    <div class="nl-btns"><button type="button" class="a" onclick="nlAdd(false)">Thêm, chọn máy khác</button><button type="button" class="b" onclick="nlAdd(true)">${n ? 'Lưu ' + (n + 1) + ' phiếu' : 'Lưu phiếu'}</button></div>
+    ${NL.cart.some(x => x.key === nlKeyOf(C)) ? `<button type="button" class="nl-rm" onclick="nlRemove()">Bỏ máy này khỏi danh sách</button>` : ''}`;
+}
+function nlTimeHtml() {
+  if (!(can('admin') || hp('k_gio'))) return '';
+  const v = NL.time || pfIso(new Date());
+  return `<div class="fg"><label for="nl-time">Ngày giờ phiếu</label><input id="nl-time" type="datetime-local" value="${v}" max="${pfIso(new Date())}" data-auto="${NL.time ? '' : v}" onchange="NL.time=this.value"></div>`;
+}
+const nlKeyOf = C => C.devId ? 'd' + C.devId : 'o' + normVN(C.other || '');
+function nlSetItem(id) { const C = NL.step === 'nhap' ? NL.nh : NL.cur; if (!C) return; C.itemId = id; if (NL.step === 'pad') { const m = document.getElementById('nl-m'); if (m) C.meter = m.value; } nlRender(); }
+function nlKey(k) {
+  const C = NL.step === 'nhap' ? NL.nh : NL.cur; if (!C) return;
+  let s = String(C.qs || '');
+  if (k === '⌫') s = s.slice(0, -1);
+  else if (k === ',') { if (!s.includes(',')) s = (s || '0') + ','; }
+  else if (s.replace(',', '').length < 7) s = s === '0' ? k : s + k;
+  if (/,\d{3,}$/.test(s)) return;
+  C.qs = s; nlPadUpd();
+}
+function nlAddQ(n) { const C = NL.step === 'nhap' ? NL.nh : NL.cur; if (!C) return; C.qs = String(Math.round((nlN(C.qs) + n) * 100) / 100).replace('.', ','); nlPadUpd(); }
+function nlSame() { const C = NL.cur, d = C && C.devId ? db.devices.find(x => x.id === C.devId) : null, lt = d ? nlLast(d.name) : null; if (!lt) return; C.qs = String(effQty(lt)).replace('.', ','); if (db.items.some(i => i.id === lt.itemId && nlFuel(i))) C.itemId = lt.itemId; nlRender(); }
+function nlPadUpd() {
+  const C = NL.step === 'nhap' ? NL.nh : NL.cur, V = document.getElementById('nl-qv'), S = document.getElementById('nl-qs'); if (!C || !V) return;
+  const it = db.items.find(i => i.id === C.itemId), q = nlN(C.qs);
+  const sh = String(C.qs || '0').replace(/^(\d+)/, m => m.replace(/\B(?=(\d{3})+(?!\d))/g, '.'));
+  V.innerHTML = `${escHtml(sh)}<span>${it ? escHtml(it.unit) : ''}</span>`;
+  if (!S) return;
+  if (!it) { S.textContent = 'Chọn loại nhiên liệu'; S.className = 's bad'; return; }
+  if (NL.step === 'nhap') { S.textContent = `Tồn ${it.name}: ${fmtNum(it.stock)} → sau nhập ${fmtNum(Math.round((+it.stock + q) * 100) / 100)} ${it.unit}`; S.className = 's'; return; }
+  const other = NL.cart.filter(x => x.itemId === it.id && x.key !== nlKeyOf(C)).reduce((s, x) => s + x.qty, 0), after = Math.round((+it.stock - other - q) * 100) / 100;
+  S.textContent = `Tồn ${it.name}: ${fmtNum(Math.round((+it.stock - other) * 100) / 100)} → sau cấp ${fmtNum(after)} ${it.unit}` + (after < 0 ? ' — KHÔNG ĐỦ' : '');
+  S.className = after < 0 ? 's bad' : 's';
+}
+function nlAdd(save) {
+  const C = NL.cur; if (!C) return;
+  const it = db.items.find(i => i.id === C.itemId), q = Math.round(nlN(C.qs) * 1000) / 1000;
+  if (!it) { toast('⚠️ Chọn loại nhiên liệu'); return; }
+  if (!(q > 0)) { toast('⚠️ Nhập số ' + String(it.unit || 'lít').toLowerCase()); return; }
+  if (!C.devId) { C.other = String(document.getElementById('nl-other')?.value || C.other || '').trim(); if (!C.other) { toast('⚠️ Ghi tên máy / xe nhận'); document.getElementById('nl-other')?.focus(); return; } }
+  const key = nlKeyOf(C), other = NL.cart.filter(x => x.itemId === it.id && x.key !== key).reduce((s, x) => s + x.qty, 0);
+  if (q + other > +it.stock + 1e-9) { toast(`❌ Trong kho chỉ còn ${fmtNum(Math.round((+it.stock - other) * 100) / 100)} ${it.unit} ${it.name}`); return; }
+  const d = C.devId ? db.devices.find(x => x.id === C.devId) : null, mEl = document.getElementById('nl-m');
+  let m = mEl ? String(mEl.value || '').trim() : '';
+  if (m !== '') {
+    if (isNaN(+m) || +m < 0) { toast('⚠️ Số đồng hồ không hợp lệ — sửa lại hoặc để trống'); return; }
+    const lm = d ? lastMeter(d) : null;
+    if (lm !== null && lm !== undefined && +m < +lm) { toast(`⚠️ ${mLbl(d)} ${fmtNum(+m)} nhỏ hơn lần trước (${fmtNum(lm)}) — kiểm tra lại hoặc để trống`); return; }
+  }
+  if (!(d && isDieselItem(it) && mUnit(d) !== 'none')) m = '';
+  const e = { key, devId:C.devId || 0, other:C.devId ? '' : C.other, itemId:it.id, qty:q, meter:m };
+  const i = NL.cart.findIndex(x => x.key === key); if (i >= 0) NL.cart[i] = e; else NL.cart.push(e);
+  closeKeyboard(); NL.cur = null; NL.step = 'grid';
+  if (save) { nlSave(); return; }
+  nlRender();
+}
+function nlRemove() { const C = NL.cur; if (!C) return; NL.cart = NL.cart.filter(x => x.key !== nlKeyOf(C)); NL.cur = null; NL.step = 'grid'; nlRender(); }
+function nlNewId() { let id = newId(); while (db.transactions.some(t => t.id === id)) id++; return id; }
+async function nlSave() {
+  if (NL.busy || !NL.cart.length) return;
+  const need = {}; NL.cart.forEach(x => need[x.itemId] = (need[x.itemId] || 0) + x.qty);
+  for (const [id, q] of Object.entries(need)) { const it = db.items.find(i => i.id === +id); if (!it || q > +it.stock + 1e-9) { toast(`❌ ${it ? it.name : 'Nhiên liệu'}: trong kho chỉ còn ${it ? fmtNum(it.stock) + ' ' + it.unit : '0'}`); NL.step = 'grid'; nlRender(); return; } }
+  NL.busy = true;
+  const tEl = document.getElementById('nl-time') || (() => { if (!NL.time) return null; const x = document.createElement('input'); x.id = 'nl-time-tmp'; x.value = NL.time; x.dataset.auto = ''; return x; })();
+  const saved = [];
+  try {
+    for (const x of NL.cart) {
+      const it = db.items.find(i => i.id === x.itemId), d = x.devId ? db.devices.find(v => v.id === x.devId) : null;
+      const txn = { id:nlNewId(), type:'xuat', ct:'', itemId:it.id, itemName:it.name, qty:x.qty, unit:it.unit, project:curProj,
+        supplierOrReceiver: d ? '' : x.other, thietBi: d ? d.name : '', note: d ? '' : 'Máy / xe ngoài danh sách: ' + x.other,
+        datetime:nowStr(), createdByName:meRec(), meter: x.meter === '' ? '' : +x.meter, meterNote:'', fillAt:'' };
+      if (tEl && (can('admin') || hp('k_gio'))) { const v = localToVN(gioVal(tEl)); if (v) { txn.txTime = v; txn.datetime = v; } }
+      ctApply(it, { type:'xuat', ct:'', qty:x.qty });
+      db.transactions.push(txn); push('addTransaction', txn); saved.push(txn);
+    }
+  } finally { NL.busy = false; }
+  updateLowBadge();
+  const n = saved.length, tot = saved.reduce((s, t) => s + t.qty, 0);
+  NL.cart = []; NL.time = ''; closeDp('dp-nl');
+  toast(`✅ Đã lưu ${n} phiếu cấp nhiên liệu · ${fmtNum(Math.round(tot * 100) / 100)} ${saved[0] ? saved[0].unit : ''}`);
+  if (n === 1) afterSave(saved[0]); else { navLockUntil = Date.now() + 700; goTab('home'); resetViewport(); }
+}
+
+// ---------- nhập dầu khi xe bồn về ----------
+function nlNhapOpen() {
+  if (!hp('k_nhap')) { toast('⚠️ Bạn chưa được cấp quyền nhập kho'); return; }
+  const L = nlItems();
+  NL.nh = { itemId:(L.find(isDieselItem) || L[0] || {}).id || 0, qs:'', ncc:'', so:'' };
+  formPhotos.nl = []; NL.step = 'nhap'; nlRender();
+}
+function nlNccNames() {
+  const s = new Set();
+  try { (typeof NCC !== 'undefined' && NCC.list ? NCC.list : []).forEach(o => { if (o && o.ten && o.tt !== 'an' && (o.loai === 'dau' || !o.loai)) s.add(o.ten); }); } catch (e) {}
+  db.transactions.forEach(t => { if (t.type === 'nhap' && t.supplierOrReceiver && nlTxnFuel(t)) s.add(t.supplierOrReceiver); });
+  return [...s].slice(0, 80);
+}
+function nlNhapHtml() {
+  const C = NL.nh, it = db.items.find(i => i.id === C.itemId);
+  return `${nlFisHtml(C.itemId, 'nlSetItem')}
+    <div class="nl-big nh"><div class="k">SỐ ${it ? escHtml(String(it.unit || '').toUpperCase()) : 'LÍT'} NHẬP</div><div class="v" id="nl-qv">0</div><div class="s" id="nl-qs"></div></div>
+    <div class="nl-qk nh"><button type="button" onclick="nlAddQ(1000)">+1.000</button><button type="button" onclick="nlAddQ(2000)">+2.000</button><button type="button" onclick="nlAddQ(4000)">+4.000</button><button type="button" onclick="nlAddQ(6000)">+6.000</button></div>
+    ${nlKpHtml()}
+    <div style="margin-top:12px"><label class="nl-fl" for="nl-ncc">Nhà cung cấp</label><input id="nl-ncc" class="nl-in" list="nl-ncc-l" autocomplete="off" placeholder="VD: Petrolimex · xe bồn 51D-…" value="${escHtml(C.ncc)}" oninput="NL.nh.ncc=this.value"><datalist id="nl-ncc-l">${nlNccNames().map(n => `<option value="${escHtml(n)}">`).join('')}</datalist></div>
+    <div style="margin-top:10px"><label class="nl-fl" for="nl-so">Số phiếu giao hàng (không bắt buộc)</label><input id="nl-so" class="nl-in" autocomplete="off" placeholder="VD: PX-00125" value="${escHtml(C.so)}" oninput="NL.nh.so=this.value"></div>
+    <div class="nl-row2">${nlTimeHtml()}</div>
+    <div style="margin-top:10px">${photoFieldHtml('nl')}</div>
+    <div class="nl-btns"><button type="button" class="c" onclick="nlNhapSave()">Lưu phiếu nhập</button></div>`;
+}
+async function nlNhapSave() {
+  const C = NL.nh; if (!C || NL.busy) return;
+  const it = db.items.find(i => i.id === C.itemId), q = Math.round(nlN(C.qs) * 1000) / 1000;
+  if (!it) { toast('⚠️ Chọn loại nhiên liệu'); return; }
+  if (!(q > 0)) { toast('⚠️ Nhập số ' + String(it.unit || 'lít').toLowerCase()); return; }
+  const ncc = String(document.getElementById('nl-ncc')?.value || '').trim(), so = String(document.getElementById('nl-so')?.value || '').trim();
+  if (!(await askIfDupTxn('nhap', it, q))) return;
+  NL.busy = true;
+  const txn = { id:nlNewId(), type:'nhap', itemId:it.id, itemName:it.name, qty:q, unit:it.unit, project:curProj, supplierOrReceiver:ncc,
+    note: so ? 'Phiếu giao hàng: ' + so : '', datetime:nowStr(), createdByName:meRec() };
+  withAdminTime(txn, 'nl-time');
+  ctApply(it, { type:'nhap', ct:'', qty:q });
+  db.transactions.push(txn); push('addTransaction', txn); NL.busy = false;
+  updateLowBadge(); closeKeyboard();
+  const ph = formPhotos.nl.splice(0);
+  toast(`✅ Nhập ${fmtNum(q)} ${it.unit} ${it.name}${ph.length ? ` · ${ph.length} ảnh` : ''}`);
+  NL.step = 'grid'; NL.nh = null; NL.time = '';
+  if (ph.length) queuePhotos(txn.id, ph);
+  nlRender();
+}
+
+// ---------- tab Phiếu nhập / Phiếu xuất: chip Vật tư · Nhiên liệu (mặc định Vật tư) ----------
+let nlHistIn = '';
+{ const _nlTL = renderTxnList; renderTxnList = function (txns, type) {
+  if (nlHistIn && nlHistIn === type) { const fu = NLC[type] === 'nl'; txns = txns.filter(t => t._loan || t._dev || !t.itemId && !t.itemName ? !fu : nlTxnFuel(t) === fu); }
+  return _nlTL.call(this, txns, type);
+}; }
+{ const _nlHT = renderHistTab; renderHistTab = function (c, type) {
+  nlHistIn = type;
+  try { _nlHT.apply(this, arguments); } finally { nlHistIn = ''; }
+  try {
+    const head = c.querySelector('.hist-head'); if (!head) return;
+    const all = filtTxns().filter(t => t.type === type && !(type === 'xuat' && t.thangCT)), nf = all.filter(nlTxnFuel).length;
+    head.insertAdjacentHTML('afterend', `<div class="nl-chips"><button type="button" class="${NLC[type] !== 'nl' ? 'on' : ''}" onclick="NLC.${type}='vt';goTab('ls${type}')">📦 Vật tư · ${fmtNum(all.length - nf)}</button><button type="button" class="nl-fu ${NLC[type] === 'nl' ? 'on' : ''}" onclick="NLC.${type}='nl';goTab('ls${type}')">⛽ Nhiên liệu · ${fmtNum(nf)}</button></div>`);
+  } catch (e) { console.warn(e); }
+}; }
+
+// ---------- Phiếu Xuất Kho gọn: bỏ hàng Dự án (tên dự án nằm ngang tiêu đề) · Thiết bị nhận nằm trên Ngày giờ phiếu ----------
+{ const _nlRX = renderXuat; renderXuat = function (c) {
+  const out = _nlRX.apply(this, arguments);
+  try {
+    const pj = document.getElementById('fx-proj'), fg = pj && pj.closest('.fg');
+    if (fg) fg.style.display = 'none';
+    const sec = fg ? fg.closest('.form-section') : null, ttl = sec && sec.querySelector('.form-section-title');
+    if (ttl && !ttl.querySelector('.q8-proj')) { ttl.id = 'rx-title'; ttl.insertAdjacentHTML('beforeend', `<span class="q8-proj">${escHtml(curProj || '')}</span>`); }
+    const dv = document.getElementById('fx-device'), dfg = dv && dv.closest('.fg'), mw = document.getElementById('fx-mwrap');
+    const tm = document.getElementById('fx-time'), tfg = tm && tm.closest('.fg');
+    if (dfg && tfg && tfg.parentNode) { tfg.parentNode.insertBefore(dfg, tfg); if (mw) tfg.parentNode.insertBefore(mw, tfg); }
+  } catch (e) { console.warn(e); }
+  return out;
+}; }
+</script>
 </body>
 </html>
