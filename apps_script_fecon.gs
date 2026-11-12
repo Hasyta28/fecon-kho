@@ -1,4 +1,5 @@
-// ===== FECON SOUTH - Kho Vật Tư v5.60.0 =====
+// ===== FECON SOUTH - Kho Vật Tư v5.61.0 =====
+// v5.61.0: ảnh máy theo MÁY (ID → mã P.QLTB → tên + nhóm): máy giải động sang dự án khác vẫn có ảnh · Phòng QLTB (qltbAll) gửi ảnh từng máy (ph) · devPhImg cho Admin / q_xem xem mọi ảnh
 // v5.60.0: ẢNH THẬT CỦA MÁY cho màn Cấp nhiên liệu — sheet AnhMay, devPhoto (Admin · QL · DEQ · EQM thay ảnh, thư mục Drive "FECON Kho - Ảnh máy"), devPhImg (tải ảnh nhỏ), getAll gửi devPh
 // v5.59.16: PHÒNG QLTB — qltbAll_ (máy + tồn kho + hỏng + sửa chữa + máy vào/ra + giải động đang chuyển của mọi dự án, chỉ đọc), setPjLoc (Admin ghi vị trí dự án, lưu Script Properties pjLoc), quyền mới q_xem (migration perm55916: MD, DMD, DEQ, EQM, QL, chức danh tên có "thiết bị"/"QLTB")
 // v5.59.15: Admin đổi người lập hàng loạt (txnSetCreator: tối đa 500 phiếu nhập / xuất / điều chỉnh mỗi lần, phiếu đi cặp đổi theo, 1 dòng nhật ký)
@@ -160,7 +161,7 @@ const SESSION_DAYS   = 30;           // Đăng nhập được nhớ bao nhiêu 
 const HASH_ROUNDS    = 300;          // Số vòng băm mật khẩu
 const MAX_PENDING    = 30;           // Tối đa bao nhiêu yêu cầu chờ duyệt (chống spam)
 const TZ = 'Asia/Ho_Chi_Minh';
-const SERVER_VERSION = '5.60.0';
+const SERVER_VERSION = '5.61.0';
 const PHOTO_FOLDER_NAME = 'FECON Kho - Ảnh biên bản';
 const PHOTO_MAX_BYTES = 4 * 1024 * 1024;
 
@@ -889,7 +890,7 @@ function getAll(u, d) {
   if (u.role === 'ADM') { try { res.standIn = siInfo_(P) || 0; } catch (e) {} }   // v5.56.1
   try { res.hong = hongList_(P); } catch (e) {}   // v5.50 báo hỏng   // v5.49 · v5.49.1 đơn vị
   try { const dr = dmRev_(); Object.assign(res, { cats:catsGet_(), dmHv:dmHv_(), dmRev:dr, dm: dr && String(d.dmRev || '') !== dr ? dmList_() : undefined }); } catch (e) {}   // v5.48: danh mục + nhóm dùng chung
-  try { res.devPh = devPhList_(P); } catch (e) {}                // v5.60.0: ảnh máy
+  try { res.devPh = devPhList_(res.devices); } catch (e) {}       // v5.60.0: ảnh máy · v5.61.0: theo máy (cả máy giải động sang)
   res.ms = Date.now() - t0;
   return res;
 }
@@ -5332,6 +5333,7 @@ function qltbBuild_() {
       donVi:String(r[cd('donVi')] || ''), meterUnit:String(r[cd('meterUnit')] || 'h'), inDate:day(r[cd('inDate')]), startDate:day(r[cd('startDate')]),
       last:a.last || 0, up:a.up || 0, meter:a.meter === undefined || a.meter === null ? '' : a.meter };
   });
+  try { const PH = devPhAll_(); if (PH.length) devices.forEach(o => { const x = devPhOf_(PH, o.id, o.name, o.maQL, o.cat); if (x) o.ph = x.th; }); } catch (e) {}   // v5.61.0: ảnh máy
   // máy vào / ra (đường đi của máy) — gọn
   let devlog = [];
   try { const TL = TABLES.devlog, cl = k => TL.cols.indexOf(k);
@@ -5375,12 +5377,27 @@ function devPhRows_() {
   if (!sh) return [];
   return readRows(sh, DEVPH.cols.length).map((r, i) => Object.assign(rowToObj(DEVPH.cols, r), { _r:i + 2 })).filter(o => o.deviceId !== '');
 }
-function devPhList_(P) {                                         // getAll: [[deviceId, th, img, by, at]] của dự án
-  const C = CacheService.getScriptCache(), key = 'devPh|' + String(P).slice(0, 200), h = C.get(key);
+// v5.61.0: ảnh gắn theo MÁY, không theo dự án — máy giải động sang dự án khác vẫn mang ảnh (khớp ID → mã P.QLTB → tên + nhóm)
+function devPhAll_() {
+  const C = CacheService.getScriptCache(), h = C.get('devPhAll');
   if (h) { try { return JSON.parse(h); } catch (e) {} }
-  const out = devPhRows_().filter(o => String(o.project) === String(P)).map(o => [+o.deviceId, String(o.th), String(o.img), String(o.by), String(o.at)]);
-  try { C.put(key, JSON.stringify(out), 21600); } catch (e) {}
+  const T = TABLES.devices, cd = k => T.cols.indexOf(k), byId = {};
+  readRows(sheetOf(T.sheet, T.head), T.cols.length).forEach(r => { if (r[0] !== '') byId[String(r[0])] = { maQL:String(r[cd('maQL')] || ''), cat:String(r[cd('cat')] || '') }; });
+  const out = devPhRows_().filter(o => o.th).map(o => { const d = byId[String(o.deviceId)] || {};
+    return { id:String(o.deviceId), p:String(o.project), n:normKey_(o.deviceName), ma:d.maQL || '', cat:d.cat || '', th:String(o.th), img:String(o.img), by:String(o.by), at:String(o.at) }; });
+  try { C.put('devPhAll', JSON.stringify(out), 21600); } catch (e) {}
   return out;
+}
+function devPhBust_() { try { const C = CacheService.getScriptCache(); C.remove('devPhAll'); C.remove('qltbAll#n'); } catch (e) {} }
+function devPhOf_(A, id, name, maQL, cat) {                     // ảnh của 1 máy: đúng ID → cùng mã P.QLTB → cùng tên + nhóm (lấy dòng sau cùng)
+  let x = A.find(o => o.id === String(id)); if (x) return x;
+  const ma = String(maQL || '').trim(), nk = normKey_(name);
+  if (ma) { x = A.filter(o => o.ma === ma).pop(); if (x) return x; }
+  return nk ? A.filter(o => o.n === nk && (!cat || !o.cat || o.cat === String(cat))).pop() || null : null;
+}
+function devPhList_(devs) {                                      // getAll: [[deviceId, th, img, by, at]]
+  const A = devPhAll_(); if (!A.length) return [];
+  return (devs || []).map(d => { const x = devPhOf_(A, d.id, d.name, d.maQL, d.cat); return x ? [+d.id, x.th, x.img, x.by, x.at] : null; }).filter(Boolean);
 }
 function devPhoto(u, d) {
   const id = +d.id, full = dmData_(d.data), thumb = dmData_(d.thumb) || full;
@@ -5400,20 +5417,30 @@ function devPhoto(u, d) {
     const bv = bumpVersion();
     return { old:old, bv:bv };
   });
-  try { CacheService.getScriptCache().remove('devPh|' + String(dev.project).slice(0, 200)); } catch (e) {}
+  devPhBust_();
   res.old.forEach(fid => { if (fid && fid !== f1.getId() && fid !== f2.getId()) try { DriveApp.getFileById(fid).setTrashed(true); } catch (e) {} });
   return { success:true, ph:[id, f2.getId(), f1.getId(), u.name, nowTxt()], version:res.bv.ver, prevVersion:res.bv.prev };
 }
-function devPhImg(u, d) {                                        // trả ảnh (base64) — chỉ file của máy thuộc dự án được xem
+function devPhImg(u, d) {                                        // trả ảnh (base64): Admin / Phòng QLTB xem mọi ảnh; người khác: ảnh của máy thuộc dự án được giao
   const fid = String(d.id || ''); if (!fid) fail('Thiếu ảnh');
-  const o = devPhRows_().find(r => String(r.th) === fid || String(r.img) === fid);
+  const A = devPhAll_(), o = A.find(r => r.th === fid || r.img === fid);
   if (!o) fail('Không có ảnh này');
-  if (allowedProjects(u).indexOf(String(o.project)) < 0) fail('Bạn không được giao dự án "' + o.project + '"');
+  let ok = ADM(u) || hasP(u, 'q_xem');
+  const allow = allowedProjects(u);
+  if (!ok) ok = allow.indexOf(o.p) >= 0;
+  if (!ok) {                                                     // máy đã giải động sang dự án mình được giao
+    const T = TABLES.devices, cd = k => T.cols.indexOf(k);
+    ok = readRows(sheetOf(T.sheet, T.head), T.cols.length).some(r => r[0] !== '' && allow.indexOf(String(r[cd('project')])) >= 0 && devPhOf_(A, r[0], r[1], r[cd('maQL')], r[cd('cat')]) === o);
+  }
+  if (!ok) fail('Bạn không được xem ảnh này');
   const b = DriveApp.getFileById(fid).getBlob();
   return { success:true, data:'data:' + (b.getContentType() || 'image/jpeg') + ';base64,' + Utilities.base64Encode(b.getBytes()) };
 }
 
 const VER_LOG = [
+ { v:'5.61.0', d:'12/11/2026', type:'up', title:'Ảnh máy hiện ở danh sách Thiết bị và Phòng QLTB, đi theo máy khi giải động', who:'Mọi người xem · Quản lý / Admin cập nhật ảnh',
+   sum:['Danh sách Thiết bị/Máy móc: mỗi máy có ảnh nhỏ','Phòng QLTB: ảnh máy ở danh sách máy của từng kho, máy hỏng, máy thuê và đường đi máy (xem được mọi dự án)','Máy chuyển sang dự án khác vẫn mang ảnh (nhận theo mã P.QLTB, chưa có mã thì theo tên)'],
+   todo:['Admin dán tệp Apps Script chính TRƯỚC rồi mới thay index.html, sw.js, thicong.html trên GitHub'] },
  { v:'5.60.0', d:'12/11/2026', type:'new', title:'Mục Cấp nhiên liệu riêng: chọn máy có ảnh thật, nhập số lít to rõ', who:'Thủ kho · Quản lý · Admin',
    sum:['Tổng quan có ô "Cấp nhiên liệu" riêng dưới Nhập kho / Xuất kho','Bấm vào → danh sách máy có ảnh thật, bấm máy → nhập số lít (số to, bàn phím số riêng); cấp nhiều máy rồi lưu 1 lần','Nhập dầu xe bồn ngay trong màn Cấp nhiên liệu','Phiếu nhập / Phiếu xuất có chip Vật tư · Nhiên liệu (mặc định Vật tư)','Giờ máy không bắt buộc, bỏ nhắc bổ sung 7 ngày','Phiếu xuất kho: bỏ hàng Dự án, ô Thiết bị nhận nằm trên Ngày giờ phiếu'],
    todo:['Admin dán tệp Apps Script chính TRƯỚC rồi mới thay index.html, sw.js, thicong.html trên GitHub','Quản lý / Admin: mở chi tiết từng máy → Chụp ảnh máy'] },

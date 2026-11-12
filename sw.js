@@ -1,4 +1,5 @@
-// FECON Kho + Thi công - Service Worker v5.60.0
+// FECON Kho + Thi công - Service Worker v5.61.0
+// 5.61.0: Ảnh máy ở danh sách Thiết bị + Phòng QLTB, đi theo máy khi giải động (máy chủ 5.61.0)
 // 5.60.0: Mục Cấp nhiên liệu riêng (máy có ảnh, số lít to), chip Vật tư / Nhiên liệu, phiếu xuất gọn (máy chủ 5.60.0)
 // 5.59.18: Bỏ mã P.QLTB không cần ghi lý do (máy chủ giữ 5.59.16)
 // 5.59.15: Admin chọn nhiều phiếu nhập / xuất, đổi người lập một lần (máy chủ 5.59.15)
@@ -86,7 +87,7 @@
 //  - Mở app: lấy file từ bộ nhớ của bản đang dùng; thiếu file nào mới lấy từ mạng.
 //  - Có sw.js mới trên GitHub: tải sẵn bản mới vào bộ nhớ riêng nhưng KHÔNG đổi bản đang dùng.
 //  - Địa chỉ có ?fresh=... luôn lấy thẳng từ mạng (app dùng để kiểm tra / tải bản mới).
-const VERSION = '5.60.0';
+const VERSION = '5.61.0';
 const APP = 'fecon-app-', META = 'fecon-meta';
 const CORE = ['./', './index.html', './thicong.html', './danhmuc.html', './manifest.json', './icon-192.png', './icon-512.png', './icon-maskable-192.png', './icon-maskable-512.png', './bg-login.jpg'];
 

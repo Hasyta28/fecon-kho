@@ -1898,7 +1898,7 @@ body.pg-printing #pg-print{display:block;position:fixed;inset:0;z-index:9000;bac
 // ============================================================
 // CONFIG
 // ============================================================
-const APP_VERSION = '5.60.0';
+const APP_VERSION = '5.61.0';
 const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbw6Rmi80I7RI3ij2U7RdRF5pYuQTnPrwEmGmUZS5xpxzLwwVynfoFUujZe1lm6HS1ymxw/exec';
 // ============================================================
 
@@ -17414,7 +17414,7 @@ function devPhPump(root) {
   (root || document).querySelectorAll('img[data-dvph]').forEach(async el => {
     const id = el.dataset.dvph; el.removeAttribute('data-dvph');
     const src = await devPhGet(id);
-    if (src) el.src = src; else { const w = el.parentElement; el.remove(); if (w) w.classList.add('nl-ph0'); }
+    if (src) el.src = src; else { const w = el.parentElement; el.remove(); if (w && !w.classList.contains('nl-ico')) w.classList.add('nl-ph0'); }
   });
 }
 { const _nlAS = applyServer; applyServer = function (r) {
@@ -17720,6 +17720,37 @@ let nlHistIn = '';
   } catch (e) { console.warn(e); }
   return out;
 }; }
+</script>
+<style>/* v5.61.0 ảnh máy ở mọi danh sách */
+.ri-ico.nl-ico{position:relative;overflow:hidden}
+.ri-ico.nl-ico img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;background:#DDE3EA}
+.nl-qph{height:180px;margin:0 0 10px;border-radius:12px;overflow:hidden;background:#DDE3EA;cursor:zoom-in}
+.nl-qph img{width:100%;height:100%;object-fit:cover;display:block}
+</style>
+<script>// ===== v5.61.0 — ẢNH MÁY Ở MỌI DANH SÁCH: devIcon có ảnh (danh sách Thiết bị, Phòng QLTB…) · đường đi máy có ảnh lớn =====
+// Máy của dự án đang mở: db.devPh (getAll). Máy ở Phòng QLTB (mọi dự án): trường ph do qltbAll gửi. Ảnh tải 1 lần qua devPhImg, giữ ở IndexedDB.
+const devPhTh = d => !d ? '' : d.ph !== undefined ? String(d.ph || '') : ((db.devPh && db.devPh[+d.id]) || {}).th || '';
+{ const _nlDI = devIcon; devIcon = function (dev, size) {
+  const h = _nlDI.apply(this, arguments), th = devPhTh(dev);
+  if (!th) return h;
+  const src = DVPH_MEM[th];
+  return h.replace('class="ri-ico"', 'class="ri-ico nl-ico"').replace(/<\/div>$/, (src ? `<img src="${src}" alt="">` : `<img data-dvph="${escHtml(th)}" alt="">`) + '</div>');
+}; }
+{ const _nlQP = qlDevPath; qlDevPath = function (p, id) {
+  const out = _nlQP.apply(this, arguments);
+  try {
+    const d = QL.d.P[p].devs.find(x => x.id === id), th = devPhTh(d), sh = document.querySelector('#ql-dp .ql-dps'), hd = sh && sh.querySelector('.modal-handle');
+    if (th && hd) { hd.insertAdjacentHTML('afterend', `<div class="nl-qph">${DVPH_MEM[th] ? `<img src="${DVPH_MEM[th]}" alt="">` : `<img data-dvph="${escHtml(th)}" alt="">`}</div>`);
+      const q = sh.querySelector('.nl-qph'); q.onclick = e => { e.stopPropagation(); const i = q.querySelector('img'); if (i && i.src) openViewer(i.src); }; devPhPump(sh); }
+  } catch (e) { console.warn(e); }
+  return out;
+}; }
+// ảnh mới chèn vào trang ở bất kỳ đâu (danh sách vẽ bằng innerHTML) → tự tải
+(function () {
+  let t = null;
+  new MutationObserver(() => { if (t) return; t = setTimeout(() => { t = null; if (document.querySelector('img[data-dvph]')) devPhPump(document); }, 60); })
+    .observe(document.body, { childList:true, subtree:true });
+})();
 </script>
 </body>
 </html>
