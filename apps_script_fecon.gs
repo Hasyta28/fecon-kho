@@ -1,4 +1,5 @@
-// ===== FECON SOUTH - Kho Vật Tư v5.61.0 =====
+// ===== FECON SOUTH - Kho Vật Tư v5.62.0 =====
+// v5.62.0: txnSetParty — điền Bên giao (NCC / dự án chuyển qua) cho nhiều phiếu nhập một lần · Admin, Quản lý (QL) được ghi đè · người có quyền nhập kho chỉ điền phiếu đang trống
 // v5.61.0: ảnh máy theo MÁY (ID → mã P.QLTB → tên + nhóm): máy giải động sang dự án khác vẫn có ảnh · Phòng QLTB (qltbAll) gửi ảnh từng máy (ph) · devPhImg cho Admin / q_xem xem mọi ảnh
 // v5.60.0: ẢNH THẬT CỦA MÁY cho màn Cấp nhiên liệu — sheet AnhMay, devPhoto (Admin · QL · DEQ · EQM thay ảnh, thư mục Drive "FECON Kho - Ảnh máy"), devPhImg (tải ảnh nhỏ), getAll gửi devPh
 // v5.59.16: PHÒNG QLTB — qltbAll_ (máy + tồn kho + hỏng + sửa chữa + máy vào/ra + giải động đang chuyển của mọi dự án, chỉ đọc), setPjLoc (Admin ghi vị trí dự án, lưu Script Properties pjLoc), quyền mới q_xem (migration perm55916: MD, DMD, DEQ, EQM, QL, chức danh tên có "thiết bị"/"QLTB")
@@ -161,7 +162,7 @@ const SESSION_DAYS   = 30;           // Đăng nhập được nhớ bao nhiêu 
 const HASH_ROUNDS    = 300;          // Số vòng băm mật khẩu
 const MAX_PENDING    = 30;           // Tối đa bao nhiêu yêu cầu chờ duyệt (chống spam)
 const TZ = 'Asia/Ho_Chi_Minh';
-const SERVER_VERSION = '5.61.0';
+const SERVER_VERSION = '5.62.0';
 const PHOTO_FOLDER_NAME = 'FECON Kho - Ảnh biên bản';
 const PHOTO_MAX_BYTES = 4 * 1024 * 1024;
 
@@ -226,7 +227,7 @@ const PERM = {
   me:'xem', getAll:'xem', getVersion:'xem', logout:'xem', changePassword:'xem',
   addTransaction:'tk', addThang:'tk', setThangDS:'admin', upsert:'tk', setMinStock:'ql', uploadPhoto:'tk', getPhoto:'xem',
   addLoan:'tk', returnLoan:'tk', closeLoan:'tk', loanFix:'tk', mergeItems:'admin', setDevStart:'xem',
-  editTxn:'admin', txnSetCreator:'admin', deleteTxn:'admin', editLoan:'admin', deleteLoan:'admin', getSummary:'xem',
+  editTxn:'admin', txnSetCreator:'admin', txnSetParty:'tk', deleteTxn:'admin', editLoan:'admin', deleteLoan:'admin', getSummary:'xem',
   getCost:'xem', getPrices:'xem', setPrice:'ql', setProgress:'ql',
   remove:'ql', updateProjects:'ql', getLog:'ql',
   createReq:'xem', approveReq:'xem', rejectReq:'xem', cancelReq:'xem', receiveReq:'xem', issueReq:'tk', addCount:'tk', reservePyc:'xem', paperReq:'tk', paperCancel:'xem', paperUndo:'admin', xeBatch:'tk', setXeTypes:'admin', pgInfo:'xem',
@@ -421,6 +422,7 @@ function route(action, data, token) {
       case 'dropDecide':      r = dropDecide(u, data); break;
       case 'editTxn':         r = editTxn(u, data); break;
       case 'txnSetCreator':   r = txnSetCreator(u, data); break;   // v5.59.15
+      case 'txnSetParty':     r = txnSetParty(u, data); break;     // v5.62.0
       case 'deleteTxn':       r = deleteTxn(u, data); break;
       case 'editLoan':        r = editLoan(u, data); break;
       case 'deleteLoan':      r = deleteLoan(u, data); break;
@@ -1837,6 +1839,34 @@ function txnSetCreator(u, d) {
     bumpTxnRev();
   }
   return { success:true, n:n, skip:skip, createdBy:cb.id, createdByName:cb.name };
+}
+// v5.62.0: điền Bên giao (NCC / "Chuyển từ dự án …") cho nhiều phiếu nhập — chỉ đổi ô bên giao, không đụng số lượng / ngày / tồn kho
+function txnSetParty(u, d) {
+  const ids = (Array.isArray(d.ids) ? d.ids : []).map(String).filter(Boolean);
+  if (!ids.length) fail('Chưa chọn phiếu nào');
+  if (ids.length > 500) fail('Mỗi lần điền tối đa 500 phiếu');
+  const party = String(clean(d.party || '', 200) || '').trim();
+  if (party.length < 2) fail('Chưa chọn nhà cung cấp / dự án');
+  const over = ADM(u) || u.role === 'QL', want = {};
+  ids.forEach(x => want[x] = 1);
+  const gd = sheetOf(TXN.sheet, TXN.head), rows = readRows(gd, TXN.cols.length), pc = TXN.cols.indexOf('supplierOrReceiver');
+  let skip = 0; const projs = {}, done = [], todo = [];
+  rows.forEach((r, k) => {
+    if (r[0] === '' || !want[String(r[0])]) return;
+    const o = rowToObj(TXN.cols, r);
+    if (o.type !== 'nhap' || o.ct === 've') { skip++; return; }
+    if (!over && String(o.supplierOrReceiver || '').trim() !== '') { skip++; return; }
+    if (String(o.supplierOrReceiver || '') === party) return;
+    if (!projs[o.project]) { mustAllow(u, o.project); projs[o.project] = 1; }        // kiểm quyền hết rồi mới ghi
+    todo.push(k); done.push(String(o.id));
+  });
+  todo.forEach(k => gd.getRange(k + 2, pc + 1).setValue(toCell(party)));
+  const n = todo.length;
+  if (n) {
+    writeLog(u, 'Điền bên giao', 'Hàng loạt ' + n + ' phiếu nhập (' + Object.keys(projs).join(', ') + ') → ' + party + ' · #' + done.slice(0, 40).join(', #') + (done.length > 40 ? '…' : ''));
+    bumpTxnRev();
+  }
+  return { success:true, n:n, skip:skip, ids:done, party:party };
 }
 function cbSet_(o, cb) {
   if (String(o.cbOld || '') === '') o.cbOld = String(o.createdByName || '') || '(trống)';
@@ -3457,7 +3487,7 @@ const ACT = {
   uploadPhoto:u => hasP(u, 'k_nhap') || hasP(u, 'k_xuat') || hasP(u, 'k_edit'),
   addLoan:P_('k_loan'), returnLoan:P_('k_loan'), closeLoan:P_('k_loan'),
   loanLinkAccept:P_('k_loan'), loanLinkReject:P_('k_loan'), dropReq:P_('k_loan'), dropDecide:P_('k_bomuon'), loanFix:P_('k_loan'), mergeItems:ADM, setDevStart:u => ADM(u) || hasP(u, 'k_hd'),
-  editTxn:ADM, txnSetCreator:ADM, deleteTxn:ADM, nxtInfo:u => ADM(u) || hasP(u, 'k_napx') || hasP(u, 'k_dnap'), nxtImport:ADM, nxtUndo:u => ADM(u) || hasP(u, 'k_dnap'),
+  editTxn:ADM, txnSetCreator:ADM, txnSetParty:u => ADM(u) || u.role === 'QL' || hasP(u, 'k_nhap'), deleteTxn:ADM, nxtInfo:u => ADM(u) || hasP(u, 'k_napx') || hasP(u, 'k_dnap'), nxtImport:ADM, nxtUndo:u => ADM(u) || hasP(u, 'k_dnap'),
   pjWipe:ADM,
   nxtSubmit:u => ADM(u) || hasP(u, 'k_napx'), nxtPend:u => ADM(u) || hasP(u, 'k_napx') || hasP(u, 'k_dnap'), nxtReview:u => ADM(u) || hasP(u, 'k_napx') || hasP(u, 'k_dnap'),
   nxtApprove:u => ADM(u) || hasP(u, 'k_dnap'), nxtReturn:u => ADM(u) || hasP(u, 'k_dnap'), nxtCancel:u => ADM(u) || hasP(u, 'k_napx'), editLoan:ADM, deleteLoan:ADM,
@@ -5438,6 +5468,8 @@ function devPhImg(u, d) {                                        // trả ảnh 
 }
 
 const VER_LOG = [
+ { v:'5.62.0', d:'13/11/2026', type:'up', title:'Bên giao là dự án khác · Điền bên giao cho nhiều phiếu nhập một lần', who:'Thủ kho · Quản lý · Admin',
+   sum:['Ô Nhà cung cấp / Bên giao gợi ý thêm các dự án khác (ghi "Chuyển từ dự án …")','Tab Phiếu nhập: nút Điền bên giao — tick nhiều phiếu chưa có NCC rồi điền một lần','Ô Cấp nhiên liệu ở Tổng quan gọn trong lề, màu nhạt'] },
  { v:'5.61.0', d:'12/11/2026', type:'up', title:'Ảnh máy hiện ở danh sách Thiết bị và Phòng QLTB, đi theo máy khi giải động', who:'Mọi người xem · Quản lý / Admin cập nhật ảnh',
    sum:['Danh sách Thiết bị/Máy móc: mỗi máy có ảnh nhỏ','Phòng QLTB: ảnh máy ở danh sách máy của từng kho, máy hỏng, máy thuê và đường đi máy (xem được mọi dự án)','Máy chuyển sang dự án khác vẫn mang ảnh (nhận theo mã P.QLTB, chưa có mã thì theo tên)'],
    todo:['Admin dán tệp Apps Script chính TRƯỚC rồi mới thay index.html, sw.js, thicong.html trên GitHub'] },

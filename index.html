@@ -1898,7 +1898,7 @@ body.pg-printing #pg-print{display:block;position:fixed;inset:0;z-index:9000;bac
 // ============================================================
 // CONFIG
 // ============================================================
-const APP_VERSION = '5.61.0';
+const APP_VERSION = '5.62.0';
 const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbw6Rmi80I7RI3ij2U7RdRF5pYuQTnPrwEmGmUZS5xpxzLwwVynfoFUujZe1lm6HS1ymxw/exec';
 // ============================================================
 
@@ -3274,7 +3274,7 @@ function renderNhap(c) {
         <div class="fg"><label>Đơn vị</label><input type="text" id="fn-unit" readonly style="background:var(--bg)" placeholder="—">
           <select id="fn-unit-sel" style="display:none"><option value="">— Chọn —</option>${UNITS.map(u=>`<option>${u}</option>`).join('')}</select></div>
       </div>
-      <div class="fg" id="fn-ncc-row"><label>Nhà cung cấp</label><input type="text" id="fn-ncc" placeholder="Tên nhà cung cấp"></div>
+      <div class="fg" id="fn-ncc-row"><label>Nhà cung cấp / Bên giao</label><input type="text" id="fn-ncc" placeholder="Tên nhà cung cấp hoặc dự án chuyển qua"></div>
       <div class="fg" id="fn-cts-row"><label>Số chứng từ / biên bản giao hàng <small style="font-weight:500;color:var(--text3);text-transform:none">· không bắt buộc</small></label><input type="text" id="fn-cts" placeholder="VD: BBGH 125/10, HĐ 0001234"></div>
       <div class="fg" id="fn-giao-row" style="display:none"><label>Giao cho (không bắt buộc)</label><input type="text" id="fn-giao" placeholder="Tổ đội / hạng mục nhận…"></div>
       <div class="fg"><label>Số phiếu / Ghi chú</label><textarea id="fn-note" rows="2" placeholder="Ghi chú..."></textarea></div>
@@ -15635,11 +15635,12 @@ function nccShow(el) {
   const k = nccN(q);
   const sg = sug.filter(s => !k || nccN(s).includes(k));
   if (sg.length) h += `<div class="combo-head">↩ Đã cho thuê / giao món này</div>` + sg.slice(0, 4).map(s => { const o = nccOf(s); return `<div class="combo-opt" data-v="${escHtml(o ? o.ten : s)}"><span><b>${escHtml(o ? o.ten : s)}</b>${o && o.ma ? `<span class="ncc-sub">Mã ${escHtml(o.ma)}</span>` : ''}</span></div>`; }).join('');
+  if (el.id === 'fn-ncc' || el.id === 'nl-ncc' || el.id === 'bg-party') h += nccProjHtml(q);   // v5.62.0: bên giao là dự án khác
   const M = nccMatch(q, loai).filter(x => !sg.some(s => nccN(s) === nccN(x.o.ten)));
   if (M.length) h += `<div class="combo-head">🏢 Danh mục nhà cung cấp${NCC.list.length ? '' : ''}</div>` + M.map(({ o }) => {
     const al = k && !nccN(o.ten).includes(k) ? (String(o.alias || '').split(';').find(a => nccN(a).includes(k)) || '') : '';
     return `<div class="combo-opt" data-v="${escHtml(o.ten)}"><span><b>${escHtml(o.ten)}</b>${o.tt === 'cho' ? '<span class="ncc-tag">chờ duyệt</span>' : ''}<span class="ncc-sub">${[o.ma ? 'Mã ' + o.ma : '', NCC_LOAI[o.loai] || '', al ? 'tên khác: ' + al.trim() : '', o.sdt || ''].filter(Boolean).map(escHtml).join(' · ')}</span></span></div>`; }).join('');
-  if (k && !nccOf(q)) h += `<div class="combo-head" style="text-transform:none">➕ "${escHtml(q.trim())}" chưa có trong danh mục — lưu phiếu sẽ thêm tên mới (chờ Admin duyệt)</div>`;
+  if (k && !nccOf(q) && !nccSkip(q)) h += `<div class="combo-head" style="text-transform:none">➕ "${escHtml(q.trim())}" chưa có trong danh mục — lưu phiếu sẽ thêm tên mới (chờ Admin duyệt)</div>`;
   if (!h) { p.style.display = 'none'; return; }
   p.innerHTML = h;
   const r = el.getBoundingClientRect(), below = window.innerHeight - r.bottom;
@@ -15692,7 +15693,7 @@ nccTag();
 const nccAsked = new Set();
 function nccSkip(v) {
   const k = nccN(v);
-  if (k.length < 3 || /^(ton dau|cong truong|kho|khong ro|chua ro)\b/.test(k)) return true;
+  if (k.length < 3 || /^(ton dau|cong truong|kho|khong ro|chua ro|chuyen tu du an|tu du an)\b/.test(k)) return true;
   const P = [...(db.projects || []), ...((typeof GD !== 'undefined' && GD.projects) || []), (typeof GD !== 'undefined' && GD.kho) || '', ...((db.allProjects || []).map(x => x && x.name || x))];
   return P.some(p => p && nccN(p) === k);
 }
@@ -17283,11 +17284,12 @@ async function q7WipeAll() {
 </script>
 
 <style>/* v5.60.0 Nhiên liệu riêng */
-.nl-tile{width:100%;margin:10px 0 0;border:0;border-radius:var(--r,12px);background:#C4521F;color:#fff;display:flex;align-items:center;gap:14px;padding:16px;text-align:left;font-family:inherit;cursor:pointer;box-shadow:0 2px 10px rgba(16,24,40,.08)}
+.nl-tw{padding:10px 14px 4px}
+.nl-tile{width:100%;margin:0;border:1px solid #F8DCC8;border-left:4px solid #F26522;border-radius:var(--r,12px);background:#fff;color:var(--text);display:flex;align-items:center;gap:14px;padding:14px 16px;text-align:left;font-family:inherit;cursor:pointer;box-shadow:0 2px 10px rgba(16,24,40,.06);box-sizing:border-box}
 .nl-tile:active{transform:scale(.98)}
-.nl-tile .nl-ti{width:44px;height:44px;border-radius:12px;background:rgba(255,255,255,.18);display:flex;align-items:center;justify-content:center;font-size:24px;flex:none}
-.nl-tile b{display:block;font-size:18px;font-weight:800}.nl-tile small{display:block;font-size:13px;opacity:.95;margin-top:2px}
-.nl-tile .nl-ar{margin-left:auto;font-size:24px;opacity:.9}
+.nl-tile .nl-ti{width:48px;height:48px;border-radius:14px;background:#FDEBDF;color:#C4521F;display:flex;align-items:center;justify-content:center;font-size:26px;flex:none}
+.nl-tile b{display:block;font-size:19px;font-weight:800;color:#C4521F}.nl-tile small{display:block;font-size:13px;color:var(--text2);margin-top:3px}
+.nl-tile .nl-ar{margin-left:auto;font-size:24px;color:#C4521F;opacity:.7}
 .nl-chips{display:flex;gap:8px;padding:0 14px 10px}
 .nl-chips button{flex:1;min-height:44px;border-radius:22px;border:1.5px solid var(--border);background:#fff;font-weight:700;font-size:15px;font-family:inherit;color:var(--text)}
 .nl-chips button.on{background:var(--primary);border-color:var(--primary);color:#fff}
@@ -17466,7 +17468,7 @@ function nlDevHead(d) {
     const g = c.querySelector('.act-grid');
     if (g && curProj && curProj !== 'all' && hp('k_xuat') && !c.querySelector('.nl-tile')) {
       const T = nlToday();
-      g.insertAdjacentHTML('afterend', `<button type="button" class="nl-tile need-tk" onclick="nlOpen()"><span class="nl-ti">⛽</span><span><b>Cấp nhiên liệu</b><small>Hôm nay: ${fmtNum(T.n)} máy · ${fmtNum(Math.round(T.dO))} L DO · Tồn DO ${fmtNum(Math.round(T.doStock))} L</small></span><span class="nl-ar">›</span></button>`);
+      g.insertAdjacentHTML('afterend', `<div class="nl-tw need-tk"><button type="button" class="nl-tile" onclick="nlOpen()"><span class="nl-ti">⛽</span><span><b>Cấp nhiên liệu</b><small>Hôm nay: ${fmtNum(T.n)} máy · ${fmtNum(Math.round(T.dO))} L DO · Tồn DO ${fmtNum(Math.round(T.doStock))} L</small></span><span class="nl-ar">›</span></button></div>`);
     }
   } catch (e) { console.warn(e); }
   return out;
@@ -17663,7 +17665,7 @@ function nlNhapHtml() {
     <div class="nl-big nh"><div class="k">SỐ ${it ? escHtml(String(it.unit || '').toUpperCase()) : 'LÍT'} NHẬP</div><div class="v" id="nl-qv">0</div><div class="s" id="nl-qs"></div></div>
     <div class="nl-qk nh"><button type="button" onclick="nlAddQ(1000)">+1.000</button><button type="button" onclick="nlAddQ(2000)">+2.000</button><button type="button" onclick="nlAddQ(4000)">+4.000</button><button type="button" onclick="nlAddQ(6000)">+6.000</button></div>
     ${nlKpHtml()}
-    <div style="margin-top:12px"><label class="nl-fl" for="nl-ncc">Nhà cung cấp</label><input id="nl-ncc" class="nl-in" list="nl-ncc-l" autocomplete="off" placeholder="VD: Petrolimex · xe bồn 51D-…" value="${escHtml(C.ncc)}" oninput="NL.nh.ncc=this.value"><datalist id="nl-ncc-l">${nlNccNames().map(n => `<option value="${escHtml(n)}">`).join('')}</datalist></div>
+    <div style="margin-top:12px"><label class="nl-fl" for="nl-ncc">Nhà cung cấp / Bên giao</label><input id="nl-ncc" class="nl-in" data-ncc="dau" autocomplete="off" placeholder="VD: Petrolimex · xe bồn 51D-…" value="${escHtml(C.ncc)}" oninput="NL.nh.ncc=this.value"><datalist id="nl-ncc-l">${nlNccNames().map(n => `<option value="${escHtml(n)}">`).join('')}</datalist></div>
     <div style="margin-top:10px"><label class="nl-fl" for="nl-so">Số phiếu giao hàng (không bắt buộc)</label><input id="nl-so" class="nl-in" autocomplete="off" placeholder="VD: PX-00125" value="${escHtml(C.so)}" oninput="NL.nh.so=this.value"></div>
     <div class="nl-row2">${nlTimeHtml()}</div>
     <div style="margin-top:10px">${photoFieldHtml('nl')}</div>
@@ -17751,6 +17753,113 @@ const devPhTh = d => !d ? '' : d.ph !== undefined ? String(d.ph || '') : ((db.de
   new MutationObserver(() => { if (t) return; t = setTimeout(() => { t = null; if (document.querySelector('img[data-dvph]')) devPhPump(document); }, 60); })
     .observe(document.body, { childList:true, subtree:true });
 })();
+</script>
+<style>/* v5.62.0 */
+.bg-bar{border-color:#F26522}.bg-bar button.go{background:#F26522;border-color:#F26522}
+.bg-btn{display:block;margin:0 14px 10px;padding:7px 12px;border-radius:8px;border:1px dashed #F26522;background:none;color:#C4521F;font-weight:600;font-family:inherit;font-size:inherit}
+.bg-only{display:block;font-size:13px;color:var(--text2);margin:0 0 8px}.bg-only input{width:18px;height:18px;vertical-align:-3px;margin-right:6px;accent-color:#F26522}
+.bg-old{font-size:11.5px;color:#7A4E00;background:#FFF3E0;border-radius:8px;padding:2px 8px;margin-left:6px;max-width:40%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+</style>
+<script>// ===== v5.62.0 — BÊN GIAO LÀ DỰ ÁN KHÁC · ĐIỀN BÊN GIAO HÀNG LOẠT =====
+const BG_PRE = 'Chuyển từ dự án ';
+function bgProjs() {
+  const L = (db.allProjects && db.allProjects.length ? db.allProjects : db.projects || []).map(x => x && x.name || x).filter(Boolean);
+  return [...new Set(L)].filter(p => p !== curProj).sort((a, b) => String(a).localeCompare(String(b), 'vi'));
+}
+function nccProjHtml(q) {
+  const k0 = nccN(q), k = k0.replace(/^(chuyen tu |tu )?(du an ?)?/, '').trim();
+  const ok = p => !k0 || nccN(BG_PRE + p).includes(k0) || (k && nccN(p).includes(k));
+  const L = bgProjs().filter(ok);
+  if (!L.length || (k0 && nccN(q) === nccN(BG_PRE + L[0]) && L.length === 1)) return '';
+  return `<div class="combo-head">🏗 Dự án khác chuyển qua</div>` + L.slice(0, 12).map(p => `<div class="combo-opt" data-v="${escHtml(BG_PRE + p)}"><span><b>${escHtml(p)}</b><span class="ncc-sub">Ghi: ${escHtml(BG_PRE + p)}</span></span></div>`).join('');
+}
+
+// ---------- Tab Phiếu nhập: "Điền bên giao" cho nhiều phiếu một lần (máy chủ txnSetParty) ----------
+// Admin / Quản lý: mọi phiếu nhập (ghi đè được). Người có quyền nhập kho: chỉ phiếu đang trống bên giao.
+const BG = { on:false, sel:new Set(), blank:true };
+const bgOver = () => role === 'ADM' || role === 'QL';
+const bgOk = () => curProj && curProj !== 'all' && (bgOver() || hp('k_nhap'));
+const bgEmpty = t => !String(t.supplierOrReceiver || '').trim();
+const bgEl = t => t && t.type === 'nhap' && t.ct !== 've' && !t._loan && (bgOver() || bgEmpty(t));
+const bgGrp = t => { const m = String(t.ma || ''); return m ? m.split('-').slice(0, 2).join('-') : ''; };
+{ const _bgGo = goTab; goTab = function () { try { nccHide(); } catch (e) {} return _bgGo.apply(this, arguments); }; }   // bảng gợi ý NCC không treo khi đổi tab
+function bgReset() { BG.on = false; BG.sel = new Set(); BG.blank = true; }
+{ const _bgTL = renderTxnList; renderTxnList = function (txns, type) {
+  if (BG.on && type === 'nhap' && Array.isArray(txns)) { txns = txns.filter(t => bgEl(t) && (!BG.blank || bgEmpty(t))); arguments[0] = txns; }
+  return _bgTL.apply(this, arguments);
+}; }
+{ const _bgHT = renderHistTab; renderHistTab = function (c, type) {
+  if (BG.on && type !== 'nhap') bgReset();
+  _bgHT.apply(this, arguments);
+  try { if (type === 'nhap' && bgOk() && !(typeof CB9 !== 'undefined' && CB9.on)) bgDecorate(c); } catch (e) { console.warn(e); }
+}; }
+function bgDecorate(c) {
+  const head = c.querySelector('.hist-head'); if (!head) return;
+  if (!BG.on) {
+    const after = c.querySelector('.cb9-btn') || c.querySelector('.nl-chips') || head;
+    after.insertAdjacentHTML('afterend', `<button class="bg-btn" onclick="bgStart()">🏢 Điền bên giao (NCC / dự án) cho nhiều phiếu</button>`);
+    return;
+  }
+  c.querySelectorAll('.cb9-btn').forEach(b => b.remove());
+  const anchor = c.querySelector('.nl-chips') || c.querySelector('.h9-s') || head;
+  anchor.insertAdjacentHTML('afterend', `<div class="cb9-bar bg-bar" id="bg-bar">
+    <div class="cb9-n" id="bg-n"></div>
+    ${bgOver() ? `<label class="bg-only"><input type="checkbox" id="bg-blank" ${BG.blank ? 'checked' : ''} onchange="BG.blank=this.checked;refreshCurrentView(false)"> Chỉ phiếu chưa có bên giao</label>` : `<div class="bg-only">Đang hiện các phiếu chưa có bên giao</div>`}
+    <div class="cb9-r" style="margin-bottom:8px"><button onclick="bgAll()">Chọn tất cả đang hiện</button><button onclick="bgNone()">Bỏ chọn</button><button onclick="bgStop()">Xong</button></div>
+    <div class="fg" style="margin:0 0 8px"><label for="bg-party">Nhà cung cấp / Bên giao</label><input type="text" id="bg-party" data-ncc="vt" autocomplete="off" placeholder="Chọn NCC hoặc dự án chuyển qua" oninput="bgCount()"></div>
+    <div class="cb9-r"><button class="go" id="bg-go" style="flex:1" onclick="bgApply()">Điền cho 0 phiếu</button></div>
+  </div>`);
+  c.querySelectorAll('.row-item[onclick^="openTxn("]').forEach(row => {
+    const id = +((row.getAttribute('onclick').match(/^openTxn\((\d+)\)/) || [])[1]); const t = id && db.transactions.find(x => x.id === id);
+    if (!bgEl(t)) return;
+    row.setAttribute('onclick', `bgTg(${id})`); row.dataset.bg = id;
+    row.insertAdjacentHTML('afterbegin', `<input type="checkbox" class="cb9-ck" ${BG.sel.has(id) ? 'checked' : ''} onclick="event.stopPropagation();bgTg(${id})">`);
+    if (!bgEmpty(t)) row.insertAdjacentHTML('beforeend', `<span class="bg-old">${escHtml(t.supplierOrReceiver)}</span>`);
+  });
+  bgCount();
+}
+function bgCount() {
+  const n = BG.sel.size, el = document.getElementById('bg-n'); if (el) el.textContent = n ? `Đã chọn ${fmtNum(n)} phiếu nhập` : 'Bấm vào phiếu để chọn (cùng tờ phiếu giấy chọn chung)';
+  const go = document.getElementById('bg-go'), p = (document.getElementById('bg-party') || {}).value || '';
+  if (go) { go.textContent = `Điền cho ${fmtNum(n)} phiếu`; go.disabled = !n || p.trim().length < 2; }
+}
+function bgStart() { bgReset(); BG.on = true; goTab('lsnhap'); }
+function bgStop() { bgReset(); refreshCurrentView(false); }
+function bgSync() { document.querySelectorAll('.row-item[data-bg] .cb9-ck').forEach(x => x.checked = BG.sel.has(+x.closest('.row-item').dataset.bg)); bgCount(); }
+function bgTg(id) {
+  const t = db.transactions.find(x => x.id === id), on = !BG.sel.has(id), g = t && bgGrp(t);
+  const ids = g ? db.transactions.filter(x => x.project === t.project && bgGrp(x) === g && bgEl(x) && (!BG.blank || !bgOver() || bgEmpty(x))).map(x => x.id) : [id];
+  if (!ids.includes(id)) ids.push(id);
+  ids.forEach(x => on ? BG.sel.add(x) : BG.sel.delete(x));
+  bgSync();
+}
+function bgAll() { document.querySelectorAll('.row-item[data-bg]').forEach(r => BG.sel.add(+r.dataset.bg)); bgSync(); }
+function bgNone() { BG.sel.clear(); bgSync(); }
+async function bgApply() {
+  const inp = document.getElementById('bg-party'); let party = String(inp && inp.value || '').trim();
+  if (party.length < 2) { toast('⚠️ Chọn nhà cung cấp hoặc dự án'); return; }
+  if (typeof nccStd === 'function' && !/^Chuyển từ dự án /.test(party)) party = nccStd(party);
+  const ids = [...BG.sel]; if (!ids.length) return;
+  if (!navigator.onLine) { toast('📴 Cần có mạng'); return; }
+  const had = ids.filter(id => { const t = db.transactions.find(x => x.id === id); return t && !bgEmpty(t) && t.supplierOrReceiver !== party; }).length;
+  if (!confirm(`Điền bên giao "${party}" cho ${ids.length} phiếu nhập?` + (had ? `\n\n${had} phiếu đang có bên giao khác sẽ bị ghi đè.` : '') + '\n\nChỉ đổi ô bên giao, không đổi số lượng, ngày giờ hay tồn kho. Nhật ký ghi lại lần điền.')) return;
+  let n = 0, sk = 0;
+  for (let i = 0; i < ids.length; i += 500) {
+    showLoader(`Đang điền bên giao... ${n}/${ids.length}`);
+    const r = await api('txnSetParty', { ids:ids.slice(i, i + 500), party }, 120000);
+    if (!r || !r.success) {
+      hideLoader();
+      const e = (r && (r.error || r.reason)) || 'mất kết nối';
+      toast('⚠️ ' + (/không hợp lệ: txnSetParty/.test(e) ? 'Máy chủ cần bản 5.62.0 (dán Apps Script mới)' : e) + (n ? ` — đã điền ${n} phiếu` : ' — chưa điền gì'));
+      await syncAll(true); refreshCurrentView(false); return;
+    }
+    n += r.n; sk += r.skip || 0;
+  }
+  try { if (typeof nccOf === 'function' && !nccOf(party) && !nccSkip(party) && NCC.rev) push('nccAdd', { ten:party, loai:'vt' }); } catch (e) {}
+  showLoader('Đang tải lại dữ liệu...'); await Promise.race([syncAll(true), new Promise(res => setTimeout(res, 15000))]); hideLoader();
+  bgReset(); refreshCurrentView(false);
+  toast(`✅ Đã điền bên giao cho ${n} phiếu` + (sk ? ` · bỏ qua ${sk} phiếu đã có bên giao` : ''));
+}
 </script>
 </body>
 </html>
