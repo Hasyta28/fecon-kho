@@ -1898,7 +1898,7 @@ body.pg-printing #pg-print{display:block;position:fixed;inset:0;z-index:9000;bac
 // ============================================================
 // CONFIG
 // ============================================================
-const APP_VERSION = '5.60.0';
+const APP_VERSION = '5.63.0';
 const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbw6Rmi80I7RI3ij2U7RdRF5pYuQTnPrwEmGmUZS5xpxzLwwVynfoFUujZe1lm6HS1ymxw/exec';
 // ============================================================
 
@@ -3274,7 +3274,7 @@ function renderNhap(c) {
         <div class="fg"><label>Đơn vị</label><input type="text" id="fn-unit" readonly style="background:var(--bg)" placeholder="—">
           <select id="fn-unit-sel" style="display:none"><option value="">— Chọn —</option>${UNITS.map(u=>`<option>${u}</option>`).join('')}</select></div>
       </div>
-      <div class="fg" id="fn-ncc-row"><label>Nhà cung cấp</label><input type="text" id="fn-ncc" placeholder="Tên nhà cung cấp"></div>
+      <div class="fg" id="fn-ncc-row"><label>Nhà cung cấp / Bên giao</label><input type="text" id="fn-ncc" placeholder="Tên nhà cung cấp hoặc dự án chuyển qua"></div>
       <div class="fg" id="fn-cts-row"><label>Số chứng từ / biên bản giao hàng <small style="font-weight:500;color:var(--text3);text-transform:none">· không bắt buộc</small></label><input type="text" id="fn-cts" placeholder="VD: BBGH 125/10, HĐ 0001234"></div>
       <div class="fg" id="fn-giao-row" style="display:none"><label>Giao cho (không bắt buộc)</label><input type="text" id="fn-giao" placeholder="Tổ đội / hạng mục nhận…"></div>
       <div class="fg"><label>Số phiếu / Ghi chú</label><textarea id="fn-note" rows="2" placeholder="Ghi chú..."></textarea></div>
@@ -13249,7 +13249,14 @@ function fnNoteCT() {                                                   // ô "S
   return s ? 'CT: ' + s + (n.trim() ? ' · ' + n.trim() : '') : n;
 }
 const bcNoteClean = (note, side) => String(note || '').split(/\s*·\s*/).map(x => x.replace(/⚡?\s*Lệnh:\s*“[^”]*”/g, '').trim())   // v5.56.7: bỏ câu lệnh gõ nhanh; bên nhập bỏ "giải động từ …"
+  .map(x => /^Ra khỏi công trình\s*→/i.test(x) ? '' : /^Giải động\s*→/i.test(x) ? 'Giải động' : x)   // v5.62.0: hướng đi đã có ở cột Loại + NCC
   .filter(x => x && !(side === 'N' && /giải động/i.test(x))).join(' · ');
+// v5.62.0: cột NCC / NTP / Đội chỉ ghi TÊN (bỏ "Trả bên cho thuê", "Chuyển dự án", "Về"… — đã có ở cột Loại)
+const bcPartyName = sv => { const v = String(sv || '').trim();
+  let m = v.match(/^(?:chuyển từ dự án|chuyển dự án|chuyển sang dự án)\s+(.+)$/i); if (m) return 'Dự án ' + m[1].trim();
+  m = v.match(/^(?:trả bên cho thuê|trả ncc|trả|chuyển sang|về)\s+(.+)$/i); if (m) return m[1].trim();
+  m = v.match(/^hư hỏng\s*\/\s*thanh lý\s*:\s*(.+)$/i); if (m) return m[1].trim();
+  return /^hư hỏng\s*\/\s*thanh lý$/i.test(v) ? '' : v; };
 const bcSplitCT = note => { const m = String(note || '').match(/^CT:\s*([^·]*?)\s*(?:·\s*([\s\S]*))?$/); return m ? [m[1].trim(), (m[2] || '').trim()] : ['', String(note || '').trim()]; };
 
 // ---------- khung trình bày ----------
@@ -13403,7 +13410,7 @@ function bcData(R) {
     }
     // v5.59.13: phiếu nạp từ file kiểm đếm SL thực tế (5.59.11–12) → báo cáo để trống NCC + Ghi chú (dữ liệu máy chủ giữ nguyên để hoàn tác)
     const kd = normVN(t.supplierOrReceiver) === normVN(BC_KD_PARTY) || [t.note, t.reason, t0.note, t0.reason].some(z => BC_KD_NOTE.test(String(z || '')));
-    rows.push({ t, t0, it, d, q, dk, ds, side, qty, site, loai, sv:kd ? '' : sv, cts:kd ? '' : cts, note0:kd ? '' : bcNoteClean(note0, side), kd, fuel:fuelOf(it), isDO:doOf(it), inR:inR(d), afterStart:afterStart(d), afterEnd:afterEnd(d),
+    rows.push({ t, t0, it, d, q, dk, ds, side, qty, site, loai, sv:kd ? '' : bcPartyName(sv), cts:kd ? '' : cts, note0:kd ? '' : bcNoteClean(note0, side), kd, fuel:fuelOf(it), isDO:doOf(it), inR:inR(d), afterStart:afterStart(d), afterEnd:afterEnd(d),
       fixed:(t.type === 'nhap' || t.type === 'xuat') && adj[t.id] ? [+t.qty, q] : null });
   });
   const ord = (a, b) => ((a.d ? a.d.getTime() : 0) - (b.d ? b.d.getTime() : 0)) || (+a.t.id - +b.t.id);
@@ -13429,7 +13436,7 @@ function bcData(R) {
 }
 
 // ---------- sổ nhập / sổ xuất ----------
-const bcNoSv = (x, N) => !x.kd && !x.sv && !/^Điều chỉnh|Khai số|Tồn đầu|Về kho|thẳng/.test(x.loai) && (N || !x.t.thietBi);
+const bcNoSv = (x, N) => !x.kd && !x.sv && !/^Điều chỉnh|Khai số|Tồn đầu|Về kho|thẳng|Thanh lý/.test(x.loai) && (N || !x.t.thietBi);
 // v5.59.3: phiếu mượn đã bỏ thông tin mượn / đã trả xong → ghi rõ trên Excel (trước đây vẫn ghi như đang mượn)
 function bcLoanOf(t) { return t && LOAN_T[t.type] && t.refId ? (db.loans || []).find(l => String(l.id) === String(t.refId)) || null : null; }
 function bcLoanNote(t) {
@@ -13553,7 +13560,7 @@ function bcLedgerNX(X) {
     if (x.it.ghost) note = [note, 'Vật tư đã xoá khỏi danh mục'].filter(Boolean).join(' · ');
     v[cNX - 1] = N ? 'Nhập' : 'Xuất'; v[cLoai - 1] = x.loai; v[cSv - 1] = bcSvShow(x);
     if (mn) { const o = x.t.type === 'dieuchinh' ? null : nccOf(x.sv); v[C['Mã NCC'] - 1] = o ? o.ma || '' : ''; }
-    v[C['Máy, thiết bị'] - 1] = x.t.thietBi || '';
+    v[C['Máy, thiết bị'] - 1] = x.t.thietBi || (typeof mayPartTxn === 'function' && mayPartTxn(x.t) ? 'Bộ phận máy ' + mayLabel(x.t.may, x.t.project) : '');   // v5.63.0
     if (D.ct) v[C['Xuất từ'] - 1] = N ? '' : x.site ? 'Công trường' : 'Kho';
     if (C['Chứng từ']) v[C['Chứng từ'] - 1] = [x.cts, isPycRef(x.t.refId) ? x.t.refId : ''].filter(Boolean).join(' · ');
     v[C['Người lập'] - 1] = x.t.createdByName || ''; if (C['Xe']) v[C['Xe'] - 1] = x.t.xe || ''; v[cNote - 1] = note;
@@ -15635,11 +15642,12 @@ function nccShow(el) {
   const k = nccN(q);
   const sg = sug.filter(s => !k || nccN(s).includes(k));
   if (sg.length) h += `<div class="combo-head">↩ Đã cho thuê / giao món này</div>` + sg.slice(0, 4).map(s => { const o = nccOf(s); return `<div class="combo-opt" data-v="${escHtml(o ? o.ten : s)}"><span><b>${escHtml(o ? o.ten : s)}</b>${o && o.ma ? `<span class="ncc-sub">Mã ${escHtml(o.ma)}</span>` : ''}</span></div>`; }).join('');
+  if (el.id === 'fn-ncc' || el.id === 'nl-ncc' || el.id === 'bg-party') h += nccProjHtml(q);   // v5.62.0: bên giao là dự án khác
   const M = nccMatch(q, loai).filter(x => !sg.some(s => nccN(s) === nccN(x.o.ten)));
   if (M.length) h += `<div class="combo-head">🏢 Danh mục nhà cung cấp${NCC.list.length ? '' : ''}</div>` + M.map(({ o }) => {
     const al = k && !nccN(o.ten).includes(k) ? (String(o.alias || '').split(';').find(a => nccN(a).includes(k)) || '') : '';
     return `<div class="combo-opt" data-v="${escHtml(o.ten)}"><span><b>${escHtml(o.ten)}</b>${o.tt === 'cho' ? '<span class="ncc-tag">chờ duyệt</span>' : ''}<span class="ncc-sub">${[o.ma ? 'Mã ' + o.ma : '', NCC_LOAI[o.loai] || '', al ? 'tên khác: ' + al.trim() : '', o.sdt || ''].filter(Boolean).map(escHtml).join(' · ')}</span></span></div>`; }).join('');
-  if (k && !nccOf(q)) h += `<div class="combo-head" style="text-transform:none">➕ "${escHtml(q.trim())}" chưa có trong danh mục — lưu phiếu sẽ thêm tên mới (chờ Admin duyệt)</div>`;
+  if (k && !nccOf(q) && !nccSkip(q)) h += `<div class="combo-head" style="text-transform:none">➕ "${escHtml(q.trim())}" chưa có trong danh mục — lưu phiếu sẽ thêm tên mới (chờ Admin duyệt)</div>`;
   if (!h) { p.style.display = 'none'; return; }
   p.innerHTML = h;
   const r = el.getBoundingClientRect(), below = window.innerHeight - r.bottom;
@@ -15692,7 +15700,7 @@ nccTag();
 const nccAsked = new Set();
 function nccSkip(v) {
   const k = nccN(v);
-  if (k.length < 3 || /^(ton dau|cong truong|kho|khong ro|chua ro)\b/.test(k)) return true;
+  if (k.length < 3 || /^(ton dau|cong truong|kho|khong ro|chua ro|chuyen tu du an|tu du an)\b/.test(k)) return true;
   const P = [...(db.projects || []), ...((typeof GD !== 'undefined' && GD.projects) || []), (typeof GD !== 'undefined' && GD.kho) || '', ...((db.allProjects || []).map(x => x && x.name || x))];
   return P.some(p => p && nccN(p) === k);
 }
@@ -17283,11 +17291,12 @@ async function q7WipeAll() {
 </script>
 
 <style>/* v5.60.0 Nhiên liệu riêng */
-.nl-tile{width:100%;margin:10px 0 0;border:0;border-radius:var(--r,12px);background:#C4521F;color:#fff;display:flex;align-items:center;gap:14px;padding:16px;text-align:left;font-family:inherit;cursor:pointer;box-shadow:0 2px 10px rgba(16,24,40,.08)}
+.nl-tw{padding:10px 14px 4px}
+.nl-tile{width:100%;margin:0;border:1px solid #F8DCC8;border-left:4px solid #F26522;border-radius:var(--r,12px);background:#fff;color:var(--text);display:flex;align-items:center;gap:14px;padding:14px 16px;text-align:left;font-family:inherit;cursor:pointer;box-shadow:0 2px 10px rgba(16,24,40,.06);box-sizing:border-box}
 .nl-tile:active{transform:scale(.98)}
-.nl-tile .nl-ti{width:44px;height:44px;border-radius:12px;background:rgba(255,255,255,.18);display:flex;align-items:center;justify-content:center;font-size:24px;flex:none}
-.nl-tile b{display:block;font-size:18px;font-weight:800}.nl-tile small{display:block;font-size:13px;opacity:.95;margin-top:2px}
-.nl-tile .nl-ar{margin-left:auto;font-size:24px;opacity:.9}
+.nl-tile .nl-ti{width:48px;height:48px;border-radius:14px;background:#FDEBDF;color:#C4521F;display:flex;align-items:center;justify-content:center;font-size:26px;flex:none}
+.nl-tile b{display:block;font-size:19px;font-weight:800;color:#C4521F}.nl-tile small{display:block;font-size:13px;color:var(--text2);margin-top:3px}
+.nl-tile .nl-ar{margin-left:auto;font-size:24px;color:#C4521F;opacity:.7}
 .nl-chips{display:flex;gap:8px;padding:0 14px 10px}
 .nl-chips button{flex:1;min-height:44px;border-radius:22px;border:1.5px solid var(--border);background:#fff;font-weight:700;font-size:15px;font-family:inherit;color:var(--text)}
 .nl-chips button.on{background:var(--primary);border-color:var(--primary);color:#fff}
@@ -17414,7 +17423,7 @@ function devPhPump(root) {
   (root || document).querySelectorAll('img[data-dvph]').forEach(async el => {
     const id = el.dataset.dvph; el.removeAttribute('data-dvph');
     const src = await devPhGet(id);
-    if (src) el.src = src; else { const w = el.parentElement; el.remove(); if (w) w.classList.add('nl-ph0'); }
+    if (src) el.src = src; else { const w = el.parentElement; el.remove(); if (w && !w.classList.contains('nl-ico')) w.classList.add('nl-ph0'); }
   });
 }
 { const _nlAS = applyServer; applyServer = function (r) {
@@ -17466,7 +17475,7 @@ function nlDevHead(d) {
     const g = c.querySelector('.act-grid');
     if (g && curProj && curProj !== 'all' && hp('k_xuat') && !c.querySelector('.nl-tile')) {
       const T = nlToday();
-      g.insertAdjacentHTML('afterend', `<button type="button" class="nl-tile need-tk" onclick="nlOpen()"><span class="nl-ti">⛽</span><span><b>Cấp nhiên liệu</b><small>Hôm nay: ${fmtNum(T.n)} máy · ${fmtNum(Math.round(T.dO))} L DO · Tồn DO ${fmtNum(Math.round(T.doStock))} L</small></span><span class="nl-ar">›</span></button>`);
+      g.insertAdjacentHTML('afterend', `<div class="nl-tw need-tk"><button type="button" class="nl-tile" onclick="nlOpen()"><span class="nl-ti">⛽</span><span><b>Cấp nhiên liệu</b><small>Hôm nay: ${fmtNum(T.n)} máy · ${fmtNum(Math.round(T.dO))} L DO · Tồn DO ${fmtNum(Math.round(T.doStock))} L</small></span><span class="nl-ar">›</span></button></div>`);
     }
   } catch (e) { console.warn(e); }
   return out;
@@ -17663,7 +17672,7 @@ function nlNhapHtml() {
     <div class="nl-big nh"><div class="k">SỐ ${it ? escHtml(String(it.unit || '').toUpperCase()) : 'LÍT'} NHẬP</div><div class="v" id="nl-qv">0</div><div class="s" id="nl-qs"></div></div>
     <div class="nl-qk nh"><button type="button" onclick="nlAddQ(1000)">+1.000</button><button type="button" onclick="nlAddQ(2000)">+2.000</button><button type="button" onclick="nlAddQ(4000)">+4.000</button><button type="button" onclick="nlAddQ(6000)">+6.000</button></div>
     ${nlKpHtml()}
-    <div style="margin-top:12px"><label class="nl-fl" for="nl-ncc">Nhà cung cấp</label><input id="nl-ncc" class="nl-in" list="nl-ncc-l" autocomplete="off" placeholder="VD: Petrolimex · xe bồn 51D-…" value="${escHtml(C.ncc)}" oninput="NL.nh.ncc=this.value"><datalist id="nl-ncc-l">${nlNccNames().map(n => `<option value="${escHtml(n)}">`).join('')}</datalist></div>
+    <div style="margin-top:12px"><label class="nl-fl" for="nl-ncc">Nhà cung cấp / Bên giao</label><input id="nl-ncc" class="nl-in" data-ncc="dau" autocomplete="off" placeholder="VD: Petrolimex · xe bồn 51D-…" value="${escHtml(C.ncc)}" oninput="NL.nh.ncc=this.value"><datalist id="nl-ncc-l">${nlNccNames().map(n => `<option value="${escHtml(n)}">`).join('')}</datalist></div>
     <div style="margin-top:10px"><label class="nl-fl" for="nl-so">Số phiếu giao hàng (không bắt buộc)</label><input id="nl-so" class="nl-in" autocomplete="off" placeholder="VD: PX-00125" value="${escHtml(C.so)}" oninput="NL.nh.so=this.value"></div>
     <div class="nl-row2">${nlTimeHtml()}</div>
     <div style="margin-top:10px">${photoFieldHtml('nl')}</div>
@@ -17720,6 +17729,436 @@ let nlHistIn = '';
   } catch (e) { console.warn(e); }
   return out;
 }; }
+</script>
+<style>/* v5.61.0 ảnh máy ở mọi danh sách */
+.ri-ico.nl-ico{position:relative;overflow:hidden}
+.ri-ico.nl-ico img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;background:#DDE3EA}
+.nl-qph{height:180px;margin:0 0 10px;border-radius:12px;overflow:hidden;background:#DDE3EA;cursor:zoom-in}
+.nl-qph img{width:100%;height:100%;object-fit:cover;display:block}
+</style>
+<script>// ===== v5.61.0 — ẢNH MÁY Ở MỌI DANH SÁCH: devIcon có ảnh (danh sách Thiết bị, Phòng QLTB…) · đường đi máy có ảnh lớn =====
+// Máy của dự án đang mở: db.devPh (getAll). Máy ở Phòng QLTB (mọi dự án): trường ph do qltbAll gửi. Ảnh tải 1 lần qua devPhImg, giữ ở IndexedDB.
+const devPhTh = d => !d ? '' : d.ph !== undefined ? String(d.ph || '') : ((db.devPh && db.devPh[+d.id]) || {}).th || '';
+{ const _nlDI = devIcon; devIcon = function (dev, size) {
+  const h = _nlDI.apply(this, arguments), th = devPhTh(dev);
+  if (!th) return h;
+  const src = DVPH_MEM[th];
+  return h.replace('class="ri-ico"', 'class="ri-ico nl-ico"').replace(/<\/div>$/, (src ? `<img src="${src}" alt="">` : `<img data-dvph="${escHtml(th)}" alt="">`) + '</div>');
+}; }
+{ const _nlQP = qlDevPath; qlDevPath = function (p, id) {
+  const out = _nlQP.apply(this, arguments);
+  try {
+    const d = QL.d.P[p].devs.find(x => x.id === id), th = devPhTh(d), sh = document.querySelector('#ql-dp .ql-dps'), hd = sh && sh.querySelector('.modal-handle');
+    if (th && hd) { hd.insertAdjacentHTML('afterend', `<div class="nl-qph">${DVPH_MEM[th] ? `<img src="${DVPH_MEM[th]}" alt="">` : `<img data-dvph="${escHtml(th)}" alt="">`}</div>`);
+      const q = sh.querySelector('.nl-qph'); q.onclick = e => { e.stopPropagation(); const i = q.querySelector('img'); if (i && i.src) openViewer(i.src); }; devPhPump(sh); }
+  } catch (e) { console.warn(e); }
+  return out;
+}; }
+// ảnh mới chèn vào trang ở bất kỳ đâu (danh sách vẽ bằng innerHTML) → tự tải
+(function () {
+  let t = null;
+  new MutationObserver(() => { if (t) return; t = setTimeout(() => { t = null; if (document.querySelector('img[data-dvph]')) devPhPump(document); }, 60); })
+    .observe(document.body, { childList:true, subtree:true });
+})();
+</script>
+<style>/* v5.62.0 */
+.bg-bar{border-color:#F26522}.bg-bar button.go{background:#F26522;border-color:#F26522}
+.bg-btn{display:block;margin:0 14px 10px;padding:7px 12px;border-radius:8px;border:1px dashed #F26522;background:none;color:#C4521F;font-weight:600;font-family:inherit;font-size:inherit}
+.bg-only{display:block;font-size:13px;color:var(--text2);margin:0 0 8px}.bg-only input{width:18px;height:18px;vertical-align:-3px;margin-right:6px;accent-color:#F26522}
+.bg-old{font-size:11.5px;color:#7A4E00;background:#FFF3E0;border-radius:8px;padding:2px 8px;margin-left:6px;max-width:40%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+</style>
+<script>// ===== v5.62.0 — BÊN GIAO LÀ DỰ ÁN KHÁC · ĐIỀN BÊN GIAO HÀNG LOẠT =====
+const BG_PRE = 'Chuyển từ dự án ';
+function bgProjs() {
+  const L = (db.allProjects && db.allProjects.length ? db.allProjects : db.projects || []).map(x => x && x.name || x).filter(Boolean);
+  return [...new Set(L)].filter(p => p !== curProj).sort((a, b) => String(a).localeCompare(String(b), 'vi'));
+}
+function nccProjHtml(q) {
+  const k0 = nccN(q), k = k0.replace(/^(chuyen tu |tu )?(du an ?)?/, '').trim();
+  const ok = p => !k0 || nccN(BG_PRE + p).includes(k0) || (k && nccN(p).includes(k));
+  const L = bgProjs().filter(ok);
+  if (!L.length || (k0 && nccN(q) === nccN(BG_PRE + L[0]) && L.length === 1)) return '';
+  return `<div class="combo-head">🏗 Dự án khác chuyển qua</div>` + L.slice(0, 12).map(p => `<div class="combo-opt" data-v="${escHtml(BG_PRE + p)}"><span><b>${escHtml(p)}</b><span class="ncc-sub">Ghi: ${escHtml(BG_PRE + p)}</span></span></div>`).join('');
+}
+
+// ---------- Tab Phiếu nhập: "Điền bên giao" cho nhiều phiếu một lần (máy chủ txnSetParty) ----------
+// Admin / Quản lý: mọi phiếu nhập (ghi đè được). Người có quyền nhập kho: chỉ phiếu đang trống bên giao.
+const BG = { on:false, sel:new Set(), blank:true };
+const bgOver = () => role === 'ADM' || role === 'QL';
+const bgOk = () => curProj && curProj !== 'all' && (bgOver() || hp('k_nhap'));
+const bgEmpty = t => !String(t.supplierOrReceiver || '').trim();
+const bgEl = t => t && t.type === 'nhap' && t.ct !== 've' && !t._loan && (bgOver() || bgEmpty(t));
+const bgGrp = t => { const m = String(t.ma || ''); return m ? m.split('-').slice(0, 2).join('-') : ''; };
+{ const _bgGo = goTab; goTab = function () { try { nccHide(); } catch (e) {} return _bgGo.apply(this, arguments); }; }   // bảng gợi ý NCC không treo khi đổi tab
+function bgReset() { BG.on = false; BG.sel = new Set(); BG.blank = true; }
+{ const _bgTL = renderTxnList; renderTxnList = function (txns, type) {
+  if (BG.on && type === 'nhap' && Array.isArray(txns)) { txns = txns.filter(t => bgEl(t) && (!BG.blank || bgEmpty(t))); arguments[0] = txns; }
+  return _bgTL.apply(this, arguments);
+}; }
+{ const _bgHT = renderHistTab; renderHistTab = function (c, type) {
+  if (BG.on && type !== 'nhap') bgReset();
+  _bgHT.apply(this, arguments);
+  try { if (type === 'nhap' && bgOk() && !(typeof CB9 !== 'undefined' && CB9.on)) bgDecorate(c); } catch (e) { console.warn(e); }
+}; }
+function bgDecorate(c) {
+  const head = c.querySelector('.hist-head'); if (!head) return;
+  if (!BG.on) {
+    const after = c.querySelector('.cb9-btn') || c.querySelector('.nl-chips') || head;
+    after.insertAdjacentHTML('afterend', `<button class="bg-btn" onclick="bgStart()">🏢 Điền bên giao (NCC / dự án) cho nhiều phiếu</button>`);
+    return;
+  }
+  c.querySelectorAll('.cb9-btn').forEach(b => b.remove());
+  const anchor = c.querySelector('.nl-chips') || c.querySelector('.h9-s') || head;
+  anchor.insertAdjacentHTML('afterend', `<div class="cb9-bar bg-bar" id="bg-bar">
+    <div class="cb9-n" id="bg-n"></div>
+    ${bgOver() ? `<label class="bg-only"><input type="checkbox" id="bg-blank" ${BG.blank ? 'checked' : ''} onchange="BG.blank=this.checked;refreshCurrentView(false)"> Chỉ phiếu chưa có bên giao</label>` : `<div class="bg-only">Đang hiện các phiếu chưa có bên giao</div>`}
+    <div class="cb9-r" style="margin-bottom:8px"><button onclick="bgAll()">Chọn tất cả đang hiện</button><button onclick="bgNone()">Bỏ chọn</button><button onclick="bgStop()">Xong</button></div>
+    <div class="fg" style="margin:0 0 8px"><label for="bg-party">Nhà cung cấp / Bên giao</label><input type="text" id="bg-party" data-ncc="vt" autocomplete="off" placeholder="Chọn NCC hoặc dự án chuyển qua" oninput="bgCount()"></div>
+    <div class="cb9-r"><button class="go" id="bg-go" style="flex:1" onclick="bgApply()">Điền cho 0 phiếu</button></div>
+  </div>`);
+  c.querySelectorAll('.row-item[onclick^="openTxn("]').forEach(row => {
+    const id = +((row.getAttribute('onclick').match(/^openTxn\((\d+)\)/) || [])[1]); const t = id && db.transactions.find(x => x.id === id);
+    if (!bgEl(t)) return;
+    row.setAttribute('onclick', `bgTg(${id})`); row.dataset.bg = id;
+    row.insertAdjacentHTML('afterbegin', `<input type="checkbox" class="cb9-ck" ${BG.sel.has(id) ? 'checked' : ''} onclick="event.stopPropagation();bgTg(${id})">`);
+    if (!bgEmpty(t)) row.insertAdjacentHTML('beforeend', `<span class="bg-old">${escHtml(t.supplierOrReceiver)}</span>`);
+  });
+  bgCount();
+}
+function bgCount() {
+  const n = BG.sel.size, el = document.getElementById('bg-n'); if (el) el.textContent = n ? `Đã chọn ${fmtNum(n)} phiếu nhập` : 'Bấm vào phiếu để chọn (cùng tờ phiếu giấy chọn chung)';
+  const go = document.getElementById('bg-go'), p = (document.getElementById('bg-party') || {}).value || '';
+  if (go) { go.textContent = `Điền cho ${fmtNum(n)} phiếu`; go.disabled = !n || p.trim().length < 2; }
+}
+function bgStart() { bgReset(); BG.on = true; goTab('lsnhap'); }
+function bgStop() { bgReset(); refreshCurrentView(false); }
+function bgSync() { document.querySelectorAll('.row-item[data-bg] .cb9-ck').forEach(x => x.checked = BG.sel.has(+x.closest('.row-item').dataset.bg)); bgCount(); }
+function bgTg(id) {
+  const t = db.transactions.find(x => x.id === id), on = !BG.sel.has(id), g = t && bgGrp(t);
+  const ids = g ? db.transactions.filter(x => x.project === t.project && bgGrp(x) === g && bgEl(x) && (!BG.blank || !bgOver() || bgEmpty(x))).map(x => x.id) : [id];
+  if (!ids.includes(id)) ids.push(id);
+  ids.forEach(x => on ? BG.sel.add(x) : BG.sel.delete(x));
+  bgSync();
+}
+function bgAll() { document.querySelectorAll('.row-item[data-bg]').forEach(r => BG.sel.add(+r.dataset.bg)); bgSync(); }
+function bgNone() { BG.sel.clear(); bgSync(); }
+async function bgApply() {
+  const inp = document.getElementById('bg-party'); let party = String(inp && inp.value || '').trim();
+  if (party.length < 2) { toast('⚠️ Chọn nhà cung cấp hoặc dự án'); return; }
+  if (typeof nccStd === 'function' && !/^Chuyển từ dự án /.test(party)) party = nccStd(party);
+  const ids = [...BG.sel]; if (!ids.length) return;
+  if (!navigator.onLine) { toast('📴 Cần có mạng'); return; }
+  const had = ids.filter(id => { const t = db.transactions.find(x => x.id === id); return t && !bgEmpty(t) && t.supplierOrReceiver !== party; }).length;
+  if (!confirm(`Điền bên giao "${party}" cho ${ids.length} phiếu nhập?` + (had ? `\n\n${had} phiếu đang có bên giao khác sẽ bị ghi đè.` : '') + '\n\nChỉ đổi ô bên giao, không đổi số lượng, ngày giờ hay tồn kho. Nhật ký ghi lại lần điền.')) return;
+  let n = 0, sk = 0;
+  for (let i = 0; i < ids.length; i += 500) {
+    showLoader(`Đang điền bên giao... ${n}/${ids.length}`);
+    const r = await api('txnSetParty', { ids:ids.slice(i, i + 500), party }, 120000);
+    if (!r || !r.success) {
+      hideLoader();
+      const e = (r && (r.error || r.reason)) || 'mất kết nối';
+      toast('⚠️ ' + (/không hợp lệ: txnSetParty/.test(e) ? 'Máy chủ cần bản 5.62.0 (dán Apps Script mới)' : e) + (n ? ` — đã điền ${n} phiếu` : ' — chưa điền gì'));
+      await syncAll(true); refreshCurrentView(false); return;
+    }
+    n += r.n; sk += r.skip || 0;
+  }
+  try { if (typeof nccOf === 'function' && !nccOf(party) && !nccSkip(party) && NCC.rev) push('nccAdd', { ten:party, loai:'vt' }); } catch (e) {}
+  showLoader('Đang tải lại dữ liệu...'); await Promise.race([syncAll(true), new Promise(res => setTimeout(res, 15000))]); hideLoader();
+  bgReset(); refreshCurrentView(false);
+  toast(`✅ Đã điền bên giao cho ${n} phiếu` + (sk ? ` · bỏ qua ${sk} phiếu đã có bên giao` : ''));
+}
+</script>
+<style>/* v5.63.0 Bộ phận thuộc máy */
+.mayf label small{font-weight:500;color:var(--text3);text-transform:none}
+.mayf-chip{display:flex;align-items:center;gap:10px;border:1.5px solid #F26522;background:#FFF7F2;border-radius:12px;padding:8px 10px}
+.mayf-chip .ri-ico{flex:none}.mayf-chip b{display:block;font-size:15px}.mayf-chip small{display:block;font-size:12px;color:var(--text2)}
+.mayf-chip button{margin-left:auto;border:0;background:none;font-size:20px;color:var(--text3);padding:4px 8px;cursor:pointer}
+.mayf-list{display:none;border:1px solid var(--border);border-radius:12px;background:#fff;margin-top:6px;max-height:320px;overflow-y:auto;box-shadow:0 4px 14px rgba(16,24,40,.1)}
+.mayf-o{display:flex;align-items:center;gap:10px;padding:8px 10px;border-bottom:1px solid var(--border);cursor:pointer}
+.mayf-o:last-child{border-bottom:0}.mayf-o:active{background:#F5F7FA}
+.mayf-o b{display:block;font-size:14.5px}.mayf-o small{display:block;font-size:12px;color:var(--text2)}
+.mayf-o.new{color:#C4521F;font-weight:700}
+.mayf-h{padding:6px 10px;font-size:11.5px;font-weight:800;color:var(--text3);background:#F8FAFC;text-transform:uppercase;letter-spacing:.3px}
+.bpm{margin:12px 0}.bpm h4{margin:0 0 8px;font-size:15px;font-weight:800}
+.bpm-t{width:100%;border-collapse:collapse;font-size:13.5px}.bpm-t th{font-size:11.5px;color:var(--text3);font-weight:700;text-align:right;padding:4px 6px;border-bottom:1px solid var(--border)}
+.bpm-t th:first-child,.bpm-t td:first-child{text-align:left}.bpm-t td{padding:7px 6px;border-bottom:1px solid var(--border);text-align:right;vertical-align:top}
+.bpm-t td.c{font-weight:800}.bpm-t td.c.warn{color:#B42318}
+.bpm-trip{display:flex;flex-wrap:wrap;gap:4px;margin-top:4px}.bpm-trip span{font-size:11.5px;border-radius:8px;padding:1px 6px;background:#EEF4EA;color:#1E7A45;cursor:pointer}
+.bpm-trip span.x{background:#FDEDE7;color:#B54708}
+.bpm-warn{background:#FEF3F2;border:1px solid #FECDCA;color:#B42318;border-radius:10px;padding:8px 10px;font-size:13.5px;margin-bottom:8px}
+.bpm-sug{background:#FFF8E6;border:1px solid #F5D78E;border-radius:10px;padding:8px 10px;font-size:13.5px;margin-top:8px}
+.bpm-sug button{margin-top:6px;border:0;background:#F26522;color:#fff;border-radius:8px;padding:6px 12px;font-weight:700;font-family:inherit}
+.bpm-tag{display:inline-block;font-size:11px;font-weight:700;border-radius:8px;padding:1px 7px;background:#FFF3E0;color:#C25E00;margin-left:6px;vertical-align:1px}
+</style>
+<script>// ===== v5.63.0 — BỘ PHẬN THUỘC MÁY: chọn máy trên phiếu nhập / xuất · chi tiết máy · gắn hàng loạt =====
+// Cột 'may' của phiếu: "#<ID máy>" (máy trong Máy móc & Thiết bị) hoặc tên gõ tay "Tên máy · mã P.QLTB" (máy chưa về / chưa thêm).
+// Tên gõ tay tự ghép vào máy khi máy được thêm (cùng mã P.QLTB, hoặc cùng tên); gần giống → chi tiết máy hỏi "Ghép".
+const mayOn = () => !!(db.mayOn);
+{ const _a = applyServer; applyServer = function (r) { _a.apply(this, arguments); try { if (r && r.txnCols) db.mayOn = r.txnCols.indexOf('may') >= 0; } catch (e) {} }; }
+const mayN = s => normVN(String(s || '')).replace(/[^a-z0-9 ]/g, ' ').replace(/\s+/g, ' ').trim();
+function mayParse(v) {                                         // tên gõ tay → {name, ma}
+  const s = String(v || '').trim(), i = s.lastIndexOf(' · ');
+  return i > 0 ? { name:s.slice(0, i).trim(), ma:s.slice(i + 3).trim() } : { name:s, ma:'' };
+}
+const mayCodeEq = (a, b) => !!a && !!b && mayN(a).replace(/ /g, '') === mayN(b).replace(/ /g, '');
+// máy (trong danh sách) của 1 giá trị 'may' — null nếu tên gõ tay chưa khớp máy nào
+function mayDev(v, proj) {
+  const s = String(v || '').trim(); if (!s) return null;
+  if (/^#\d+$/.test(s)) return db.devices.find(d => d.id === +s.slice(1)) || null;
+  const p = mayParse(s), L = db.devices.filter(d => !proj || !d.project || d.project === proj);
+  return (p.ma && L.find(d => mayCodeEq(d.maQL, p.ma))) || L.find(d => mayN(d.name) === mayN(p.name)) || null;
+}
+function mayLabel(v, proj) { const d = mayDev(v, proj); return d ? d.name + (d.maQL ? ' · ' + d.maQL : '') : String(v || '').replace(/^#\d+$/, '(máy đã xoá)'); }
+const mayPartTxn = t => t && (t.type === 'nhap' || t.type === 'xuat') && String(t.may || '').trim() !== '';
+const mayOut = t => t.type === 'xuat' && t.ct !== 'ra' && !t.thangCT;   // xuất ra công trường (vẫn trong dự án) không tính là đi
+const mayQ = t => typeof effQty === 'function' ? effQty(t) : +t.qty || 0;
+// gần giống (để hỏi ghép): cùng "từ khoá máy" ≥ 4 ký tự có số (vd bm900, sr285), hoặc tên này chứa tên kia
+function mayNear(name, d) {
+  const a = mayN(name), b = mayN(d.name); if (!a || !b) return false;
+  if (a.includes(b) || b.includes(a)) return true;
+  const k = x => x.split(' ').filter(w => w.length >= 4 && /\d/.test(w) && /[a-z]/.test(w));
+  const B = new Set(k(b)); return k(a).some(w => B.has(w));
+}
+
+// ---------- ô "Bộ phận của máy" trên phiếu ----------
+const MAYF = {};
+function mayfHtml(p) {
+  return `<div class="fg mayf" id="${p}-may-row"><label>🔩 Bộ phận của máy <small>· không bắt buộc</small></label>
+    <div id="${p}-may-chip"></div>
+    <input type="text" id="${p}-may-txt" autocomplete="off" placeholder="Chọn máy, hoặc gõ tên máy chưa có…" oninput="mayfList('${p}')" onfocus="mayfList('${p}')" onblur="setTimeout(()=>mayfHide('${p}'),220)">
+    <div class="mayf-list" id="${p}-may-list"></div></div>`;
+}
+function mayfDevs(p) {
+  const L = projDevs().filter(d => curProj === 'all' || d.project === curProj);
+  return L.sort((a, b) => (!!a.outDate - !!b.outDate) || String(a.name).localeCompare(String(b.name), 'vi'));
+}
+function mayfManual(q) {                                        // tên gõ tay đã dùng (chưa khớp máy nào)
+  const S = new Map(); db.transactions.forEach(t => { const v = String(t.may || '').trim(); if (v && !/^#/.test(v) && t.project === curProj && !mayDev(v, curProj)) S.set(mayN(v), v); });
+  return [...S.values()].filter(v => !q || mayN(v).includes(q));
+}
+function mayfList(p) {
+  const inp = document.getElementById(p + '-may-txt'), box = document.getElementById(p + '-may-list'); if (!inp || !box) return;
+  const raw = inp.value.trim(), q = mayN(raw);
+  const D = mayfDevs(p).filter(d => !q || mayN(d.name + ' ' + (d.maQL || '')).includes(q));
+  const M = mayfManual(q);
+  let h = D.slice(0, 40).map(d => `<div class="mayf-o" onmousedown="event.preventDefault()" onclick="mayfSet('${p}','#${d.id}')">${devIcon(d, 36)}<span><b>${escHtml(d.name)}</b><small>${[d.maQL || '', d.type === 'hire' ? 'Máy thuê' : '', d.outDate ? 'Đã rời công trường' : ''].filter(Boolean).join(' · ') || 'Trong danh sách máy'}</small></span></div>`).join('');
+  if (M.length) h += `<div class="mayf-h">Máy gõ tay (chưa có trong danh sách)</div>` + M.slice(0, 10).map(v => `<div class="mayf-o" onmousedown="event.preventDefault()" onclick='mayfSet("${p}", ${JSON.stringify(v).replace(/'/g, '&#39;')})'><span class="ri-ico" style="width:36px;height:36px;background:#F1F3F5">🔩</span><span><b>${escHtml(v)}</b><small>Máy chưa về / chưa thêm vào Máy móc</small></span></div>`).join('');
+  if (raw.length >= 2 && !D.some(d => mayN(d.name) === q) && !M.some(v => mayN(v) === q))
+    h += `<div class="mayf-o new" onmousedown="event.preventDefault()" onclick="mayfSetTyped('${p}')">＋ Máy chưa có trong danh sách: “${escHtml(raw)}”</div>`;
+  if (!h) h = `<div class="mayf-h" style="text-transform:none">Dự án chưa có máy — gõ tên máy (kèm mã P.QLTB nếu có, vd "Khoan BM900 · KN-025")</div>`;
+  box.innerHTML = h; box.style.display = 'block';
+}
+function mayfHide(p) { const b = document.getElementById(p + '-may-list'); if (b) b.style.display = 'none'; }
+function mayfSetTyped(p) { const v = (document.getElementById(p + '-may-txt') || {}).value || ''; mayfSet(p, v.trim().replace(/\s*[-–]\s*(?=[A-Z]{1,4}-?\d)/, ' · ')); }
+function mayfSet(p, v) {
+  MAYF[p] = String(v || '').trim();
+  const chip = document.getElementById(p + '-may-chip'), inp = document.getElementById(p + '-may-txt'); if (!chip || !inp) return;
+  mayfHide(p);
+  if (!MAYF[p]) { chip.innerHTML = ''; inp.style.display = ''; inp.value = ''; if (p === 'mg') mgCount(); return; }
+  const d = mayDev(MAYF[p], curProj);
+  chip.innerHTML = `<div class="mayf-chip">${d ? devIcon(d, 40) : '<span class="ri-ico" style="width:40px;height:40px;background:#F1F3F5">🔩</span>'}<span><b>${escHtml(d ? d.name : mayParse(MAYF[p]).name)}</b><small>${d ? escHtml([d.maQL, d.outDate ? 'Đã rời công trường' : ''].filter(Boolean).join(' · ') || 'Máy trong danh sách') : escHtml((mayParse(MAYF[p]).ma ? 'Mã ' + mayParse(MAYF[p]).ma + ' · ' : '') + 'Máy chưa có trong danh sách — tự ghép khi thêm máy')}</small></span><button type="button" aria-label="Bỏ chọn máy" onclick="mayfSet('${p}','')">✕</button></div>`;
+  inp.style.display = 'none'; inp.value = '';
+  if (p === 'mg') mgCount();
+}
+function mayfShow(p) {                                          // ẩn với vật tư nhiên liệu và khi đang nhập 1 máy (máy vào công trường)
+  const row = document.getElementById(p + '-may-row'); if (!row) return;
+  const it = mayfItem(p), fuel = it && typeof nlFuel === 'function' && nlFuel(it);
+  row.style.display = !mayOn() || fuel || (p === 'fn' && typeof fnDev !== 'undefined' && fnDev) ? 'none' : '';
+}
+function mayfItem(p) {
+  const n = mayN((document.getElementById(p + '-item-txt') || {}).value || ''); if (!n) return null;
+  return db.items.find(i => i.project === curProj && mayN(i.name) === n) || null;
+}
+function mayfAuto(p) {                                          // cùng bộ phận lần trước gắn máy nào → chọn sẵn
+  mayfShow(p); if (MAYF[p]) return;
+  const it = mayfItem(p); if (!it) return;
+  const last = db.transactions.filter(t => t.itemId === it.id && mayPartTxn(t)).sort((a, b) => (parseVN(b.datetime) || 0) - (parseVN(a.datetime) || 0) || b.id - a.id)[0];
+  if (last) { mayfSet(p, last.may); toast('🔩 Chọn sẵn máy lần trước: ' + mayLabel(last.may, curProj)); }
+}
+function mayfPlace(p) {
+  if (document.getElementById(p + '-may-row')) return;
+  MAYF[p] = '';
+  const q = p === 'fn' ? document.getElementById('fn-qty-row') : (document.getElementById('fx-qty') || {}).closest && document.getElementById('fx-qty').closest('.fg-row');
+  if (!q) return;
+  const tm = document.getElementById(p + '-time'), nx = q.nextElementSibling, at = tm && nx && nx.contains(tm) ? nx : q;   // sau ô Ngày giờ nếu ô đó nằm ngay dưới Số lượng
+  at.insertAdjacentHTML('afterend', mayfHtml(p)); mayfShow(p);
+  const t = document.getElementById(p + '-item-txt'); if (t) t.addEventListener('change', () => mayfAuto(p));
+}
+{ const _rn = renderNhap; renderNhap = function () { const r = _rn.apply(this, arguments); try { mayfPlace('fn'); } catch (e) { console.warn(e); } return r; }; }
+{ const _rx = renderXuat; renderXuat = function () { const r = _rx.apply(this, arguments); try { mayfPlace('fx'); } catch (e) { console.warn(e); } return r; }; }
+{ const _cp = comboPick; comboPick = function (p) { const r = _cp.apply(this, arguments); try { if (p === 'fn' || p === 'fx') mayfAuto(p); } catch (e) {} return r; }; }
+{ const _cc = comboClear; comboClear = function (p) { const r = _cc.apply(this, arguments); try { if ((p === 'fn' || p === 'fx') && document.getElementById(p + '-may-row')) { mayfSet(p, ''); mayfShow(p); } } catch (e) {} return r; }; }
+{ const _sd = fnSetDev; fnSetDev = function () { const r = _sd.apply(this, arguments); try { mayfShow('fn'); } catch (e) {} return r; }; }
+// lưu: gắn 'may' vào phiếu gửi đi trong lúc bấm Xác nhận
+let MAYP = null;
+{ const _p = push; push = function (action, data) {
+  try {
+    if (MAYP && data && typeof data === 'object') {
+      const put = o => { if (o && MAYP[o.type] && !o.may) o.may = MAYP[o.type]; };
+      if (action === 'addTransaction') put(data);
+      else if (action === 'addThang') { put(data.nhap); if (data.nhap && data.nhap.may && data.xuat) data.xuat.may = data.nhap.may; }
+    }
+  } catch (e) {}
+  return _p.apply(this, arguments);
+}; }
+async function mayfRun(p, type, fn, self, args) {
+  const row = document.getElementById(p + '-may-row'), v = row && row.style.display !== 'none' ? MAYF[p] : '';
+  MAYP = v ? { [type]:v } : null;
+  try { return await fn.apply(self, args); } finally { MAYP = null; }
+}
+{ const _dn = doNhap; doNhap = function () { return mayfRun('fn', 'nhap', _dn, this, arguments); }; }
+{ const _dx = doXuat; doXuat = function () { return mayfRun('fx', 'xuat', _dx, this, arguments); }; }
+
+// ---------- chi tiết máy: bộ phận ----------
+function mayPartsOf(d) {
+  const T = db.transactions.filter(t => mayPartTxn(t) && (!d.project || t.project === d.project) && (() => { const x = mayDev(t.may, t.project); return x && x.id === d.id; })());
+  const G = new Map();
+  T.forEach(t => {
+    const k = String(t.itemId), g = G.get(k) || { name:t.itemName, unit:t.unit, in:0, out:0, trips:[] };
+    const q = mayQ(t);
+    if (t.type === 'nhap') g.in += q; else if (mayOut(t)) g.out += q; else return;
+    g.trips.push({ id:t.id, d:t.datetime, q, x:t.type === 'xuat' }); G.set(k, g);
+  });
+  return [...G.values()].map(g => (g.left = Math.round((g.in - g.out) * 1000) / 1000, g)).sort((a, b) => String(a.name).localeCompare(String(b.name), 'vi'));
+}
+function maySugOf(d) {                                         // tên gõ tay gần giống máy này (chưa ghép)
+  const S = new Map();
+  db.transactions.forEach(t => { const v = String(t.may || '').trim(); if (!v || /^#/.test(v) || t.project !== d.project || mayDev(v, t.project)) return;
+    if (!mayNear(mayParse(v).name, d)) return; const g = S.get(v) || []; g.push(t.id); S.set(v, g); });
+  return [...S.entries()];
+}
+const mayDmy = s => { const x = parseVN(s); return x ? `${x.getDate()}/${x.getMonth() + 1}` : ''; };
+function mayPartsHtml(d) {
+  const P = mayPartsOf(d), sug = maySugOf(d); if (!P.length && !sug.length) return '';
+  const left = P.filter(g => g.left > 0);
+  let h = `<div class="card bpm" id="bpm-box" style="padding:12px 14px"><h4>🔩 Bộ phận của máy${left.length ? `<span class="bpm-tag">${left.length} bộ phận còn ở dự án</span>` : ''}</h4>`;
+  if (d.outDate && left.length) h += `<div class="bpm-warn">⚠️ Máy đã rời công trường nhưng còn ${left.length} bộ phận ở dự án — lập phiếu xuất nốt (chọn "Bộ phận của máy" là máy này).</div>`;
+  if (P.length) h += `<table class="bpm-t"><thead><tr><th>Bộ phận</th><th>Đã về</th><th>Đã đi</th><th>Còn</th></tr></thead><tbody>` + P.map(g => `<tr><td><b>${escHtml(g.name)}</b> <small style="color:var(--text3)">${escHtml(g.unit || '')}</small>
+      <div class="bpm-trip">${g.trips.sort((a, b) => (parseVN(a.d) || 0) - (parseVN(b.d) || 0)).map(x => `<span class="${x.x ? 'x' : ''}" onclick="openTxn(${x.id})">${mayDmy(x.d)} ${x.x ? '−' : '+'}${fmtNum(x.q)}</span>`).join('')}</div></td>
+      <td>${fmtNum(g.in)}</td><td>${fmtNum(g.out)}</td><td class="c${d.outDate && g.left > 0 ? ' warn' : ''}">${fmtNum(g.left)}</td></tr>`).join('') + `</tbody></table>`;
+  h += sug.map(([v, ids]) => `<div class="bpm-sug">Có ${ids.length} phiếu ghi bộ phận của máy “<b>${escHtml(v)}</b>” (gõ tay, tên gần giống). Đúng là máy này?<br><button type="button" onclick='mayMerge(${d.id}, ${JSON.stringify(ids)}, ${JSON.stringify(v).replace(/'/g, '&#39;')})'>Ghép vào ${escHtml(d.name)}</button></div>`).join('');
+  return h + `</div>`;
+}
+async function mayMerge(id, ids, v) {
+  const d = db.devices.find(x => x.id === id); if (!d) return;
+  if (!navigator.onLine) { toast('📴 Cần có mạng'); return; }
+  if (!confirm(`Ghép ${ids.length} phiếu ghi máy “${v}” vào máy ${d.name}?`)) return;
+  showLoader('Đang ghép...'); const r = await api('txnSetMay', { ids, may:'#' + id }, 120000); hideLoader();
+  if (!r || !r.success) { toast('⚠️ ' + ((r && (r.error || r.reason)) || 'mất kết nối')); return; }
+  ids.forEach(x => { const t = db.transactions.find(z => z.id === x); if (t && (r.ids || []).includes(String(x))) t.may = '#' + id; });
+  toast(`✅ Đã ghép ${r.n} phiếu vào ${d.name}` + (r.skip ? ` · bỏ qua ${r.skip}` : ''));
+  syncAll(true).then(() => { if (document.getElementById('dp-device')?.classList.contains('show')) renderDeviceDetail(id); });
+  renderDeviceDetail(id);
+}
+{ const _rd = renderDeviceDetail; renderDeviceDetail = function (id) {
+  const out = _rd.apply(this, arguments);
+  try {
+    const d = db.devices.find(x => x.id === id), B = document.getElementById('dp-device-body');
+    if (d && B && mayOn()) { const old = B.querySelector('#bpm-box'); if (old) old.remove(); const h = mayPartsHtml(d);
+      if (h) { const a = B.querySelector('.nl-dhead'); a ? a.insertAdjacentHTML('afterend', h) : B.insertAdjacentHTML('afterbegin', h); } }
+  } catch (e) { console.warn(e); }
+  return out;
+}; }
+
+// ---------- Máy & dầu cần xem: máy đã rời còn bộ phận · bộ phận của máy chưa có trong danh sách ----------
+function mayAlerts() {
+  if (!mayOn() || !curProj || curProj === 'all') return { gone:[], miss:[] };
+  const gone = projDevs().filter(d => d.outDate && d.project === curProj).map(d => ({ d, n:mayPartsOf(d).filter(g => g.left > 0).length })).filter(x => x.n);
+  const M = new Map();
+  db.transactions.forEach(t => { const v = String(t.may || '').trim(); if (!v || /^#/.test(v) || t.project !== curProj || mayDev(v, curProj)) return; const k = mayN(v), g = M.get(k) || { v, n:0 }; g.n++; M.set(k, g); });
+  return { gone, miss:[...M.values()] };
+}
+{ const _md = mdHomeHtml; mdHomeHtml = function () {
+  const h = _md.apply(this, arguments);
+  try {
+    const A = mayAlerts(), n = A.gone.length + A.miss.length; if (!n || !(canMeterAdd() || canDevStart())) return h;
+    const t = [A.gone.length ? `<b style="color:#B42318">${A.gone.length} máy đã rời còn bộ phận</b>` : '', A.miss.length ? `${A.miss.length} máy gõ tay chưa có trong danh sách` : ''].filter(Boolean).join(' · ');
+    if (h) return h.replace(/(<b>Máy &amp; dầu cần xem<\/b><div>)/, '$1' + t + ' · ');
+    return `<div class="ct-home" style="border-left-color:#C2410C" onclick="openDp('dp-mdau')"><div class="ct-hi">🔩</div><div style="flex:1"><b>Máy &amp; dầu cần xem</b><div>${t}</div></div><span class="alert-arrow">›</span></div>`;
+  } catch (e) { return h; }
+}; }
+{ const _mr = mdRender; mdRender = function () {
+  _mr.apply(this, arguments);
+  try {
+    const B = document.getElementById('dp-mdau-body'), A = mayAlerts(); if (!B || !(A.gone.length + A.miss.length)) return;
+    const em = B.querySelector('.empty-state'); if (em) em.remove();
+    B.insertAdjacentHTML('afterbegin', (A.gone.length ? `<div class="md-h">🔩 Máy đã rời công trường nhưng còn bộ phận ở dự án</div><div class="card">${A.gone.map(({ d, n }) => `<div class="row-item" onclick="openDeviceDetail(${d.id})"><div style="flex:1;min-width:0"><div class="txn-name">${escHtml(d.name)}</div><div class="txn-sub">Rời ${isoDmy(d.outDate)} · còn ${n} bộ phận → xuất nốt</div></div></div>`).join('')}</div>` : '')
+      + (A.miss.length ? `<div class="md-h">🔩 Có bộ phận nhưng máy chưa có trong danh sách</div><div class="card">${A.miss.map(g => `<div class="row-item" onclick="openDp('dp-devices-list')"><div style="flex:1;min-width:0"><div class="txn-name">${escHtml(g.v)}</div><div class="txn-sub">${g.n} phiếu · thêm máy vào Máy móc &amp; Thiết bị (cùng tên hoặc mã P.QLTB) để tự ghép</div></div></div>`).join('')}</div>` : ''));
+  } catch (e) { console.warn(e); }
+}; }
+
+// ---------- danh sách phiếu: nhãn máy · chế độ "Gắn bộ phận vào máy" (tick nhiều phiếu) ----------
+const MG = { on:'', sel:new Set(), blank:true };
+const mgOver = () => role === 'ADM' || role === 'QL';
+const mgOk = type => mayOn() && curProj && curProj !== 'all' && (mgOver() || hp(type === 'nhap' ? 'k_nhap' : 'k_xuat'));
+const mgFuel = t => { const it = db.items.find(i => i.id === t.itemId); return it && typeof nlFuel === 'function' && nlFuel(it); };
+const mgEl = t => t && (t.type === 'nhap' || t.type === 'xuat') && !t._loan && !mgFuel(t) && (mgOver() || !String(t.may || '').trim() || !/^#/.test(String(t.may)));
+function mgReset() { MG.on = ''; MG.sel = new Set(); MG.blank = true; }
+{ const _tl = renderTxnList; renderTxnList = function (txns, type) {
+  if (MG.on && MG.on === type && Array.isArray(txns)) { txns = txns.filter(t => mgEl(t) && (!MG.blank || !String(t.may || '').trim())); arguments[0] = txns; }
+  return _tl.apply(this, arguments);
+}; }
+{ const _ht = renderHistTab; renderHistTab = function (c, type) {
+  if (MG.on && MG.on !== type) mgReset();
+  _ht.apply(this, arguments);
+  try {
+    if (mayOn()) c.querySelectorAll('.row-item[onclick^="openTxn("], .row-item[data-bg], .row-item[data-cb9], .row-item[data-mg]').forEach(row => {
+      const id = +(row.dataset.mg || row.dataset.bg || row.dataset.cb9 || (String(row.getAttribute('onclick') || '').match(/^openTxn\((\d+)\)/) || [])[1]); const t = id && db.transactions.find(x => x.id === id);
+      if (mayPartTxn(t) && !row.querySelector('.bpm-tag')) { const n = row.querySelector('.txn-name'); if (n) n.insertAdjacentHTML('beforeend', `<span class="bpm-tag">🔩 ${escHtml(mayLabel(t.may, t.project))}</span>`); }
+    });
+    if ((type === 'nhap' || type === 'xuat') && mgOk(type) && !(typeof CB9 !== 'undefined' && CB9.on) && !(typeof BG !== 'undefined' && BG.on)) mgDecorate(c, type);
+  } catch (e) { console.warn(e); }
+}; }
+function mgDecorate(c, type) {
+  const head = c.querySelector('.hist-head'); if (!head) return;
+  if (!MG.on) { const a = c.querySelector('.bg-btn') || c.querySelector('.cb9-btn') || c.querySelector('.nl-chips') || head;
+    a.insertAdjacentHTML('afterend', `<button class="bg-btn mg-btn" onclick="mgStart('${type}')">🔩 Gắn bộ phận vào máy (chọn nhiều phiếu)</button>`); return; }
+  c.querySelectorAll('.cb9-btn,.bg-btn').forEach(b => b.remove());
+  const anchor = c.querySelector('.nl-chips') || c.querySelector('.h9-s') || head;
+  anchor.insertAdjacentHTML('afterend', `<div class="cb9-bar bg-bar" id="mg-bar">
+    <div class="cb9-n" id="mg-n"></div>
+    ${mgOver() ? `<label class="bg-only"><input type="checkbox" ${MG.blank ? 'checked' : ''} onchange="MG.blank=this.checked;refreshCurrentView(false)"> Chỉ phiếu chưa gắn máy</label>` : `<div class="bg-only">Đang hiện các phiếu chưa gắn máy</div>`}
+    <div class="cb9-r" style="margin-bottom:8px"><button onclick="mgAll()">Chọn tất cả đang hiện</button><button onclick="mgNone()">Bỏ chọn</button><button onclick="mgStop()">Xong</button></div>
+    ${mayfHtml('mg')}
+    <div class="cb9-r"><button class="go" id="mg-go" style="flex:1" onclick="mgApply()">Gắn 0 phiếu</button></div>
+  </div>`);
+  { const sm = document.querySelector('#mg-may-row label small'); if (sm) sm.textContent = '· chọn máy để gắn'; }
+  if (MAYF.mg) mayfSet('mg', MAYF.mg);
+  c.querySelectorAll('.row-item[onclick^="openTxn("]').forEach(row => {
+    const id = +((row.getAttribute('onclick').match(/^openTxn\((\d+)\)/) || [])[1]); const t = id && db.transactions.find(x => x.id === id);
+    if (!mgEl(t)) return;
+    row.setAttribute('onclick', `mgTg(${id})`); row.dataset.mg = id;
+    row.insertAdjacentHTML('afterbegin', `<input type="checkbox" class="cb9-ck" ${MG.sel.has(id) ? 'checked' : ''} onclick="event.stopPropagation();mgTg(${id})">`);
+  });
+  mgCount();
+}
+function mgCount() {
+  const n = MG.sel.size, el = document.getElementById('mg-n'); if (el) el.textContent = n ? `Đã chọn ${fmtNum(n)} phiếu` : 'Bấm vào phiếu để chọn bộ phận';
+  const go = document.getElementById('mg-go'); if (go) { go.textContent = MAYF.mg ? `Gắn ${fmtNum(n)} phiếu vào máy` : `Chọn máy ở trên`; go.disabled = !n || !MAYF.mg; }
+}
+function mgStart(type) { mgReset(); MAYF.mg = ''; MG.on = type; goTab('ls' + type); }
+function mgStop() { mgReset(); MAYF.mg = ''; refreshCurrentView(false); }
+function mgTg(id) { MG.sel.has(id) ? MG.sel.delete(id) : MG.sel.add(id); document.querySelectorAll(`.row-item[data-mg="${id}"] .cb9-ck`).forEach(x => x.checked = MG.sel.has(id)); mgCount(); }
+function mgAll() { document.querySelectorAll('.row-item[data-mg]').forEach(r => MG.sel.add(+r.dataset.mg)); document.querySelectorAll('.row-item[data-mg] .cb9-ck').forEach(x => x.checked = true); mgCount(); }
+function mgNone() { MG.sel.clear(); document.querySelectorAll('.row-item[data-mg] .cb9-ck').forEach(x => x.checked = false); mgCount(); }
+async function mgApply() {
+  const v = MAYF.mg, ids = [...MG.sel]; if (!v || !ids.length) return;
+  if (!navigator.onLine) { toast('📴 Cần có mạng'); return; }
+  const lbl = mayLabel(v, curProj), had = ids.filter(id => { const t = db.transactions.find(x => x.id === id); return t && String(t.may || '').trim() && t.may !== v; }).length;
+  if (!confirm(`Gắn ${ids.length} phiếu là bộ phận của máy "${lbl}"?` + (had ? `\n\n${had} phiếu đang gắn máy khác sẽ đổi sang máy này.` : '') + '\n\nChỉ ghi máy cho phiếu, không đổi số lượng, ngày giờ, tồn kho.')) return;
+  let n = 0, sk = 0;
+  for (let i = 0; i < ids.length; i += 500) {
+    showLoader(`Đang gắn máy... ${n}/${ids.length}`);
+    const r = await api('txnSetMay', { ids:ids.slice(i, i + 500), may:v }, 120000);
+    if (!r || !r.success) { hideLoader(); const e = (r && (r.error || r.reason)) || 'mất kết nối';
+      toast('⚠️ ' + (/không hợp lệ: txnSetMay/.test(e) ? 'Máy chủ cần bản 5.63.0 (dán Apps Script mới)' : e) + (n ? ` — đã gắn ${n} phiếu` : ' — chưa gắn gì')); await syncAll(true); refreshCurrentView(false); return; }
+    n += r.n; sk += r.skip || 0;
+  }
+  showLoader('Đang tải lại dữ liệu...'); await Promise.race([syncAll(true), new Promise(res => setTimeout(res, 15000))]); hideLoader();
+  mgReset(); MAYF.mg = ''; refreshCurrentView(false);
+  toast(`✅ Đã gắn ${n} phiếu vào ${lbl}` + (sk ? ` · bỏ qua ${sk} phiếu` : ''));
+}
+{ const _bs = bgStart; bgStart = function () { mgReset(); return _bs.apply(this, arguments); }; }
 </script>
 </body>
 </html>
