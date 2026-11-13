@@ -1898,7 +1898,7 @@ body.pg-printing #pg-print{display:block;position:fixed;inset:0;z-index:9000;bac
 // ============================================================
 // CONFIG
 // ============================================================
-const APP_VERSION = '5.63.3';
+const APP_VERSION = '5.63.4';
 const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbw6Rmi80I7RI3ij2U7RdRF5pYuQTnPrwEmGmUZS5xpxzLwwVynfoFUujZe1lm6HS1ymxw/exec';
 // ============================================================
 
@@ -13267,7 +13267,7 @@ const bcFill = c => ({ type:'pattern', pattern:'solid', fgColor:{ argb:'FF' + c 
 const bcTh = { style:'thin', color:{ argb:'FF8EA0B6' } }, bcHair = { style:'hair', color:{ argb:'FFB4C0CF' } }, bcMed = { style:'medium', color:{ argb:'FF1F3864' } };
 const BOX = { left:bcTh, right:bcTh, top:bcTh, bottom:bcTh }, ROWB = { left:bcTh, right:bcTh, top:bcHair, bottom:bcHair };
 const CEN = { horizontal:'center', vertical:'middle', wrapText:true }, LEFT = { horizontal:'left', vertical:'middle', wrapText:true },
-  LEFT1 = { horizontal:'left', vertical:'middle', shrinkToFit:true }, RIGHT = { horizontal:'right', vertical:'middle' };
+  LEFT1 = { horizontal:'left', vertical:'middle', wrapText:true }, RIGHT = { horizontal:'right', vertical:'middle' };
 const bcCL = n => { let s = ''; while (n > 0) { const m = (n - 1) % 26; s = String.fromCharCode(65 + m) + s; n = Math.floor((n - 1) / 26); } return s; };
 const bcQ = s => `'${String(s).replace(/'/g, "''")}'`;
 const bcR = v => Math.round((+v || 0) * 1000) / 1000;
