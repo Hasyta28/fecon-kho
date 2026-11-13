@@ -1,4 +1,5 @@
-// ===== FECON SOUTH - Kho Vật Tư v5.62.0 =====
+// ===== FECON SOUTH - Kho Vật Tư v5.63.0 =====
+// v5.63.0: BỘ PHẬN THUỘC MÁY — cột mới 'may' ở GiaoDich ("#<ID máy>" hoặc tên máy gõ tay "Tên · mã P.QLTB"), addTxn / editTxn nhận may, txnSetMay gắn máy cho nhiều phiếu nhập / xuất (Admin · QL ghi đè, quyền nhập / xuất kho chỉ phiếu trống)
 // v5.62.0: txnSetParty — điền Bên giao (NCC / dự án chuyển qua) cho nhiều phiếu nhập một lần · Admin, Quản lý (QL) được ghi đè · người có quyền nhập kho chỉ điền phiếu đang trống
 // v5.61.0: ảnh máy theo MÁY (ID → mã P.QLTB → tên + nhóm): máy giải động sang dự án khác vẫn có ảnh · Phòng QLTB (qltbAll) gửi ảnh từng máy (ph) · devPhImg cho Admin / q_xem xem mọi ảnh
 // v5.60.0: ẢNH THẬT CỦA MÁY cho màn Cấp nhiên liệu — sheet AnhMay, devPhoto (Admin · QL · DEQ · EQM thay ảnh, thư mục Drive "FECON Kho - Ảnh máy"), devPhImg (tải ảnh nhỏ), getAll gửi devPh
@@ -162,7 +163,7 @@ const SESSION_DAYS   = 30;           // Đăng nhập được nhớ bao nhiêu 
 const HASH_ROUNDS    = 300;          // Số vòng băm mật khẩu
 const MAX_PENDING    = 30;           // Tối đa bao nhiêu yêu cầu chờ duyệt (chống spam)
 const TZ = 'Asia/Ho_Chi_Minh';
-const SERVER_VERSION = '5.62.0';
+const SERVER_VERSION = '5.63.0';
 const PHOTO_FOLDER_NAME = 'FECON Kho - Ảnh biên bản';
 const PHOTO_MAX_BYTES = 4 * 1024 * 1024;
 
@@ -182,11 +183,11 @@ const TABLES = {
 };
 const TXN = { sheet:'GiaoDich',
   cols:['id','type','itemId','itemName','qty','unit','project','supplierOrReceiver','thietBi','datetime',
-        'note','reason','refId','createdBy','createdByName','clientTime','meter','meterNote','thangCT','ct','src','ma','xe','cbOld'],
+        'note','reason','refId','createdBy','createdByName','clientTime','meter','meterNote','thangCT','ct','src','ma','xe','cbOld','may'],
   head:['ID','Loại','Item ID','Tên vật tư','Số lượng','Đơn vị','Dự án','NCC/Người nhận','Thiết bị','Giờ máy chủ',
         'Ghi chú','Lý do điều chỉnh','Phiếu gốc','Người lập (ID)','Người lập','Giờ trên máy','Giờ máy / Km','Ghi chú đồng hồ','Thẳng CT (số phiếu đi cặp)',
         'Kiểu (ra = ra công trường · ctra = từ công trường ra khỏi CT · ngoai = từ kho ra khỏi CT · ve = công trường về kho · site = khai số ở CT)',
-        'Nạp từ Excel (đợt|khóa dòng)','Mã phiếu giấy (QR)','Xe (loại · biển số · tài xế)','Người lập trước khi Admin đổi'] };
+        'Nạp từ Excel (đợt|khóa dòng)','Mã phiếu giấy (QR)','Xe (loại · biển số · tài xế)','Người lập trước khi Admin đổi','Thuộc máy (#ID máy hoặc tên gõ tay)'] };
 // ===== v5.35.0: Ở CÔNG TRƯỜNG — mỗi vật tư có 2 số: Tồn kho (trong kho) + Ở công trường (đã xuất ra công trường, vẫn thuộc dự án) =====
 // ctFx_ → [Δ tồn kho, Δ ở công trường]. Thiết bị / vật tư phụ trợ tự theo dõi; cột theoDoi: 1 = luôn theo dõi, 0 = không, trống = theo nhóm.
 const CT_OK = { xuat:{ ra:1, ngoai:1, ctra:1 }, nhap:{ ve:1 }, dieuchinh:{ site:1, cu:1 } };
@@ -227,7 +228,7 @@ const PERM = {
   me:'xem', getAll:'xem', getVersion:'xem', logout:'xem', changePassword:'xem',
   addTransaction:'tk', addThang:'tk', setThangDS:'admin', upsert:'tk', setMinStock:'ql', uploadPhoto:'tk', getPhoto:'xem',
   addLoan:'tk', returnLoan:'tk', closeLoan:'tk', loanFix:'tk', mergeItems:'admin', setDevStart:'xem',
-  editTxn:'admin', txnSetCreator:'admin', txnSetParty:'tk', deleteTxn:'admin', editLoan:'admin', deleteLoan:'admin', getSummary:'xem',
+  editTxn:'admin', txnSetCreator:'admin', txnSetParty:'tk', txnSetMay:'tk', deleteTxn:'admin', editLoan:'admin', deleteLoan:'admin', getSummary:'xem',
   getCost:'xem', getPrices:'xem', setPrice:'ql', setProgress:'ql',
   remove:'ql', updateProjects:'ql', getLog:'ql',
   createReq:'xem', approveReq:'xem', rejectReq:'xem', cancelReq:'xem', receiveReq:'xem', issueReq:'tk', addCount:'tk', reservePyc:'xem', paperReq:'tk', paperCancel:'xem', paperUndo:'admin', xeBatch:'tk', setXeTypes:'admin', pgInfo:'xem',
@@ -423,6 +424,7 @@ function route(action, data, token) {
       case 'editTxn':         r = editTxn(u, data); break;
       case 'txnSetCreator':   r = txnSetCreator(u, data); break;   // v5.59.15
       case 'txnSetParty':     r = txnSetParty(u, data); break;     // v5.62.0
+      case 'txnSetMay':       r = txnSetMay(u, data); break;       // v5.63.0
       case 'deleteTxn':       r = deleteTxn(u, data); break;
       case 'editLoan':        r = editLoan(u, data); break;
       case 'deleteLoan':      r = deleteLoan(u, data); break;
@@ -962,7 +964,8 @@ function addTxn(u, t0) {
     createdBy: u.id, createdByName: u.name, clientTime: gb ? nowTxt() : at ? '' : String(t.datetime || '').slice(0, 40),   // v5.55.1: ghi bù → giờ lập thật
     meter: t.type === 'xuat' && t.meter !== '' && t.meter !== undefined && !isNaN(+t.meter) ? +t.meter : '',   // v5.16: giờ máy / km khi xuất dầu
     meterNote: t.type === 'xuat' ? clean(String(t.meterNote || ''), 120) : '',
-    ma: PAPER_CTX ? clean(String(t.ma || ''), 30) : '', xe: PAPER_CTX ? PAPER_CTX.xe : ''
+    ma: PAPER_CTX ? clean(String(t.ma || ''), 30) : '', xe: PAPER_CTX ? PAPER_CTX.xe : '',
+    may: t.type === 'nhap' || t.type === 'xuat' ? mayClean_(t.may) : ''   // v5.63.0
   };
   gd.appendRow(TXN.cols.map(c => toCell(row[c])));
 
@@ -1768,6 +1771,7 @@ function editTxn(u, d0) {
     supplierOrReceiver: old.type === 'dieuchinh' ? '' : String(d.supplierOrReceiver !== undefined ? d.supplierOrReceiver : old.supplierOrReceiver || ''),
     thietBi: old.type === 'xuat' ? String(d.thietBi !== undefined ? d.thietBi : old.thietBi || '') : String(old.thietBi || ''),
     note: String(d.note !== undefined ? d.note : old.note || ''),
+    may: old.type === 'nhap' || old.type === 'xuat' ? (d.may !== undefined ? mayClean_(d.may) : String(old.may || '')) : String(old.may || ''),   // v5.63.0
     reason: old.type === 'dieuchinh' ? String(d.reason !== undefined ? d.reason : old.reason || '') : String(old.reason || ''),
     datetime: d.datetime ? checkTime(d.datetime) : String(old.datetime || ''),
     clientTime: ''
@@ -1867,6 +1871,39 @@ function txnSetParty(u, d) {
     bumpTxnRev();
   }
   return { success:true, n:n, skip:skip, ids:done, party:party };
+}
+// v5.63.0: bộ phận thuộc máy — "#123" (máy trong danh sách) hoặc tên gõ tay (máy chưa về / chưa thêm vào Máy móc)
+function mayClean_(v) {
+  const s = String(clean(v == null ? '' : v, 120) || '').trim();
+  return /^#\d+$/.test(s) ? s : s.replace(/^#+/, '');
+}
+function txnSetMay(u, d) {
+  const ids = (Array.isArray(d.ids) ? d.ids : []).map(String).filter(Boolean);
+  if (!ids.length) fail('Chưa chọn phiếu nào');
+  if (ids.length > 500) fail('Mỗi lần gắn tối đa 500 phiếu');
+  const may = mayClean_(d.may), over = ADM(u) || u.role === 'QL', want = {};
+  if (!may && !over) fail('Chưa chọn máy');
+  ids.forEach(x => want[x] = 1);
+  const gd = sheetOf(TXN.sheet, TXN.head), rows = readRows(gd, TXN.cols.length), mc = TXN.cols.indexOf('may');
+  let skip = 0; const projs = {}, done = [], todo = [];
+  rows.forEach((r, k) => {
+    if (r[0] === '' || !want[String(r[0])]) return;
+    const o = rowToObj(TXN.cols, r);
+    if (o.type !== 'nhap' && o.type !== 'xuat') { skip++; return; }
+    const cur = String(o.may || '').trim();
+    if (!over && cur !== '' && !(/^#\d+$/.test(may) && !/^#/.test(cur))) { skip++; return; }   // thủ kho: điền ô trống, hoặc ghép tên gõ tay vào máy trong danh sách
+    if (cur === may) return;
+    if (!projs[o.project]) { mustAllow(u, o.project); projs[o.project] = 1; }
+    if (!over && !(o.type === 'nhap' ? hasP(u, 'k_nhap') : hasP(u, 'k_xuat'))) { skip++; return; }
+    todo.push(k); done.push(String(o.id));
+  });
+  todo.forEach(k => gd.getRange(k + 2, mc + 1).setValue(toCell(may)));
+  const n = todo.length;
+  if (n) {
+    writeLog(u, 'Gắn bộ phận vào máy', 'Hàng loạt ' + n + ' phiếu (' + Object.keys(projs).join(', ') + ') → ' + (may || '(bỏ máy)') + ' · #' + done.slice(0, 40).join(', #') + (done.length > 40 ? '…' : ''));
+    bumpTxnRev();
+  }
+  return { success:true, n:n, skip:skip, ids:done, may:may };
 }
 function cbSet_(o, cb) {
   if (String(o.cbOld || '') === '') o.cbOld = String(o.createdByName || '') || '(trống)';
@@ -3487,7 +3524,7 @@ const ACT = {
   uploadPhoto:u => hasP(u, 'k_nhap') || hasP(u, 'k_xuat') || hasP(u, 'k_edit'),
   addLoan:P_('k_loan'), returnLoan:P_('k_loan'), closeLoan:P_('k_loan'),
   loanLinkAccept:P_('k_loan'), loanLinkReject:P_('k_loan'), dropReq:P_('k_loan'), dropDecide:P_('k_bomuon'), loanFix:P_('k_loan'), mergeItems:ADM, setDevStart:u => ADM(u) || hasP(u, 'k_hd'),
-  editTxn:ADM, txnSetCreator:ADM, txnSetParty:u => ADM(u) || u.role === 'QL' || hasP(u, 'k_nhap'), deleteTxn:ADM, nxtInfo:u => ADM(u) || hasP(u, 'k_napx') || hasP(u, 'k_dnap'), nxtImport:ADM, nxtUndo:u => ADM(u) || hasP(u, 'k_dnap'),
+  editTxn:ADM, txnSetCreator:ADM, txnSetParty:u => ADM(u) || u.role === 'QL' || hasP(u, 'k_nhap'), txnSetMay:u => ADM(u) || u.role === 'QL' || hasP(u, 'k_nhap') || hasP(u, 'k_xuat'), deleteTxn:ADM, nxtInfo:u => ADM(u) || hasP(u, 'k_napx') || hasP(u, 'k_dnap'), nxtImport:ADM, nxtUndo:u => ADM(u) || hasP(u, 'k_dnap'),
   pjWipe:ADM,
   nxtSubmit:u => ADM(u) || hasP(u, 'k_napx'), nxtPend:u => ADM(u) || hasP(u, 'k_napx') || hasP(u, 'k_dnap'), nxtReview:u => ADM(u) || hasP(u, 'k_napx') || hasP(u, 'k_dnap'),
   nxtApprove:u => ADM(u) || hasP(u, 'k_dnap'), nxtReturn:u => ADM(u) || hasP(u, 'k_dnap'), nxtCancel:u => ADM(u) || hasP(u, 'k_napx'), editLoan:ADM, deleteLoan:ADM,
@@ -5468,6 +5505,8 @@ function devPhImg(u, d) {                                        // trả ảnh 
 }
 
 const VER_LOG = [
+ { v:'5.63.0', d:'13/11/2026', type:'up', title:'Bộ phận thuộc máy: chọn máy ngay trên phiếu nhập / xuất', who:'Thủ kho · Quản lý · P.QLTB · Admin',
+   sum:['Phiếu nhập / xuất: ô Thuộc máy (chọn máy có ảnh, hoặc gõ tên máy chưa về)','Chi tiết máy: bộ phận đã về / đã đi / còn ở công trường','Máy rời công trường: nhắc bộ phận còn lại','Tab phiếu: tick nhiều phiếu gắn vào máy'] },
  { v:'5.62.0', d:'13/11/2026', type:'up', title:'Bên giao là dự án khác · Điền bên giao cho nhiều phiếu nhập một lần', who:'Thủ kho · Quản lý · Admin',
    sum:['Ô Nhà cung cấp / Bên giao gợi ý thêm các dự án khác (ghi "Chuyển từ dự án …")','Tab Phiếu nhập: nút Điền bên giao — tick nhiều phiếu chưa có NCC rồi điền một lần','Ô Cấp nhiên liệu ở Tổng quan gọn trong lề, màu nhạt'] },
  { v:'5.61.0', d:'12/11/2026', type:'up', title:'Ảnh máy hiện ở danh sách Thiết bị và Phòng QLTB, đi theo máy khi giải động', who:'Mọi người xem · Quản lý / Admin cập nhật ảnh',
