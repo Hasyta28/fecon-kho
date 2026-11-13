@@ -13249,7 +13249,14 @@ function fnNoteCT() {                                                   // ô "S
   return s ? 'CT: ' + s + (n.trim() ? ' · ' + n.trim() : '') : n;
 }
 const bcNoteClean = (note, side) => String(note || '').split(/\s*·\s*/).map(x => x.replace(/⚡?\s*Lệnh:\s*“[^”]*”/g, '').trim())   // v5.56.7: bỏ câu lệnh gõ nhanh; bên nhập bỏ "giải động từ …"
+  .map(x => /^Ra khỏi công trình\s*→/i.test(x) ? '' : /^Giải động\s*→/i.test(x) ? 'Giải động' : x)   // v5.62.0: hướng đi đã có ở cột Loại + NCC
   .filter(x => x && !(side === 'N' && /giải động/i.test(x))).join(' · ');
+// v5.62.0: cột NCC / NTP / Đội chỉ ghi TÊN (bỏ "Trả bên cho thuê", "Chuyển dự án", "Về"… — đã có ở cột Loại)
+const bcPartyName = sv => { const v = String(sv || '').trim();
+  let m = v.match(/^(?:chuyển từ dự án|chuyển dự án|chuyển sang dự án)\s+(.+)$/i); if (m) return 'Dự án ' + m[1].trim();
+  m = v.match(/^(?:trả bên cho thuê|trả ncc|trả|chuyển sang|về)\s+(.+)$/i); if (m) return m[1].trim();
+  m = v.match(/^hư hỏng\s*\/\s*thanh lý\s*:\s*(.+)$/i); if (m) return m[1].trim();
+  return /^hư hỏng\s*\/\s*thanh lý$/i.test(v) ? '' : v; };
 const bcSplitCT = note => { const m = String(note || '').match(/^CT:\s*([^·]*?)\s*(?:·\s*([\s\S]*))?$/); return m ? [m[1].trim(), (m[2] || '').trim()] : ['', String(note || '').trim()]; };
 
 // ---------- khung trình bày ----------
@@ -13403,7 +13410,7 @@ function bcData(R) {
     }
     // v5.59.13: phiếu nạp từ file kiểm đếm SL thực tế (5.59.11–12) → báo cáo để trống NCC + Ghi chú (dữ liệu máy chủ giữ nguyên để hoàn tác)
     const kd = normVN(t.supplierOrReceiver) === normVN(BC_KD_PARTY) || [t.note, t.reason, t0.note, t0.reason].some(z => BC_KD_NOTE.test(String(z || '')));
-    rows.push({ t, t0, it, d, q, dk, ds, side, qty, site, loai, sv:kd ? '' : sv, cts:kd ? '' : cts, note0:kd ? '' : bcNoteClean(note0, side), kd, fuel:fuelOf(it), isDO:doOf(it), inR:inR(d), afterStart:afterStart(d), afterEnd:afterEnd(d),
+    rows.push({ t, t0, it, d, q, dk, ds, side, qty, site, loai, sv:kd ? '' : bcPartyName(sv), cts:kd ? '' : cts, note0:kd ? '' : bcNoteClean(note0, side), kd, fuel:fuelOf(it), isDO:doOf(it), inR:inR(d), afterStart:afterStart(d), afterEnd:afterEnd(d),
       fixed:(t.type === 'nhap' || t.type === 'xuat') && adj[t.id] ? [+t.qty, q] : null });
   });
   const ord = (a, b) => ((a.d ? a.d.getTime() : 0) - (b.d ? b.d.getTime() : 0)) || (+a.t.id - +b.t.id);
@@ -13429,7 +13436,7 @@ function bcData(R) {
 }
 
 // ---------- sổ nhập / sổ xuất ----------
-const bcNoSv = (x, N) => !x.kd && !x.sv && !/^Điều chỉnh|Khai số|Tồn đầu|Về kho|thẳng/.test(x.loai) && (N || !x.t.thietBi);
+const bcNoSv = (x, N) => !x.kd && !x.sv && !/^Điều chỉnh|Khai số|Tồn đầu|Về kho|thẳng|Thanh lý/.test(x.loai) && (N || !x.t.thietBi);
 // v5.59.3: phiếu mượn đã bỏ thông tin mượn / đã trả xong → ghi rõ trên Excel (trước đây vẫn ghi như đang mượn)
 function bcLoanOf(t) { return t && LOAN_T[t.type] && t.refId ? (db.loans || []).find(l => String(l.id) === String(t.refId)) || null : null; }
 function bcLoanNote(t) {
