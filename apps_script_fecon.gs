@@ -1,4 +1,5 @@
-// ===== FECON SOUTH - Kho Vật Tư v5.63.0 =====
+// ===== FECON SOUTH - Kho Vật Tư v5.63.1 =====
+// v5.63.1: addThang ghi cột may (phiếu nhập thẳng công trường có bộ phận của máy)
 // v5.63.0: BỘ PHẬN THUỘC MÁY — cột mới 'may' ở GiaoDich ("#<ID máy>" hoặc tên máy gõ tay "Tên · mã P.QLTB"), addTxn / editTxn nhận may, txnSetMay gắn máy cho nhiều phiếu nhập / xuất (Admin · QL ghi đè, quyền nhập / xuất kho chỉ phiếu trống)
 // v5.62.0: txnSetParty — điền Bên giao (NCC / dự án chuyển qua) cho nhiều phiếu nhập một lần · Admin, Quản lý (QL) được ghi đè · người có quyền nhập kho chỉ điền phiếu đang trống
 // v5.61.0: ảnh máy theo MÁY (ID → mã P.QLTB → tên + nhóm): máy giải động sang dự án khác vẫn có ảnh · Phòng QLTB (qltbAll) gửi ảnh từng máy (ph) · devPhImg cho Admin / q_xem xem mọi ảnh
@@ -163,7 +164,7 @@ const SESSION_DAYS   = 30;           // Đăng nhập được nhớ bao nhiêu 
 const HASH_ROUNDS    = 300;          // Số vòng băm mật khẩu
 const MAX_PENDING    = 30;           // Tối đa bao nhiêu yêu cầu chờ duyệt (chống spam)
 const TZ = 'Asia/Ho_Chi_Minh';
-const SERVER_VERSION = '5.63.0';
+const SERVER_VERSION = '5.63.1';
 const PHOTO_FOLDER_NAME = 'FECON Kho - Ảnh biên bản';
 const PHOTO_MAX_BYTES = 4 * 1024 * 1024;
 
@@ -4149,7 +4150,7 @@ function addThang(u, d0) {
   const when = at || nowTxt(), ct = at ? (PAPER_CTX ? '' : nowTxt()) : String(n.datetime || '').slice(0, 40);
   const base = { itemId: it[0], itemName: String(it[1]), qty: qty, unit: String(it[3]), project: itemProj, thietBi:'', datetime: when,
     reason:'', refId:'', createdBy: u.id, createdByName: u.name, clientTime: ct, meter:'', meterNote:'',
-    ma: PAPER_CTX ? clean(String(n.ma || ''), 30) : '', xe: PAPER_CTX ? PAPER_CTX.xe : '' };
+    ma: PAPER_CTX ? clean(String(n.ma || ''), 30) : '', xe: PAPER_CTX ? PAPER_CTX.xe : '', may: mayClean_(n.may) };   // v5.63.1: phiếu thẳng đi cặp giữ "bộ phận của máy"
   const rn = Object.assign({}, base, { id: n.id, type:'nhap', supplierOrReceiver: n.supplierOrReceiver || '', note: n.note || '', thangCT: String(x.id) });
   const xct = 'ra';                                               // v5.55: app cũ gửi cặp thẳng → phiếu xuất 'ra' không trừ tồn, hàng vẫn là tồn kho
   const rx = Object.assign({}, base, { id: x.id, type:'xuat', ct: xct, supplierOrReceiver: x.supplierOrReceiver || '', note: x.note || '', thangCT: String(n.id) });
@@ -5505,6 +5506,8 @@ function devPhImg(u, d) {                                        // trả ảnh 
 }
 
 const VER_LOG = [
+ { v:'5.63.1', d:'13/11/2026', type:'up', title:'Nhập theo biên bản: dán chữ chép từ ảnh biên bản, app tách từng món', who:'Thủ kho · Quản lý · Admin',
+   sum:['Nhập / Xuất nhanh → 📄 Biên bản: dán chữ chép từ ảnh → bảng tên · đơn vị · số lượng → lưu cả biên bản một lần','Chung cho cả biên bản: bên giao, số chứng từ, bộ phận của máy, ảnh biên bản','Món có mã phụ tùng chỉ khớp đúng mã'] },
  { v:'5.63.0', d:'13/11/2026', type:'up', title:'Bộ phận thuộc máy: chọn máy ngay trên phiếu nhập / xuất', who:'Thủ kho · Quản lý · P.QLTB · Admin',
    sum:['Phiếu nhập / xuất: ô Thuộc máy (chọn máy có ảnh, hoặc gõ tên máy chưa về)','Chi tiết máy: bộ phận đã về / đã đi / còn ở công trường','Máy rời công trường: nhắc bộ phận còn lại','Tab phiếu: tick nhiều phiếu gắn vào máy'] },
  { v:'5.62.0', d:'13/11/2026', type:'up', title:'Bên giao là dự án khác · Điền bên giao cho nhiều phiếu nhập một lần', who:'Thủ kho · Quản lý · Admin',

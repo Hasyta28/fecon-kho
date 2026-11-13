@@ -1898,7 +1898,7 @@ body.pg-printing #pg-print{display:block;position:fixed;inset:0;z-index:9000;bac
 // ============================================================
 // CONFIG
 // ============================================================
-const APP_VERSION = '5.63.0';
+const APP_VERSION = '5.63.1';
 const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbw6Rmi80I7RI3ij2U7RdRF5pYuQTnPrwEmGmUZS5xpxzLwwVynfoFUujZe1lm6HS1ymxw/exec';
 // ============================================================
 
@@ -15642,7 +15642,7 @@ function nccShow(el) {
   const k = nccN(q);
   const sg = sug.filter(s => !k || nccN(s).includes(k));
   if (sg.length) h += `<div class="combo-head">↩ Đã cho thuê / giao món này</div>` + sg.slice(0, 4).map(s => { const o = nccOf(s); return `<div class="combo-opt" data-v="${escHtml(o ? o.ten : s)}"><span><b>${escHtml(o ? o.ten : s)}</b>${o && o.ma ? `<span class="ncc-sub">Mã ${escHtml(o.ma)}</span>` : ''}</span></div>`; }).join('');
-  if (el.id === 'fn-ncc' || el.id === 'nl-ncc' || el.id === 'bg-party') h += nccProjHtml(q);   // v5.62.0: bên giao là dự án khác
+  if (el.id === 'fn-ncc' || el.id === 'nl-ncc' || el.id === 'bg-party' || el.id === 'bb-ncc') h += nccProjHtml(q);   // v5.62.0: bên giao là dự án khác
   const M = nccMatch(q, loai).filter(x => !sg.some(s => nccN(s) === nccN(x.o.ten)));
   if (M.length) h += `<div class="combo-head">🏢 Danh mục nhà cung cấp${NCC.list.length ? '' : ''}</div>` + M.map(({ o }) => {
     const al = k && !nccN(o.ten).includes(k) ? (String(o.alias || '').split(';').find(a => nccN(a).includes(k)) || '') : '';
@@ -18159,6 +18159,174 @@ async function mgApply() {
   toast(`✅ Đã gắn ${n} phiếu vào ${lbl}` + (sk ? ` · bỏ qua ${sk} phiếu` : ''));
 }
 { const _bs = bgStart; bgStart = function () { mgReset(); return _bs.apply(this, arguments); }; }
+</script>
+<style>/* v5.63.1 Dán danh sách từ biên bản */
+.bb-steps{background:#F5F8FC;border:1px solid #DCE6F2;border-radius:12px;padding:10px 12px;font-size:13.5px;line-height:1.5;margin-bottom:12px}
+.bb-steps b{color:var(--navy,#0056A4)}
+.bb-txt{width:100%;box-sizing:border-box;min-height:150px;border:1px solid var(--border);border-radius:12px;padding:10px 12px;font-size:14.5px;font-family:inherit}
+.bb-bar{display:flex;gap:8px;margin:8px 0 14px;flex-wrap:wrap}.bb-bar button{border:1px solid var(--border);background:#fff;border-radius:10px;padding:9px 14px;font-weight:700;font-family:inherit;font-size:14px}
+.bb-bar button.go{background:var(--navy,#0056A4);color:#fff;border-color:transparent;flex:1}
+.bb-h{font-size:12px;font-weight:800;color:var(--text3);text-transform:uppercase;letter-spacing:.3px;margin:14px 0 6px}
+.bb-row{display:grid;grid-template-columns:26px minmax(0,1fr) minmax(0,1fr);gap:6px;align-items:center;padding:8px 0;border-bottom:1px solid var(--border)}
+.bb-row>input[type=text]{grid-column:2/4}.bb-row>select{grid-column:2}.bb-row>input[type=number]{grid-column:3}
+.bb-row.bb-hd{display:none}
+@media(min-width:700px){.bb-row{grid-template-columns:26px minmax(0,1fr) 90px 90px}.bb-row>input[type=text]{grid-column:2}.bb-row>select{grid-column:3}.bb-row>input[type=number]{grid-column:4}.bb-row.bb-hd{display:grid}}
+.bb-row input[type=checkbox]{width:20px;height:20px;accent-color:#F26522}
+.bb-row input[type=text],.bb-row input[type=number],.bb-row select{width:100%;box-sizing:border-box;border:1px solid var(--border);border-radius:8px;padding:7px 6px;font-size:14px;font-family:inherit;min-width:0}
+.bb-row.off{opacity:.45}.bb-row.bad input[type=number]{border-color:#D93025;background:#FEF3F2}
+.bb-hd{font-size:11.5px;color:var(--text3);font-weight:700}
+.bb-sum{font-size:13.5px;color:var(--text2);margin:8px 0}
+.bb-warn{background:#FFF8E6;border:1px solid #F5D78E;border-radius:10px;padding:8px 10px;font-size:13px;margin:8px 0}
+.q5-bar .q5-bb{background:#FFF7F2;border-color:#F8DCC8;color:#C4521F}
+</style>
+<script>// ===== v5.63.1 — DÁN DANH SÁCH TỪ BIÊN BẢN (Nhập / Xuất nhanh) =====
+// Chép chữ trong ảnh biên bản (iPhone: giữ tay lên chữ trong Ảnh · Android: Google Lens → Văn bản) → dán → app tách STT · tên · đơn vị · số lượng
+// → bảng sửa → xem trước của Nhập / Xuất nhanh (q5) → lưu cả biên bản một lần (qkBatch). Chung cho cả biên bản: bên giao, số chứng từ, bộ phận của máy, ảnh.
+formPhotos.bb = formPhotos.bb || [];
+let BB = { rows:[], parsed:false, warn:'' };
+const BB_U = { cai:'Cái', chiec:'Cái', bo:'Bộ', cay:'Cây', tam:'Tấm', cuon:'Cuộn', met:'Mét', m:'Mét', md:'Mét', kg:'Kg', tan:'Tấn', lit:'Lít', l:'Lít', thung:'Thùng', hop:'Hộp', bao:'Bao',
+  doi:'Đôi', goi:'Gói', chai:'Chai', can:'Can', phuy:'Phuy', xo:'Xô', soi:'Sợi', thanh:'Thanh', vien:'Viên', con:'Con', bich:'Bịch', m2:'M2', m3:'M3', cap:'Cặp', set:'Bộ', pcs:'Cái', ea:'Cái' };
+const bbUnit = s => BB_U[normVN(String(s || '')).replace(/[^a-z0-9]/g, '')] || '';
+const BB_HEAD = /^(stt|tt|so tt|ten hang|ten vat tu|ten hang hoa|ten chi tiet|hang hoa|don vi|dvt|d\/?v\/?t|so luong|sl|ghi chu|thanh tien|don gia|ma hang|quy cach|tinh trang)\b/;
+const BB_STOP = /^(ben giao|ben nhan|nguoi giao|nguoi nhan|dai dien|thu kho|xac nhan|tong cong|tong so|ky ten|ky ghi ro|phong qltb|bien ban duoc lap)/;
+const bbNum = s => { const t = String(s || '').trim().replace(/^0+(?=\d)/, ''); return /^\d+(?:[.,]\d+)?$/.test(t) ? +t.replace(',', '.') : null; };
+function bbParse(text) {
+  const L = String(text || '').normalize('NFC').split(/\r?\n/).map(x => x.replace(/[|\t]+/g, ' ').replace(/\s+/g, ' ').trim()).filter(Boolean);
+  // 1) mỗi dòng đủ: [STT] tên  đơn vị  SL   (hoặc tên  SL  đơn vị)
+  const row = [];
+  L.forEach(l => {
+    let m = l.match(/^(?:\d{1,3}[.)]?\s+)?(.+?)\s+(\S+)\s+(\d+(?:[.,]\d+)?)\s*$/);
+    if (m && bbUnit(m[2]) && /[a-zA-ZÀ-ỹ]/.test(m[1])) { row.push({ name:m[1], unit:bbUnit(m[2]), qty:bbNum(m[3]) }); return; }
+    m = l.match(/^(?:\d{1,3}[.)]?\s+)?(.+?)\s+(\d+(?:[.,]\d+)?)\s+(\S+)\s*$/);
+    if (m && bbUnit(m[3]) && /[a-zA-ZÀ-ỹ]/.test(m[1])) row.push({ name:m[1], unit:bbUnit(m[3]), qty:bbNum(m[2]) });
+  });
+  if (row.length >= 2) return { rows:row, warn:'' };
+  // 2) chép theo cột (Google Lens hay trả từng cột): các dòng tên, các dòng đơn vị, các dòng số
+  let i0 = L.findIndex(l => /^(ten hang|ten vat tu|ten chi tiet|hang hoa)/.test(normVN(l)));
+  const B = i0 >= 0 ? L.slice(i0 + 1) : L;
+  const names = [], units = [], nums = [];
+  for (const l of B) {
+    const n = normVN(l);
+    if (BB_STOP.test(n)) break;
+    if (BB_HEAD.test(n) && l.length < 30) continue;
+    if (bbUnit(l)) { units.push(bbUnit(l)); continue; }
+    if (bbNum(l) !== null) { nums.push(bbNum(l)); continue; }
+    const m = l.match(/^(\d{1,3})[.)]?\s+(.+)$/);
+    if (m && /[a-zA-ZÀ-ỹ]/.test(m[2])) { names.push(m[2]); continue; }
+    if (/[a-zA-ZÀ-ỹ]{2}/.test(l)) names.push(l);
+  }
+  const N = names.length; if (!N) return { rows:[], warn:'Không tìm thấy dòng hàng nào — kiểm tra lại chữ đã dán' };
+  let qty = nums, warn = '';
+  if (nums.length >= 2 * N && nums.slice(0, N).every((v, k) => v === k + 1)) qty = nums.slice(N, 2 * N);
+  else if (nums.length > N) { qty = nums.slice(-N); warn = 'Số dòng số lượng không khớp số món — soát lại cột SL'; }
+  else if (nums.length < N) warn = `Đọc được ${N} món nhưng chỉ ${nums.length} số lượng — điền SL còn thiếu`;
+  if (units.length && units.length !== N) warn = warn || 'Số dòng đơn vị không khớp số món — soát lại cột Đơn vị';
+  return { rows:names.map((nm, k) => ({ name:nm, unit:units[k] || units[units.length - 1] || 'Cái', qty:qty[k] != null ? qty[k] : null })), warn };
+}
+// ---------- màn dán ----------
+(function () {
+  document.body.insertAdjacentHTML('beforeend', `<div class="detail-page" id="dp-bb"><div class="detail-header"><button class="back-btn" onclick="closeDp('dp-bb')">‹</button><div class="detail-title">📄 Nhập theo biên bản</div></div><div class="detail-body" id="dp-bb-body"></div></div>`);
+})();
+function bbOpen() {
+  if (!curProj || curProj === 'all') { toast('Chọn 1 dự án trước'); return; }
+  BB = { rows:[], parsed:false, warn:'' }; formPhotos.bb = [];
+  const B = document.getElementById('dp-bb-body'), cats = (db.categories || CATEGORIES);
+  B.innerHTML = `<div style="padding:14px">
+    <div class="bb-steps"><b>1.</b> Chụp biên bản giao hàng.<br><b>2.</b> Chép chữ trong ảnh: <b>iPhone</b> mở ảnh → giữ tay lên chữ → Chọn tất cả → Sao chép · <b>Android</b> mở ảnh bằng Google Lens → Văn bản → Chọn tất cả → Sao chép.<br><b>3.</b> Dán vào ô dưới → <b>Đọc danh sách</b> → soát tên, đơn vị, số lượng.</div>
+    <textarea class="bb-txt" id="bb-text" placeholder="Dán chữ của biên bản vào đây…&#10;VD: 1 Lọc gió động cơ P134353 cái 1"></textarea>
+    <div class="bb-bar"><button type="button" onclick="bbPaste()">📋 Dán</button><button type="button" class="go" onclick="bbRead()">Đọc danh sách ›</button></div>
+    <div id="bb-list"></div>
+    <div class="bb-h">Chung cho cả biên bản</div>
+    <div class="fg"><label for="bb-ncc">Nhà cung cấp / Bên giao</label><input type="text" id="bb-ncc" data-ncc="vt" autocomplete="off" placeholder="Tên NCC hoặc dự án chuyển qua"></div>
+    <div class="fg"><label for="bb-cts">Số chứng từ / biên bản <small style="font-weight:500;color:var(--text3);text-transform:none">· không bắt buộc</small></label><input type="text" id="bb-cts" placeholder="VD: BBGH 09/11"></div>
+    ${typeof mayfHtml === 'function' ? mayfHtml('bb') : ''}
+    <div class="fg"><label for="bb-cat">Nhóm cho món mới (chưa có trong kho)</label><select id="bb-cat"><option value="">Tự đoán theo tên</option>${cats.map(c => `<option value="${c.id}">${escHtml(c.name)}</option>`).join('')}</select></div>
+    ${photoFieldHtml('bb')}
+    <button type="button" class="btn-full btn-orange" id="bb-go" onclick="bbGo()">Xem trước &amp; lưu ›</button>
+  </div>`;
+  renderFormPhotos('bb'); if (typeof mayfSet === 'function') { MAYF.bb = ''; mayfShow('bb'); }
+  { const sm = document.querySelector('#bb-may-row label small'); if (sm) sm.textContent = '· không bắt buộc · áp cho mọi món'; }
+  openDp('dp-bb');
+}
+async function bbPaste() {
+  try { const t = await navigator.clipboard.readText(); if (t) { document.getElementById('bb-text').value = t; bbRead(); } }
+  catch (e) { toast('Nhấn giữ vào ô rồi chọn "Dán"'); document.getElementById('bb-text').focus(); }
+}
+function bbRead() {
+  const P = bbParse(document.getElementById('bb-text').value);
+  BB.rows = P.rows.map(r => ({ on:true, name:String(r.name).replace(/\s*[,;]\s*(?=mã(?:\s|:|$))/i, ' ').replace(/\s+/g, ' ').trim(), unit:r.unit || 'Cái', qty:r.qty })); BB.warn = P.warn; BB.parsed = true;
+  bbList();
+}
+function bbList() {
+  const el = document.getElementById('bb-list'); if (!el) return;
+  if (!BB.parsed) { el.innerHTML = ''; return; }
+  const U = [...new Set(UNITS.concat(BB.rows.map(r => r.unit)))], on = BB.rows.filter(r => r.on);
+  el.innerHTML = (BB.warn ? `<div class="bb-warn">⚠️ ${escHtml(BB.warn)}</div>` : '')
+    + (BB.rows.length ? `<div class="bb-row bb-hd"><span></span><span>Tên hàng</span><span>ĐVT</span><span>SL</span></div>` + BB.rows.map((r, i) => `<div class="bb-row${r.on ? '' : ' off'}${r.on && !(r.qty > 0) ? ' bad' : ''}">
+      <input type="checkbox" aria-label="Lấy dòng ${i + 1}" ${r.on ? 'checked' : ''} onchange="BB.rows[${i}].on=this.checked;bbList()">
+      <input type="text" aria-label="Tên hàng dòng ${i + 1}" value="${escHtml(r.name)}" onchange="BB.rows[${i}].name=this.value.trim()">
+      <select aria-label="Đơn vị dòng ${i + 1}" onchange="BB.rows[${i}].unit=this.value">${U.map(u => `<option ${u === r.unit ? 'selected' : ''}>${escHtml(u)}</option>`).join('')}</select>
+      <input type="number" aria-label="Số lượng dòng ${i + 1}" inputmode="decimal" min="0" step="any" value="${r.qty != null ? r.qty : ''}" onchange="BB.rows[${i}].qty=this.value===''?null:+this.value;bbList()"></div>`).join('')
+      + `<div class="bb-sum">Lấy ${on.length} / ${BB.rows.length} dòng · bỏ tick dòng không phải hàng (tiêu đề, tên công ty…)</div>` : '');
+}
+const bbCode = s => (String(s || '').match(/\b[A-Za-z]{0,3}\d[\dA-Za-z\-]{4,}\b/g) || []).sort((a, b) => b.length - a.length)[0] || '';
+function bbGo() {
+  if (!BB.parsed) bbRead();
+  const L = BB.rows.filter(r => r.on && String(r.name || '').trim().length >= 2);
+  if (!L.length) { toast('⚠️ Chưa có dòng hàng nào'); return; }
+  const bad = L.filter(r => !(r.qty > 0)); if (bad.length) { toast(`⚠️ ${bad.length} dòng chưa có số lượng`); bbList(); return; }
+  const ncc0 = String(document.getElementById('bb-ncc').value || '').trim(), ncc = ncc0 && typeof nccStd === 'function' && !/^Chuyển từ dự án /.test(ncc0) ? nccStd(ncc0) : ncc0;
+  const cts = String(document.getElementById('bb-cts').value || '').trim(), cat = document.getElementById('bb-cat').value;
+  const rows = L.map((r, k) => {
+    const name = q5Cap(r.name), unit = UNITS.find(u => normVN(u) === normVN(r.unit)) || r.unit || 'Cái';
+    const R = { line:k + 1, seg:'Biên bản' + (cts ? ' ' + cts : '') + ': ' + name, full:'', on:true, warns:[], errs:[], ncc, price:'', due:'', kg:'', alts:[], kind:'in', party:'', h:'', dest:'', qty:+r.qty, unitTxt:unit, name, recv:'' };
+    q5Resolve(R);
+    if (R.kind !== 'in') { R.kind = 'in'; delete R.qlAlts; delete R.qlMa; delete R.leftDev; delete R.devName; delete R.devId; delete R.devAlts; }
+    R.mode = 'kho';
+    const code = bbCode(name);
+    if (code) {                                                   // có mã phụ tùng → chỉ khớp món cùng mã, không đoán gần đúng
+      const c = normVN(code).replace(/[^a-z0-9]/g, ''), it = q5Kho().find(i => normVN(i.name).replace(/[^a-z0-9]/g, '').includes(c));
+      R.alts = it ? [{ src:'kho', id:it.id, name:it.name, unit:it.unit, cat:it.cat, s:1, x:it }] : []; R.itemKey = it ? it.id : '';
+    }
+    if (!q5Pick(R)) { R.newName = name; R.newUnit = unit; R.newCat = cat || (typeof guessCat === 'function' ? guessCat(name) : 'khac') || 'khac'; }
+    q5Check(R);
+    return R;
+  });
+  Q5 = { rows, cmd:'Biên bản' + (cts ? ' ' + cts : '') + (ncc ? ' từ ' + ncc : '') + ' · ' + rows.length + ' món', err:'', busy:false,
+    bb:{ ncc, cts, may:(typeof MAYF !== 'undefined' && MAYF.bb) || '', photos:formPhotos.bb.slice() } };
+  q5Simulate(Q5.rows);
+  openDp('dp-quick');
+  const t = document.querySelector('#dp-quick .detail-title'); if (t) t.textContent = '📄 Biên bản · ' + rows.length + ' món';
+  q5Render();
+}
+// ghép vào luồng lưu của Nhập / Xuất nhanh: bộ phận của máy + số chứng từ cho mọi phiếu nhập; ảnh biên bản gắn vào phiếu đầu
+{ const _o = q5Ops; q5Ops = function () {
+  const r = _o.apply(this, arguments);
+  try {
+    const bb = Q5.bb; if (bb) { let first = 0;
+      r.ops.forEach(o => { const d = o.k === 'txn' ? o.d : o.k === 'thang' ? o.d.nhap : null; if (!d || d.type !== 'nhap') return;
+        if (bb.may) { d.may = bb.may; if (o.k === 'thang' && o.d.xuat) o.d.xuat.may = bb.may; }
+        if (bb.cts) d.note = ('CT: ' + bb.cts + ' · ' + (d.note || '')).replace(/ · $/, '').slice(0, 400);
+        if (!first) first = d.id; });
+      bb.first = first; }
+  } catch (e) { console.warn(e); }
+  return r;
+}; }
+{ const _s = q5Save; q5Save = async function () {
+  const bb = Q5.bb;
+  const r = await _s.apply(this, arguments);
+  try {
+    if (bb && !Q5.bb && !Q5.rows.length) {                        // lưu xong (q5Clear đã chạy)
+      if (bb.first && bb.photos.length) queuePhotos(bb.first, bb.photos);
+      try { if (bb.ncc && typeof nccOf === 'function' && !nccOf(bb.ncc) && !nccSkip(bb.ncc) && NCC.rev) push('nccAdd', { ten:bb.ncc, loai:'vt' }); } catch (e) {}
+      formPhotos.bb = []; BB = { rows:[], parsed:false, warn:'' }; closeDp('dp-bb');
+    }
+  } catch (e) { console.warn(e); }
+  return r;
+}; }
+{ const _h = q5BoxHtml; q5BoxHtml = function () {
+  return _h.apply(this, arguments).replace(/(<button type="button" class="q5-btn" onclick="q5Paste\(\)">📋 Dán<\/button>)/, '$1<button type="button" class="q5-btn q5-bb" onclick="bbOpen()">📄 Biên bản</button>');
+}; }
 </script>
 </body>
 </html>
