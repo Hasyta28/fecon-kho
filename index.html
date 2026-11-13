@@ -1898,7 +1898,7 @@ body.pg-printing #pg-print{display:block;position:fixed;inset:0;z-index:9000;bac
 // ============================================================
 // CONFIG
 // ============================================================
-const APP_VERSION = '5.63.1';
+const APP_VERSION = '5.63.2';
 const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbw6Rmi80I7RI3ij2U7RdRF5pYuQTnPrwEmGmUZS5xpxzLwwVynfoFUujZe1lm6HS1ymxw/exec';
 // ============================================================
 
@@ -18238,6 +18238,7 @@ function bbOpen() {
     <div id="bb-list"></div>
     <div class="bb-h">Chung cho cả biên bản</div>
     <div class="fg"><label for="bb-ncc">Nhà cung cấp / Bên giao</label><input type="text" id="bb-ncc" data-ncc="vt" autocomplete="off" placeholder="Tên NCC hoặc dự án chuyển qua"></div>
+    ${typeof canGio === 'function' && canGio() ? `<div class="fg"><label for="bb-time">Ngày giờ trên biên bản <small style="font-weight:500;color:var(--text3);text-transform:none">· áp cho mọi món</small></label><input type="datetime-local" id="bb-time" max="${pfIso(new Date())}" value="${escHtml(bbAt0())}"><div class="combo-hint">Để trống = ghi đúng giờ bấm Lưu. Hàng về hôm trước thì chọn ngày giờ trên biên bản.</div></div>` : ''}
     <div class="fg"><label for="bb-cts">Số chứng từ / biên bản <small style="font-weight:500;color:var(--text3);text-transform:none">· không bắt buộc</small></label><input type="text" id="bb-cts" placeholder="VD: BBGH 09/11"></div>
     ${typeof mayfHtml === 'function' ? mayfHtml('bb') : ''}
     <div class="fg"><label for="bb-cat">Nhóm cho món mới (chưa có trong kho)</label><select id="bb-cat"><option value="">Tự đoán theo tên</option>${cats.map(c => `<option value="${c.id}">${escHtml(c.name)}</option>`).join('')}</select></div>
@@ -18248,6 +18249,8 @@ function bbOpen() {
   { const sm = document.querySelector('#bb-may-row label small'); if (sm) sm.textContent = '· không bắt buộc · áp cho mọi món'; }
   openDp('dp-bb');
 }
+// v5.63.2: ngày giờ chọn sẵn ở phiếu nhập → mang sang trang Biên bản
+function bbAt0() { const el = document.getElementById('fn-time'); return el && typeof gioVal === 'function' ? gioVal(el) : ''; }
 async function bbPaste() {
   try { const t = await navigator.clipboard.readText(); if (t) { document.getElementById('bb-text').value = t; bbRead(); } }
   catch (e) { toast('Nhấn giữ vào ô rồi chọn "Dán"'); document.getElementById('bb-text').focus(); }
@@ -18292,7 +18295,8 @@ function bbGo() {
     q5Check(R);
     return R;
   });
-  Q5 = { rows, cmd:'Biên bản' + (cts ? ' ' + cts : '') + (ncc ? ' từ ' + ncc : '') + ' · ' + rows.length + ' món', err:'', busy:false,
+  const at = String((document.getElementById('bb-time') || {}).value || '');
+  Q5 = { rows, cmd:'Biên bản' + (cts ? ' ' + cts : '') + (ncc ? ' từ ' + ncc : '') + ' · ' + rows.length + ' món', err:'', busy:false, at,
     bb:{ ncc, cts, may:(typeof MAYF !== 'undefined' && MAYF.bb) || '', photos:formPhotos.bb.slice() } };
   q5Simulate(Q5.rows);
   openDp('dp-quick');
@@ -18327,6 +18331,98 @@ function bbGo() {
 { const _h = q5BoxHtml; q5BoxHtml = function () {
   return _h.apply(this, arguments).replace(/(<button type="button" class="q5-btn" onclick="q5Paste\(\)">📋 Dán<\/button>)/, '$1<button type="button" class="q5-btn q5-bb" onclick="bbOpen()">📄 Biên bản</button>');
 }; }
+</script>
+<style>/* v5.63.2 */
+.bbg-box{background:#F5F8FC;border:1px solid #D6E2F0;border-radius:12px;padding:10px 12px;margin:0 0 12px;font-size:13.5px;color:var(--text2)}
+.bbg-box b{color:var(--text)}.bbg-box button{display:block;margin-top:8px;border:1.5px solid var(--primary);background:#fff;color:var(--primary);border-radius:10px;padding:7px 12px;font-weight:700;font-family:inherit;font-size:14px;cursor:pointer}
+.bbg-dt{display:flex;gap:8px;align-items:center;margin-top:8px}.bbg-dt input{flex:1;min-width:0;padding:9px 10px;border:1.5px solid var(--border);border-radius:10px;font-size:15px;font-family:inherit;background:#fff}
+</style>
+<script>// ===== v5.63.2 — NGÀY GIỜ BIÊN BẢN · PHIẾU MƯỢN / TRẢ THEO NGÀY ĐÃ CHỌN · ĐỔI NGÀY CẢ BIÊN BẢN · ẢNH CHUNG BIÊN BẢN =====
+// (1) Trang Biên bản có ô Ngày giờ (bbOpen / bbGo, khối 5.63.1).
+// (2) Phiếu nhập Mượn từ ngoài / Nhận trả, phiếu xuất Cho mượn / Trả lại: dùng ô Ngày giờ phiếu (fn-time / fx-time) → gửi 'at' cho máy chủ (loanAt_ đã có sẵn).
+// (3) Các phiếu lưu cùng một lệnh Nhập / Xuất nhanh hoặc biên bản = 1 nhóm: chi tiết phiếu ghi "cùng biên bản với N phiếu", Admin đổi ngày giờ cả nhóm (editTxn từng phiếu).
+// (4) Ảnh biên bản gắn ở phiếu đầu → mọi phiếu trong nhóm đều xem được (không tải ảnh lặp).
+{ const _pl = pushLoan; pushLoan = async function (action, data) {
+  try {
+    if ((action === 'addLoan' || action === 'returnLoan') && data && !('at' in data) && canGio()) {
+      const el = document.getElementById(curTab === 'xuat' ? 'fx-time' : curTab === 'nhap' ? 'fn-time' : ''), v = el ? localToVN(gioVal(el)) : '';
+      if (v) {
+        const ok = gioCheck(v, []); if (!ok) return 'rejected';
+        if (action === 'returnLoan') {
+          const l = (db.loans || []).find(x => x.id === data.loanId), a = parseVN(v), b = l && parseVN(l.datetime);
+          if (a && b && a.getTime() + 60e3 < b.getTime()) { toast(`⚠️ Ngày trả sớm hơn ngày mượn (${l.datetime})`); return 'rejected'; }
+        }
+        data.at = v; data.datetime = v;
+      }
+    }
+  } catch (e) { console.warn(e); }
+  return _pl.apply(this, arguments);
+}; }
+// ---- nhóm phiếu cùng 1 lệnh / biên bản ----
+const BBG_RE = /⚡ Lệnh: “/;
+const bbgIsBB = t => /⚡ Lệnh: “Biên bản/.test(String(t && t.note || ''));
+function bbgOf(t) {
+  if (!t || !BBG_RE.test(String(t.note || '')) || !['nhap', 'xuat'].includes(t.type)) return [];
+  const a = parseVN(t.datetime); if (!a) return [];
+  const bb = bbgIsBB(t), who = String(t.createdBy || t.createdByName || '');
+  return db.transactions.filter(x => x.project === t.project && ['nhap', 'xuat'].includes(x.type) && BBG_RE.test(String(x.note || '')) && bbgIsBB(x) === bb
+    && String(x.createdBy || x.createdByName || '') === who && (!bb || String(x.supplierOrReceiver || '') === String(t.supplierOrReceiver || ''))
+    && Math.abs((parseVN(x.datetime) || 0) - a) <= 3 * 60e3)
+    .sort((p, q) => p.id - q.id);
+}
+// ảnh: phiếu chưa có ảnh → lấy ảnh của phiếu đầu cùng biên bản
+function bbgPhotoSrc(t) {
+  if (!t || photosOf(t.id).length || !bbgIsBB(t)) return t;
+  return bbgOf(t).find(x => x.id !== t.id && photosOf(x.id).length) || t;
+}
+{ const _h = txnPhotosHtml; txnPhotosHtml = function (t) {
+  const s = bbgPhotoSrc(t); if (s === t) return _h.apply(this, arguments);
+  const n = photosOf(s.id).length;
+  return _h.call(this, s).replace(/📷 Ảnh biên bản \(\d+\)/, `📷 Ảnh biên bản (${n}) · chung cả biên bản`).replace(/<button type="button" class="ph-add[^]*?<\/button>/, '');
+}; }
+{ const _l = loadTxnPhotos; loadTxnPhotos = function (t) { return _l.call(this, bbgPhotoSrc(t)); }; }
+// chi tiết phiếu: dòng "cùng biên bản" + Admin đổi ngày giờ cả nhóm
+{ const _o = openTxn; openTxn = function (id) {
+  const r = _o.apply(this, arguments);
+  try {
+    const t = db.transactions.find(x => x.id === id), G = bbgOf(t), body = document.getElementById('mt-body');
+    if (G.length > 1 && body) {
+      const bb = bbgIsBB(t), lb = bb ? 'biên bản' : 'lệnh nhập / xuất nhanh';
+      const adm = can('admin') && G.every(x => !x._local);
+      body.querySelector('.kv-box')?.insertAdjacentHTML('afterend', `<div class="bbg-box" id="bbg-box">📄 Cùng ${lb} với <b>${G.length - 1} phiếu khác</b>${bb && t.supplierOrReceiver ? ' · ' + escHtml(t.supplierOrReceiver) : ''} · ${escHtml(t.datetime || '')}
+        ${adm ? `<button type="button" onclick="bbgDateUI(${t.id})">🕐 Đổi ngày giờ cả ${lb} (${G.length} phiếu)</button>` : ''}</div>`);
+    }
+  } catch (e) { console.warn(e); }
+  return r;
+}; }
+function bbgDateUI(id) {
+  const t = db.transactions.find(x => x.id === id), box = document.getElementById('bbg-box'); if (!t || !box) return;
+  const v = vnToLocal(t.datetime), now = pfIso(new Date());
+  box.querySelector('button')?.remove(); box.querySelector('.bbg-dt')?.remove();
+  box.insertAdjacentHTML('beforeend', `<div class="bbg-dt"><input type="datetime-local" id="bbg-at" value="${escHtml(v)}" max="${now}"><button type="button" style="margin:0;border-color:#F26522;background:#F26522;color:#fff" onclick="bbgDateGo(${id})">Lưu</button></div>`);
+}
+async function bbgDateGo(id) {
+  const t = db.transactions.find(x => x.id === id); if (!t || !can('admin')) return;
+  const v = localToVN(String(document.getElementById('bbg-at')?.value || '')); if (!v) { toast('⚠️ Chọn ngày giờ'); return; }
+  const d = parseVN(v); if (!d || d.getTime() > Date.now() + 5 * 60e3) { toast('⚠️ Ngày giờ ở tương lai'); return; }
+  const G = bbgOf(t), ids = new Set(G.map(x => x.id));
+  const L = G.filter(x => !(x.type === 'xuat' && x.thangCT && ids.has(+x.thangCT)));   // phiếu thẳng: sửa phiếu nhập, phiếu xuất đi cặp tự đổi theo
+  if (!navigator.onLine) { toast('📴 Cần có mạng'); return; }
+  if (!confirm(`Đổi ngày giờ ${G.length} phiếu thành ${v}?\n\nChỉ đổi ngày giờ, không đổi vật tư, số lượng, bên giao. Tồn kho hiện tại không đổi (trừ khi ngày mới trước lần kiểm kê).`)) return;
+  closeModal('modal-txn');
+  let n = 0;
+  for (const x of L) {
+    showLoader(`Đang đổi ngày giờ... ${n}/${L.length}`);
+    const data = { id:x.id, itemId:x.itemId, qty:x.qty, supplierOrReceiver:x.supplierOrReceiver || '', thietBi:x.thietBi || '', reason:x.reason || '', note:x.note || '', datetime:v };
+    applyAdminOp('editTxn', data);
+    const ok = await push('editTxn', data);
+    if (ok === 'rejected') { hideLoader(); toast(`⚠️ Dừng ở phiếu ${n + 1} — đã đổi ${n} phiếu`); await syncAll(true); refreshCurrentView(false); return; }
+    n++;
+  }
+  showLoader('Đang tải lại dữ liệu...'); await Promise.race([syncAll(true), new Promise(res => setTimeout(res, 15000))]); hideLoader();
+  updateLowBadge(); refreshCurrentView(false);
+  toast(`✅ Đã đổi ngày giờ ${G.length} phiếu thành ${v}`);
+}
 </script>
 </body>
 </html>
