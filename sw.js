@@ -1,4 +1,5 @@
-// FECON Kho + Thi công - Service Worker v5.63.2
+// FECON Kho + Thi công - Service Worker v5.63.3
+// 5.63.3: Excel tự giãn chiều cao hàng đúng cả với chữ IN HOA (tên NCC không bị cắt)
 // 5.63.2: Ô ngày giờ trên trang Biên bản · phiếu mượn / trả theo ngày đã chọn · Admin đổi ngày cả biên bản · ảnh chung biên bản (không dán Apps Script)
 // 5.63.1: Nhập theo biên bản (dán chữ chép từ ảnh) trong Nhập / Xuất nhanh (máy chủ 5.63.1)
 // 5.63.0: Bộ phận thuộc máy — chọn máy trên phiếu nhập / xuất, chi tiết máy, gắn hàng loạt (máy chủ 5.63.0)
@@ -91,7 +92,7 @@
 //  - Mở app: lấy file từ bộ nhớ của bản đang dùng; thiếu file nào mới lấy từ mạng.
 //  - Có sw.js mới trên GitHub: tải sẵn bản mới vào bộ nhớ riêng nhưng KHÔNG đổi bản đang dùng.
 //  - Địa chỉ có ?fresh=... luôn lấy thẳng từ mạng (app dùng để kiểm tra / tải bản mới).
-const VERSION = '5.63.2';
+const VERSION = '5.63.3';
 const APP = 'fecon-app-', META = 'fecon-meta';
 const CORE = ['./', './index.html', './thicong.html', './danhmuc.html', './manifest.json', './icon-192.png', './icon-512.png', './icon-maskable-192.png', './icon-maskable-512.png', './bg-login.jpg'];
 
