@@ -1898,7 +1898,7 @@ body.pg-printing #pg-print{display:block;position:fixed;inset:0;z-index:9000;bac
 // ============================================================
 // CONFIG
 // ============================================================
-const APP_VERSION = '5.63.4';
+const APP_VERSION = '5.63.5';
 const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbw6Rmi80I7RI3ij2U7RdRF5pYuQTnPrwEmGmUZS5xpxzLwwVynfoFUujZe1lm6HS1ymxw/exec';
 // ============================================================
 
@@ -9558,10 +9558,10 @@ function loanSetW(p, w, cho) {
   loanW[p] = w;
   document.querySelectorAll('#' + p + 'l-who button').forEach(b => b.classList.toggle('on', b.dataset.w === w));
   const B = document.getElementById(p + 'l-wbody'), isDev = p === 'fx' ? !!fxDev : !!(typeof fnDev !== 'undefined' && fnDev);
-  const projs = (db.allProjects && db.allProjects.length ? db.allProjects : db.projects || []).filter(x => x !== curProj);
+  const projs0 = (db.allProjects && db.allProjects.length ? db.allProjects : db.projects || []).filter(x => x !== curProj), projs = projs0.filter(x => !isKhoCT(x)), khoP = projs0.find(isKhoCT);   // v5.63.5
   let h = '';
   if (w === 'da') {
-    h = projs.length ? `<div class="fg"><label>Dự án</label><select id="${p}l-proj" onchange="loanCompose('${p}')"><option value="">— chọn dự án —</option>${projs.map(x => `<option>${escHtml(x)}</option>`).join('')}</select></div>`
+    h = projs.length ? `<div class="fg"><label>Dự án</label><select id="${p}l-proj" onchange="loanCompose('${p}')"><option value="">— chọn dự án —</option>${projs.map(x => `<option>${escHtml(x)}</option>`).join('')}${khoP ? `<optgroup label="Kho công ty"><option value="${escHtml(khoP)}">🏭 ${escHtml(khoP)} (kho công ty)</option></optgroup>` : ''}</select></div>`
       : `<div class="fg"><label>Dự án</label><input type="text" id="${p}l-proj" oninput="loanCompose('${p}')" placeholder="Tên dự án FECON"></div>`;
     h += `<div class="ct-mhint">${isDev ? 'Máy móc: chỉ ghi tên dự án (máy chuyển hẳn dùng "Máy rời công trình").' : db.loanV2 ? (cho ? 'Dự án nhận sẽ thấy phiếu "Hàng mượn đến" để xác nhận — 2 bên khớp số.' : 'Dự án cho mượn sẽ thấy "Dự án khác báo đã mượn của bạn" để xác nhận.') : 'Máy chủ chưa cập nhật 5.40 — chỉ ghi tên dự án, chưa liên kết 2 đầu.'}</div>`;
   } else {
@@ -9574,7 +9574,7 @@ function loanSetW(p, w, cho) {
 }
 function loanCompose(p) {
   const w = loanW[p], g = id => (document.getElementById(p + id)?.value || '').trim();
-  const name = w === 'da' ? (g('l-proj') ? 'Dự án ' + g('l-proj') : '') : g('l-pn');
+  const name = w === 'da' ? (g('l-proj') ? (isKhoCT(g('l-proj')) ? '' : 'Dự án ') + g('l-proj') : '') : g('l-pn');   // v5.63.5: kho công ty không ghi "Dự án"
   const ps = g('l-ps'), el = document.getElementById(p + 'l-party');
   if (el) el.value = name ? name + (ps ? ' · ' + ps : '') : '';
   return { party:el ? el.value : '', ptype:w || '', linkP:w === 'da' ? g('l-proj') : '' };
@@ -13252,8 +13252,11 @@ const bcNoteClean = (note, side) => String(note || '').split(/\s*·\s*/).map(x =
   .map(x => /^Ra khỏi công trình\s*→/i.test(x) ? '' : /^Giải động\s*→/i.test(x) ? 'Giải động' : x)   // v5.62.0: hướng đi đã có ở cột Loại + NCC
   .filter(x => x && !(side === 'N' && /giải động/i.test(x))).join(' · ');
 // v5.62.0: cột NCC / NTP / Đội chỉ ghi TÊN (bỏ "Trả bên cho thuê", "Chuyển dự án", "Về"… — đã có ở cột Loại)
+// v5.63.5: kho công ty (GD.kho, VD Kho Biên Hòa) không phải dự án
+const isKhoCT = p => { const k = typeof GD !== 'undefined' && GD.kho; return !!k && normVN(String(p || '').trim()) === normVN(k); };
 const bcPartyName = sv => { const v = String(sv || '').trim();
-  let m = v.match(/^(?:chuyển từ dự án|chuyển dự án|chuyển sang dự án)\s+(.+)$/i); if (m) return 'Dự án ' + m[1].trim();
+  let m = v.match(/^(?:chuyển từ dự án|chuyển dự án|chuyển sang dự án|dự án|chuyển từ|chuyển sang)\s+(.+?)(?:\s+·\s+.*)?$/i); if (m && isKhoCT(m[1])) return m[1].trim();
+  m = v.match(/^(?:chuyển từ dự án|chuyển dự án|chuyển sang dự án)\s+(.+)$/i); if (m) return 'Dự án ' + m[1].trim();
   m = v.match(/^(?:trả bên cho thuê|trả ncc|trả|chuyển sang|về)\s+(.+)$/i); if (m) return m[1].trim();
   m = v.match(/^hư hỏng\s*\/\s*thanh lý\s*:\s*(.+)$/i); if (m) return m[1].trim();
   return /^hư hỏng\s*\/\s*thanh lý$/i.test(v) ? '' : v; };
@@ -15702,7 +15705,7 @@ nccTag();
 const nccAsked = new Set();
 function nccSkip(v) {
   const k = nccN(v);
-  if (k.length < 3 || /^(ton dau|cong truong|kho|khong ro|chua ro|chuyen tu du an|tu du an)\b/.test(k)) return true;
+  if (k.length < 3 || /^(ton dau|cong truong|kho|khong ro|chua ro|chuyen tu du an|tu du an|chuyen tu kho)\b/.test(k)) return true;
   const P = [...(db.projects || []), ...((typeof GD !== 'undefined' && GD.projects) || []), (typeof GD !== 'undefined' && GD.kho) || '', ...((db.allProjects || []).map(x => x && x.name || x))];
   return P.some(p => p && nccN(p) === k);
 }
@@ -17773,14 +17776,17 @@ const devPhTh = d => !d ? '' : d.ph !== undefined ? String(d.ph || '') : ((db.de
 const BG_PRE = 'Chuyển từ dự án ';
 function bgProjs() {
   const L = (db.allProjects && db.allProjects.length ? db.allProjects : db.projects || []).map(x => x && x.name || x).filter(Boolean);
-  return [...new Set(L)].filter(p => p !== curProj).sort((a, b) => String(a).localeCompare(String(b), 'vi'));
+  return [...new Set(L)].filter(p => p !== curProj && !isKhoCT(p)).sort((a, b) => String(a).localeCompare(String(b), 'vi'));
 }
 function nccProjHtml(q) {
   const k0 = nccN(q), k = k0.replace(/^(chuyen tu |tu )?(du an ?)?/, '').trim();
   const ok = p => !k0 || nccN(BG_PRE + p).includes(k0) || (k && nccN(p).includes(k));
   const L = bgProjs().filter(ok);
-  if (!L.length || (k0 && nccN(q) === nccN(BG_PRE + L[0]) && L.length === 1)) return '';
-  return `<div class="combo-head">🏗 Dự án khác chuyển qua</div>` + L.slice(0, 12).map(p => `<div class="combo-opt" data-v="${escHtml(BG_PRE + p)}"><span><b>${escHtml(p)}</b><span class="ncc-sub">Ghi: ${escHtml(BG_PRE + p)}</span></span></div>`).join('');
+  const K = typeof GD !== 'undefined' && GD.kho && !isKhoCT(curProj) ? GD.kho : '', KV = K ? 'Chuyển từ ' + K : '';   // v5.63.5: kho công ty tách riêng
+  const kOk = K && (!k0 || nccN(KV).includes(k0) || nccN(K).includes(k0)) && nccN(q) !== nccN(KV);
+  const kh = kOk ? `<div class="combo-head">🏭 Kho công ty</div><div class="combo-opt" data-v="${escHtml(KV)}"><span><b>${escHtml(K)}</b><span class="ncc-sub">Ghi: ${escHtml(KV)}</span></span></div>` : '';
+  if (!L.length || (k0 && nccN(q) === nccN(BG_PRE + L[0]) && L.length === 1)) return kh;
+  return kh + `<div class="combo-head">🏗 Dự án khác chuyển qua</div>` + L.slice(0, 12).map(p => `<div class="combo-opt" data-v="${escHtml(BG_PRE + p)}"><span><b>${escHtml(p)}</b><span class="ncc-sub">Ghi: ${escHtml(BG_PRE + p)}</span></span></div>`).join('');
 }
 
 // ---------- Tab Phiếu nhập: "Điền bên giao" cho nhiều phiếu một lần (máy chủ txnSetParty) ----------
