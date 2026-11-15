@@ -1898,7 +1898,7 @@ body.pg-printing #pg-print{display:block;position:fixed;inset:0;z-index:9000;bac
 // ============================================================
 // CONFIG
 // ============================================================
-const APP_VERSION = '5.63.6';
+const APP_VERSION = '5.63.7';
 const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbw6Rmi80I7RI3ij2U7RdRF5pYuQTnPrwEmGmUZS5xpxzLwwVynfoFUujZe1lm6HS1ymxw/exec';
 // ============================================================
 
@@ -5034,8 +5034,8 @@ async function buildNxtWorkbook() {
     const ws = sheet('Theo dõi dầu thiết bị', [6, 38, 14, 16, 10, 16, 14, 16], 5);
     title(ws, 'THEO DÕI CẤP DẦU CHO THIẾT BỊ', 8);
     header(ws, 5, ['STT', 'Tên thiết bị', 'Ngày cấp đầu tiên', 'Tổng dầu nhận (Lít)', 'Số ngày', 'TB lít dầu/ngày', 'Nhớt (Lít)', 'Loại hình'], 1);
-    const dauNames = db.items.filter(i => isFuelGroup(i) && /dầu/i.test(i.name) && !/nhớt|mỡ/i.test(i.name)).map(i => i.name);
-    const nhotNames = db.items.filter(i => isFuelGroup(i) && /nhớt/i.test(i.name)).map(i => i.name);
+    const dauNames = db.items.filter(i => isFuelGroup(i) && isDoFuel(i)).map(i => i.name);   // v5.63.7: chỉ dầu DO
+    const nhotNames = db.items.filter(i => isFuelGroup(i) && !isDoFuel(i) && /^lit$/.test(normVN(i.unit || ''))).map(i => i.name);   // v5.63.7: mọi dầu bôi trơn tính lít (nhớt, thủy lực, hộp số…)
     const L = q(logFuel.name), rg = c => `${L}!$${c}$${logFuel.first}:$${c}$${logFuel.last}`;
     const sumF = (names, r) => names.length ? names.map(nm => `SUMIFS(${rg('H')},${rg('G')},$B${r},${rg('C')},"${nm.replace(/"/g, '""')}",${rg('E')},"Xuất")`).join('+') : '0';
     const fuelRows = moves.filter(t => inRange(t) && t.type === 'xuat' && t.thietBi);
@@ -8250,6 +8250,8 @@ async function nlOut(c) {
 
 // ===== v5.20.0: GIỜ MÁY THIẾT BỊ =====
 const isDieselItem = it => !!it && /dầu\s*d\.?\s*o\b|diesel/i.test(it.name || '');   // dầu cấp cho máy (giờ máy)
+// v5.63.7: dầu DO cho sổ / Excel nhiên liệu — tên có "dầu DO" / "diesel" / bắt đầu "DO", hoặc tên đúng bằng "Dầu". Dầu thủy lực, động cơ, hộp số… là dầu bôi trơn.
+const isDoFuel = it => !!it && (isDieselItem(it) || /^\s*D\.?O\b/.test(it.name || '') || normVN(it.name || '').trim() === 'dau');
 const devActive = d => !d.outDate;
 const mUnit = d => (d && d.meterUnit) || 'h';
 const mLbl = d => mUnit(d) === 'km' ? 'Km' : 'Giờ máy';
@@ -13388,7 +13390,7 @@ function bcData(R) {
   const items = db.items, byId = {}; items.forEach(i => byId[i.id] = i);
   // v5.56.1: theo nhóm, chỉ đoán theo tên khi chưa có nhóm · v5.56.3: chỉ đơn vị đo nhiên liệu (Lít, Kg, Hộp…) — Cont / Bộ / Cái… nhóm Nhiên liệu là ghi nhầm nhóm
   const fuelOf = it => !!it && (it.cat === 'nhienLieu' || ((!it.cat || it.cat === 'khac') && isFuelItem(it))) && BC_FUEL_U.test(normVN(it.unit || ''));
-  const doOf = it => fuelOf(it) && /dầu/i.test(it.name || '') && !/nhớt|mỡ/i.test(it.name || '') && /^lit$/.test(normVN(it.unit || ''));
+  const doOf = it => fuelOf(it) && isDoFuel(it) && /^lit$/.test(normVN(it.unit || ''));   // v5.63.7: trước lấy mọi "dầu" trừ nhớt/mỡ → dầu thủy lực, động cơ… bị cộng vào DO
   const projSet = new Set([...(db.projects || []), ...((typeof GD !== 'undefined' && GD.projects) || []), (typeof GD !== 'undefined' && GD.kho) || ''].filter(p => p && p !== curProj).map(p => normVN(p)));
   const adj = adjMap();
   const rows = [];
