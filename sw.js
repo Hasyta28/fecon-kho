@@ -1,4 +1,7 @@
-// FECON Kho + Thi công - Service Worker v5.63.5
+// FECON Kho + Thi công - Service Worker v5.63.8
+// 5.63.8: Excel — sheet Nhiên liệu chia A tổng hợp / B theo máy / C sổ DO; thêm sheet Nhớt – mỡ theo máy
+// 5.63.7: Excel nhiên liệu — cột dầu DO chỉ nhận dầu DO / diesel (dầu thủy lực, động cơ, hộp số sang cột nhớt)
+// 5.63.6: P.QLTB — lùi từ chi tiết máy / thẻ kho về lại P.QLTB, Kho về dự án đang làm
 // 5.63.5: Kho công ty (Kho Biên Hòa) không gọi là dự án: ô Bên giao, phiếu mượn, Excel
 // 5.63.4: Excel bỏ co chữ (tên máy dài xuống dòng, cỡ chữ bình thường)
 // 5.63.3: Excel tự giãn chiều cao hàng đúng cả với chữ IN HOA (tên NCC không bị cắt)
@@ -94,7 +97,7 @@
 //  - Mở app: lấy file từ bộ nhớ của bản đang dùng; thiếu file nào mới lấy từ mạng.
 //  - Có sw.js mới trên GitHub: tải sẵn bản mới vào bộ nhớ riêng nhưng KHÔNG đổi bản đang dùng.
 //  - Địa chỉ có ?fresh=... luôn lấy thẳng từ mạng (app dùng để kiểm tra / tải bản mới).
-const VERSION = '5.63.5';
+const VERSION = '5.63.8';
 const APP = 'fecon-app-', META = 'fecon-meta';
 const CORE = ['./', './index.html', './thicong.html', './danhmuc.html', './manifest.json', './icon-192.png', './icon-512.png', './icon-maskable-192.png', './icon-maskable-512.png', './bg-login.jpg'];
 
