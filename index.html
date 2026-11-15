@@ -1898,7 +1898,7 @@ body.pg-printing #pg-print{display:block;position:fixed;inset:0;z-index:9000;bac
 // ============================================================
 // CONFIG
 // ============================================================
-const APP_VERSION = '5.63.5';
+const APP_VERSION = '5.63.6';
 const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbw6Rmi80I7RI3ij2U7RdRF5pYuQTnPrwEmGmUZS5xpxzLwwVynfoFUujZe1lm6HS1ymxw/exec';
 // ============================================================
 
@@ -18430,6 +18430,59 @@ async function bbgDateGo(id) {
   showLoader('Đang tải lại dữ liệu...'); await Promise.race([syncAll(true), new Promise(res => setTimeout(res, 15000))]); hideLoader();
   updateLowBadge(); refreshCurrentView(false);
   toast(`✅ Đã đổi ngày giờ ${G.length} phiếu thành ${v}`);
+}
+</script>
+<script>// ===== v5.63.6 — P.QLTB: LÙI TỪ CHI TIẾT MÁY / THẺ KHO VỀ LẠI P.QLTB · TRẢ KHO VỀ DỰ ÁN ĐANG LÀM =====
+// Trước 5.63.6: "Mở chi tiết máy ›" (hoặc thẻ kho) đóng hẳn P.QLTB, chuyển sang dự án của máy → bấm ‹ ra thẳng màn chính Kho, Kho vẫn đứng ở dự án của máy.
+// Nay: nhớ chỗ đi (dự án đang làm + vị trí cuộn). Đóng chi tiết máy / thẻ kho (mà bên dưới không còn trang nào) → mở lại P.QLTB như cũ, Kho tự về dự án đang làm.
+// Bỏ nhớ khi: tự mở chi tiết máy / thẻ kho ở chỗ khác, đổi dự án, đăng xuất / hết phiên.
+let QL_RET = null;
+const QL_RET_DP = { 'dp-device':1, 'dp-thekho':1 };
+function qlScrollSave() {
+  const el = $q('pg-ql'), out = []; if (!el) return out;
+  const seen = {};
+  el.querySelectorAll('*').forEach(x => { const k = x.id ? '#' + x.id : x.className; if (typeof k !== 'string' || !k) return; const i = seen[k] = (seen[k] || 0) + 1; if (x.scrollTop > 0 || x.scrollLeft > 0) out.push([k, i, x.scrollTop, x.scrollLeft]); });
+  return out;
+}
+function qlScrollLoad(L) {
+  const el = $q('pg-ql'); if (!el || !L || !L.length) return;
+  const seen = {}, want = {}; L.forEach(r => want[r[0] + '|' + r[1]] = r);
+  el.querySelectorAll('*').forEach(x => { const k = x.id ? '#' + x.id : x.className; if (typeof k !== 'string' || !k) return; const i = seen[k] = (seen[k] || 0) + 1; const r = want[k + '|' + i]; if (r) { x.scrollTop = r[2]; x.scrollLeft = r[3]; } });
+}
+async function qlBack() {                                       // về lại P.QLTB
+  const R = QL_RET; QL_RET = null; if (!R || !token || R.tok !== token) return;
+  await qlOpen();
+  requestAnimationFrame(() => qlScrollLoad(R.sc));
+  if (R.proj && R.proj !== curProj && (db.projects || []).includes(R.proj)) { await switchProject(R.proj); const el = $q('pg-ql'); if (el && el.style.display !== 'none') qlScrollLoad(R.sc); }
+}
+{
+  const goto0 = qlGoto;
+  qlGoto = async function (p, kind, id) {
+    const R = { proj:curProj, to:p, sc:qlScrollSave(), tok:token, armed:false };
+    QL_RET = null;
+    await goto0(p, kind, id);
+    QL_RET = R;
+    setTimeout(() => {
+      if (QL_RET !== R) return;
+      const open = Object.keys(QL_RET_DP).some(k => document.getElementById(k)?.classList.contains('show'));
+      if (open) R.armed = true; else qlBack();                  // không mở được chi tiết (chưa giao dự án, không thấy máy) → về P.QLTB
+    }, 600);
+  };
+  const open0 = openDp;
+  openDp = function (id, fn) {
+    if (QL_RET && QL_RET.armed && QL_RET_DP[id] && !document.getElementById(id)?.classList.contains('show')) QL_RET = null;   // mở chi tiết ở chỗ khác → bỏ nhớ
+    return open0(id, fn);
+  };
+  const close0 = closeDp;
+  closeDp = function (id) {
+    close0(id);
+    const R = QL_RET; if (!R || !R.armed || !QL_RET_DP[id]) return;
+    if (R.tok !== token || curProj !== R.to) { QL_RET = null; return; }   // đã đổi dự án / đăng xuất
+    if (document.querySelector('.detail-page.show')) return;     // còn trang khác bên dưới
+    qlBack();
+  };
+  const qo0 = qlOpen;
+  qlOpen = function (force) { QL_RET = null; return qo0(force); };   // vào P.QLTB bằng menu → bỏ nhớ
 }
 </script>
 </body>
