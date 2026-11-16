@@ -1420,8 +1420,8 @@ body.pg-printing #pg-print{display:block;position:fixed;inset:0;z-index:9000;bac
     <div class="sidebar-label">Chức năng</div>
     <div class="sidebar-item" data-p="v_pyc" onclick="goTabSb('pyc')"><span class="sidebar-item-ico">📝</span>Phiếu yêu cầu</div>
     <div class="sidebar-item" data-p="v_home" onclick="goTabSb('home')"><span class="sidebar-item-ico">🏠</span>Tổng quan</div>
-    <div class="sidebar-item" data-p="k_nhap" onclick="goTabSb('nhap')"><span class="sidebar-item-ico">📥</span>Nhập kho</div>
-    <div class="sidebar-item" data-p="k_xuat" onclick="goTabSb('xuat')"><span class="sidebar-item-ico">📤</span>Xuất kho</div>
+    <div class="sidebar-item" data-p="k_nhap" onclick="closeSidebar();hxOpen('nhap')"><span class="sidebar-item-ico">📥</span>Nhập kho</div>
+    <div class="sidebar-item" data-p="k_xuat" onclick="closeSidebar();hxOpen('xuat')"><span class="sidebar-item-ico">📤</span>Xuất kho</div>
     <div class="sidebar-item" data-p="v_ton" onclick="goTabSb('ton')"><span class="sidebar-item-ico">📦</span>Tồn kho</div>
     <div class="sidebar-item" id="sb-ct" data-p="v_home" onclick="openDpSb('dp-ct')"><span class="sidebar-item-ico">🏗</span><span style="flex:1">Ở công trường</span></div>
     <div class="sidebar-item" data-p="v_home" onclick="openDpSb('dp-gd')"><span class="sidebar-item-ico">🚚</span><span style="flex:1">Giải động</span><span id="sb-gz-n" class="gz-nb" style="display:none"></span></div>
@@ -1898,7 +1898,7 @@ body.pg-printing #pg-print{display:block;position:fixed;inset:0;z-index:9000;bac
 // ============================================================
 // CONFIG
 // ============================================================
-const APP_VERSION = '5.63.8';
+const APP_VERSION = '5.64.0';
 const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbw6Rmi80I7RI3ij2U7RdRF5pYuQTnPrwEmGmUZS5xpxzLwwVynfoFUujZe1lm6HS1ymxw/exec';
 // ============================================================
 
@@ -3400,12 +3400,13 @@ async function doNhap() {
   }
   let item = db.items.find(i => i.id === +document.getElementById('fn-item').value) || db.items.find(i => normVN(i.name) === normVN(name));
   if (item && !(await askIfDupTxn('nhap', item, qty))) return;    // v5.28.1: vừa nhập cùng vật tư, cùng số lượng → hỏi lại
+  if (typeof pcConfirm === 'function' && !(await pcConfirm('nhap', item, name, qty))) return;   // v5.64.0: kiểm tra lại ngày giờ · tên · số lượng
   closeKeyboard();
   let qlMa = '', qlOut = '';
   if (!item) {                                               // v5.29: vật tư mới — theo danh mục P.QLTB hay ngoài danh mục
     if (fnQL && normVN(fnQL.name) === normVN(name)) qlMa = fnQL.ma;
     else if (fnHint && normVN(fnHint.n) === normVN(name) && fnHint.nd !== '' && fnHint.nd !== undefined) qlOut = fnHint.nd;   // v5.56.11: tên từ dự án khác → giữ cờ ngoài DM
-    else if (qlOn()) { const a = await askOutDM(name, false); if (a === 'fix') { document.getElementById('fn-item-txt').focus(); return; } qlOut = a === 'out' ? 1 : 2; }
+    // v5.64.0: bỏ câu hỏi "ngoài danh mục P.QLTB" — món mới để chưa gắn mã (P.QLTB gắn sau ở mục Gắn mã)
   }
   if (!item) {
     item = {id:newId(), name, cat:document.getElementById('fn-cat').value, unit:document.getElementById('fn-unit-sel').value, stock:0, minStock:0, project:curProj, maQL:qlMa, ngoaiDM:qlOut};
@@ -3524,6 +3525,7 @@ async function doXuat() {
   const devObj = db.devices.find(x => x.name === dev);                     // v5.20: xuất dầu cho máy có đồng hồ → bắt buộc giờ máy
   let mr = {meter:'', meterNote:'', fillAt:fillAtRead('fx')};
   if (devObj && isDieselItem(item) && mUnit(devObj) !== 'none') { if (!document.getElementById('fx-mbox')) { fxMeterUpdate(); toast('⚠️ Nhập ' + mLbl(devObj).toLowerCase() + ' hiện tại'); return; } mr = meterRead('fx', devObj); if (!mr) return; }
+  if (typeof pcConfirm === 'function' && !(await pcConfirm('xuat', item, item.name, qty))) return;   // v5.64.0: kiểm tra lại trước khi lưu
   const _ct = fxCtVal(item); ctApply(item, {type:'xuat', ct:_ct, qty});          // v5.35
   const txn = {id:newId(), type:'xuat', ct:_ct, itemId, itemName:item.name, qty, unit:item.unit, project:proj,
     supplierOrReceiver:window.fxRecvO || document.getElementById('fx-note').value,
@@ -18620,5 +18622,528 @@ async function qlBack() {                                       // về lại P.
   qlOpen = function (force) { QL_RET = null; return qo0(force); };   // vào P.QLTB bằng menu → bỏ nhớ
 }
 </script>
+<script>// ===== v5.64.0 — TRANG NHẬP / XUẤT CHUNG · BẢNG THEO BIÊN BẢN (NHẬP + XUẤT) · NHỚ TÊN GỌI KHÁC · KIỂM TRA LẠI PHIẾU 1 MÓN =====
+// (1) Ô Nhập kho / Xuất kho ở Tổng quan + thanh bên → trang #dp-hx: công tắc Nhập | Xuất · Phiếu 1 món · Gõ / nói / dán Zalo (ô ⚡ cũ chuyển vào đây) · Bảng theo biên bản.
+// (2) Bảng theo biên bản (#dp-bb, thay màn 5.63.1): cột STT · Tên hàng · ĐVT · SL, điền bằng Chụp ảnh / Dán chữ / File Excel / Gõ tay; mỗi dòng báo khớp (q5Resolve + q5Check),
+//     tự lưu nháp theo dự án + chiều; Xem trước & lưu → màn xem trước của Nhập / Xuất nhanh (q5Render / q5Save, máy chủ qkBatch như cũ).
+// (3) Nhớ tên gọi khác: HXA.m[khoá không dấu] = tên trong kho; máy chủ 5.64.0 lưu sheet TenGoiKhac (aliasSet), getAll gửi alias khi aliasRev đổi. Máy chủ cũ → chỉ nhớ trên máy.
+// (4) Phiếu 1 món (doNhap / doXuat gốc): bỏ câu hỏi "ngoài danh mục P.QLTB" (món mới để "chưa gắn mã"), thay bằng tấm Kiểm tra lại (ngày giờ · tên · số lượng chữ to).
+formPhotos.bb = formPhotos.bb || [];
+let HX = { dir:'nhap' };
+const HX_LAST = 'fecon_nx564_last', HX_DK = (d, p) => 'fecon_nx564_d|' + (p || curProj) + '|' + d;
+const hxCan = d => d === 'xuat' ? hp('k_xuat') : hp('k_nhap');
+const hxLS = (k, v) => { try { if (v === undefined) return JSON.parse(localStorage.getItem(k) || 'null'); if (v === null) localStorage.removeItem(k); else localStorage.setItem(k, JSON.stringify(v)); } catch (e) { return null; } };
+const hxW = d => d === 'xuat' ? 'xuất' : 'nhập';
+const HXI = {
+  doc:'<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="5" y="3" width="14" height="18" rx="2"/><path d="M9 8h6M9 12h6M9 16h3"/></svg>',
+  chat:'<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M4 5h16v11H9l-5 4z"/></svg>',
+  tbl:'<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 9h18M3 14h18M9 4v16"/></svg>',
+  cam:'<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M4 8h3l2-3h6l2 3h3v11H4z"/><circle cx="12" cy="13" r="3.5"/></svg>',
+  paste:'<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="6" y="4" width="12" height="16" rx="2"/><path d="M9 4h6v3H9z"/></svg>',
+  xls:'<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="4" y="4" width="16" height="16" rx="2"/><path d="M4 10h16M10 4v16"/></svg>',
+  plus:'<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>'
+};
+(function () {
+  document.body.insertAdjacentHTML('beforeend', `<div class="detail-page" id="dp-hx"><div class="detail-header"><button class="back-btn" onclick="closeDp('dp-hx')" aria-label="Quay lại">‹</button><div class="detail-title" id="hx-title">Nhập / Xuất</div></div><div class="detail-body" id="dp-hx-body"></div></div>`);
+})();
+
+// ---------- (1) trang chung ----------
+function hxOpen(dir, then) {
+  if (!curProj || curProj === 'all') { toast('Chọn 1 dự án trước'); return; }
+  if (dir && hxCan(dir)) HX.dir = dir; else if (!hxCan(HX.dir)) HX.dir = hxCan('nhap') ? 'nhap' : 'xuat';
+  if (!hxCan(HX.dir)) { toast('Chức danh của bạn chưa có quyền nhập / xuất kho'); return; }
+  hxHub(); openDp('dp-hx');
+  if (then === 'q5') setTimeout(() => q5Toggle(true), 150);
+}
+function hxHub() {
+  const B = document.getElementById('dp-hx-body'); if (!B) return;
+  const d = HX.dir, last = (hxLS(HX_LAST) || {})[d] || '', both = hxCan('nhap') && hxCan('xuat');
+  const tag = k => last === k ? '<span class="hx-last">Dùng lần trước</span>' : '';
+  let draft = ''; try { draft = localStorage.getItem(Q5_LS) || ''; } catch (e) {}
+  const drafts = ['nhap', 'xuat'].filter(hxCan).map(x => ({ x, o:hxLS(HX_DK(x)) })).filter(z => z.o && (z.o.rows || []).some(r => String(r.name || '').trim()));
+  document.getElementById('hx-title').textContent = 'Nhập / Xuất · ' + curProj;
+  B.innerHTML = `<div class="hx-wrap">
+    ${both ? `<div class="hx-sw" role="group" aria-label="Chiều phiếu"><button type="button" class="${d === 'nhap' ? 'on' : ''}" aria-pressed="${d === 'nhap'}" onclick="hxDir('nhap')">Nhập</button><button type="button" class="${d === 'xuat' ? 'on x' : ''}" aria-pressed="${d === 'xuat'}" onclick="hxDir('xuat')">Xuất</button></div>` : `<div class="hx-one-dir">${d === 'xuat' ? 'Xuất kho' : 'Nhập kho'}</div>`}
+    <button type="button" class="hx-tile" onclick="hxOne()"><span class="hx-ic o">${HXI.doc}</span><span class="hx-tx"><b>Phiếu 1 món</b><small>${d === 'xuat' ? 'Phiếu xuất như hiện nay' : 'Phiếu nhập như hiện nay'} · hôm nay ${todayCount(d)} phiếu</small></span>${tag('one')}</button>
+    <div class="hx-tile hx-q5${draft.trim() ? ' has' : ''}"><button type="button" class="hx-q5h" onclick="hxQ5()"><span class="hx-ic b">${HXI.chat}</span><span class="hx-tx"><b>Gõ / nói / dán Zalo</b><small>${d === 'xuat' ? '“xuất 1000 bộ cóc d20 cho tổ khoan 2”' : '“nhập 2 tank bent, 32 tấn bentonite”'}</small></span>${tag('q5')}</button>
+      <div id="hx-q5"></div></div>
+    <div class="hx-tile hx-big"><button type="button" class="hx-bigh" onclick="hxTbl()"><span class="hx-ic f">${HXI.tbl}</span><span class="hx-tx"><b>Bảng theo biên bản</b><small>Nhiều món một lần · cột như biên bản bàn giao</small></span>${tag('tbl')}</button>
+      <div class="hx-fill"><button type="button" onclick="hxTbl('cam')">${HXI.cam}<span>Chụp ảnh</span></button><button type="button" onclick="hxTbl('paste')">${HXI.paste}<span>Dán chữ</span></button><button type="button" onclick="hxTbl('xls')">${HXI.xls}<span>File Excel</span></button><button type="button" onclick="hxTbl('add')">${HXI.plus}<span>Gõ tay</span></button></div></div>
+    ${drafts.length ? `<div class="hx-h">Biên bản đang dở</div>` + drafts.map(z => { const n = z.o.rows.filter(r => String(r.name || '').trim()).length, t = new Date(z.o.t || 0);
+      return `<button type="button" class="hx-draft" onclick="HX.dir='${z.x}';hxTbl()"><span><b>${z.x === 'xuat' ? 'Xuất' : 'Nhập'} · ${n} dòng${z.o.f && (z.o.f.cts || z.o.f.ncc || z.o.f.recv) ? ' · ' + escHtml(z.o.f.cts || z.o.f.ncc || z.o.f.recv) : ''}</b><small>Lưu nháp lúc ${String(t.getHours()).padStart(2, '0')}:${String(t.getMinutes()).padStart(2, '0')} ${t.getDate()}/${t.getMonth() + 1} · chưa lưu phiếu</small></span><span class="hx-go">Làm tiếp ›</span></button>`; }).join('') : ''}
+    <div class="hx-note">Máy vào công trường, Cấp nhiên liệu, Cho mượn / Trả vẫn ở ô riêng như cũ. Phiếu 1 món vẫn chọn được máy, mượn / trả như trước.</div>
+  </div>`;
+  if (draft.trim()) hxQ5(true);
+}
+function hxDir(d) { if (!hxCan(d)) return; HX.dir = d; hxHub(); }
+function hxUse(k) { const o = hxLS(HX_LAST) || {}; o[HX.dir] = k; hxLS(HX_LAST, o); }
+function hxOne() { hxUse('one'); closeDp('dp-hx'); goTab(HX.dir); }
+function hxQ5(keep) {
+  const box = document.getElementById('hx-q5'); if (!box) return;
+  if (!document.getElementById('q5-box')) {
+    box.innerHTML = q5BoxHtml(true).replace(/<button type="button" class="q5-btn q5-bb"[^>]*>[^<]*<\/button>/, '');
+    const t = document.getElementById('q5-text'); if (t && HX.dir === 'xuat') t.placeholder = 'xuất 1000 bộ cóc d20 cho tổ khoan 2\nxuất 200 lít dầu cho cẩu 80T';
+    box.querySelector('.q5-head')?.remove();
+  }
+  if (!keep) { hxUse('q5'); q5Toggle(true); } else document.getElementById('q5-box')?.classList.add('q5-on');
+}
+// ô ⚡ không còn ở Tổng quan: bỏ nút cũ, không chèn ô mới
+q5Mount = function (c) { c.querySelector('.qk-entry')?.remove(); };
+openQuick = function () { hxOpen(HX.dir, 'q5'); };
+// gõ ở chiều Xuất mà dòng đầu không có chữ nhập / xuất → hiểu là xuất
+{ const _b = q5Build; q5Build = function (text) {
+  try {
+    if (HX.dir === 'xuat' && document.getElementById('dp-hx')?.classList.contains('show') && !Q5.bb) {
+      const s = q5Segments(text); if (s.length && !q5Verb(s[0].text)) text = 'xuất ' + text.replace(/^\s+/, '');
+    }
+  } catch (e) {}
+  return _b.call(this, text);
+}; }
+// Tổng quan: 2 ô Nhập kho / Xuất kho mở trang chung
+{ const _h = renderHome; renderHome = function (c) {
+  _h.apply(this, arguments);
+  try { c.querySelectorAll('.act-grid .act-tile').forEach(b => { const m = (b.getAttribute('onclick') || '').match(/goTab\('(nhap|xuat)'\)/); if (m) b.setAttribute('onclick', `hxOpen('${m[1]}')`); }); } catch (e) {}
+}; }
+
+// ---------- (3) nhớ tên gọi khác ----------
+const HXA_LS = 'fecon_nx564_alias';
+let HXA = hxLS(HXA_LS) || { rev:'', m:{}, on:0 };
+const hxAK = s => normVN(String(s || '')).replace(/[^a-z0-9]+/g, ' ').trim();
+const hxAlias = name => (HXA.m || {})[hxAK(name)] || '';
+{ const _a = applyServer; applyServer = function (r) {
+  _a.apply(this, arguments);
+  try {
+    if (r && r.aliasRev) {
+      if (Array.isArray(r.alias)) { const m = {}; r.alias.forEach(o => { if (o && o.k && o.item) m[o.k] = o.item; }); HXA = { rev:r.aliasRev, m:Object.assign(HXA.loc || {}, m), loc:HXA.loc || {}, on:1 }; }
+      else HXA.on = 1;
+      hxLS(HXA_LS, HXA);
+    }
+  } catch (e) {}
+}; }
+{ const _i = syncInc; syncInc = function () { const inc = _i.apply(this, arguments); if (HXA && HXA.rev) inc.aliasRev = HXA.rev; return inc; }; }
+async function hxAliasSave(list) {
+  list = list.filter(x => x && hxAK(x.ten).length >= 2 && x.item && hxAK(x.ten) !== hxAK(x.item)); if (!list.length) return;
+  HXA.m = HXA.m || {}; HXA.loc = HXA.loc || {};
+  list.forEach(x => { HXA.m[hxAK(x.ten)] = x.item; HXA.loc[hxAK(x.ten)] = x.item; });
+  hxLS(HXA_LS, HXA);
+  if (!HXA.on || !navigator.onLine) return;
+  try { const r = await api('aliasSet', { list }); if (r && r.success) { HXA.loc = {}; hxLS(HXA_LS, HXA); } } catch (e) {}
+}
+
+// ---------- (2) bảng theo biên bản ----------
+let BBD = { dir:'nhap', rows:[], f:{}, open:'' };
+function bbOpen(act) {
+  if (!curProj || curProj === 'all') { toast('Chọn 1 dự án trước'); return; }
+  const dir = HX.dir || 'nhap'; if (!hxCan(dir)) { toast('Chức danh của bạn chưa có quyền ' + hxW(dir) + ' kho'); return; }
+  const sv = hxLS(HX_DK(dir));
+  BBD = { dir, rows:(sv && sv.rows || []).map(r => Object.assign({ name:'', unit:'', qty:null }, r)), f:(sv && sv.f) || {}, open:'' };
+  formPhotos.bb = [];
+  const B = document.getElementById('dp-bb-body'), cats = (db.categories || CATEGORIES), x = dir === 'xuat', f = BBD.f;
+  document.querySelector('#dp-bb .detail-title').textContent = x ? 'Xuất theo danh sách' : 'Nhập theo biên bản';
+  B.innerHTML = `<div class="hx-wrap">
+    <div class="hx-card"><div class="hx-h">Chung cho cả ${x ? 'danh sách' : 'biên bản'}</div>
+      ${x ? `<div class="fg"><label for="bb-recv">Người nhận / tổ đội / máy nhận</label><input type="text" id="bb-recv" autocomplete="off" placeholder="VD: Tổ khoan 2, hoặc tên máy" value="${escHtml(f.recv || '')}" oninput="bbF()"></div>`
+        : `<div class="fg"><label for="bb-ncc">Bên giao (NCC hoặc dự án khác)</label><input type="text" id="bb-ncc" data-ncc="vt" autocomplete="off" placeholder="Tên NCC hoặc dự án chuyển qua" value="${escHtml(f.ncc || '')}" oninput="bbF()" onchange="bbF()"></div>`}
+      <div class="hx-g2">${typeof canGio === 'function' && canGio() ? `<div class="fg"><label for="bb-time">Ngày giờ ${x ? 'xuất' : 'trên BB'}</label><input type="datetime-local" id="bb-time" max="${pfIso(new Date())}" value="${escHtml(f.at || bbAt0())}" onchange="bbF()"></div>` : ''}
+        <div class="fg"><label for="bb-cts">Số ${x ? 'phiếu / BB' : 'biên bản'} <small>· không bắt buộc</small></label><input type="text" id="bb-cts" placeholder="VD: BBGH 09/11" value="${escHtml(f.cts || '')}" oninput="bbF()"></div></div>
+      ${typeof mayfHtml === 'function' ? mayfHtml('bb') : ''}
+      ${x ? '' : `<div class="fg"><label for="bb-cat">Nhóm cho món mới (chưa có trong kho)</label><select id="bb-cat" onchange="bbF()"><option value="">Tự đoán theo tên</option>${cats.map(c => `<option value="${c.id}" ${c.id === f.cat ? 'selected' : ''}>${escHtml(c.name)}</option>`).join('')}</select></div>`}
+      ${photoFieldHtml('bb')}
+    </div>
+    <div class="hx-fill hx-fill2"><button type="button" onclick="bbAct('cam')">${HXI.cam}<span>Chụp</span></button><button type="button" onclick="bbAct('paste')">${HXI.paste}<span>Dán chữ</span></button><button type="button" onclick="bbAct('xls')">${HXI.xls}<span>File Excel</span></button><button type="button" onclick="bbAct('add')">${HXI.plus}<span>Thêm dòng</span></button></div>
+    <input type="file" id="bb-cam" accept="image/*" capture="environment" style="display:none" onchange="bbCam(this)">
+    <input type="file" id="bb-xls" accept=".xlsx,.xls,.csv" style="display:none" onchange="bbXls(this)">
+    <div id="bb-paste"></div>
+    <div id="bb-list"></div>
+    <div id="bb-sum"></div>
+    <button type="button" class="btn-full btn-orange" id="bb-go" onclick="bbGo()">Xem trước &amp; lưu ›</button>
+    <button type="button" class="hx-clear" onclick="bbReset()">Xoá bảng, làm lại</button>
+  </div>`;
+  renderFormPhotos('bb'); if (typeof mayfSet === 'function') { MAYF.bb = f.may || ''; mayfShow('bb'); }
+  { const sm = document.querySelector('#bb-may-row label small'); if (sm) sm.textContent = '· không bắt buộc · áp cho mọi món'; }
+  if (!BBD.rows.length) BBD.rows = [bbRow()];
+  bbList(); openDp('dp-bb');
+  if (act) setTimeout(() => bbAct(act), 120);
+}
+const bbRow = o => Object.assign({ name:'', unit:'', qty:null, pick:'', newName:'', newCat:'', newUnit:'' }, o || {});
+function hxTbl(act) { hxUse('tbl'); bbOpen(act); }
+function bbF() {
+  const v = id => String((document.getElementById(id) || {}).value || '').trim();
+  BBD.f = { ncc:v('bb-ncc'), recv:v('bb-recv'), at:v('bb-time'), cts:v('bb-cts'), cat:v('bb-cat'), may:(typeof MAYF !== 'undefined' && MAYF.bb) || '' };
+  bbSave(); bbSum();
+}
+function bbSave() {
+  const rows = BBD.rows.filter(r => String(r.name || '').trim() || r.qty > 0);
+  hxLS(HX_DK(BBD.dir), rows.length ? { rows, f:BBD.f, t:Date.now() } : null);
+}
+function bbReset() {
+  if (BBD.rows.some(r => String(r.name || '').trim()) && !confirm('Xoá hết các dòng đang gõ?')) return;
+  BBD.rows = [bbRow()]; hxLS(HX_DK(BBD.dir), null); bbList();
+}
+// --- các cách điền ---
+function bbAct(a) {
+  if (a === 'add') { bbAdd(); return; }
+  if (a === 'cam') { document.getElementById('bb-cam').click(); return; }
+  if (a === 'xls') { document.getElementById('bb-xls').click(); return; }
+  if (a === 'paste') { bbPasteBox(true); }
+}
+function bbPasteBox(show, tip) {
+  const el = document.getElementById('bb-paste'); if (!el) return;
+  if (!show) { el.innerHTML = ''; return; }
+  el.innerHTML = `<div class="hx-card hx-pst">
+    ${tip ? `<div class="hx-tip"><b>Ảnh đã gắn vào biên bản.</b> Để app đọc chữ: mở ảnh biên bản trong <b>Ảnh</b> (iPhone: giữ tay lên chữ → Chọn tất cả → Sao chép) hoặc <b>Google Lens</b> (Android: Văn bản → Chọn tất cả → Sao chép), rồi bấm Dán bên dưới.</div>` : ''}
+    <textarea class="bb-txt" id="bb-text" placeholder="Dán chữ của biên bản / tin Zalo vào đây…&#10;VD: 1 Lọc gió động cơ P134353 cái 2"></textarea>
+    <div class="bb-bar"><button type="button" onclick="bbPaste()">📋 Dán</button><button type="button" class="go" onclick="bbRead()">Đọc vào bảng ›</button></div></div>`;
+  if (!tip) setTimeout(() => document.getElementById('bb-text')?.focus(), 80);
+}
+async function bbPaste() {
+  try { const t = await navigator.clipboard.readText(); if (t) { document.getElementById('bb-text').value = t; bbRead(); } }
+  catch (e) { toast('Nhấn giữ vào ô rồi chọn "Dán"'); document.getElementById('bb-text')?.focus(); }
+}
+function bbAppend(list, warn) {
+  const keep = BBD.rows.filter(r => String(r.name || '').trim());
+  BBD.rows = keep.concat(list.map(r => bbRow({ name:String(r.name).replace(/\s*[,;]\s*(?=mã(?:\s|:|$))/i, ' ').replace(/\s+/g, ' ').trim(), unit:r.unit || '', qty:r.qty })));
+  if (!BBD.rows.length) BBD.rows = [bbRow()];
+  bbSave(); bbList();
+  toast(list.length ? `✅ Đã thêm ${list.length} dòng${warn ? ' · ' + warn : ''}` : '⚠️ ' + (warn || 'Không đọc được dòng hàng nào'));
+}
+function bbRead() {
+  const el = document.getElementById('bb-text'), P = bbParse(el ? el.value : '');
+  bbAppend(P.rows, P.warn); if (P.rows.length) bbPasteBox(false);
+}
+async function bbCam(inp) { await addFormPhotos('bb', inp); bbPasteBox(true, 1); }
+// đọc file Excel / CSV: tìm hàng tiêu đề (Tên hàng · ĐVT · Số lượng), lấy các hàng dưới cho tới hàng trống / chữ ký
+async function bbXls(inp) {
+  const f = inp.files && inp.files[0]; inp.value = ''; if (!f) return;
+  showLoader('Đang đọc file...');
+  try {
+    if (!(await gdSheetJS())) throw new Error('Không tải được bộ đọc Excel — kiểm tra mạng');
+    const wb = XLSX.read(await f.arrayBuffer(), { type:'array' }), out = [];
+    for (const sn of wb.SheetNames) {
+      const A = XLSX.utils.sheet_to_json(wb.Sheets[sn], { header:1, raw:true, defval:'' });
+      const R = bbXlsRows(A); if (R.length) { out.push(...R); break; }
+    }
+    hideLoader();
+    bbAppend(out, out.length ? 'từ ' + f.name : 'Không thấy cột Tên hàng / Số lượng trong file');
+  } catch (e) { hideLoader(); toast('⚠️ ' + e.message); }
+}
+function bbXlsRows(A) {
+  const N = v => normVN(String(v == null ? '' : v)).replace(/\s+/g, ' ').trim();
+  let h = -1, cN = -1, cU = -1, cQ = -1;
+  for (let i = 0; i < Math.min(A.length, 30) && h < 0; i++) {
+    const r = A[i].map(N);
+    const n = r.findIndex(x => /^(ten|ten hang|ten hang hoa|ten vat tu|ten thiet bi|ten chi tiet|hang hoa|vat tu|noi dung|mo ta|danh muc)/.test(x) && x.length < 40);
+    const q = r.findIndex(x => /^(so luong|sl|s\.l|khoi luong|kl|sl giao|sl nhan|sl thuc|so luong giao|so luong thuc)/.test(x) && x.length < 30);
+    if (n >= 0 && q >= 0) { h = i; cN = n; cQ = q; cU = r.findIndex(x => /^(dvt|d\.v\.t|don vi|don vi tinh|dv)/.test(x)); }
+  }
+  if (h < 0) return [];
+  const out = [];
+  for (let i = h + 1; i < A.length; i++) {
+    const r = A[i], name = String(r[cN] == null ? '' : r[cN]).replace(/\s+/g, ' ').trim(), nn = N(name);
+    if (BB_STOP.test(nn)) break;
+    if (!name || /^\d+$/.test(name) || BB_HEAD.test(nn)) { if (!name && !r.some(v => String(v).trim())) { if (out.length) break; } continue; }
+    let q = r[cQ]; q = typeof q === 'number' ? q : bbNum(String(q).replace(/\s/g, ''));
+    const u = cU >= 0 ? String(r[cU] || '').trim() : '';
+    out.push({ name, unit:bbUnit(u) || u, qty:q > 0 ? q : null });
+  }
+  return out;
+}
+function bbAdd() {
+  BBD.rows.push(bbRow()); bbList();
+  setTimeout(() => { const L = document.querySelectorAll('#bb-list .bbn-name'); const e = L[L.length - 1]; if (e) { e.focus(); e.scrollIntoView({ block:'center' }); } }, 60);
+}
+// --- 1 dòng bảng → 1 dòng của Nhập / Xuất nhanh (Q5) ---
+function bbR(r, k) {
+  const x = BBD.dir === 'xuat', f = BBD.f || {}, name = q5Cap(r.name), unit = UNITS.find(u => normVN(u) === normVN(r.unit)) || String(r.unit || '').trim();
+  const R = { line:k + 1, seg:'Biên bản' + (f.cts ? ' ' + f.cts : '') + ': ' + name, full:'', on:true, warns:[], errs:[], ncc:x ? '' : bbNcc(), price:'', due:'', kg:'', alts:[],
+    kind:x ? 'out' : 'in', party:'', h:'', dest:'', qty:r.qty > 0 ? +r.qty : null, unitTxt:unit, name, recv:x ? (f.recv || '') : '' };
+  q5Resolve(R);
+  const want = x ? 'out' : 'in';
+  if (R.kind !== want) { R.kind = want; ['qlAlts', 'qlMa', 'leftDev', 'devName', 'devId', 'devAlts', 'devType'].forEach(z => delete R[z]); }
+  if (!x) R.mode = 'kho';
+  else { R.mode = R.mode === 'ra' ? 'ra' : 'use'; if (R.recv) { const dv = qkBest(qTokens(R.recv), projDevs().filter(d => devActive(d)), z => z.name)[0]; R.thietBi = dv && dv.s >= 0.45 ? dv.x.name : ''; } }
+  const kho = q5Kho(), A = it => ({ src:'kho', id:it.id, name:it.name, unit:it.unit, cat:it.cat, s:1, x:it });
+  const put = a => { R.alts = [a].concat(R.alts.filter(z => String(z.id) !== String(a.id))); R.itemKey = a.id; };
+  if (r.pick === 'new') { R.alts = []; R.itemKey = ''; R.picked = 'new'; }
+  else if (r.pick) {
+    const it = typeof r.pick === 'number' ? kho.find(i => i.id === r.pick) : null;
+    if (it) put(A(it)); else if (String(r.pick).startsWith('c:')) { const nm = String(r.pick).slice(2); put({ src:'cat', id:r.pick, name:nm, unit:r.newUnit || unit || 'Cái', cat:r.newCat || guessCat(nm) || 'khac', s:1 }); }
+    R.picked = 'user';
+  } else {
+    const al = hxAlias(name);
+    if (al) { const it = kho.find(i => normVN(i.name) === normVN(al)); if (it) { put(A(it)); R.picked = 'alias'; } else if (!x) { put({ src:'cat', id:'c:' + al, name:al, unit:unit || 'Cái', cat:guessCat(al) || 'khac', s:1 }); R.picked = 'alias'; } }
+    if (!R.picked) {
+      const code = bbCode(name);
+      if (code) {                                                 // có mã phụ tùng → chỉ khớp món cùng mã
+        const c = normVN(code).replace(/[^a-z0-9]/g, ''), it = kho.find(i => normVN(i.name).replace(/[^a-z0-9]/g, '').includes(c));
+        R.alts = it ? [A(it)] : []; R.itemKey = it ? it.id : '';
+      }
+    }
+  }
+  if (!q5Pick(R) && !x) { R.newName = q5Cap(r.newName || name); R.newUnit = r.newUnit || unit || ''; R.newCat = r.newCat || f.cat || (typeof guessCat === 'function' ? guessCat(R.newName) : 'khac') || 'khac'; }
+  q5Check(R);
+  return R;
+}
+const bbNcc = () => { const n0 = String((BBD.f || {}).ncc || '').trim(); return n0 && typeof nccStd === 'function' && !/^Chuyển từ dự án /.test(n0) ? nccStd(n0) : n0; };
+function bbRs() {
+  const L = []; BBD.rows.forEach((r, i) => { if (String(r.name || '').trim().length >= 2) { const R = bbR(r, L.length); R._i = i; L.push(R); } });
+  q5Simulate(L); return L;
+}
+function bbSt(R) {
+  const p = q5Pick(R), x = BBD.dir === 'xuat';
+  if (R.picked === 'new') return ['new', '+ Món mới · ' + (vtCatName(R.newCat) || 'chọn nhóm')];
+  if (p && p.src === 'kho') {
+    const it = p.x, s = it ? ` · tồn ${fmtNum(it.stock)} ${escHtml(it.unit)}` : '';
+    return ['ok', (R.picked === 'alias' ? '✓ Khớp (tên nhớ lần trước): ' : '✓ Khớp: ') + escHtml(p.name) + s];
+  }
+  if (p) return ['new', '+ Món mới theo danh mục: ' + escHtml(p.name)];
+  if (R.alts.length) return ['maybe', `? Gần giống ${R.alts.length} món — bấm để chọn`];
+  return x ? ['bad', '✕ Không có trong kho — bấm để tìm'] : ['new', '+ Món mới · nhóm ' + escHtml(vtCatName(R.newCat) || 'Khác') + ' — bấm để sửa'];
+}
+function bbList() {
+  const el = document.getElementById('bb-list'); if (!el) return;
+  const ae = document.activeElement, fr = ae && ae.closest && ae.closest('#bb-list .bbn-r'), fi = fr ? { i:[...el.querySelectorAll('.bbn-r:not(.bbn-hd)')].indexOf(fr), c:ae.tagName + '.' + (ae.className || '').split(' ')[0] } : null;
+  const x = BBD.dir === 'xuat', L = bbRs(), byI = {}; L.forEach(R => byI[R._i] = R);
+  const U = [...new Set(UNITS.concat(BBD.rows.map(r => r.unit).filter(Boolean)))];
+  el.innerHTML = `<div class="bbn"><div class="bbn-r bbn-hd"><span>TT</span><span class="h-n">Tên hàng</span><span class="h-u">ĐVT</span><span class="h-q">SL</span><span class="h-s">Khớp danh mục</span></div>` + BBD.rows.map((r, i) => {
+    const R = byI[i], st = R ? bbSt(R) : null, e = R && R.errs.filter(z => !/^Chưa có số lượng$|^Chọn vật tư$|^Chọn đúng loại|^Không có trong kho$/.test(z))[0], w = R && R.warns[0];
+    const p = R && q5Pick(R), uNeed = !r.unit && !(p && p.unit);
+    return `<div class="bbn-r${st ? ' st-' + st[0] : ''}${R && R.errs.some(z => /đủ|còn|thiếu/i.test(z)) ? ' over' : ''}">
+      <span class="bbn-tt">${i + 1}</span>
+      <input type="text" class="bbn-name" aria-label="Tên hàng dòng ${i + 1}" value="${escHtml(r.name)}" placeholder="Gõ tên hàng…" onchange="bbSet(${i},'name',this.value)" onkeydown="if(event.key==='Enter'){event.preventDefault();this.closest('.bbn-r').querySelector('.bbn-q').focus()}">
+      <div class="bbn-c">${st ? `<button type="button" class="bbn-st" onclick="bbPick(${i})">${st[1]}</button>` : ''}${e ? `<div class="bbn-e">${escHtml(e)}</div>` : ''}${w ? `<div class="bbn-w">⚠ ${escHtml(w)}</div>` : ''}</div>
+      <select aria-label="Đơn vị dòng ${i + 1}" class="bbn-u${uNeed && r.name ? ' need' : ''}" onchange="bbSet(${i},'unit',this.value)"><option value="">${p && p.unit ? escHtml(p.unit) : '—'}</option>${U.map(u => `<option ${u === r.unit ? 'selected' : ''}>${escHtml(u)}</option>`).join('')}</select>
+      <input type="number" class="bbn-q${r.name && !(r.qty > 0) ? ' need' : ''}" aria-label="Số lượng dòng ${i + 1}" inputmode="decimal" min="0" step="any" placeholder="SL" value="${r.qty != null ? r.qty : ''}" onchange="bbSet(${i},'qty',this.value)" onkeydown="if(event.key==='Enter'){event.preventDefault();this.blur();bbAddAfter(${i})}">
+      <button type="button" class="bbn-x" aria-label="Bỏ dòng ${i + 1}" onclick="bbDel(${i})">✕</button></div>`;
+  }).join('') + `</div>`;
+  if (fi && fi.i >= 0) { const r = el.querySelectorAll('.bbn-r:not(.bbn-hd)')[fi.i], [tg, c] = fi.c.split('.'), e = r && (c ? r.querySelector(tg.toLowerCase() + '.' + c) : r.querySelector(tg.toLowerCase())); if (e) try { e.focus({ preventScroll:true }); } catch (z) {} }
+  bbSum(L);
+}
+function bbAddAfter(i) { if (i === BBD.rows.length - 1) bbAdd(); else { const L = document.querySelectorAll('#bb-list .bbn-name'); L[i + 1] && L[i + 1].focus(); } }
+function bbSet(i, k, v) {
+  const r = BBD.rows[i]; if (!r) return;
+  if (k === 'qty') v = v === '' ? null : q5Num(v);
+  if (k === 'name') { v = String(v || '').replace(/\s+/g, ' ').trim(); if (v !== r.name) { r.pick = ''; r.newName = ''; } }
+  r[k] = v; bbSave(); setTimeout(bbList, 0);          // vẽ lại sau sự kiện blur / change (tránh lỗi khi đang rời ô)
+}
+function bbDel(i) { BBD.rows.splice(i, 1); if (!BBD.rows.length) BBD.rows = [bbRow()]; bbSave(); bbList(); }
+// tổng + chống trùng biên bản
+function bbDupMsg() {
+  const x = BBD.dir === 'xuat', f = BBD.f || {}, cts = String(f.cts || '').trim(), who = x ? String(f.recv || '').trim() : bbNcc();
+  const day = f.at ? f.at.slice(0, 10) : isoDay(new Date()), ty = x ? 'xuat' : 'nhap';
+  const T = db.transactions.filter(t => t.project === curProj && t.type === ty);
+  let G = [];
+  if (cts) G = T.filter(t => String(t.note || '').includes('CT: ' + cts + ' ·') || String(t.note || '').endsWith('CT: ' + cts));
+  if (!G.length && who) G = T.filter(t => bbgIsBB(t) && normVN(t.supplierOrReceiver || '') === normVN(who) && (d => d && isoDay(d) === day)(parseVN(t.datetime)));
+  if (!G.length) return '';
+  const t0 = G[0], d0 = parseVN(t0.datetime);
+  return `Có thể trùng: đã có ${cts && G.some(t => String(t.note || '').includes('CT: ' + cts)) ? `biên bản “${escHtml(cts)}”` : `biên bản của ${escHtml(who)} ngày ${day.split('-').reverse().join('/')}`} — ${G.length} phiếu, ${x ? 'xuất' : 'nhập'} lúc ${d0 ? String(d0.getHours()).padStart(2, '0') + ':' + String(d0.getMinutes()).padStart(2, '0') + ' ' + d0.getDate() + '/' + (d0.getMonth() + 1) : ''}${t0.createdByName ? ' (' + escHtml(t0.createdByName) + ')' : ''}. Kiểm tra trước khi lưu.`;
+}
+function bbSum(L) {
+  const el = document.getElementById('bb-sum'); if (!el) return;
+  L = L || bbRs();
+  const c = { ok:0, maybe:0, new:0, bad:0 }; L.forEach(R => c[bbSt(R)[0]]++);
+  const sl = L.reduce((s, R) => s + (+R.qty || 0), 0), dup = bbDupMsg(), over = L.filter(R => R.errs.some(z => /đủ|còn|thiếu/i.test(z))).length;
+  el.innerHTML = L.length ? `<div class="hx-card hx-sum"><div class="hx-tot"><span>Tổng</span><b>${L.length} dòng · SL ${fmtNum(sl)}</b></div>
+    <div class="hx-chips">${c.ok ? `<span class="ok">${c.ok} khớp</span>` : ''}${c.maybe ? `<span class="maybe">${c.maybe} cần chọn</span>` : ''}${c.new ? `<span class="new">${c.new} món mới</span>` : ''}${c.bad ? `<span class="bad">${c.bad} không có trong kho</span>` : ''}${over ? `<span class="bad">${over} quá tồn</span>` : ''}</div>
+    <div class="hx-cmp">So với giấy: đủ ${L.length} dòng chưa? Tổng số lượng có khớp không?</div></div>${dup ? `<div class="hx-dup">${dup}</div>` : ''}` : '';
+  const g = document.getElementById('bb-go'); if (g) g.textContent = L.length ? `Xem trước & lưu ${L.length} món ›` : 'Xem trước & lưu ›';
+}
+// --- chọn món cho 1 dòng (gần giống · tìm · món mới tên tự do · nhớ) ---
+function bbPick(i) {
+  const r = BBD.rows[i], R = bbRs().find(z => z._i === i); if (!r || !R) return;
+  const x = BBD.dir === 'xuat', cats = (db.categories || CATEGORIES), unit = r.unit || R.unitTxt || '';
+  if (!document.getElementById('modal-nxp')) document.body.insertAdjacentHTML('beforeend', `<div class="modal-bg" id="modal-nxp" style="display:none;z-index:1200" onclick="if(event.target===this)closeModal('modal-nxp')"><div class="modal-sheet nxp"><div class="modal-handle"></div><div id="nxp-body"></div></div></div>`);
+  const opt = a => { const it = a.src === 'kho' ? a.x : null, on = String(a.id) === String(R.itemKey);
+    return `<button type="button" class="nxp-o${on ? ' on' : ''}" onclick="bbPickSet(${i},${a.src === 'kho' ? a.id : `'${escHtml(String(a.id)).replace(/'/g, '&#39;')}'`})"><b>${escHtml(a.name)}</b><small>${escHtml(vtCatName(a.cat) || '')} · ${escHtml(a.unit || '')}${it ? ' · tồn ' + fmtNum(it.stock) : ' · món mới theo danh mục'}</small>${on ? '<span>Đang chọn</span>' : ''}</button>`; };
+  document.getElementById('nxp-body').innerHTML = `<div class="nxp-src">Trên giấy ghi: <b>“${escHtml(r.name)}”</b>${r.qty ? ' · ' + fmtNum(r.qty) + ' ' + escHtml(unit) : ''}</div>
+    <div class="modal-title" style="margin:4px 0 8px">Chọn món ${x ? 'trong kho' : ''}</div>
+    <div id="nxp-list">${R.alts.slice(0, 6).map(opt).join('') || '<div class="nxp-none">Không có món nào gần giống</div>'}</div>
+    <input type="search" class="nxp-q" id="nxp-q" placeholder="Tìm món khác trong kho…" aria-label="Tìm món khác" oninput="bbPickFind(${i},this.value)">
+    <div id="nxp-find"></div>
+    ${x ? '' : `<div class="nxp-new"><div class="nxp-nh">+ Món mới — gõ tên tự do</div>
+      <input type="text" id="nxp-nn" aria-label="Tên món mới" value="${escHtml(r.newName || q5Cap(r.name))}">
+      <div class="hx-g2"><select id="nxp-nc" aria-label="Nhóm">${cats.map(c => `<option value="${c.id}" ${c.id === (R.newCat || r.newCat) ? 'selected' : ''}>${escHtml(c.name)}</option>`).join('')}</select>
+      <select id="nxp-nu" aria-label="Đơn vị"><option value="">ĐVT…</option>${UNITS.map(u => `<option ${normVN(u) === normVN(r.newUnit || unit) ? 'selected' : ''}>${escHtml(u)}</option>`).join('')}</select></div>
+      <button type="button" class="nxp-nb" onclick="bbPickNew(${i})">Dùng tên mới này</button></div>`}
+    <label class="nxp-mem"><input type="checkbox" id="nxp-mem" ${r.mem === 0 ? '' : 'checked'}><span>Nhớ cho lần sau: “${escHtml(r.name)}” là món đã chọn (mọi điện thoại dùng chung)</span></label>`;
+  openModal('modal-nxp');
+}
+function bbPickFind(i, q) {
+  const el = document.getElementById('nxp-find'); if (!el) return;
+  q = String(q || '').trim(); if (q.length < 2) { el.innerHTML = ''; return; }
+  const L = qkBest(qTokens(q), q5Kho(), z => z.name).slice(0, 8);
+  el.innerHTML = L.length ? L.map(z => `<button type="button" class="nxp-o" onclick="bbPickSet(${i},${z.x.id})"><b>${escHtml(z.x.name)}</b><small>${escHtml(vtCatName(z.x.cat) || '')} · ${escHtml(z.x.unit)} · tồn ${fmtNum(z.x.stock)}</small></button>`).join('') : '<div class="nxp-none">Không thấy trong kho</div>';
+}
+function bbPickSet(i, v) {
+  const r = BBD.rows[i]; if (!r) return;
+  r.pick = v; r.mem = document.getElementById('nxp-mem')?.checked ? 1 : 0;
+  if (typeof v === 'string' && v.startsWith('c:')) { const a = (bbRs().find(z => z._i === i) || { alts:[] }).alts.find(z => z.id === v); if (a) { r.newUnit = a.unit; r.newCat = a.cat; } }
+  closeModal('modal-nxp'); bbSave(); bbList();
+}
+function bbPickNew(i) {
+  const r = BBD.rows[i]; if (!r) return;
+  const nn = String(document.getElementById('nxp-nn').value || '').replace(/\s+/g, ' ').trim();
+  if (nn.length < 2) { toast('⚠️ Gõ tên món mới'); return; }
+  const ex = q5Kho().find(it => normVN(it.name) === normVN(nn));
+  if (ex) { bbPickSet(i, ex.id); toast('Tên này đã có trong kho → chọn món có sẵn'); return; }
+  Object.assign(r, { pick:'new', newName:nn, newCat:document.getElementById('nxp-nc').value, newUnit:document.getElementById('nxp-nu').value || r.unit || '', mem:document.getElementById('nxp-mem')?.checked ? 1 : 0 });
+  if (!r.unit && r.newUnit) r.unit = r.newUnit;
+  closeModal('modal-nxp'); bbSave(); bbList();
+}
+// --- xem trước & lưu: dùng màn xem trước của Nhập / Xuất nhanh ---
+function bbGo() {
+  bbF();
+  const L = bbRs(), x = BBD.dir === 'xuat';
+  if (!L.length) { toast('⚠️ Chưa có dòng hàng nào'); return; }
+  const noQ = L.filter(R => !(R.qty > 0)); if (noQ.length) { toast(`⚠️ ${noQ.length} dòng chưa có số lượng`); bbFocus(noQ[0]._i, '.bbn-q'); return; }
+  const mb = L.filter(R => { const s = bbSt(R)[0]; return s === 'maybe' || s === 'bad'; });
+  if (mb.length) { toast(`⚠️ Còn ${mb.length} dòng cần chọn món`); bbFocus(mb[0]._i); return; }
+  if (!x) { const nu = L.filter(R => !q5Pick(R) && !R.newUnit); if (nu.length) { toast(`⚠️ ${nu.length} món mới chưa có đơn vị`); bbFocus(nu[0]._i, 'select'); return; } }
+  const f = BBD.f, mem = [];
+  L.forEach(R => { const r = BBD.rows[R._i], p = q5Pick(R); if (r && r.mem && r.pick) mem.push({ ten:r.name, item: p ? p.name : (R.newName || r.newName || '') }); });
+  const cmd = (x ? 'Xuất theo danh sách' : 'Biên bản') + (f.cts ? ' ' + f.cts : '') + (x ? (f.recv ? ' cho ' + f.recv : '') : (bbNcc() ? ' từ ' + bbNcc() : '')) + ' · ' + L.length + ' món';
+  Q5 = { rows:L, cmd, err:'', busy:false, at:f.at || '', bb:{ dir:BBD.dir, ncc:x ? '' : bbNcc(), recv:x ? f.recv : '', cts:f.cts || '', may:(typeof MAYF !== 'undefined' && MAYF.bb) || '', photos:formPhotos.bb.slice(), mem } };
+  q5Simulate(Q5.rows);
+  openDp('dp-quick');
+  const t = document.querySelector('#dp-quick .detail-title'); if (t) t.textContent = (x ? '📤 Xuất · ' : '📄 Biên bản · ') + L.length + ' món';
+  q5Render();
+}
+function bbFocus(i, sel) {
+  const row = document.querySelectorAll('#bb-list .bbn-r:not(.bbn-hd)')[i]; if (!row) return;
+  row.scrollIntoView({ block:'center', behavior:'smooth' }); row.classList.add('flash'); setTimeout(() => row.classList.remove('flash'), 1600);
+  if (sel) setTimeout(() => row.querySelector(sel)?.focus(), 300);
+}
+// phiếu xuất của biên bản: bộ phận máy + số chứng từ (khối 5.63.1 chỉ lo phiếu nhập)
+{ const _o = q5Ops; q5Ops = function () {
+  const r = _o.apply(this, arguments);
+  try {
+    const bb = Q5.bb; if (bb && bb.dir === 'xuat') { let first = 0;
+      r.ops.forEach(o => { const d = o.k === 'txn' ? o.d : null; if (!d || d.type !== 'xuat') return;
+        if (bb.may) d.may = bb.may;
+        if (bb.cts) d.note = ('CT: ' + bb.cts + ' · ' + (d.note || '')).replace(/ · $/, '').slice(0, 400);
+        if (!d.thietBi && !d.supplierOrReceiver && bb.recv) d.supplierOrReceiver = bb.recv;
+        if (!first) first = d.id; });
+      bb.first = first; }
+  } catch (e) { console.warn(e); }
+  return r;
+}; }
+{ const _s = q5Save; q5Save = async function () {
+  const bb = Q5.bb;
+  const r = await _s.apply(this, arguments);
+  try {
+    if (!Q5.rows.length && !Q5.bb) {                                // lưu xong
+      if (bb) { hxLS(HX_DK(bb.dir), null); if (bb.mem && bb.mem.length) hxAliasSave(bb.mem); BBD.rows = []; }
+      closeDp('dp-bb'); closeDp('dp-hx');
+    }
+  } catch (e) { console.warn(e); }
+  return r;
+}; }
+
+// ---------- (4) phiếu 1 món: kiểm tra lại trước khi lưu ----------
+function pcConfirm(type, item, name, qty) {
+  return new Promise(res => {
+    try {
+      const x = type === 'xuat', p = x ? 'fx' : 'fn', el = document.getElementById(p + '-time'), v = el && typeof gioVal === 'function' ? gioVal(el) : '';
+      const d = v ? new Date(v) : new Date(), today = isoDay(new Date()), bu = v && isoDay(d) !== today;
+      const unit = item ? item.unit : String(document.getElementById('fn-unit-sel')?.value || '');
+      const pad = n => String(n).padStart(2, '0'), dt = `${pad(d.getDate())}/${pad(d.getMonth() + 1)}/${d.getFullYear()} · ${pad(d.getHours())}:${pad(d.getMinutes())}`;
+      const may = typeof MAYP !== 'undefined' && MAYP && MAYP[type] ? mayLabel(MAYP[type], curProj) : '';
+      const kv = [];
+      if (!x) { const ncc = String(document.getElementById('fn-ncc')?.value || '').trim(); if (ncc) kv.push(['Bên giao', ncc]); kv.push(['Tồn kho sau', fmtNum(Math.round(((item ? item.stock : 0) + qty) * 1000) / 1000) + ' ' + unit]); }
+      else {
+        const dev = String(document.getElementById('fx-device')?.value || '').trim(), recv = String(window.fxRecvO || document.getElementById('fx-note')?.value || '').trim();
+        if (dev) kv.push(['Cho máy', dev]); else if (recv) kv.push(['Người nhận', recv]);
+        kv.push(['Tồn kho sau', fmtNum(Math.round((item.stock - qty) * 1000) / 1000) + ' ' + unit]);
+      }
+      if (may) kv.push(['Của máy', may]);
+      const cat = !item ? vtCatName(document.getElementById('fn-cat')?.value || '') : '';
+      if (!document.getElementById('modal-pc')) document.body.insertAdjacentHTML('beforeend', `<div class="modal-bg" id="modal-pc" style="display:none;z-index:1200"><div class="modal-sheet pc"><div class="modal-handle"></div><div id="pc-body"></div>
+        <div class="pc-btns"><button type="button" class="btn-full" id="pc-fix">Sửa lại</button><button type="button" class="btn-full btn-orange" id="pc-ok">Đúng, lưu phiếu</button></div></div></div>`);
+      document.getElementById('pc-body').innerHTML = `<div class="modal-title">Kiểm tra lại phiếu ${x ? 'xuất' : 'nhập'}</div>
+        <div class="pc-dt${bu ? ' bu' : ''}"><small>Ngày giờ phiếu</small><b>${dt}</b>${bu ? `<em>Ghi bù — không phải hôm nay (${today.split('-').reverse().slice(0, 2).join('/')})</em>` : ''}</div>
+        <div class="pc-nm"><small>Tên vật tư</small><b>${escHtml(item ? item.name : name)}</b>${!item ? `<span class="pc-new">Món mới${cat ? ' · nhóm ' + escHtml(cat) : ''}</span>` : ''}</div>
+        <div class="pc-q"><small>Số lượng</small><b>${fmtNum(qty)}</b><span>${escHtml(unit)}</span></div>
+        <div class="pc-kv">${kv.map(([k, w]) => `<span>${k}</span><b>${escHtml(w)}</b>`).join('')}</div>`;
+      const m = document.getElementById('modal-pc'), done = ok => { m.style.display = 'none'; res(ok); };
+      document.getElementById('pc-ok').onclick = () => done(true);
+      document.getElementById('pc-fix').onclick = () => done(false);
+      m.onclick = e => { if (e.target === m) done(false); };
+      if (typeof closeKeyboard === 'function') closeKeyboard();
+      m.style.display = 'flex';
+      setTimeout(() => document.getElementById('pc-ok')?.focus(), 60);
+    } catch (e) { console.warn(e); res(true); }
+  });
+}
+</script>
+<style>/* v5.64.0 */
+.hx-wrap{padding:14px;display:flex;flex-direction:column;gap:12px;max-width:640px;margin:0 auto}
+.hx-sw{display:grid;grid-template-columns:1fr 1fr;gap:4px;background:#E9ECEF;border-radius:12px;padding:4px}
+.hx-sw button{height:44px;border:none;border-radius:9px;background:transparent;font:600 16px inherit;font-family:inherit;color:var(--text2);cursor:pointer}
+.hx-sw button.on{background:#17703D;color:#fff;font-weight:800}.hx-sw button.on.x{background:#C2410C}
+.hx-one-dir{font-weight:800;font-size:16px}
+.hx-tile{display:flex;flex-direction:column;gap:10px;text-align:left;border:1px solid var(--border);background:#fff;border-radius:14px;padding:14px;font-family:inherit;color:var(--text);cursor:pointer;width:100%;box-sizing:border-box}
+button.hx-tile,.hx-q5h,.hx-bigh{flex-direction:row;align-items:center;gap:14px}
+.hx-q5h,.hx-bigh{display:flex;border:none;background:none;padding:0;text-align:left;font-family:inherit;color:inherit;cursor:pointer;width:100%}
+.hx-big{border:2px solid #C2410C}
+.hx-ic{width:46px;height:46px;border-radius:12px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.hx-ic.o{background:#FFEDD5;color:#C2410C}.hx-ic.b{background:#DBEAFE;color:#1D4ED8}.hx-ic.f{background:#C2410C;color:#fff}
+.hx-tx{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px}.hx-tx b{font-size:16px}.hx-tx small{font-size:13px;color:var(--text2)}
+.hx-last{font-size:11px;font-weight:700;color:#9A3412;background:#FFEDD5;padding:3px 7px;border-radius:6px;white-space:nowrap}
+.hx-fill{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px}
+.hx-fill button{min-height:56px;border:1px solid var(--border);background:#F8F9FA;border-radius:10px;font:600 12px inherit;font-family:inherit;color:var(--text);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;cursor:pointer}
+.hx-fill button svg{color:#C2410C}.hx-fill2 button{background:#fff}
+.hx-q5 .q5-box{margin:0;border:none;box-shadow:none}.hx-q5 .q5-panel{max-height:none}
+.hx-h{font-size:12.5px;font-weight:800;color:var(--text2);text-transform:uppercase;letter-spacing:.04em}
+.hx-draft{display:flex;align-items:center;gap:10px;text-align:left;background:#fff;border:1px dashed #A8A29E;border-radius:12px;padding:12px 14px;font-family:inherit;color:var(--text);cursor:pointer}
+.hx-draft span:first-child{flex:1;display:flex;flex-direction:column;gap:2px}.hx-draft b{font-size:15px}.hx-draft small{font-size:13px;color:var(--text2)}.hx-go{font-weight:800;color:#C2410C;font-size:14px}
+.hx-note{font-size:13px;color:var(--text2);line-height:1.5}
+.hx-card{background:#fff;border:1px solid var(--border);border-radius:14px;padding:14px;display:flex;flex-direction:column;gap:10px}
+.hx-card .fg{margin:0}.hx-g2{display:grid;grid-template-columns:1fr 1fr;gap:8px}.hx-g2 .fg{min-width:0}.hx-g2 input,.hx-g2 select{min-width:0;width:100%;box-sizing:border-box}
+.hx-tip{background:#EFF6FF;border:1px solid #BFDBFE;border-radius:10px;padding:10px 12px;font-size:13.5px;line-height:1.5;color:#1E3A8A}
+.bbn{background:#fff;border:1px solid var(--border);border-radius:14px;overflow:hidden}
+.bbn-r{display:grid;grid-template-columns:22px 72px 64px minmax(0,1fr) 30px;grid-template-areas:"tt nm nm nm x" ". u q st st";gap:6px;padding:9px 10px;border-top:1px solid #F1F3F5;align-items:start}
+.bbn-tt{grid-area:tt}.bbn-name{grid-area:nm}.bbn-c{grid-area:st}.bbn-u{grid-area:u}.bbn-q{grid-area:q}.bbn-x{grid-area:x}
+.bbn-r.bbn-hd{grid-template-areas:"tt n n n x" ". u q h h"}.bbn-hd .h-n{grid-area:n}.bbn-hd .h-u{grid-area:u}.bbn-hd .h-q{grid-area:q}.bbn-hd .h-s{grid-area:h}.bbn-hd span{padding:0}
+.bbn-r.bbn-hd{background:#F8F9FA;border-top:none;font-size:12px;font-weight:800;color:var(--text2);padding:9px 10px}
+.bbn-tt{font-size:13px;color:var(--text3);padding-top:10px;text-align:center}
+.bbn-c{display:flex;flex-direction:column;gap:5px;min-width:0}
+.bbn-r input,.bbn-r select{height:40px;border:1.5px solid var(--border);border-radius:9px;padding:0 8px;font-size:14.5px;font-family:inherit;min-width:0;width:100%;box-sizing:border-box;background:#fff}
+.bbn-r select{padding:0 4px;font-size:13.5px}.bbn-r input.need,.bbn-r select.need{border-color:#E8A300;background:#FFFBEB}
+.bbn-st{align-self:flex-start;border:none;border-radius:6px;padding:4px 7px;font:700 12px inherit;font-family:inherit;text-align:left;cursor:pointer;line-height:1.35;max-width:100%}
+.st-ok .bbn-st{background:#DCFCE7;color:#166534;font-weight:600}.st-maybe .bbn-st{background:#FEF3C7;color:#92400E}.st-new .bbn-st{background:#DBEAFE;color:#1E40AF;font-weight:600}.st-bad .bbn-st{background:#FEE2E2;color:#991B1B}
+.bbn-r.st-maybe{background:#FFFBEB}.bbn-r.st-bad,.bbn-r.over{background:#FEF2F2}
+.bbn-e{font-size:12px;color:#991B1B;font-weight:700}.bbn-w{font-size:12px;color:#92400E}
+.bbn-x{width:30px;height:40px;border:none;background:none;color:var(--text3);font-size:15px;cursor:pointer}
+.bbn-r.flash{outline:3px solid #F59F00;outline-offset:-3px}
+.hx-sum .hx-tot{display:flex;justify-content:space-between;font-size:15px}
+.hx-chips{display:flex;flex-wrap:wrap;gap:6px}.hx-chips span{font-size:12px;font-weight:800;padding:4px 8px;border-radius:6px}
+.hx-chips .ok{background:#DCFCE7;color:#166534}.hx-chips .maybe{background:#FEF3C7;color:#92400E}.hx-chips .new{background:#DBEAFE;color:#1E40AF}.hx-chips .bad{background:#FEE2E2;color:#991B1B}
+.hx-cmp{font-size:13px;color:var(--text2)}
+.hx-dup{background:#FEF2F2;border:1px solid #FCA5A5;border-radius:12px;padding:12px 14px;font-size:13.5px;color:#991B1B;line-height:1.45}
+.hx-clear{border:none;background:none;color:var(--text3);font:600 13.5px inherit;font-family:inherit;padding:6px;cursor:pointer;text-decoration:underline}
+.nxp{max-height:86vh;overflow-y:auto}.nxp-src{font-size:13.5px;color:var(--text2)}
+.nxp-o{display:block;width:100%;text-align:left;border:1.5px solid var(--border);background:#fff;border-radius:12px;padding:10px 12px;margin:0 0 8px;font-family:inherit;color:var(--text);cursor:pointer;position:relative}
+.nxp-o b{display:block;font-size:15px;padding-right:76px}.nxp-o small{font-size:12.5px;color:var(--text2)}.nxp-o span{position:absolute;right:10px;top:10px;font-size:11.5px;font-weight:800;color:#9A3412}
+.nxp-o.on{border:2px solid #C2410C;background:#FFF7ED}
+.nxp-none{font-size:13px;color:var(--text3);margin:0 0 8px}
+.nxp-q{width:100%;box-sizing:border-box;height:44px;border:1.5px dashed #A8A29E;border-radius:12px;padding:0 12px;font-size:15px;font-family:inherit;margin:0 0 8px}
+.nxp-new{border:1px solid #93C5FD;background:#EFF6FF;border-radius:12px;padding:12px;display:flex;flex-direction:column;gap:8px;margin:4px 0 8px}
+.nxp-nh{font-weight:800;color:#1E40AF;font-size:14px}
+.nxp-new input,.nxp-new select{height:44px;border:1px solid #93C5FD;border-radius:10px;padding:0 10px;font-size:15px;font-family:inherit;background:#fff;width:100%;box-sizing:border-box;min-width:0}
+.nxp-nb{height:44px;border:none;border-radius:10px;background:#1D4ED8;color:#fff;font:700 15px inherit;font-family:inherit;cursor:pointer}
+.nxp-mem{display:flex;gap:10px;align-items:flex-start;font-size:14px;line-height:1.4;padding:6px 0}.nxp-mem input{width:22px;height:22px;margin:0;flex-shrink:0}
+.pc .modal-title{margin-bottom:10px}
+.pc-dt{background:#F1F8F4;border:1px solid #B7DFC6;border-radius:14px;padding:12px 14px;display:flex;flex-direction:column;gap:2px;margin-bottom:12px}
+.pc-dt.bu{background:#FFF7ED;border-color:#FDBA74}
+.pc-dt small,.pc-nm small,.pc-q small{font-size:12.5px;color:var(--text2);font-weight:700;text-transform:uppercase;letter-spacing:.03em}
+.pc-dt b{font-size:25px;font-weight:800}.pc-dt em{font-style:normal;font-size:13px;color:#9A3412;font-weight:800}
+.pc-nm{display:flex;flex-direction:column;gap:4px;margin-bottom:10px}.pc-nm b{font-size:20px;line-height:1.3}
+.pc-new{align-self:flex-start;font-size:12px;font-weight:800;color:#1E40AF;background:#DBEAFE;padding:3px 8px;border-radius:6px}
+.pc-q{display:flex;align-items:baseline;gap:10px;border-top:1px solid var(--border);border-bottom:1px solid var(--border);padding:10px 0;margin-bottom:10px}
+.pc-q small{width:84px}.pc-q b{font-size:40px;font-weight:800;color:#C2410C;line-height:1}.pc-q span{font-size:20px;font-weight:700}
+.pc-kv{display:grid;grid-template-columns:104px minmax(0,1fr);row-gap:7px;font-size:15px;margin-bottom:14px}.pc-kv span{color:var(--text2)}
+.pc-btns{display:grid;grid-template-columns:1fr 1fr;gap:8px}.pc-btns #pc-fix{background:#fff;color:var(--text);border:1.5px solid var(--border)}
+</style>
 </body>
 </html>
