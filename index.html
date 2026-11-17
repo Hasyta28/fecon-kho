@@ -1898,7 +1898,7 @@ body.pg-printing #pg-print{display:block;position:fixed;inset:0;z-index:9000;bac
 // ============================================================
 // CONFIG
 // ============================================================
-const APP_VERSION = '5.64.0';
+const APP_VERSION = '5.64.1';
 const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbw6Rmi80I7RI3ij2U7RdRF5pYuQTnPrwEmGmUZS5xpxzLwwVynfoFUujZe1lm6HS1ymxw/exec';
 // ============================================================
 
@@ -11652,9 +11652,10 @@ function q5Check(R) {
   if (R.kind === 'devOut') { if (!R.devId) R.errs.push('Không tìm thấy máy đang ở công trường'); return; }
   const p = q5Pick(R);
   if (!(R.qty > 0)) R.errs.push('Chưa có số lượng');
-  if (!p) R.errs.push(R.alts.length > 1 ? 'Chọn đúng loại bên dưới' : R.alts.length ? 'Chọn vật tư' : (Q5_NEEDKHO[R.kind] ? 'Không có trong kho' : 'Chưa có trong danh mục — nhập tên, nhóm, đơn vị'));
+  const noAlt = !R.alts.length || (R.itemKey === '__new' && !Q5_NEEDKHO[R.kind]);   // v5.64.1: chọn "＋ Món mới"
+  if (!p) R.errs.push(!noAlt && R.alts.length > 1 ? 'Chọn đúng loại bên dưới' : !noAlt ? 'Chọn vật tư' : (Q5_NEEDKHO[R.kind] ? 'Không có trong kho' : 'Chưa có trong danh mục — nhập tên, nhóm, đơn vị'));
   else if (p.src !== 'kho' && Q5_NEEDKHO[R.kind]) R.errs.push('"' + p.name + '" chưa có trong kho — không xuất được');
-  if (!p && !Q5_NEEDKHO[R.kind] && R.alts.length === 0) {
+  if (!p && !Q5_NEEDKHO[R.kind] && noAlt) {
     if (String(R.newName || R.name).trim().length >= 2 && R.newCat && R.newUnit) R.errs = R.errs.filter(e => !/danh mục/.test(e));
   }
   // đơn vị
@@ -11820,8 +11821,8 @@ function q5RowHtml(R, i) {
     const unit = q5Unit(R);
     body += `<div class="q5-top"><span class="q5-name">${escHtml(p ? p.name : R.name || '?')}</span><span class="q5-q"><input type="number" inputmode="decimal" value="${R.qty ?? ''}" aria-label="Số lượng" onchange="q5Set(${i},'qty',this.value)"> ${escHtml(R.unitTxt || unit)}</span></div>`;
     body += `<div class="q5-sub">${p ? escHtml(vtCatName(p.cat) || '') + (p.src === 'kho' ? ' · trong kho: ' + fmtNum(it.stock) + ' ' + escHtml(it.unit) + (ctTrack(it) ? ' · ở CT: ' + fmtNum(ctSite(it)) : '') : ' · vật tư mới (theo danh mục)') : 'Bạn gõ: "' + escHtml(R.name) + '"'}${R.conv ? ' · ' + escHtml(R.conv) : ''}</div>`;
-    if (R.alts.length > 1 || (!p && R.alts.length)) body += `<div class="q5-chiprow">${R.alts.map(a => `<button type="button" class="${a.id === R.itemKey ? 'on' : ''}" onclick="q5Set(${i},'itemKey','${escHtml(String(a.id))}')">${escHtml(a.name)}${a.src === 'cat' ? ' ＋' : ''}</button>`).join('')}</div>`;
-    if (!R.alts.length && !Q5_NEEDKHO[R.kind] && R.kind !== 'loanCho') {
+    if (R.alts.length > 1 || (!p && R.alts.length) || (R.kind === 'in' && R.alts.length)) body += `<div class="q5-chiprow">${R.alts.map(a => `<button type="button" class="${a.id === R.itemKey ? 'on' : ''}" onclick="q5Set(${i},'itemKey','${escHtml(String(a.id))}')">${escHtml(a.name)}${a.src === 'cat' ? ' ＋' : ''}</button>`).join('')}${R.kind === 'in' ? `<button type="button" class="q5-newc${R.itemKey === '__new' ? ' on' : ''}" onclick="q5Set(${i},'itemKey','__new')">＋ Món mới (tên khác)</button>` : ''}</div>`;   // v5.64.1: luôn cho gõ tên tự do
+    if ((!R.alts.length || R.itemKey === '__new') && !Q5_NEEDKHO[R.kind] && R.kind !== 'loanCho') {
       body += `<div class="q5-g2">${inp('newName', 'Tên vật tư mới', R.newName || R.name)}<label class="q5-f">Đơn vị<select onchange="q5Set(${i},'newUnit',this.value)"><option value="">— Chọn —</option>${UNITS.map(u => `<option ${u === (R.newUnit || '') ? 'selected' : ''}>${u}</option>`).join('')}</select></label></div>
         <label class="q5-f">Nhóm<select onchange="q5Set(${i},'newCat',this.value)"><option value="">— Chọn —</option>${(db.categories || CATEGORIES).map(c => `<option value="${c.id}" ${c.id === R.newCat ? 'selected' : ''}>${escHtml(c.name)}</option>`).join('')}</select></label>`;
     }
@@ -18662,22 +18663,23 @@ function hxHub() {
   let draft = ''; try { draft = localStorage.getItem(Q5_LS) || ''; } catch (e) {}
   const drafts = ['nhap', 'xuat'].filter(hxCan).map(x => ({ x, o:hxLS(HX_DK(x)) })).filter(z => z.o && (z.o.rows || []).some(r => String(r.name || '').trim()));
   document.getElementById('hx-title').textContent = 'Nhập / Xuất · ' + curProj;
-  B.innerHTML = `<div class="hx-wrap">
-    ${both ? `<div class="hx-sw" role="group" aria-label="Chiều phiếu"><button type="button" class="${d === 'nhap' ? 'on' : ''}" aria-pressed="${d === 'nhap'}" onclick="hxDir('nhap')">Nhập</button><button type="button" class="${d === 'xuat' ? 'on x' : ''}" aria-pressed="${d === 'xuat'}" onclick="hxDir('xuat')">Xuất</button></div>` : `<div class="hx-one-dir">${d === 'xuat' ? 'Xuất kho' : 'Nhập kho'}</div>`}
-    <button type="button" class="hx-tile" onclick="hxOne()"><span class="hx-ic o">${HXI.doc}</span><span class="hx-tx"><b>Phiếu 1 món</b><small>${d === 'xuat' ? 'Phiếu xuất như hiện nay' : 'Phiếu nhập như hiện nay'} · hôm nay ${todayCount(d)} phiếu</small></span>${tag('one')}</button>
-    <div class="hx-tile hx-q5${draft.trim() ? ' has' : ''}"><button type="button" class="hx-q5h" onclick="hxQ5()"><span class="hx-ic b">${HXI.chat}</span><span class="hx-tx"><b>Gõ / nói / dán Zalo</b><small>${d === 'xuat' ? '“xuất 1000 bộ cóc d20 cho tổ khoan 2”' : '“nhập 2 tank bent, 32 tấn bentonite”'}</small></span>${tag('q5')}</button>
+  const W = d === 'xuat' ? 'Xuất' : 'Nhập';
+  B.innerHTML = `<div class="hx-wrap d-${d}">
+    ${both ? `<div class="hx-sw" role="group" aria-label="Chiều phiếu"><button type="button" class="${d === 'nhap' ? 'on n' : ''}" aria-pressed="${d === 'nhap'}" onclick="hxDir('nhap')">📥 Nhập</button><button type="button" class="${d === 'xuat' ? 'on x' : ''}" aria-pressed="${d === 'xuat'}" onclick="hxDir('xuat')">📤 Xuất</button></div>` : ''}
+    <button type="button" class="hx-tile" onclick="hxOne()"><span class="hx-ic" aria-hidden="true">📝</span><span class="hx-tx"><b>${W} phiếu lẻ</b><small>Từng món một · hôm nay ${todayCount(d)} phiếu</small></span>${tag('one')}</button>
+    <div class="hx-tile hx-q5${draft.trim() ? ' has' : ''}"><button type="button" class="hx-q5h" onclick="hxQ5()"><span class="hx-ic" aria-hidden="true">⚡</span><span class="hx-tx"><b>${W} nhanh</b><small>Gõ, nói hoặc dán tin Zalo</small></span>${tag('q5')}</button>
       <div id="hx-q5"></div></div>
-    <div class="hx-tile hx-big"><button type="button" class="hx-bigh" onclick="hxTbl()"><span class="hx-ic f">${HXI.tbl}</span><span class="hx-tx"><b>Bảng theo biên bản</b><small>Nhiều món một lần · cột như biên bản bàn giao</small></span>${tag('tbl')}</button>
-      <div class="hx-fill"><button type="button" onclick="hxTbl('cam')">${HXI.cam}<span>Chụp ảnh</span></button><button type="button" onclick="hxTbl('paste')">${HXI.paste}<span>Dán chữ</span></button><button type="button" onclick="hxTbl('xls')">${HXI.xls}<span>File Excel</span></button><button type="button" onclick="hxTbl('add')">${HXI.plus}<span>Gõ tay</span></button></div></div>
+    <div class="hx-tile hx-big"><button type="button" class="hx-bigh" onclick="hxTbl()"><span class="hx-ic" aria-hidden="true">📋</span><span class="hx-tx"><b>${W} theo biên bản</b><small>Nhiều món một lần</small></span>${tag('tbl')}</button>
+      <div class="hx-fill"><button type="button" onclick="hxTbl('cam')"><i aria-hidden="true">📷</i><span>Chụp ảnh</span></button><button type="button" onclick="hxTbl('paste')"><i aria-hidden="true">📋</i><span>Dán chữ</span></button><button type="button" onclick="hxTbl('xls')"><i aria-hidden="true">📊</i><span>File Excel</span></button><button type="button" onclick="hxTbl('add')"><i aria-hidden="true">✏️</i><span>Gõ tay</span></button></div></div>
     ${drafts.length ? `<div class="hx-h">Biên bản đang dở</div>` + drafts.map(z => { const n = z.o.rows.filter(r => String(r.name || '').trim()).length, t = new Date(z.o.t || 0);
       return `<button type="button" class="hx-draft" onclick="HX.dir='${z.x}';hxTbl()"><span><b>${z.x === 'xuat' ? 'Xuất' : 'Nhập'} · ${n} dòng${z.o.f && (z.o.f.cts || z.o.f.ncc || z.o.f.recv) ? ' · ' + escHtml(z.o.f.cts || z.o.f.ncc || z.o.f.recv) : ''}</b><small>Lưu nháp lúc ${String(t.getHours()).padStart(2, '0')}:${String(t.getMinutes()).padStart(2, '0')} ${t.getDate()}/${t.getMonth() + 1} · chưa lưu phiếu</small></span><span class="hx-go">Làm tiếp ›</span></button>`; }).join('') : ''}
-    <div class="hx-note">Máy vào công trường, Cấp nhiên liệu, Cho mượn / Trả vẫn ở ô riêng như cũ. Phiếu 1 món vẫn chọn được máy, mượn / trả như trước.</div>
+    <div class="hx-note">Máy vào công trường, Cấp nhiên liệu, Cho mượn / Trả vẫn ở ô riêng như cũ.</div>
   </div>`;
   if (draft.trim()) hxQ5(true);
 }
 function hxDir(d) { if (!hxCan(d)) return; HX.dir = d; hxHub(); }
 function hxUse(k) { const o = hxLS(HX_LAST) || {}; o[HX.dir] = k; hxLS(HX_LAST, o); }
-function hxOne() { hxUse('one'); closeDp('dp-hx'); goTab(HX.dir); }
+function hxOne() { hxUse('one'); closeDp('dp-hx'); HX.from = HX.dir; goTab(HX.dir); }
 function hxQ5(keep) {
   const box = document.getElementById('hx-q5'); if (!box) return;
   if (!document.getElementById('q5-box')) {
@@ -18739,9 +18741,9 @@ function bbOpen(act) {
   BBD = { dir, rows:(sv && sv.rows || []).map(r => Object.assign({ name:'', unit:'', qty:null }, r)), f:(sv && sv.f) || {}, open:'' };
   formPhotos.bb = [];
   const B = document.getElementById('dp-bb-body'), cats = (db.categories || CATEGORIES), x = dir === 'xuat', f = BBD.f;
-  document.querySelector('#dp-bb .detail-title').textContent = x ? 'Xuất theo danh sách' : 'Nhập theo biên bản';
-  B.innerHTML = `<div class="hx-wrap">
-    <div class="hx-card"><div class="hx-h">Chung cho cả ${x ? 'danh sách' : 'biên bản'}</div>
+  document.querySelector('#dp-bb .detail-title').textContent = x ? '📤 Xuất theo biên bản' : '📥 Nhập theo biên bản';
+  B.innerHTML = `<div class="hx-wrap d-${dir}">
+    <div class="form-section hx-card"><div class="form-section-title">${x ? '📤' : '📥'} Chung cho cả biên bản</div>
       ${x ? `<div class="fg"><label for="bb-recv">Người nhận / tổ đội / máy nhận</label><input type="text" id="bb-recv" autocomplete="off" placeholder="VD: Tổ khoan 2, hoặc tên máy" value="${escHtml(f.recv || '')}" oninput="bbF()"></div>`
         : `<div class="fg"><label for="bb-ncc">Bên giao (NCC hoặc dự án khác)</label><input type="text" id="bb-ncc" data-ncc="vt" autocomplete="off" placeholder="Tên NCC hoặc dự án chuyển qua" value="${escHtml(f.ncc || '')}" oninput="bbF()" onchange="bbF()"></div>`}
       <div class="hx-g2">${typeof canGio === 'function' && canGio() ? `<div class="fg"><label for="bb-time">Ngày giờ ${x ? 'xuất' : 'trên BB'}</label><input type="datetime-local" id="bb-time" max="${pfIso(new Date())}" value="${escHtml(f.at || bbAt0())}" onchange="bbF()"></div>` : ''}
@@ -18750,7 +18752,7 @@ function bbOpen(act) {
       ${x ? '' : `<div class="fg"><label for="bb-cat">Nhóm cho món mới (chưa có trong kho)</label><select id="bb-cat" onchange="bbF()"><option value="">Tự đoán theo tên</option>${cats.map(c => `<option value="${c.id}" ${c.id === f.cat ? 'selected' : ''}>${escHtml(c.name)}</option>`).join('')}</select></div>`}
       ${photoFieldHtml('bb')}
     </div>
-    <div class="hx-fill hx-fill2"><button type="button" onclick="bbAct('cam')">${HXI.cam}<span>Chụp</span></button><button type="button" onclick="bbAct('paste')">${HXI.paste}<span>Dán chữ</span></button><button type="button" onclick="bbAct('xls')">${HXI.xls}<span>File Excel</span></button><button type="button" onclick="bbAct('add')">${HXI.plus}<span>Thêm dòng</span></button></div>
+    <div class="hx-fill hx-fill2"><button type="button" onclick="bbAct('cam')"><i aria-hidden="true">📷</i><span>Chụp</span></button><button type="button" onclick="bbAct('paste')"><i aria-hidden="true">📋</i><span>Dán chữ</span></button><button type="button" onclick="bbAct('xls')"><i aria-hidden="true">📊</i><span>File Excel</span></button><button type="button" onclick="bbAct('add')"><i aria-hidden="true">➕</i><span>Thêm dòng</span></button></div>
     <input type="file" id="bb-cam" accept="image/*" capture="environment" style="display:none" onchange="bbCam(this)">
     <input type="file" id="bb-xls" accept=".xlsx,.xls,.csv" style="display:none" onchange="bbXls(this)">
     <div id="bb-paste"></div>
@@ -18914,7 +18916,7 @@ function bbList() {
       <div class="bbn-c">${st ? `<button type="button" class="bbn-st" onclick="bbPick(${i})">${st[1]}</button>` : ''}${e ? `<div class="bbn-e">${escHtml(e)}</div>` : ''}${w ? `<div class="bbn-w">⚠ ${escHtml(w)}</div>` : ''}</div>
       <select aria-label="Đơn vị dòng ${i + 1}" class="bbn-u${uNeed && r.name ? ' need' : ''}" onchange="bbSet(${i},'unit',this.value)"><option value="">${p && p.unit ? escHtml(p.unit) : '—'}</option>${U.map(u => `<option ${u === r.unit ? 'selected' : ''}>${escHtml(u)}</option>`).join('')}</select>
       <input type="number" class="bbn-q${r.name && !(r.qty > 0) ? ' need' : ''}" aria-label="Số lượng dòng ${i + 1}" inputmode="decimal" min="0" step="any" placeholder="SL" value="${r.qty != null ? r.qty : ''}" onchange="bbSet(${i},'qty',this.value)" onkeydown="if(event.key==='Enter'){event.preventDefault();this.blur();bbAddAfter(${i})}">
-      <button type="button" class="bbn-x" aria-label="Bỏ dòng ${i + 1}" onclick="bbDel(${i})">✕</button></div>`;
+      <button type="button" class="bbn-x" aria-label="Bỏ dòng ${i + 1}" onclick="bbDel(${i})">✕</button>${R ? bbActs(R, r, i, st) : ''}</div>`;
   }).join('') + `</div>`;
   if (fi && fi.i >= 0) { const r = el.querySelectorAll('.bbn-r:not(.bbn-hd)')[fi.i], [tg, c] = fi.c.split('.'), e = r && (c ? r.querySelector(tg.toLowerCase() + '.' + c) : r.querySelector(tg.toLowerCase())); if (e) try { e.focus({ preventScroll:true }); } catch (z) {} }
   bbSum(L);
@@ -18991,6 +18993,40 @@ function bbPickNew(i) {
   if (!r.unit && r.newUnit) r.unit = r.newUnit;
   closeModal('modal-nxp'); bbSave(); bbList();
 }
+// v5.64.1: nút ngay trên dòng — "Chọn món khác" · "Món mới: dùng tên đã gõ"
+function bbActs(R, r, i, st) {
+  const x = BBD.dir === 'xuat', k = st && st[0], p = q5Pick(R);
+  if (r.pick === 'new') return `<div class="bbn-act"><button type="button" onclick="bbUndoNew(${i})">↺ Dùng món gợi ý</button></div>`;
+  const auto = !r.pick && (k === 'maybe' || k === 'bad' || (p && R.picked !== 'user'));
+  if (!auto) return '';
+  if (k === 'ok') return `<div class="bbn-act"><button type="button" class="lk" onclick="bbPick(${i})">Không phải món này? Đổi${x ? '' : ' / món mới'}</button></div>`;
+  return `<div class="bbn-act"><button type="button" onclick="bbPick(${i})">Chọn món khác</button>${x ? '' : `<button type="button" class="nw" onclick="bbUseName(${i})">＋ Món mới: dùng tên đã gõ</button>`}</div>`;
+}
+function bbUseName(i) {
+  const r = BBD.rows[i]; if (!r) return;
+  const nm = q5Cap(String(r.name || '').trim()), ex = q5Kho().find(it => normVN(it.name) === normVN(nm));
+  if (ex) { r.pick = ex.id; toast('Tên này đã có trong kho → chọn món có sẵn'); }
+  else Object.assign(r, { pick:'new', newName:nm, newUnit:r.newUnit || UNITS.find(u => normVN(u) === normVN(r.unit)) || r.unit || '', newCat:r.newCat || (BBD.f || {}).cat || (typeof guessCat === 'function' ? guessCat(nm) : '') || 'khac', mem:0 });
+  bbSave(); bbList();
+}
+function bbUndoNew(i) { const r = BBD.rows[i]; if (!r) return; r.pick = ''; r.newName = ''; bbSave(); bbList(); }
+// màn xem trước: chọn gợi ý (id số) · "＋ Món mới" lấy sẵn tên / ĐVT / nhóm
+{ const _qs = q5Set; q5Set = function (i, key, v) {
+  const R = Q5.rows[i];
+  if (R && key === 'itemKey') {
+    if (v === '__new') { R.newName = R.newName || q5Cap(R.name); R.newUnit = R.newUnit || UNITS.find(u => normVN(u) === normVN(R.unitTxt)) || ''; R.newCat = R.newCat || (typeof guessCat === 'function' ? guessCat(R.newName) : '') || 'khac'; }
+    else { const a = R.alts.find(z => String(z.id) === String(v)); if (a) v = a.id; }
+  }
+  return _qs.call(this, i, key, v);
+}; }
+// v5.64.1: phiếu lẻ có nút ‹ Quay lại (về trang Nhập / Xuất nếu vào từ đó, không thì về Tổng quan)
+{ const _g = goTab; goTab = function (t) { if (t !== 'nhap' && t !== 'xuat') HX.from = ''; return _g.apply(this, arguments); }; }
+function hxBack() { const d = HX.from; HX.from = ''; goTab('home'); if (d) setTimeout(() => hxOpen(d), 60); }
+['renderNhap', 'renderXuat'].forEach(fn => { const _r = window[fn]; if (typeof _r !== 'function') return; window[fn] = function (c) {
+  const out = _r.apply(this, arguments);
+  try { if (c && !c.querySelector('.hx-back')) c.insertAdjacentHTML('afterbegin', `<button type="button" class="hx-back" onclick="hxBack()">‹ ${HX.from ? 'Trang Nhập / Xuất' : 'Tổng quan'}</button>`); } catch (e) {}
+  return out;
+}; });
 // --- xem trước & lưu: dùng màn xem trước của Nhập / Xuất nhanh ---
 function bbGo() {
   bbF();
@@ -19006,7 +19042,7 @@ function bbGo() {
   Q5 = { rows:L, cmd, err:'', busy:false, at:f.at || '', bb:{ dir:BBD.dir, ncc:x ? '' : bbNcc(), recv:x ? f.recv : '', cts:f.cts || '', may:(typeof MAYF !== 'undefined' && MAYF.bb) || '', photos:formPhotos.bb.slice(), mem } };
   q5Simulate(Q5.rows);
   openDp('dp-quick');
-  const t = document.querySelector('#dp-quick .detail-title'); if (t) t.textContent = (x ? '📤 Xuất · ' : '📄 Biên bản · ') + L.length + ' món';
+  const t = document.querySelector('#dp-quick .detail-title'); if (t) t.textContent = (x ? '📤 Xuất theo biên bản · ' : '📥 Nhập theo biên bản · ') + L.length + ' món';
   q5Render();
 }
 function bbFocus(i, sel) {
@@ -19144,6 +19180,40 @@ button.hx-tile,.hx-q5h,.hx-bigh{flex-direction:row;align-items:center;gap:14px}
 .pc-q small{width:84px}.pc-q b{font-size:40px;font-weight:800;color:#C2410C;line-height:1}.pc-q span{font-size:20px;font-weight:700}
 .pc-kv{display:grid;grid-template-columns:104px minmax(0,1fr);row-gap:7px;font-size:15px;margin-bottom:14px}.pc-kv span{color:var(--text2)}
 .pc-btns{display:grid;grid-template-columns:1fr 1fr;gap:8px}.pc-btns #pc-fix{background:#fff;color:var(--text);border:1.5px solid var(--border)}
+</style>
+<style>/* v5.64.1 — màu sắc, bố cục theo app: Nhập xanh lá · Xuất xanh dương · nút chính cam · ô như ô Nhập kho / Xuất kho ở Tổng quan */
+.hx-wrap.d-nhap{--hx:#2E9F5A;--hxd:#1E7A45;--hxl:#E4F4EA;--hxb:#D7EEDF}
+.hx-wrap.d-xuat{--hx:#1E6FC0;--hxd:#1A5FA8;--hxl:#E3EEFA;--hxb:#D5E4F5}
+.hx-wrap{padding:14px;gap:12px}
+.hx-sw{background:#E4E8EE;border-radius:14px}
+.hx-sw button{font-weight:700;border-radius:11px}
+.hx-sw button.on.n{background:#1E7A45;color:#fff;font-weight:800}.hx-sw button.on.x{background:#1A5FA8;color:#fff;font-weight:800}
+.hx-tile{border:1px solid var(--hxb,var(--border));border-left:4px solid var(--hx,var(--orange));border-radius:var(--r);padding:16px;box-shadow:0 2px 10px rgba(16,24,40,.06)}
+.hx-big{border:1px solid var(--hxb,var(--border));border-left:4px solid var(--hx,var(--orange))}
+.hx-ic{width:52px;height:52px;border-radius:14px;background:var(--hxl,#FFF1E8);font-size:28px;line-height:1}
+.hx-tx b{font-size:18px;font-weight:800;color:var(--hxd,var(--text))}.hx-tx small{font-size:13px}
+.hx-last{color:#A8410F;background:#FFF1E8}
+.hx-fill button{background:#fff;border:1px solid var(--border);border-radius:12px;font-weight:700;color:var(--text)}
+.hx-fill button i{font-style:normal;font-size:20px;line-height:1}
+.hx-draft{border:1.5px dashed var(--orange);border-radius:var(--r)}.hx-go{color:var(--orange)}
+.hx-card.form-section{margin:0;display:flex;flex-direction:column;gap:12px;border:none}
+.hx-card.form-section .form-section-title{margin-bottom:0}
+.bbn{border:none;border-radius:var(--r);box-shadow:var(--shadow)}
+.bbn-r.bbn-hd{background:#F7F9FB}
+.bbn-act{grid-column:2 / -1;display:flex;flex-wrap:wrap;gap:6px}
+.bbn-act button.lk{border:none;background:none;padding:2px 0;min-height:28px;color:var(--primary);text-decoration:underline;font-weight:600}
+.bbn-act button{min-height:32px;border:1.5px solid var(--border);background:#fff;border-radius:8px;padding:3px 9px;font:700 12.5px inherit;font-family:inherit;color:var(--text2);cursor:pointer}
+.bbn-act button.nw{border-color:#B9D3F0;color:var(--primary);background:#F1F6FC}
+.hx-sum.form-section,.hx-card{border-radius:var(--r)}
+.hx-back{display:inline-flex;align-items:center;gap:4px;margin:12px 14px 0;min-height:40px;padding:0 14px;border:1.5px solid var(--border);background:#fff;border-radius:12px;font:700 15px inherit;font-family:inherit;color:var(--primary);cursor:pointer;box-shadow:var(--shadow)}
+.q5-chiprow .q5-newc{border-style:dashed;color:var(--primary)}.q5-chiprow .q5-newc.on{border-style:solid}
+.nxp-o.on{border-color:var(--orange);background:#FFF4EC}.nxp-o span{color:#A8410F}
+.nxp-new{border-color:#B9D3F0;background:#F1F6FC}.nxp-nh{color:var(--primary)}.nxp-new input,.nxp-new select{border-color:#B9D3F0}
+.nxp-nb{background:var(--primary);border-radius:12px}
+.pc-dt{background:#E4F4EA;border-color:#C9E8D3}.pc-dt b{color:#1E7A45}
+.pc-dt.bu{background:#FFF1E8;border-color:#FBC8AE}.pc-dt.bu b{color:#A8410F}.pc-dt em{color:#A8410F}
+.pc-q b{color:var(--orange)}.pc-new{color:var(--primary);background:#E3EEFA}
+.pc-btns .btn-full{min-height:52px;border-radius:14px}
 </style>
 </body>
 </html>
