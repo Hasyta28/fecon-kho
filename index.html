@@ -1898,7 +1898,7 @@ body.pg-printing #pg-print{display:block;position:fixed;inset:0;z-index:9000;bac
 // ============================================================
 // CONFIG
 // ============================================================
-const APP_VERSION = '5.64.1';
+const APP_VERSION = '5.64.2';
 const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbw6Rmi80I7RI3ij2U7RdRF5pYuQTnPrwEmGmUZS5xpxzLwwVynfoFUujZe1lm6HS1ymxw/exec';
 // ============================================================
 
@@ -18917,7 +18917,7 @@ function bbList() {
       <select aria-label="Đơn vị dòng ${i + 1}" class="bbn-u${uNeed && r.name ? ' need' : ''}" onchange="bbSet(${i},'unit',this.value)"><option value="">${p && p.unit ? escHtml(p.unit) : '—'}</option>${U.map(u => `<option ${u === r.unit ? 'selected' : ''}>${escHtml(u)}</option>`).join('')}</select>
       <input type="number" class="bbn-q${r.name && !(r.qty > 0) ? ' need' : ''}" aria-label="Số lượng dòng ${i + 1}" inputmode="decimal" min="0" step="any" placeholder="SL" value="${r.qty != null ? r.qty : ''}" onchange="bbSet(${i},'qty',this.value)" onkeydown="if(event.key==='Enter'){event.preventDefault();this.blur();bbAddAfter(${i})}">
       <button type="button" class="bbn-x" aria-label="Bỏ dòng ${i + 1}" onclick="bbDel(${i})">✕</button>${R ? bbActs(R, r, i, st) : ''}</div>`;
-  }).join('') + `</div>`;
+  }).join('') + `<button type="button" class="bbn-add" onclick="bbAdd()"><b>＋</b> Thêm dòng</button></div>`;
   if (fi && fi.i >= 0) { const r = el.querySelectorAll('.bbn-r:not(.bbn-hd)')[fi.i], [tg, c] = fi.c.split('.'), e = r && (c ? r.querySelector(tg.toLowerCase() + '.' + c) : r.querySelector(tg.toLowerCase())); if (e) try { e.focus({ preventScroll:true }); } catch (z) {} }
   bbSum(L);
 }
@@ -19214,6 +19214,11 @@ button.hx-tile,.hx-q5h,.hx-bigh{flex-direction:row;align-items:center;gap:14px}
 .pc-dt.bu{background:#FFF1E8;border-color:#FBC8AE}.pc-dt.bu b{color:#A8410F}.pc-dt em{color:#A8410F}
 .pc-q b{color:var(--orange)}.pc-new{color:var(--primary);background:#E3EEFA}
 .pc-btns .btn-full{min-height:52px;border-radius:14px}
+</style>
+<style>/* v5.64.2 — nút ＋ Thêm dòng cuối bảng biên bản */
+.bbn-add{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;min-height:46px;border:none;border-top:1.5px dashed var(--border);background:var(--hxl,#F7F9FB);color:var(--hxd,var(--primary));font:inherit;font-size:14.5px;font-weight:800;cursor:pointer}
+.bbn-add b{display:inline-flex;align-items:center;justify-content:center;width:24px;height:24px;border-radius:50%;background:var(--hx,var(--primary));color:#fff;font-size:17px;line-height:1}
+.bbn-add:active{filter:brightness(.95)}
 </style>
 </body>
 </html>
