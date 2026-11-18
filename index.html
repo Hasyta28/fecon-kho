@@ -1232,6 +1232,7 @@ body.pg-printing #pg-print{display:block;position:fixed;inset:0;z-index:9000;bac
 .pyc2 .pgq-main{gap:calc(var(--m)*2.4)}.pyc2 .pgq-side{justify-content:flex-start;padding-top:calc(var(--m)*10)}
 .pyc2 .pgq-s td{height:calc(var(--m)*7.4)}.pyc2 .pgq-s td.pgq-more{height:auto;font-style:italic;color:#444}
 .pyc2 .pgq-sig{min-height:calc(var(--m)*24)}
+.pyc2 .pgq-s th.sl{white-space:normal;line-height:1.15;text-align:center;font-size:calc(var(--m)*2.6)}.pyc2 .pgq-s th{vertical-align:middle}
 @media print{
   body.pg-printing>*:not(#pg-print){display:none!important}
   html:has(body.pg-printing),body.pg-printing{background:#fff!important;height:auto!important;min-height:0!important;overflow:visible!important;position:static!important}   /* v5.53.2: in đủ nhiều trang */
@@ -7274,7 +7275,7 @@ function pgSheetHtml(code, f) {                                // v5.64.3: nửa
   const side = `<div class="pgq-side">${qrSvg(pgLink(code))}<span class="pgq-code">${escHtml(code)}</span></div>`;
   const hd = `<div class="pgq-hd"><img class="pgq-lg" src="${LOGO_FS}" alt="FECON South"><span class="t">PHIẾU YÊU CẦU CẤP VẬT TƯ</span><span class="pj">Dự án: ${escHtml(curProj)}</span></div>`;
   const sig = `<div class="pgq-sig"><div>Người đề nghị</div><div>CHT/CHP duyệt</div><div>Thủ kho xuất</div><div>Người nhận</div></div>`;
-  const th = `<tr><th style="width:38%">Tên vật tư, quy cách</th><th style="width:9%">ĐVT</th><th style="width:13%">SL yêu cầu</th><th style="width:22%">Máy / Tổ đội</th><th class="k">SL thực xuất</th></tr>`;
+  const th = `<tr><th>Tên vật tư, quy cách</th><th style="width:8%">ĐVT</th><th class="sl" style="width:8%">SL yêu cầu</th><th style="width:20%">Máy / Tổ đội</th><th class="k sl" style="width:8%">SL thực xuất</th></tr>`;
   if (!f) return `<div class="pgq-s"><div class="pgq-main">${hd}
     <div class="pgq-f"><span>Ngày: ……/……/${yr} ……:……</span><span>Người đề nghị: ………………………………</span><span>Tổ đội: ………………………</span></div>
     <div class="pgq-f"><span>${no}Vật tư &nbsp;${no}Cóc nối → <b>Mã cọc / panel:</b></span><span class="pgq-mcp"></span></div>
