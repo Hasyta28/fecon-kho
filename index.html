@@ -1229,7 +1229,11 @@ body.pg-printing #pg-print{display:block;position:fixed;inset:0;z-index:9000;bac
 /* v5.64.3: phiếu yêu cầu 2 / tờ A4 (nửa tờ mỗi phiếu) — giữ cỡ chữ, dòng kẻ cao hơn, ô ký rộng hơn */
 .pgq-in.pyc2{grid-template-rows:repeat(2,1fr);padding:calc(var(--m)*6) calc(var(--m)*6) calc(var(--m)*6) calc(var(--m)*16)}
 .pyc2 .pgq-s{padding:calc(var(--m)*4) calc(var(--m)*1)}.pyc2 .pgq-s:last-child{padding-top:calc(var(--m)*6)}
-.pyc2 .pgq-main{gap:calc(var(--m)*2.4)}.pyc2 .pgq-side{justify-content:flex-start;padding-top:calc(var(--m)*10)}
+.pyc2 .pgq-main{gap:calc(var(--m)*2.4)}
+.pyc2.pgq-in .pgq-s{grid-template-columns:1fr;position:relative}
+.pyc2 .pgq-side{position:absolute;right:calc(var(--m)*1);top:calc(var(--m)*12.5);width:calc(var(--m)*22);gap:calc(var(--m)*.6)}.pyc2 .pgq-s:last-child .pgq-side{top:calc(var(--m)*14.5)}
+.pyc2 .pgq-qr{width:calc(var(--m)*15.5);height:calc(var(--m)*15.5)}.pyc2 .pgq-code{font-size:calc(var(--m)*3.2)}
+.pyc2 .pgq-f{padding-right:calc(var(--m)*25)}.pyc2 .pgq-f+.pgq-f{margin-bottom:calc(var(--m)*7)}
 .pyc2 .pgq-s td{height:calc(var(--m)*7.4)}.pyc2 .pgq-s td.pgq-more{height:auto;font-style:italic;color:#444}
 .pyc2 .pgq-sig{min-height:calc(var(--m)*24)}
 .pyc2 .pgq-s th.sl{white-space:normal;line-height:1.15;text-align:center;font-size:calc(var(--m)*2.6)}.pyc2 .pgq-s th{vertical-align:middle}
