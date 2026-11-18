@@ -1,5 +1,5 @@
-// FECON Kho + Thi công - Service Worker v5.64.2
-// 5.64.2: Bảng theo biên bản có nút ＋ Thêm dòng ngay cuối bảng
+// FECON Kho + Thi công - Service Worker v5.64.3
+// 5.64.3: Phiếu yêu cầu in 2 phiếu / tờ A4 (trước là 4)
 // 5.64.1: Món mới gõ tên tự do (xem trước + bảng) · nút Quay lại ở phiếu lẻ · đổi tên 3 mục · màu theo app
 // 5.64.0: Trang Nhập / Xuất chung · Bảng theo biên bản cho nhập + xuất · Nhớ tên gọi khác · Kiểm tra lại phiếu 1 món
 // 5.63.8: Excel — sheet Nhiên liệu chia A tổng hợp / B theo máy / C sổ DO; thêm sheet Nhớt – mỡ theo máy
@@ -100,7 +100,7 @@
 //  - Mở app: lấy file từ bộ nhớ của bản đang dùng; thiếu file nào mới lấy từ mạng.
 //  - Có sw.js mới trên GitHub: tải sẵn bản mới vào bộ nhớ riêng nhưng KHÔNG đổi bản đang dùng.
 //  - Địa chỉ có ?fresh=... luôn lấy thẳng từ mạng (app dùng để kiểm tra / tải bản mới).
-const VERSION = '5.64.2';
+const VERSION = '5.64.3';
 const APP = 'fecon-app-', META = 'fecon-meta';
 const CORE = ['./', './index.html', './thicong.html', './danhmuc.html', './manifest.json', './icon-192.png', './icon-512.png', './icon-maskable-192.png', './icon-maskable-512.png', './bg-login.jpg'];
 
