@@ -7274,7 +7274,7 @@ function pgSheetHtml(code, f) {                                // v5.64.3: nửa
   const side = `<div class="pgq-side">${qrSvg(pgLink(code))}<span class="pgq-code">${escHtml(code)}</span></div>`;
   const hd = `<div class="pgq-hd"><img class="pgq-lg" src="${LOGO_FS}" alt="FECON South"><span class="t">PHIẾU YÊU CẦU CẤP VẬT TƯ</span><span class="pj">Dự án: ${escHtml(curProj)}</span></div>`;
   const sig = `<div class="pgq-sig"><div>Người đề nghị</div><div>CHT/CHP duyệt</div><div>Thủ kho xuất</div><div>Người nhận</div></div>`;
-  const th = `<tr><th style="width:38%">Tên vật tư, quy cách</th><th style="width:9%">ĐVT</th><th style="width:13%">SL yêu cầu</th><th style="width:22%">Máy / Tổ đội sử dụng</th><th class="k">SL thực xuất</th></tr>`;
+  const th = `<tr><th style="width:38%">Tên vật tư, quy cách</th><th style="width:9%">ĐVT</th><th style="width:13%">SL yêu cầu</th><th style="width:22%">Máy / Tổ đội</th><th class="k">SL thực xuất</th></tr>`;
   if (!f) return `<div class="pgq-s"><div class="pgq-main">${hd}
     <div class="pgq-f"><span>Ngày: ……/……/${yr} ……:……</span><span>Người đề nghị: ………………………………</span><span>Tổ đội: ………………………</span></div>
     <div class="pgq-f"><span>${no}Vật tư &nbsp;${no}Cóc nối → <b>Mã cọc / panel:</b></span><span class="pgq-mcp"></span></div>
