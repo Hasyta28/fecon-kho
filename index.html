@@ -7274,7 +7274,7 @@ function pgSheetHtml(code, f) {                                // v5.64.3: nửa
   const side = `<div class="pgq-side">${qrSvg(pgLink(code))}<span class="pgq-code">${escHtml(code)}</span></div>`;
   const hd = `<div class="pgq-hd"><img class="pgq-lg" src="${LOGO_FS}" alt="FECON South"><span class="t">PHIẾU YÊU CẦU CẤP VẬT TƯ</span><span class="pj">Dự án: ${escHtml(curProj)}</span></div>`;
   const sig = `<div class="pgq-sig"><div>Người đề nghị</div><div>CHT/CHP duyệt</div><div>Thủ kho xuất</div><div>Người nhận</div></div>`;
-  const th = `<tr><th style="width:38%">Tên vật tư, quy cách</th><th style="width:9%">ĐVT</th><th style="width:13%">SL yêu cầu</th><th style="width:22%">Máy sử dụng</th><th class="k">SL thực xuất</th></tr>`;
+  const th = `<tr><th style="width:38%">Tên vật tư, quy cách</th><th style="width:9%">ĐVT</th><th style="width:13%">SL yêu cầu</th><th style="width:22%">Máy / Tổ đội sử dụng</th><th class="k">SL thực xuất</th></tr>`;
   if (!f) return `<div class="pgq-s"><div class="pgq-main">${hd}
     <div class="pgq-f"><span>Ngày: ……/……/${yr} ……:……</span><span>Người đề nghị: ………………………………</span><span>Tổ đội: ………………………</span></div>
     <div class="pgq-f"><span>${no}Vật tư &nbsp;${no}Cóc nối → <b>Mã cọc / panel:</b></span><span class="pgq-mcp"></span></div>
@@ -7283,7 +7283,7 @@ function pgSheetHtml(code, f) {                                // v5.64.3: nửa
   return `<div class="pgq-s"><div class="pgq-main">${hd}
     <div class="pgq-f"><span>Ngày: <b class="v">${escHtml(f.datetime || '')}</b></span><span>Người đề nghị: <b class="v">${escHtml(nm[0] || '')}</b></span>${nm[1] ? `<span>Tổ đội: <b class="v">${escHtml(nm[1])}</b></span>` : ''}</div>
     <div class="pgq-f"><span>${coc ? no : ck}Vật tư &nbsp;${coc ? ck : no}Cóc nối → <b>Mã cọc / panel:</b></span><span class="pgq-mcp">${escHtml(f.ckName || '')}</span></div>
-    <table>${th}${ls.map(l => `<tr><td>${escHtml(cocShort(l.itemName))}</td><td>${escHtml(l.unit || '')}</td><td class="n">${fmtNum(l.req)}</td><td>${escHtml(f.may || '')}</td><td class="k n">${+l.sent ? fmtNum(l.sent) : ''}</td></tr>`).join('')}${more ? `<tr><td colspan="5" class="pgq-more">… và ${more} món khác — xem đủ trên app (quét mã QR)</td></tr>` : ''}${'<tr><td></td><td></td><td></td><td></td><td class="k"></td></tr>'.repeat(Math.max(0, PYC_ROWS - ls.length - (more ? 1 : 0)))}</table>
+    <table>${th}${ls.map(l => `<tr><td>${escHtml(cocShort(l.itemName))}</td><td>${escHtml(l.unit || '')}</td><td class="n">${fmtNum(l.req)}</td><td>${escHtml(f.may || nm[1] || '')}</td><td class="k n">${+l.sent ? fmtNum(l.sent) : ''}</td></tr>`).join('')}${more ? `<tr><td colspan="5" class="pgq-more">… và ${more} món khác — xem đủ trên app (quét mã QR)</td></tr>` : ''}${'<tr><td></td><td></td><td></td><td></td><td class="k"></td></tr>'.repeat(Math.max(0, PYC_ROWS - ls.length - (more ? 1 : 0)))}</table>
     ${sig}</div>${side}</div>`;
 }
 // v5.54: phiếu nhập theo xe — nửa tờ A4 (2 phiếu / tờ), 10 dòng
