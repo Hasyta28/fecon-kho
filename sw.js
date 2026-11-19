@@ -1,4 +1,5 @@
-// FECON Kho + Thi công - Service Worker v5.65.1
+// FECON Kho + Thi công - Service Worker v5.65.2
+// 5.65.2: Phiếu xuất — ô Người nhận / tổ đội riêng (gợi ý tên), tấm Kiểm tra lại cho mọi kiểu xuất (cho mượn, trả, máy rời CT)
 // 5.65.1: Xem trước theo biên bản — mọi ô chung khuôn (SL + ĐVT cùng chỗ, Đổi / sửa); đếm đúng số phiếu (không tính món mới)
 // 5.65.0: Xuất hàng vừa nhập — danh sách phiếu nhập 3 ngày, tick hàng loạt → phiếu xuất cho tổ đội; nút "Xuất luôn cho tổ đội" sau khi lưu nhập
 // 5.64.4: Phiếu yêu cầu 2 phiếu / tờ A4 — bản chỉnh bố cục cuối (QR góc phải, tiêu đề to giữa, chữ +15%)
@@ -102,7 +103,7 @@
 //  - Mở app: lấy file từ bộ nhớ của bản đang dùng; thiếu file nào mới lấy từ mạng.
 //  - Có sw.js mới trên GitHub: tải sẵn bản mới vào bộ nhớ riêng nhưng KHÔNG đổi bản đang dùng.
 //  - Địa chỉ có ?fresh=... luôn lấy thẳng từ mạng (app dùng để kiểm tra / tải bản mới).
-const VERSION = '5.65.1';
+const VERSION = '5.65.2';
 const APP = 'fecon-app-', META = 'fecon-meta';
 const CORE = ['./', './index.html', './thicong.html', './danhmuc.html', './manifest.json', './icon-192.png', './icon-512.png', './icon-maskable-192.png', './icon-maskable-512.png', './bg-login.jpg'];
 

@@ -1913,7 +1913,7 @@ body.pg-printing #pg-print{display:block;position:fixed;inset:0;z-index:9000;bac
 // ============================================================
 // CONFIG
 // ============================================================
-const APP_VERSION = '5.65.1';
+const APP_VERSION = '5.65.2';
 const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbw6Rmi80I7RI3ij2U7RdRF5pYuQTnPrwEmGmUZS5xpxzLwwVynfoFUujZe1lm6HS1ymxw/exec';
 // ============================================================
 
@@ -19499,6 +19499,154 @@ function bbcToggle(i) { const R = Q5.rows[i]; if (!R) return; R._open = !R._open
 .bbc-more{margin-top:8px;border-top:1px dashed var(--border);padding-top:8px;display:flex;flex-direction:column;gap:6px}
 .bbc-lb{font-size:12px;font-weight:700;color:var(--text2)}
 .q5-nnew{font-weight:600;font-size:13px;opacity:.9}
+</style>
+<script>// ===== v5.65.2 — PHIẾU XUẤT: Ô NGƯỜI NHẬN / TỔ ĐỘI RIÊNG (gợi ý tên) · KIỂM TRA LẠI CHO MỌI KIỂU XUẤT =====
+// (1) Phiếu xuất lẻ, chế độ Xuất dùng / Ra công trường: ô #fx-recv "Người nhận / tổ đội" (chip + datalist gợi ý tên đã xuất 60 ngày ở dự án), #fx-note chỉ còn là Ghi chú.
+//     Bắt buộc khi không chọn Thiết bị nhận. Giá trị → supplierOrReceiver qua window.fxRecvO (phiếu gốc đã đọc sẵn) → chi tiết phiếu, Zalo, Excel "Bên nhận hàng".
+// (2) Tấm Kiểm tra lại phiếu xuất (pcConfirm): luôn có dòng "Người nhận / tổ đội" (trống → "chưa ghi", nền vàng).
+// (3) Bảng Xuất theo biên bản (#bb-recv): cùng gợi ý tên.
+// (4) Cho mượn / Trả đồ đi mượn / Máy rời công trình / Cho mượn máy: tấm Kiểm tra lại trước khi lưu (pcSheet, dùng chung modal-pc).
+const RV_DAYS = 60;
+function rvNames() {
+  const d0 = Date.now() - RV_DAYS * 864e5, M = new Map();
+  (db.transactions || []).forEach(t => {
+    if (t.type !== 'xuat' || t.project !== curProj || t.ct === 'ngoai' || t.ct === 'ctra') return;
+    const v = String(t.supplierOrReceiver || '').trim(); if (v.length < 2 || v.length > 60) return;
+    const d = parseVN(t.datetime); if (!d || d < d0) return;
+    const k = normVN(v), o = M.get(k) || { v, n:0, at:0 }; o.n++; if (+d > o.at) { o.at = +d; o.v = v; } M.set(k, o);
+  });
+  return [...M.values()].sort((a, b) => b.at - a.at).map(o => o.v);
+}
+function rvAttach(id, max) {
+  const el = document.getElementById(id); if (!el || el.dataset.rv) return;
+  el.dataset.rv = 1;
+  const L = rvNames(); if (!L.length) return;
+  let dl = document.getElementById('rv-dl'); if (!dl) { document.body.insertAdjacentHTML('beforeend', '<datalist id="rv-dl"></datalist>'); dl = document.getElementById('rv-dl'); }
+  dl.innerHTML = L.map(v => `<option value="${escHtml(v)}">`).join(''); el.setAttribute('list', 'rv-dl');
+  el.insertAdjacentHTML('afterend', `<div class="rv-chips" aria-label="Tên đã dùng gần đây">${L.slice(0, max || 6).map(v => `<button type="button" onmousedown="event.preventDefault()" onclick="rvPick('${id}',this.textContent)">${escHtml(v)}</button>`).join('')}</div>`);
+}
+function rvPick(id, v) { const el = document.getElementById(id); if (!el) return; el.value = v; el.dispatchEvent(new Event('input', { bubbles:true })); el.dispatchEvent(new Event('change', { bubbles:true })); el.classList.remove('need'); }
+const rvOn = () => !fxDev && ['use', 'ct'].includes(fxMode || 'use');
+function rvVis() {
+  const g = document.getElementById('fx-recv-fg'); if (!g) return;
+  g.style.display = rvOn() ? '' : 'none';
+  const nl = document.getElementById('fx-note-lbl'); if (nl) nl.textContent = rvOn() ? 'Ghi chú (tùy chọn)' : 'Ghi chú / người nhận';
+}
+{ const _r = renderXuat; renderXuat = function () {
+  const r = _r.apply(this, arguments);
+  try {
+    const n = document.getElementById('fx-note'), fg = n && n.closest('.fg');
+    if (fg && !document.getElementById('fx-recv')) {
+      const lb = fg.querySelector('label'); if (lb) { lb.id = 'fx-note-lbl'; lb.textContent = 'Ghi chú (tùy chọn)'; }
+      n.placeholder = 'Hạng mục, lý do, số phiếu YC…';
+      fg.insertAdjacentHTML('beforebegin', `<div class="fg" id="fx-recv-fg"><label for="fx-recv">Người nhận / tổ đội <small class="rv-req">· bắt buộc nếu không chọn thiết bị</small></label><input type="text" id="fx-recv" autocomplete="off" maxlength="60" placeholder="VD: Tổ khoan 2, A.Kiên" oninput="this.classList.remove('need')"></div>`);
+      rvAttach('fx-recv'); rvVis();
+    }
+  } catch (e) { console.warn(e); }
+  return r;
+}; }
+{ const _m = fxSetMode; fxSetMode = function () { const r = _m.apply(this, arguments); try { rvVis(); } catch (e) {} return r; }; }
+{ const _u = fxModeUpdate; fxModeUpdate = function () { const r = _u.apply(this, arguments); try { rvVis(); } catch (e) {} return r; }; }
+
+// tấm kiểm tra chung (giống pcConfirm) cho các kiểu xuất không đi qua phiếu gốc
+function pcSheet(o) {
+  return new Promise(res => {
+    try {
+      if (!document.getElementById('modal-pc')) document.body.insertAdjacentHTML('beforeend', `<div class="modal-bg" id="modal-pc" style="display:none;z-index:1200"><div class="modal-sheet pc"><div class="modal-handle"></div><div id="pc-body"></div>
+        <div class="pc-btns"><button type="button" class="btn-full" id="pc-fix">Sửa lại</button><button type="button" class="btn-full btn-orange" id="pc-ok">Đúng, lưu phiếu</button></div></div></div>`);
+      const d = o.date || new Date(), pad = n => String(n).padStart(2, '0'), today = isoDay(new Date()), bu = isoDay(d) !== today;
+      const dt = `${pad(d.getDate())}/${pad(d.getMonth() + 1)}/${d.getFullYear()}${o.noTime ? '' : ` · ${pad(d.getHours())}:${pad(d.getMinutes())}`}`;
+      document.getElementById('pc-body').innerHTML = `<div class="modal-title">${escHtml(o.title)}</div>
+        <div class="pc-dt${bu ? ' bu' : ''}"><small>${escHtml(o.dtLbl || 'Ngày giờ phiếu')}</small><b>${dt}</b>${bu ? `<em>Không phải hôm nay (${today.split('-').reverse().slice(0, 2).join('/')})</em>` : ''}</div>
+        <div class="pc-nm"><small>${escHtml(o.nameLbl || 'Tên vật tư')}</small><b>${escHtml(o.name)}</b></div>
+        ${o.qty != null ? `<div class="pc-q"><small>Số lượng</small><b>${fmtNum(o.qty)}</b><span>${escHtml(o.unit || '')}</span></div>` : ''}
+        <div class="pc-kv">${(o.kv || []).map(([k, w, warn]) => `<span>${escHtml(k)}</span><b${warn ? ' class="rv-miss"' : ''}>${escHtml(w)}</b>`).join('')}</div>`;
+      const m = document.getElementById('modal-pc'), done = ok => { m.style.display = 'none'; res(ok); };
+      document.getElementById('pc-ok').onclick = () => done(true);
+      document.getElementById('pc-fix').onclick = () => done(false);
+      m.onclick = e => { if (e.target === m) done(false); };
+      if (typeof closeKeyboard === 'function') closeKeyboard();
+      m.style.display = 'flex';
+      setTimeout(() => document.getElementById('pc-ok')?.focus(), 60);
+    } catch (e) { console.warn(e); res(true); }
+  });
+}
+// (2) dòng người nhận luôn có trên tấm kiểm tra phiếu xuất
+{ const _pc = pcConfirm; pcConfirm = function (type) {
+  const pr = _pc.apply(this, arguments);
+  try {
+    if (type === 'xuat') {
+      const kv = document.querySelector('#pc-body .pc-kv'), recv = String(window.fxRecvO || '').trim();
+      if (kv) {
+        const sp = [...kv.querySelectorAll('span')], nr = sp.find(s => s.textContent === 'Người nhận');
+        if (nr) { nr.textContent = 'Người nhận / tổ đội'; if (recv) nr.nextElementSibling.textContent = recv; }
+        else if (rvOn() && (recv || !sp.some(s => s.textContent === 'Cho máy'))) kv.insertAdjacentHTML('afterbegin', recv ? `<span>Người nhận / tổ đội</span><b>${escHtml(recv)}</b>` : `<span>Người nhận / tổ đội</span><b class="rv-miss">chưa ghi</b>`);
+        const nt = String(document.getElementById('fx-note')?.value || '').trim();
+        if (nt && rvOn() && nt !== recv) kv.insertAdjacentHTML('beforeend', `<span>Ghi chú</span><b>${escHtml(nt)}</b>`);
+      }
+    }
+  } catch (e) { console.warn(e); }
+  return pr;
+}; }
+// (1)+(4) chặn trước khi lưu
+{ const _dx = doXuat; doXuat = async function () {
+  const val = id => String((document.getElementById(id) || {}).value || '').trim();
+  let set = false;
+  try {
+    if (document.getElementById('fx-recv') && rvOn()) {
+      const rv = val('fx-recv'), dev = val('fx-device');
+      if (!rv && !dev && db.items.find(i => i.id === +val('fx-item'))) {
+        const el = document.getElementById('fx-recv'); el.classList.add('need'); el.scrollIntoView({ block:'center', behavior:'smooth' }); setTimeout(() => el.focus(), 250);
+        toast('⚠️ Ghi người nhận / tổ đội (hoặc chọn thiết bị nhận)'); return;
+      }
+      if (rv) { window.fxRecvO = rv; set = true; }
+    } else if (fxDev || ['cho', 'tra', 'ra'].includes(fxMode)) {
+      const ok = await rvAskOther(val); if (!ok) return;
+    }
+  } catch (e) { console.warn(e); }
+  try { return await _dx.apply(this, arguments); }
+  finally { if (set) window.fxRecvO = ''; }
+}; }
+async function rvAskOther(val) {
+  const qty = r3(+val('fx-qty'));
+  if (fxDev) {
+    const d = fxDev;
+    if (fxMode === 'cho') {
+      const w = loanCompose('fx'); if (!w.ptype || String(w.party || '').length < 2) return true;   // để phiếu gốc báo thiếu
+      return pcSheet({ title:'Kiểm tra lại: cho mượn máy', nameLbl:'Máy', name:d.name, kv:[['Cho ai mượn', w.party], ['Hạn trả', val('fxl-due') ? val('fxl-due').split('-').reverse().join('/') : 'chưa ghi', !val('fxl-due')]].concat(val('fx-note') ? [['Ghi chú', val('fx-note')]] : []) });
+    }
+    const date = val('fxr-date'); if (!date) return true;
+    const h = gdH.fxg, dest = h ? gdDestVal('fxg') : '', m = document.getElementById('fxr-m');
+    const kv = [['Đi đâu', h ? gdDestLbl(h, dest) : (val('fx-note') || 'chưa ghi'), !h && !val('fx-note')]];
+    if (m) kv.push([mLbl(d) + ' lúc ra', m.value === '' ? 'chưa ghi' : m.value, m.value === '']);
+    const dd = new Date(date + 'T00:00:00');
+    return pcSheet({ title:'Kiểm tra lại: máy rời công trình', dtLbl:'Ngày rời công trình', date:dd, noTime:1, nameLbl:'Máy', name:d.name, kv });
+  }
+  const it = db.items.find(i => i.id === +val('fx-item')); if (!it || !(qty > 0)) return true;
+  if (fxMode === 'cho') {
+    const w = loanCompose('fx'); if (!w.ptype || String(w.party || '').length < 2) return true;
+    return pcSheet({ title:'Kiểm tra lại: cho mượn', name:it.name, qty, unit:it.unit,
+      kv:[['Cho ai mượn', w.party], ['Hạn trả', val('fxl-due') ? val('fxl-due').split('-').reverse().join('/') : 'chưa ghi', !val('fxl-due')], ['Tồn kho sau', fmtNum(r3(it.stock - qty)) + ' ' + it.unit]].concat(val('fx-note') ? [['Ghi chú', val('fx-note')]] : []) });
+  }
+  if (fxMode === 'tra') {
+    const l = (db.loans || []).find(x => x.id === +val('fxl-loan')); if (!l) return true;
+    return pcSheet({ title:'Kiểm tra lại: trả đồ đi mượn', name:it.name, qty, unit:it.unit,
+      kv:[['Trả cho', l.party], ['Còn nợ sau', fmtNum(r3(loanRemain(l) - qty)) + ' ' + l.unit], ['Tồn kho sau', fmtNum(r3(it.stock - qty)) + ' ' + it.unit]].concat(val('fx-note') ? [['Ghi chú', val('fx-note')]] : []) });
+  }
+  return true;
+}
+// (3) bảng Xuất theo biên bản: gợi ý tên
+{ const _o = bbOpen; bbOpen = function () { const r = _o.apply(this, arguments); try { if (BBD.dir === 'xuat') rvAttach('bb-recv'); } catch (e) {} return r; }; }
+// hướng dẫn
+if (typeof GUIDES !== 'undefined') { const g = GUIDES.find(x => x.id === 'vuanhap'); if (g && !g.s.some(s => /tổ đội đã dùng/.test(s))) g.s.push('Ô Người nhận / tổ đội có nút tên tổ đội đã dùng gần đây — bấm để điền nhanh. Phiếu xuất lẻ: bắt buộc ghi nếu không chọn thiết bị nhận.'); }
+</script>
+<style>/* v5.65.2 */
+.rv-req{font-weight:500;color:var(--text2);text-transform:none;letter-spacing:0}
+.rv-chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+.rv-chips button{border:1px solid var(--border);background:#fff;border-radius:16px;padding:6px 12px;font:inherit;font-size:13.5px;font-weight:600;color:var(--text);cursor:pointer;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.rv-chips button:active{background:#EEF1F5}
+#fx-recv.need,#bb-recv.need{border-color:#E8A300;background:#FFF8E6}
+.pc-kv b.rv-miss{color:#8A5A00;background:#FFF3CD;border-radius:6px;padding:0 6px;justify-self:start}
 </style>
 </body>
 </html>
