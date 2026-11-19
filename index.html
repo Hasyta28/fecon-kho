@@ -1913,7 +1913,7 @@ body.pg-printing #pg-print{display:block;position:fixed;inset:0;z-index:9000;bac
 // ============================================================
 // CONFIG
 // ============================================================
-const APP_VERSION = '5.65.0';
+const APP_VERSION = '5.65.1';
 const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbw6Rmi80I7RI3ij2U7RdRF5pYuQTnPrwEmGmUZS5xpxzLwwVynfoFUujZe1lm6HS1ymxw/exec';
 // ============================================================
 
@@ -11815,7 +11815,7 @@ function q5Render() {
     ${R.map((r, i) => q5RowHtml(r, i)).join('')}
     <div class="q5-foot">
       ${red ? `<div class="q5-red">${red} dòng đỏ cần sửa hoặc bỏ dòng</div>` : ''}
-      <button type="button" class="btn-full ${red || !on.length ? '' : 'btn-orange'}" ${red || !on.length || Q5.busy ? 'disabled' : ''} onclick="q5Save()">${Q5.busy ? 'Đang lưu…' : 'Lưu ' + on.length + ' phiếu'}</button>
+      <button type="button" class="btn-full ${red || !on.length ? '' : 'btn-orange'}" ${red || !on.length || Q5.busy ? 'disabled' : ''} onclick="q5Save()">${Q5.busy ? 'Đang lưu…' : 'Lưu ' + on.length + ' phiếu'}${(() => { const m = Q5.busy ? 0 : on.filter(r => !/^dev/.test(r.kind) && !q5ItemOf(r)).length; return m ? `<small class="q5-nnew"> · ${m} món mới vào danh mục</small>` : ''; })()}</button>
       <div class="q5-note">Lưu cả lệnh một lần: một dòng sai thì không lưu dòng nào. Mỗi phiếu ghi kèm nguyên văn lệnh.</div>
     </div></div>`;
 }
@@ -11963,7 +11963,8 @@ async function q5Save() {
   if (last) { const hm = new Date(last.at).toTimeString().slice(0, 5); if (!(await askDup(`Lệnh này vừa lưu lúc ${hm}. Lưu thêm một lần nữa?`, 'Đúng, lưu thêm'))) return; }
   const { ops, after } = q5Ops();
   if (!ops.length) return;
-  Q5.busy = true; Q5.err = ''; q5Render(); showLoader('Đang lưu ' + ops.length + ' phiếu...');
+  const nPh = ops.filter(o => o.k !== 'item').length, nNew = ops.length - nPh;   // v5.65.1: món mới vào danh mục không tính là phiếu
+  Q5.busy = true; Q5.err = ''; q5Render(); showLoader('Đang lưu ' + nPh + ' phiếu' + (nNew ? ' · ' + nNew + ' món mới' : '') + '...');
   const r = await api('qkBatch', { project:curProj, cmd:Q5.cmd.slice(0, 300), ck:'q' + newId(), ops }, 60000);
   hideLoader(); Q5.busy = false;
   if (!r || !r.success) {
@@ -11975,9 +11976,8 @@ async function q5Save() {
   }
   try { localStorage.setItem(Q5_HIST, JSON.stringify([{ k:key, at:Date.now() }].concat(q5Hist()).slice(0, 10))); } catch (e) {}
   after.forEach(f => { try { f(); } catch (e) {} });
-  const n = r.saved || ops.length;
   closeDp('dp-quick'); q5Clear();
-  toast(`✅ Đã lưu ${n} phiếu`);
+  toast(`✅ Đã lưu ${nPh} phiếu${nNew ? ' · thêm ' + nNew + ' món mới vào danh mục' : ''}`);
   await syncAll(true); refreshCurrentView(false);
 }
 function q5Clear() { const el = document.getElementById('q5-text'); if (el) el.value = ''; q5Draft(''); Q5 = { rows:[], cmd:'', err:'', busy:false }; }
@@ -14449,7 +14449,8 @@ async function xeSave() {
   });
   const lines = x.rows.map(r => { const p = q5Pick(r), m = r.kind === 'devOut' || r.kind === 'devIn', dv = r.kind === 'devOut' ? db.devices.find(z => z.id === r.devId) : null;
     return { name: p ? p.name : dv ? dv.name : r.name, unit: m ? 'Máy' : q5Unit(r), qty: r.qty, cat: m ? XE_MAY : p ? p.cat : r.newCat, maQL: r.qlMa || (dv && dv.maQL) || '' }; });
-  x.busy = true; renderXe(); showLoader('Đang lưu ' + ops.length + ' phiếu...');
+  const nPh = ops.filter(o => o.k !== 'item').length;   // v5.65.1: món mới vào danh mục không tính là phiếu
+  x.busy = true; renderXe(); showLoader('Đang lưu ' + nPh + ' phiếu...');
   const r = await api('xeBatch', { project:curProj, code:x.code, recv:x.recv ? 1 : 0, at, xe, h:x.h, dest:x.h === 'da' ? x.dest : '', party:x.party, lines, ops, ck:'x' + newId() }, 60000);
   hideLoader(); x.busy = false;
   if (!r || !r.success) {
@@ -14467,7 +14468,7 @@ async function xeSave() {
   const first = (db.transactions || []).find(t => String(t.ma || '').startsWith(x.code + '-') && t.project === curProj);
   if (x.photos.length && first) await queuePhotos(first.id, x.photos);
   closeDp('dp-xe'); XE = null;
-  toast(`✅ Đã lưu ${r.saved || ops.length} phiếu theo ${x.code}${x.photos.length && first ? ', gắn ảnh' : ''}`);
+  toast(`✅ Đã lưu ${nPh} phiếu theo ${x.code}${x.photos.length && first ? ', gắn ảnh' : ''}`);
   refreshCurrentView(false);
 }
 // ---------- Tổng quan: ô quét QR + hàng chuyển đến chờ nhận ----------
@@ -19413,6 +19414,91 @@ if (typeof GUIDES !== 'undefined' && !GUIDES.some(g => g.id === 'vuanhap')) GUID
 .vn-cnt{margin-left:auto;flex:none;min-width:30px;height:30px;padding:0 8px;border-radius:15px;background:var(--hx);color:#fff;font-weight:800;font-size:15px;display:inline-flex;align-items:center;justify-content:center;box-sizing:border-box}
 .saved-bar.vn-sb{flex-wrap:wrap}
 .saved-bar .vn-now{flex-basis:100%;background:#1A5FA8;color:#fff;font-size:15px;padding:11px 12px}
+</style>
+<script>// ===== v5.65.1 — XEM TRƯỚC THEO BIÊN BẢN: mọi ô chung một khuôn · SL + ĐVT cùng chỗ · gợi ý / món mới / đơn giá thu vào "Đổi / sửa" · thông tin chung ghi 1 lần =====
+// Chỉ áp khi Q5.bb (đi từ bảng Nhập / Xuất theo biên bản). Nhập / Xuất nhanh (gõ / nói) giữ thẻ cũ.
+// Đếm phiếu (q5Save / xe): bỏ op 'item' (món mới vào danh mục) — sửa thẳng trong q5Save + lưu theo xe.
+const BBC_KINDS = { in:1, out:1 };
+function bbcToggle(i) { const R = Q5.rows[i]; if (!R) return; R._open = !R._open; q5Render(); }
+{ const _rh = q5RowHtml; q5RowHtml = function (R, i) {
+  if (!Q5 || !Q5.bb || !BBC_KINDS[R.kind]) return _rh.apply(this, arguments);
+  try {
+    const p = q5Pick(R), it = q5ItemOf(R), x = R.kind === 'out', isNew = !p || R.itemKey === '__new';
+    const cls = !R.on ? ' off' : R.errs.length ? ' bad' : R.warns.length ? ' warn' : '';
+    const name = p && !isNew ? p.name : (R.newName || R.name || '?');
+    const tag = it ? `<span class="bbc-tag ok">✓ Khớp kho · tồn ${fmtNum(it.stock)} ${escHtml(it.unit)}</span>`
+      : p && !isNew ? `<span class="bbc-tag cat">＋ Món mới theo danh mục</span>` : `<span class="bbc-tag new">＋ Món mới tự khai</span>`;
+    const unitBox = isNew && !x
+      ? `<select class="bbc-us${R.newUnit ? '' : ' need'}" aria-label="Đơn vị tính" onchange="q5Set(${i},'newUnit',this.value)"><option value="">ĐVT…</option>${UNITS.map(u => `<option ${u === (R.newUnit || '') ? 'selected' : ''}>${u}</option>`).join('')}</select>`
+      : `<span class="bbc-ul"><b>${escHtml(q5Unit(R) || R.unitTxt || '')}</b><small>${it ? 'theo kho' : 'theo danh mục'}</small></span>`;
+    const inp = (key, lbl, val, opt) => `<label class="q5-f">${lbl}<input ${opt && opt.type ? `type="${opt.type}"` : ''} value="${escHtml(val || '')}" onchange="q5Set(${i},'${key}',this.value)"${opt && opt.ph ? ` placeholder="${escHtml(opt.ph)}"` : ''}></label>`;
+    let more = '';
+    if (R._open) {
+      more += `<div class="bbc-more"><div class="q5-sub">Trên biên bản ghi: "${escHtml(R.name)}"${R.conv ? ' · ' + escHtml(R.conv) : ''}</div>`;
+      if (R.alts.length || !x) more += `<div class="bbc-lb">Chọn món trong kho / danh mục</div><div class="q5-chiprow">${R.alts.map(a => `<button type="button" class="${a.id === R.itemKey ? 'on' : ''}" onclick="q5Set(${i},'itemKey','${escHtml(String(a.id))}')">${escHtml(a.name)}${a.src === 'cat' ? ' ＋' : ''}</button>`).join('')}${!x ? `<button type="button" class="q5-newc${R.itemKey === '__new' || !R.alts.length ? ' on' : ''}" onclick="q5Set(${i},'itemKey','__new')">＋ Món mới (tên khác)</button>` : ''}</div>`;
+      if (isNew && !x) more += `<div class="q5-g2">${inp('newName', 'Tên vật tư mới', R.newName || R.name)}<label class="q5-f">Nhóm<select onchange="q5Set(${i},'newCat',this.value)"><option value="">— Chọn —</option>${(db.categories || CATEGORIES).map(c => `<option value="${c.id}" ${c.id === R.newCat ? 'selected' : ''}>${escHtml(c.name)}</option>`).join('')}</select></label></div>`;
+      if (!x) more += inp('price', 'Đơn giá (không bắt buộc)', R.price, { type:'text' });
+      if (!x && p && /^Cây$/i.test(p.unit)) more += inp('kg', 'Khối lượng kg (gợi ý, không bắt buộc)', R.kg);
+      more += `<div class="q5-src">Lệnh: “${escHtml(R.seg)}”</div></div>`;
+    }
+    const msgs = R.on ? R.errs.map(e => `<div class="q5-e">${escHtml(e)}</div>`).join('') + R.warns.map(w => `<div class="q5-w">${escHtml(w)}</div>`).join('') : '';
+    return `<div class="q5-card bbc${cls}">
+      <div class="bbc-hd"><input type="checkbox" ${R.on ? 'checked' : ''} aria-label="Chọn dòng ${i + 1}" onchange="q5Set(${i},'on',this.checked)"><span class="bbc-no">${i + 1}</span><span class="bbc-nm">${escHtml(name)}</span></div>
+      <div class="bbc-row"><label class="bbc-q"><span>SL</span><input class="q5-qi" type="number" inputmode="decimal" value="${R.qty ?? ''}" aria-label="Số lượng" onchange="q5Set(${i},'qty',this.value)"></label>${unitBox}
+        <button type="button" class="bbc-ed${R._open ? ' on' : ''}" aria-expanded="${!!R._open}" onclick="bbcToggle(${i})">Đổi / sửa ${R._open ? '▴' : '▾'}</button></div>
+      <div class="bbc-st">${tag}</div>${msgs}${more}
+    </div>`;
+  } catch (e) { console.warn(e); return _rh.apply(this, arguments); }
+}; }
+// thông tin chung của biên bản: ghi 1 lần ở đầu
+{ const _r = q5Render; q5Render = function () {
+  const r = _r.apply(this, arguments);
+  try {
+    const bb = Q5 && Q5.bb; if (!bb) return r;
+    const B = document.getElementById('dp-quick-body'), c = B && B.querySelector('.q5-chips'); if (!c) return r;
+    const x = bb.dir === 'xuat', kv = [];
+    if (x) kv.push(['Người nhận / tổ đội', bb.recv || '—']); else kv.push(['Bên giao', (Q5.rows[0] && Q5.rows[0].ncc) || bb.ncc || '—']);
+    if (bb.cts) kv.push([x ? 'Số phiếu / BB' : 'Số biên bản', bb.cts]);
+    if (bb.may) kv.push(['Bộ phận của máy', bb.may]);
+    if (bb.photos && bb.photos.length) kv.push(['Ảnh biên bản', bb.photos.length + ' ảnh']);
+    c.insertAdjacentHTML('beforebegin', `<div class="bbc-info"><div class="bbc-it">Chung cho cả biên bản <button type="button" onclick="closeDp('dp-quick')">‹ Sửa</button></div>${kv.map(([k, v]) => `<div><span>${escHtml(k)}</span><b>${escHtml(v)}</b></div>`).join('')}</div>`);
+    const lg = B.querySelector('.q5-leg'); if (lg) lg.innerHTML = '<span><i style="background:#E8A300"></i>Vàng: kiểm tra lại</span><span><i style="background:#D93025"></i>Đỏ: phải sửa hoặc bỏ tick</span>';
+    B.querySelector('.q5-pv')?.classList.add('bbc-pv');
+  } catch (e) { console.warn(e); }
+  return r;
+}; }
+// ô SL vẫn tìm được bằng q5Focus (dòng đỏ "Sửa số lượng")
+{ const _f = q5Focus; q5Focus = function (i) { const c = document.querySelectorAll('#dp-quick-body .q5-card')[i], q = c && c.querySelector('.q5-qi'); if (q) { q.focus(); q.select(); return; } return _f.apply(this, arguments); }; }
+</script>
+<style>/* v5.65.1 — thẻ xem trước theo biên bản */
+.bbc-pv .q5-foot{margin-top:6px}
+.bbc-info{background:#fff;border-radius:12px;padding:10px 12px;margin-bottom:10px;box-shadow:0 1px 3px rgba(26,35,50,.08);display:flex;flex-direction:column;gap:4px;font-size:14px}
+.bbc-info>div{display:grid;grid-template-columns:120px minmax(0,1fr);gap:8px}.bbc-info span{color:var(--text2)}.bbc-info b{font-weight:700;overflow-wrap:anywhere}
+.bbc-info .bbc-it{display:flex;justify-content:space-between;align-items:center;font-weight:800;font-size:13px;color:var(--text2);text-transform:uppercase;letter-spacing:.02em}
+.bbc-info .bbc-it button{border:none;background:none;color:var(--orange);font:inherit;font-weight:700;text-transform:none;cursor:pointer;padding:4px 0}
+.q5-card.bbc{padding:10px 12px}
+.q5-card.bbc.warn{border-color:#F5D27A}
+.bbc-hd{display:flex;align-items:flex-start;gap:8px}
+.bbc-hd input[type=checkbox]{width:20px;height:20px;flex:none;margin:2px 0 0}
+.bbc-no{flex:none;min-width:22px;height:22px;border-radius:11px;background:#EEF1F5;color:var(--text2);font-size:12px;font-weight:800;display:inline-flex;align-items:center;justify-content:center}
+.bbc-nm{flex:1;min-width:0;font-size:15.5px;font-weight:800;line-height:1.3;overflow-wrap:anywhere}
+.bbc-row{display:grid;grid-template-columns:minmax(0,1fr) 92px auto;gap:8px;align-items:center;margin-top:8px}
+.bbc-q{display:flex;align-items:center;gap:6px;border:1.5px solid var(--border);border-radius:10px;padding:0 8px;height:44px;background:#fff}
+.bbc-q span{font-size:12px;font-weight:700;color:var(--text2)}
+.bbc-q input{border:none;outline:none;width:100%;min-width:0;font:inherit;font-size:18px;font-weight:800;text-align:right;background:transparent;padding:0}
+.bbc-q:focus-within{border-color:var(--orange)}
+.bbc-ul{height:44px;border-radius:10px;background:#F1F3F6;display:flex;flex-direction:column;align-items:center;justify-content:center;line-height:1.15}
+.bbc-ul b{font-size:15px}.bbc-ul small{font-size:10.5px;color:var(--text2)}
+.bbc-us{height:44px;border-radius:10px;border:1.5px solid var(--border);font:inherit;font-size:15px;font-weight:700;padding:0 6px;background:#fff;width:100%}
+.bbc-us.need{border-color:#E8A300;background:#FFF8E6}
+.bbc-ed{height:44px;border-radius:10px;border:1px solid var(--border);background:#fff;font:inherit;font-size:13px;font-weight:700;color:var(--text2);padding:0 10px;white-space:nowrap;cursor:pointer}
+.bbc-ed.on{background:#EEF1F5;color:var(--text)}
+.bbc-st{margin-top:7px}
+.bbc-tag{display:inline-block;font-size:12.5px;font-weight:700;border-radius:8px;padding:3px 8px}
+.bbc-tag.ok{background:#E6F4EC;color:#17703D}.bbc-tag.cat{background:#E3EEFA;color:#1A5FA8}.bbc-tag.new{background:#FFF1E8;color:#A8410F}
+.bbc-more{margin-top:8px;border-top:1px dashed var(--border);padding-top:8px;display:flex;flex-direction:column;gap:6px}
+.bbc-lb{font-size:12px;font-weight:700;color:var(--text2)}
+.q5-nnew{font-weight:600;font-size:13px;opacity:.9}
 </style>
 </body>
 </html>
