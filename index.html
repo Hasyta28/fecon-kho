@@ -1913,7 +1913,7 @@ body.pg-printing #pg-print{display:block;position:fixed;inset:0;z-index:9000;bac
 // ============================================================
 // CONFIG
 // ============================================================
-const APP_VERSION = '5.64.4';
+const APP_VERSION = '5.65.0';
 const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbw6Rmi80I7RI3ij2U7RdRF5pYuQTnPrwEmGmUZS5xpxzLwwVynfoFUujZe1lm6HS1ymxw/exec';
 // ============================================================
 
@@ -19235,6 +19235,184 @@ button.hx-tile,.hx-q5h,.hx-bigh{flex-direction:row;align-items:center;gap:14px}
 .bbn-add{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;min-height:46px;border:none;border-top:1.5px dashed var(--border);background:var(--hxl,#F7F9FB);color:var(--hxd,var(--primary));font:inherit;font-size:14.5px;font-weight:800;cursor:pointer}
 .bbn-add b{display:inline-flex;align-items:center;justify-content:center;width:24px;height:24px;border-radius:50%;background:var(--hx,var(--primary));color:#fff;font-size:17px;line-height:1}
 .bbn-add:active{filter:brightness(.95)}
+</style>
+<script>// ===== v5.65.0 — XUẤT HÀNG VỪA NHẬP: danh sách phiếu nhập 3 ngày · tick hàng loạt · đổ vào bảng Xuất theo biên bản · nút "Xuất luôn cho tổ đội" sau khi lưu nhập =====
+// (1) Trang Nhập / Xuất, chiều Xuất: ô "📥 Xuất hàng vừa nhập" → trang #dp-vn: phiếu nhập 3 ngày gần nhất của dự án, gom theo biên bản (bbgOf) hoặc
+//     cùng người + cùng bên giao + cách nhau ≤ 3 phút. Lọc Tất cả / Của tôi. Tick từng dòng, cả biên bản, Chọn hết. Dòng hết tồn: mờ, không tick được.
+// (2) "Đưa N món vào phiếu xuất" → bảng Xuất theo biên bản (bbOpen, nháp cũ giữ nguyên, dòng mới nối thêm, pick = id món).
+//     SL điền sẵn = min(SL nhập, tồn hiện tại); cùng món nhiều dòng → cộng, không quá tồn. Số phiếu / BB trống → "Từ BB nhập dd/mm …". Lưu bằng qkBatch như cũ (KHÔNG đổi máy chủ).
+// (3) Thanh "Đã lưu" sau phiếu nhập lẻ, và thanh mới sau khi lưu Nhập nhanh / Nhập theo biên bản: nút "📤 Xuất luôn cho tổ đội" → (1) với các dòng vừa nhập tick sẵn.
+// (4) Không đưa vào danh sách: nhiên liệu (isFuelItem / nhóm nhienLieu — dùng ô Cấp nhiên liệu), phiếu mượn / nhận trả (loại phiếu riêng), phiếu nhập thẳng cũ (thangCT).
+const VN_DAYS = 3;
+let VN = { sel:new Set(), mine:false };
+(function () {
+  document.body.insertAdjacentHTML('beforeend', `<div class="detail-page" id="dp-vn"><div class="detail-header"><button class="back-btn" onclick="closeDp('dp-vn')" aria-label="Quay lại">‹</button><div class="detail-title">📤 Xuất hàng vừa nhập</div></div><div class="detail-body" id="dp-vn-body"></div></div>`);
+})();
+const vnFuel = it => it.cat === 'nhienLieu' || (typeof isFuelItem === 'function' && isFuelItem(it));
+const vnItem = t => q5Kho().find(i => String(i.id) === String(t.itemId));
+const vnMeName = () => String((typeof me !== 'undefined' && me && me.name) || '');
+const vnMine = t => { const id = typeof me !== 'undefined' && me && (me.id || me.uid); return t.createdBy && id ? String(t.createdBy) === String(id) : String(t.createdByName || '') === vnMeName(); };
+function vnTx() {
+  if (!curProj || curProj === 'all') return [];
+  const d0 = new Date(); d0.setHours(0, 0, 0, 0); d0.setDate(d0.getDate() - (VN_DAYS - 1));
+  return (db.transactions || []).filter(t => {
+    if (t.type !== 'nhap' || t.project !== curProj || t.thangCT) return false;
+    const d = parseVN(t.datetime); if (!d || d < d0) return false;
+    const it = vnItem(t); return it && !vnFuel(it);
+  }).sort((a, b) => (parseVN(b.datetime) - parseVN(a.datetime)) || (b.id - a.id));
+}
+function vnGroups(L) {
+  const G = [], used = new Set();
+  L.forEach(t => {
+    if (used.has(t.id)) return;
+    let mem = typeof bbgOf === 'function' ? bbgOf(t).filter(x => x.type === 'nhap' && L.includes(x)) : [];
+    if (!mem.length) {
+      const a = parseVN(t.datetime), who = String(t.createdByName || ''), ncc = String(t.supplierOrReceiver || '');
+      mem = L.filter(x => !used.has(x.id) && String(x.createdByName || '') === who && String(x.supplierOrReceiver || '') === ncc && Math.abs(parseVN(x.datetime) - a) <= 3 * 60e3);
+    }
+    mem = mem.filter(x => !used.has(x.id)); if (!mem.includes(t)) mem.unshift(t);
+    mem.forEach(x => used.add(x.id));
+    G.push({ t, mem:mem.sort((p, q) => p.id - q.id) });
+  });
+  return G;
+}
+const vnLeft = t => { const it = vnItem(t); return it ? Math.max(0, +it.stock || 0) : 0; };
+const vnOut = t => (db.transactions || []).filter(x => x.type === 'xuat' && String(x.itemId) === String(t.itemId) && x.id > t.id).reduce((s, x) => s + (+x.qty || 0), 0);
+function vnCount() { return vnTx().filter(t => vnLeft(t) > 0).length; }
+function vnOpen(pre) {
+  if (!curProj || curProj === 'all') { toast('Chọn 1 dự án trước'); return; }
+  if (!hxCan('xuat')) { toast('Chức danh của bạn chưa có quyền xuất kho'); return; }
+  VN.sel = new Set((pre || []).filter(id => { const t = db.transactions.find(x => x.id === id); return t && vnLeft(t) > 0; }));
+  if (pre && pre.length) VN.mine = false;
+  openDp('dp-vn'); vnRender();
+}
+function vnRender() {
+  const B = document.getElementById('dp-vn-body'); if (!B) return;
+  const meN = vnMeName(), all = vnTx(), L = VN.mine ? all.filter(vnMine) : all;
+  const G = vnGroups(L), ok = L.filter(t => vnLeft(t) > 0);
+  [...VN.sel].forEach(id => { if (!L.some(t => t.id === id)) VN.sel.delete(id); });
+  const hm = s => { const d = parseVN(s); return d ? `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')} ${d.getDate()}/${d.getMonth() + 1}` : ''; };
+  const allOn = ok.length && ok.every(t => VN.sel.has(t.id));
+  B.innerHTML = `<div class="hx-wrap d-xuat vn-wrap">
+    <div class="vn-tip">Hàng nhập trong ${VN_DAYS} ngày gần nhất ở <b>${escHtml(curProj)}</b>. Tick món tổ đội lấy dùng ngay → <b>Đưa vào phiếu xuất</b>, rồi ghi người nhận / tổ đội và sửa số lượng nếu chỉ lấy một phần.</div>
+    <div class="vn-bar"><div class="vn-chip" role="group" aria-label="Lọc người nhập"><button type="button" class="${VN.mine ? '' : 'on'}" aria-pressed="${!VN.mine}" onclick="VN.mine=false;vnRender()">Tất cả</button><button type="button" class="${VN.mine ? 'on' : ''}" aria-pressed="${VN.mine}" onclick="VN.mine=true;vnRender()">Của tôi</button></div>
+      ${ok.length ? `<label class="vn-all"><input type="checkbox" ${allOn ? 'checked' : ''} onchange="vnAll(this.checked)"> Chọn hết (${ok.length})</label>` : ''}</div>
+    ${G.length ? G.map((g, gi) => {
+      const can = g.mem.filter(t => vnLeft(t) > 0), on = can.length && can.every(t => VN.sel.has(t.id)), t0 = g.t;
+      const bb = String(t0.note || '').match(/CT: ([^·]+)/), ncc = String(t0.supplierOrReceiver || '').trim();
+      return `<div class="vn-g"><label class="vn-gh${can.length ? '' : ' off'}"><input type="checkbox" ${on ? 'checked' : ''} ${can.length ? '' : 'disabled'} onchange="vnGrp(${gi},this.checked)">
+          <span><b>${g.mem.length > 1 ? 'Biên bản nhập' : 'Phiếu nhập'} · ${hm(t0.datetime)}${bb ? ' · ' + escHtml(bb[1].trim()) : ''}</b><small>${ncc ? 'Từ ' + escHtml(ncc) + ' · ' : ''}${escHtml(t0.createdByName || '')} · ${g.mem.length} món</small></span></label>
+        ${g.mem.map(t => { const it = vnItem(t), lf = vnLeft(t), ox = vnOut(t), dis = lf <= 0;
+          return `<label class="vn-r${dis ? ' off' : ''}${VN.sel.has(t.id) ? ' on' : ''}"><input type="checkbox" data-id="${t.id}" ${VN.sel.has(t.id) ? 'checked' : ''} ${dis ? 'disabled' : ''} onchange="vnTick(${t.id},this.checked)">
+            <span class="vn-n"><b>${escHtml(it.name)}</b><small>Nhập ${fmtNum(t.qty)} ${escHtml(it.unit || '')} · ${dis ? '<em>hết tồn</em>' : 'còn tồn ' + fmtNum(lf)}${ox > 0 ? ' · đã xuất sau đó ' + fmtNum(ox) : ''}</small></span>
+            ${dis ? '' : `<span class="vn-q">${fmtNum(Math.min(+t.qty || 0, lf))}<small>${escHtml(it.unit || '')}</small></span>`}</label>`; }).join('')}</div>`; }).join('')
+      : `<div class="vn-empty">Chưa có phiếu nhập nào trong ${VN_DAYS} ngày gần nhất${VN.mine ? ' do bạn lập' : ''}.<br><small>Nhiên liệu xuất ở ô Cấp nhiên liệu; hàng mượn ở ô Mượn / Trả.</small></div>`}
+    <div class="vn-foot"><button type="button" class="btn-full btn-orange" id="vn-go" ${VN.sel.size ? '' : 'disabled'} onclick="vnGo()">${VN.sel.size ? `Đưa ${VN.sel.size} món vào phiếu xuất ›` : 'Tick món cần xuất'}</button></div>
+  </div>`;
+}
+function vnTick(id, on) { if (on) VN.sel.add(id); else VN.sel.delete(id); vnRender(); }
+function vnGrp(gi, on) {
+  const meN = vnMeName(), all = vnTx(), L = VN.mine ? all.filter(vnMine) : all, g = vnGroups(L)[gi]; if (!g) return;
+  g.mem.filter(t => vnLeft(t) > 0).forEach(t => on ? VN.sel.add(t.id) : VN.sel.delete(t.id)); vnRender();
+}
+function vnAll(on) {
+  const meN = vnMeName(), all = vnTx(), L = VN.mine ? all.filter(vnMine) : all;
+  if (on) L.filter(t => vnLeft(t) > 0).forEach(t => VN.sel.add(t.id)); else VN.sel.clear(); vnRender();
+}
+function vnGo() {
+  const T = [...VN.sel].map(id => db.transactions.find(x => x.id === id)).filter(Boolean).sort((a, b) => a.id - b.id);
+  if (!T.length) { toast('⚠️ Chưa tick món nào'); return; }
+  const by = new Map();                                                  // cùng món nhiều dòng → cộng, không quá tồn
+  T.forEach(t => { const it = vnItem(t); if (!it) return; const k = String(it.id), o = by.get(k) || { it, q:0 }; o.q += +t.qty || 0; by.set(k, o); });
+  const rows = [...by.values()].map(o => ({ it:o.it, q:Math.min(o.q, Math.max(0, +o.it.stock || 0)) })).filter(o => o.q > 0);
+  if (!rows.length) { toast('⚠️ Các món đã chọn đều hết tồn'); return; }
+  const d = parseVN(T[0].datetime), ncc = String(T[0].supplierOrReceiver || '').trim();
+  const lbl = ('Từ BB nhập ' + (d ? d.getDate() + '/' + (d.getMonth() + 1) : '') + (ncc ? ' ' + ncc : '')).slice(0, 60);
+  closeDp('dp-vn');
+  HX.dir = 'xuat'; hxUse('tbl'); bbOpen();
+  const keep = BBD.rows.filter(r => String(r.name || '').trim());
+  BBD.rows = keep.concat(rows.map(o => bbRow({ name:o.it.name, unit:o.it.unit || '', qty:o.q, pick:o.it.id })));
+  if (!BBD.f.cts) { BBD.f.cts = lbl; const el = document.getElementById('bb-cts'); if (el) el.value = lbl; }
+  bbSave(); bbList(); if (typeof bbSum === 'function') bbSum();
+  VN.sel.clear();
+  toast(`✅ Đã đưa ${rows.length} món · ghi người nhận / tổ đội`);
+  setTimeout(() => { const r = document.getElementById('bb-recv'); if (r && !r.value) r.focus(); }, 350);
+}
+// (1) ô trên trang Nhập / Xuất (chiều Xuất)
+{ const _h = hxHub; hxHub = function () {
+  const r = _h.apply(this, arguments);
+  try {
+    if (HX.dir === 'xuat' && hxCan('xuat')) {
+      const one = document.querySelector('#dp-hx-body .hx-tile'), n = vnCount();
+      if (one) one.insertAdjacentHTML('afterend', `<button type="button" class="hx-tile vn-tile" onclick="vnOpen()"><span class="hx-ic" aria-hidden="true">📥</span><span class="hx-tx"><b>Xuất hàng vừa nhập</b><small>${n ? `${n} món nhập trong ${VN_DAYS} ngày còn tồn · tick chọn hàng loạt` : `Chưa có hàng nhập trong ${VN_DAYS} ngày`}</small></span>${n ? `<span class="vn-cnt">${n}</span>` : ''}</button>`);
+    }
+  } catch (e) { console.warn(e); }
+  return r;
+}; }
+// (3) nút "Xuất luôn cho tổ đội" sau khi lưu phiếu nhập
+function vnBarBtn(ids) {
+  const ok = ids.filter(id => { const t = db.transactions.find(x => x.id === id); return t && vnTx().includes(t) && vnLeft(t) > 0; });
+  return ok.length && hxCan('xuat') ? `<button class="vn-now" onclick="vnOpen([${ok.join(',')}])">📤 Xuất luôn cho tổ đội${ok.length > 1 ? ' (' + ok.length + ' món)' : ''}</button>` : '';
+}
+{ const _sb = showSavedBar; showSavedBar = function (t) {
+  const r = _sb.apply(this, arguments);
+  try {
+    if (t && t.type === 'nhap') { const b = vnBarBtn([t.id]), bar = document.getElementById('saved-bar'); if (b && bar) { bar.classList.add('vn-sb'); bar.insertAdjacentHTML('beforeend', b); } }
+  } catch (e) { console.warn(e); }
+  return r;
+}; }
+{ const _o = q5Ops; q5Ops = function () {
+  const r = _o.apply(this, arguments);
+  try { VN.last = r.ops.filter(o => o.k === 'txn' && o.d && o.d.type === 'nhap').map(o => o.d.id); } catch (e) { VN.last = []; }
+  return r;
+}; }
+{ const _s = q5Save; q5Save = async function () {
+  VN.last = [];
+  const r = await _s.apply(this, arguments);
+  try {
+    const ids = (VN.last || []).filter(id => db.transactions.some(x => x.id === id));
+    if (ids.length && !Q5.rows.length) {
+      const b = vnBarBtn(ids), mb = document.getElementById('main-body');
+      if (b && mb) { document.getElementById('saved-bar')?.remove(); mb.insertAdjacentHTML('afterbegin', `<div class="saved-bar vn-sb" id="saved-bar"><div>✅ Đã lưu <b>${ids.length} phiếu nhập</b></div>${b}</div>`); mb.scrollTop = 0; }
+    }
+  } catch (e) { console.warn(e); }
+  VN.last = [];
+  return r;
+}; }
+// hướng dẫn
+if (typeof GUIDES !== 'undefined' && !GUIDES.some(g => g.id === 'vuanhap')) GUIDES.splice(GUIDES.findIndex(g => g.id === 'nhanh') + 1 || GUIDES.length, 0, { id:'vuanhap', g:'Kho', t:'Xuất hàng vừa nhập cho tổ đội dùng ngay', p:'', s:[
+  'Cách 1: lưu phiếu nhập xong → thanh "✅ Đã lưu" có nút "📤 Xuất luôn cho tổ đội" → các món vừa nhập đã tick sẵn.',
+  'Cách 2: Xuất kho → ô "📥 Xuất hàng vừa nhập" → danh sách phiếu nhập 3 ngày gần nhất, gom theo biên bản. Bấm "Của tôi" để chỉ xem phiếu mình nhập.',
+  'Tick từng món, tick dòng biên bản để chọn cả biên bản, hoặc "Chọn hết". Món đã hết tồn hiện mờ, không chọn được. Số bên phải = số sẽ xuất (không quá tồn hiện có).',
+  'Bấm "Đưa … món vào phiếu xuất" → bảng Xuất theo biên bản: ghi Người nhận / tổ đội, sửa số lượng nếu tổ chỉ lấy một phần → Xem trước & lưu.',
+  'Nhiên liệu không có trong danh sách (dùng ô Cấp nhiên liệu). Hàng mượn / nhận trả dùng ô Mượn / Trả.'
+] });
+</script>
+<style>/* v5.65.0 — Xuất hàng vừa nhập */
+.vn-wrap{display:flex;flex-direction:column;padding-bottom:90px}
+.vn-tip{font-size:13.5px;line-height:1.5;color:var(--text2);background:var(--hxl);border-radius:12px;padding:10px 12px}
+.vn-bar{display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap}
+.vn-chip{display:inline-flex;background:#E4E8EE;border-radius:12px;padding:3px}
+.vn-chip button{border:none;background:transparent;border-radius:9px;padding:8px 14px;font:inherit;font-size:14px;font-weight:700;color:var(--text2);cursor:pointer}
+.vn-chip button.on{background:#fff;color:var(--hxd);box-shadow:0 1px 3px rgba(16,24,40,.12)}
+.vn-all{display:flex;align-items:center;gap:8px;font-size:14px;font-weight:700;color:var(--hxd);cursor:pointer;min-height:40px}
+.vn-g{background:#fff;border:1px solid var(--hxb);border-radius:var(--r);overflow:hidden}
+.vn-gh{display:flex;align-items:center;gap:10px;padding:11px 12px;background:var(--hxl);cursor:pointer}
+.vn-gh span{display:flex;flex-direction:column;min-width:0}.vn-gh b{font-size:14.5px;color:var(--hxd)}.vn-gh small{font-size:12.5px;color:var(--text2);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.vn-r{display:flex;align-items:center;gap:10px;padding:10px 12px;border-top:1px solid var(--border);cursor:pointer;min-height:48px}
+.vn-r.on{background:#F3F8FE}
+.vn-r.off,.vn-gh.off{opacity:.5;cursor:default}
+.vn-wrap input[type=checkbox]{width:22px;height:22px;flex:none;accent-color:var(--hx);margin:0}
+.vn-n{flex:1;min-width:0;display:flex;flex-direction:column}.vn-n b{font-size:15px;font-weight:700;line-height:1.3}.vn-n small{font-size:12.5px;color:var(--text2)}.vn-n em{font-style:normal;color:#B42318;font-weight:700}
+.vn-q{flex:none;font-size:18px;font-weight:800;color:var(--hxd);text-align:right;line-height:1.1}.vn-q small{display:block;font-size:11.5px;font-weight:600;color:var(--text2)}
+.vn-empty{text-align:center;color:var(--text2);padding:30px 10px;font-size:14.5px;line-height:1.6}
+.vn-foot{position:fixed;left:0;right:0;bottom:0;padding:10px 14px calc(10px + env(safe-area-inset-bottom));background:linear-gradient(rgba(255,255,255,0),#fff 30%);z-index:5}
+.vn-foot .btn-full{margin:0;max-width:640px;display:block;margin-inline:auto}
+.vn-foot .btn-full[disabled]{background:#C9CFD8;cursor:default}
+.vn-tile{flex-direction:row;align-items:center;gap:12px}
+.vn-cnt{margin-left:auto;flex:none;min-width:30px;height:30px;padding:0 8px;border-radius:15px;background:var(--hx);color:#fff;font-weight:800;font-size:15px;display:inline-flex;align-items:center;justify-content:center;box-sizing:border-box}
+.saved-bar.vn-sb{flex-wrap:wrap}
+.saved-bar .vn-now{flex-basis:100%;background:#1A5FA8;color:#fff;font-size:15px;padding:11px 12px}
 </style>
 </body>
 </html>
