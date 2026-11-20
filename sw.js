@@ -1,5 +1,6 @@
-// FECON Kho + Thi công - Service Worker v5.65.3
-// 5.65.3: Sổ nhập – xuất gộp cả nhiên liệu, dầu mỡ · ảnh biên bản dùng chung cho mọi dòng cùng phiếu, không mất ảnh khi mạng chậm, gửi lại ảnh lỗi
+// FECON Kho + Thi công - Service Worker v5.65.4
+// 5.65.4: Sổ nhập – xuất thêm cột Tồn kho sau từng phiếu, bỏ cột Mã NCC (đổi số bản vì 5.65.3 đã cài)
+// 5.65.3: Sổ nhập – xuất gộp cả nhiên liệu, dầu mỡ + cột Tồn kho (bỏ Mã NCC) · ảnh biên bản dùng chung cho mọi dòng cùng phiếu, không mất ảnh khi mạng chậm, gửi lại ảnh lỗi
 // 5.65.2: Phiếu xuất — ô Người nhận / tổ đội riêng (gợi ý tên), tấm Kiểm tra lại cho mọi kiểu xuất (cho mượn, trả, máy rời CT)
 // 5.65.1: Xem trước theo biên bản — mọi ô chung khuôn (SL + ĐVT cùng chỗ, Đổi / sửa); đếm đúng số phiếu (không tính món mới)
 // 5.65.0: Xuất hàng vừa nhập — danh sách phiếu nhập 3 ngày, tick hàng loạt → phiếu xuất cho tổ đội; nút "Xuất luôn cho tổ đội" sau khi lưu nhập
@@ -104,7 +105,7 @@
 //  - Mở app: lấy file từ bộ nhớ của bản đang dùng; thiếu file nào mới lấy từ mạng.
 //  - Có sw.js mới trên GitHub: tải sẵn bản mới vào bộ nhớ riêng nhưng KHÔNG đổi bản đang dùng.
 //  - Địa chỉ có ?fresh=... luôn lấy thẳng từ mạng (app dùng để kiểm tra / tải bản mới).
-const VERSION = '5.65.3';
+const VERSION = '5.65.4';
 const APP = 'fecon-app-', META = 'fecon-meta';
 const CORE = ['./', './index.html', './thicong.html', './danhmuc.html', './manifest.json', './icon-192.png', './icon-512.png', './icon-maskable-192.png', './icon-maskable-512.png', './bg-login.jpg'];
 

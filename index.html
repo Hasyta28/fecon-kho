@@ -1913,7 +1913,7 @@ body.pg-printing #pg-print{display:block;position:fixed;inset:0;z-index:9000;bac
 // ============================================================
 // CONFIG
 // ============================================================
-const APP_VERSION = '5.65.3';
+const APP_VERSION = '5.65.4';
 const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbw6Rmi80I7RI3ij2U7RdRF5pYuQTnPrwEmGmUZS5xpxzLwwVynfoFUujZe1lm6HS1ymxw/exec';
 // ============================================================
 
@@ -13563,22 +13563,23 @@ function bcLedgerNX(X) {
   const FUEL_LOAI = { 'Nhập kho':'Nhập nhiên liệu', 'Nhập mua':'Nhập nhiên liệu', 'Xuất dùng':'Cấp nhiên liệu' };
   const loaiOf = x => x.fuel && FUEL_LOAI[x.loai] || x.loai;
   const kg = L.some(x => x.it.cat === 'thep');
-  const mn = typeof nccOf === 'function' && L.some(x => x.sv && nccOf(x.sv));
-  const cols = [['STT', 5.5], ['Ngày', 11], ['Số phiếu', 13.5], ['Tên vật tư – nhiên liệu, quy cách', 34], ['ĐVT', 7], ['SL nhập', 10], ['SL xuất', 10], ...(kg ? [['Quy đổi\n(kg)', 10]] : []),
-    ['Nhập / Xuất', 9.5], ['Loại', 16], ['NCC / NTP / Đội', 24], ...(mn ? [['Mã NCC', 11]] : []), ['Máy, thiết bị', 22], ...(D.ct ? [['Xuất từ', 11]] : []),
+  const cols = [['STT', 5.5], ['Ngày', 11], ['Số phiếu', 13.5], ['Tên vật tư – nhiên liệu, quy cách', 34], ['ĐVT', 7], ['SL nhập', 10], ['SL xuất', 10], ['Tồn kho', 10], ...(kg ? [['Quy đổi\n(kg)', 10]] : []),
+    ['Nhập / Xuất', 9.5], ['Loại', 16], ['NCC / NTP / Đội', 24], ['Máy, thiết bị', 22], ...(D.ct ? [['Xuất từ', 11]] : []),
     ...(L.some(x => x.cts || isPycRef(x.t.refId)) ? [['Chứng từ /\nPhiếu YC', 14]] : []), ['Người lập', 14], ...(L.some(x => x.t.xe) ? [['Xe', 18]] : []), ['Ghi chú', 26]];   // cột Chứng từ / Xe chỉ hiện khi có số liệu
   const name = BC_NX, ws = X.wb.addWorksheet(name);
   const n = bcSetup(X, ws, cols.map(c => c[1]), 'SỔ THEO DÕI NHẬP – XUẤT KHO VẬT TƯ, NHIÊN LIỆU', X.R.label + '  ·  gồm cả nhiên liệu, dầu mỡ (tồn và tiêu hao theo máy: xem sheet "Nhiên liệu")', { xSplit:4 });
   bcHead(ws, cols.map(c => [c[0], 1]), []);
   const C = {}; cols.forEach((c, k) => C[c[0].split('\n')[0]] = k + 1);
   const cLoai = C['Loại'], cNote = C['Ghi chú'], cSv = C['NCC / NTP / Đội'], cNX = C['Nhập / Xuất'];
-  const fm = cols.map((c, i) => i === 0 ? 'c' : i === 1 ? 'd' : i === 2 ? 'c' : i === 3 ? 'l' : i === 4 ? 'c' : (i === 5 || i === 6 || (kg && i === 7)) ? 'n' : /^(Ghi chú|NCC|Máy|Loại|Chứng từ)/.test(c[0]) ? 'l' : 'c');
+  const fm = cols.map((c, i) => i === 0 ? 'c' : i === 1 ? 'd' : i === 2 ? 'c' : i === 3 ? 'l' : i === 4 ? 'c' : (i === 5 || i === 6 || i === 7 || (kg && i === 8)) ? 'n' : /^(Ghi chú|NCC|Máy|Loại|Chứng từ)/.test(c[0]) ? 'l' : 'c');
   let r = 10, nN = 0, nX = 0, sN = 0, sX = 0, noSv = 0;
+  const run = {};   // v5.65.3: tồn trong kho của từng món sau mỗi phiếu (bắt đầu từ tồn đầu kỳ)
   L.forEach((x, k) => {
     const N = x.side === 'N', kgp = kg ? bcKgPer(x.it) : null, v = new Array(n).fill('');
     v[0] = k + 1; v[1] = bcXD(x.d); v[2] = x.so; v[3] = x.it.name; v[4] = x.it.unit; v[5] = N ? x.qty : ''; v[6] = N ? '' : x.qty;
+    const kId = x.it.id; run[kId] = bcR((kId in run ? run[kId] : (D.st[kId] ? D.st[kId].open : 0)) + (x.dk || 0)); v[7] = run[kId];
     if (N) { nN++; sN += x.qty; } else { nX++; sX += x.qty; }
-    if (kg) v[7] = kgp ? { formula:`(F${r}+G${r})*${kgp}`, result:bcR(x.qty * kgp) } : (x.it.cat === 'thep' ? 'chưa quy đổi' : '');
+    if (kg) v[8] = kgp ? { formula:`(F${r}+G${r})*${kgp}`, result:bcR(x.qty * kgp) } : (x.it.cat === 'thep' ? 'chưa quy đổi' : '');
     let note = x.kd ? '' : x.t.type === 'dieuchinh' ? (x.t.reason || x.t0.reason || (x.t0.type === 'kiemke' ? 'Kiểm kê' : '')) : x.note0;
     if (note && note === x.sv) note = '';
     note = bcLoanNoteNX(x, note);
@@ -13586,13 +13587,13 @@ function bcLedgerNX(X) {
     if (x.t.thangCT && D.soById[x.t.thangCT]) note = [note, 'đi cặp ' + D.soById[x.t.thangCT]].filter(Boolean).join(' · ');
     if (x.it.ghost) note = [note, 'Vật tư đã xoá khỏi danh mục'].filter(Boolean).join(' · ');
     v[cNX - 1] = N ? 'Nhập' : 'Xuất'; v[cLoai - 1] = loaiOf(x); v[cSv - 1] = bcSvShow(x);
-    if (mn) { const o = x.t.type === 'dieuchinh' ? null : nccOf(x.sv); v[C['Mã NCC'] - 1] = o ? o.ma || '' : ''; }
     v[C['Máy, thiết bị'] - 1] = x.t.thietBi || (typeof mayPartTxn === 'function' && mayPartTxn(x.t) ? 'Bộ phận máy ' + mayLabel(x.t.may, x.t.project) : '');   // v5.63.0
     if (D.ct) v[C['Xuất từ'] - 1] = N ? '' : x.site ? 'Công trường' : 'Kho';
     if (C['Chứng từ']) v[C['Chứng từ'] - 1] = [x.cts, isPycRef(x.t.refId) ? x.t.refId : ''].filter(Boolean).join(' · ');
     v[C['Người lập'] - 1] = x.t.createdByName || ''; if (C['Xe']) v[C['Xe'] - 1] = x.t.xe || ''; v[cNote - 1] = note;
-    bcPut(ws, r, v, fm, bcH(cols.map((c, i) => [v[i] && typeof v[i] === 'object' ? '' : v[i], c[1]]).filter((_, i) => i !== 1 && i !== 5 && i !== 6)));
-    if (kg && !kgp && x.it.cat === 'thep') ws.getCell(r, 8).font = bcF(9.5, false, true, BC.ORG);
+    bcPut(ws, r, v, fm, bcH(cols.map((c, i) => [v[i] && typeof v[i] === 'object' ? '' : v[i], c[1]]).filter((_, i) => i !== 1 && i !== 5 && i !== 6 && i !== 7)));
+    ws.getCell(r, 8).font = bcF(10.5, true, false, run[kId] < -1e-9 ? 'B42318' : '1F2937');
+    if (kg && !kgp && x.it.cat === 'thep') ws.getCell(r, 9).font = bcF(9.5, false, true, BC.ORG);
     ws.getCell(r, cNX).font = bcF(10.5, true, false, N ? '1E7B34' : 'B42318');
     const base = N ? /^Nhập (kho|mua|nhiên liệu)$/.test(loaiOf(x)) : /^(Xuất dùng|Cấp nhiên liệu)$/.test(loaiOf(x));
     if (!base) { for (let c = 1; c <= n; c++) ws.getCell(r, c).fill = bcFill(BC.SOFT); ws.getCell(r, cLoai).font = bcF(10.5, true, false, BC.ORG); }
