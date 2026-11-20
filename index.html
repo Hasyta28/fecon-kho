@@ -1913,7 +1913,7 @@ body.pg-printing #pg-print{display:block;position:fixed;inset:0;z-index:9000;bac
 // ============================================================
 // CONFIG
 // ============================================================
-const APP_VERSION = '5.65.2';
+const APP_VERSION = '5.65.3';
 const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbw6Rmi80I7RI3ij2U7RdRF5pYuQTnPrwEmGmUZS5xpxzLwwVynfoFUujZe1lm6HS1ymxw/exec';
 // ============================================================
 
@@ -2335,6 +2335,7 @@ async function flushOutbox() {
           console.warn('Máy chủ từ chối:', op.action, r.error);
           lastReject = r.error; outbox.shift();
           if (op.action === 'addTransaction') db.transactions = db.transactions.filter(t => t.id !== op.data.id);
+          if (op.action === 'uploadPhoto') { const ph = (db.photos || []).find(x => x.id === op.data.photoId); if (ph) ph._err = String(r.error).slice(0, 160); try { toast('⚠️ Ảnh chưa gửi được — mở phiếu bấm Gửi lại'); } catch (e) {} }   // v5.65.3
           if (op.action === 'addThang') db.transactions = db.transactions.filter(t => t.id !== op.data.nhap.id && t.id !== op.data.xuat.id);
           if (LOAN_ACTIONS[op.action]) {                 // bỏ phần đã ghi tạm trên máy của thao tác mượn bị từ chối
             const ids = new Set([op.data.txnId, op.data.id, op.data.id2].filter(Boolean));
@@ -3715,7 +3716,7 @@ async function loadTxnPhotos(t) {
   for (const ph of photosOf(t.id)) {
     const d = await photoData(ph);
     const el = document.getElementById('pt-' + ph.id); if (!el) continue;
-    el.innerHTML = d ? `<img src="${d}" onclick="viewPhoto(${ph.id})">${ph._local ? '<span class="ph-wait">Chờ gửi</span>' : ''}`
+    el.innerHTML = d ? `<img src="${d}" onclick="viewPhoto(${ph.id})">${ph._err ? '<span class="ph-wait ph-err">Lỗi gửi</span>' : ph._local ? '<span class="ph-wait">Chờ gửi</span>' : ''}`
                      : '<div class="ph-load" title="Cần mạng để tải ảnh">📴</div>';
   }
 }
@@ -7698,7 +7699,7 @@ async function pfSubmit() {
   showLoader('Đang tải lại dữ liệu...');
   await Promise.race([syncAll(true), new Promise(res => setTimeout(res, 10000))]);
   hideLoader();
-  if (photo && txnId) await queuePhotos(txnId, [photo]);
+  if (photo && txnId) await queuePhotos(+txnId, [photo]);   // v5.65.3: số phiếu dạng số để ảnh hiện ngay
   pf = null; closeDp('dp-pg-new');
   if (document.getElementById('dp-pg').classList.contains('show')) renderPg();
   openReq(r.req.id);
@@ -13558,14 +13559,16 @@ function bcLoanNoteNX(x, note) {                                        // còn 
   return [bcNoLinkNote(note), (x.t.type === 'dimuon' || x.t.type === 'chomuon') && rem > 1e-9 ? `Đang mượn, còn ${bcVN(rem, 2)} ${String(l.unit || x.it.unit || '').toLowerCase()} chưa trả` : ''].filter(Boolean).join(' · ');
 }
 function bcLedgerNX(X) {
-  const D = X.D, L = D.P.filter(x => !x.fuel);
+  const D = X.D, L = D.P;   // v5.65.3: gộp cả nhiên liệu, dầu mỡ vào sổ (cột Loại ghi Nhập / Cấp nhiên liệu)
+  const FUEL_LOAI = { 'Nhập kho':'Nhập nhiên liệu', 'Nhập mua':'Nhập nhiên liệu', 'Xuất dùng':'Cấp nhiên liệu' };
+  const loaiOf = x => x.fuel && FUEL_LOAI[x.loai] || x.loai;
   const kg = L.some(x => x.it.cat === 'thep');
   const mn = typeof nccOf === 'function' && L.some(x => x.sv && nccOf(x.sv));
-  const cols = [['STT', 5.5], ['Ngày', 11], ['Số phiếu', 13.5], ['Tên vật tư, quy cách', 32], ['ĐVT', 7], ['SL nhập', 10], ['SL xuất', 10], ...(kg ? [['Quy đổi\n(kg)', 10]] : []),
+  const cols = [['STT', 5.5], ['Ngày', 11], ['Số phiếu', 13.5], ['Tên vật tư – nhiên liệu, quy cách', 34], ['ĐVT', 7], ['SL nhập', 10], ['SL xuất', 10], ...(kg ? [['Quy đổi\n(kg)', 10]] : []),
     ['Nhập / Xuất', 9.5], ['Loại', 16], ['NCC / NTP / Đội', 24], ...(mn ? [['Mã NCC', 11]] : []), ['Máy, thiết bị', 22], ...(D.ct ? [['Xuất từ', 11]] : []),
     ...(L.some(x => x.cts || isPycRef(x.t.refId)) ? [['Chứng từ /\nPhiếu YC', 14]] : []), ['Người lập', 14], ...(L.some(x => x.t.xe) ? [['Xe', 18]] : []), ['Ghi chú', 26]];   // cột Chứng từ / Xe chỉ hiện khi có số liệu
   const name = BC_NX, ws = X.wb.addWorksheet(name);
-  const n = bcSetup(X, ws, cols.map(c => c[1]), 'SỔ THEO DÕI NHẬP – XUẤT KHO VẬT TƯ', X.R.label + '  ·  không gồm nhiên liệu, dầu mỡ (xem sheet "Nhiên liệu")', { xSplit:4 });
+  const n = bcSetup(X, ws, cols.map(c => c[1]), 'SỔ THEO DÕI NHẬP – XUẤT KHO VẬT TƯ, NHIÊN LIỆU', X.R.label + '  ·  gồm cả nhiên liệu, dầu mỡ (tồn và tiêu hao theo máy: xem sheet "Nhiên liệu")', { xSplit:4 });
   bcHead(ws, cols.map(c => [c[0], 1]), []);
   const C = {}; cols.forEach((c, k) => C[c[0].split('\n')[0]] = k + 1);
   const cLoai = C['Loại'], cNote = C['Ghi chú'], cSv = C['NCC / NTP / Đội'], cNX = C['Nhập / Xuất'];
@@ -13582,7 +13585,7 @@ function bcLedgerNX(X) {
     if (x.fixed) note = [note, `Đã sửa số: ghi ${bcVN(x.fixed[0], 3)} → đúng ${bcVN(x.fixed[1], 3)}`].filter(Boolean).join(' · ');
     if (x.t.thangCT && D.soById[x.t.thangCT]) note = [note, 'đi cặp ' + D.soById[x.t.thangCT]].filter(Boolean).join(' · ');
     if (x.it.ghost) note = [note, 'Vật tư đã xoá khỏi danh mục'].filter(Boolean).join(' · ');
-    v[cNX - 1] = N ? 'Nhập' : 'Xuất'; v[cLoai - 1] = x.loai; v[cSv - 1] = bcSvShow(x);
+    v[cNX - 1] = N ? 'Nhập' : 'Xuất'; v[cLoai - 1] = loaiOf(x); v[cSv - 1] = bcSvShow(x);
     if (mn) { const o = x.t.type === 'dieuchinh' ? null : nccOf(x.sv); v[C['Mã NCC'] - 1] = o ? o.ma || '' : ''; }
     v[C['Máy, thiết bị'] - 1] = x.t.thietBi || (typeof mayPartTxn === 'function' && mayPartTxn(x.t) ? 'Bộ phận máy ' + mayLabel(x.t.may, x.t.project) : '');   // v5.63.0
     if (D.ct) v[C['Xuất từ'] - 1] = N ? '' : x.site ? 'Công trường' : 'Kho';
@@ -13591,12 +13594,12 @@ function bcLedgerNX(X) {
     bcPut(ws, r, v, fm, bcH(cols.map((c, i) => [v[i] && typeof v[i] === 'object' ? '' : v[i], c[1]]).filter((_, i) => i !== 1 && i !== 5 && i !== 6)));
     if (kg && !kgp && x.it.cat === 'thep') ws.getCell(r, 8).font = bcF(9.5, false, true, BC.ORG);
     ws.getCell(r, cNX).font = bcF(10.5, true, false, N ? '1E7B34' : 'B42318');
-    const base = N ? /^Nhập (kho|mua)$/.test(x.loai) : x.loai === 'Xuất dùng';
+    const base = N ? /^Nhập (kho|mua|nhiên liệu)$/.test(loaiOf(x)) : /^(Xuất dùng|Cấp nhiên liệu)$/.test(loaiOf(x));
     if (!base) { for (let c = 1; c <= n; c++) ws.getCell(r, c).fill = bcFill(BC.SOFT); ws.getCell(r, cLoai).font = bcF(10.5, true, false, BC.ORG); }
     if (bcNoSv(x, N)) { ws.getCell(r, cSv).fill = bcFill('FCE9C8'); noSv++; }
     r++;
   });
-  if (!L.length) { bcEmptyRow(ws, r, n, 'Không có phiếu nhập, xuất vật tư trong kỳ'); r++; }
+  if (!L.length) { bcEmptyRow(ws, r, n, 'Không có phiếu nhập, xuất vật tư, nhiên liệu trong kỳ'); r++; }
   const r1 = 10, r2 = r - 1;
   ws.getRow(r).height = 6; r++;   // v5.59.9: 1 hàng trống tách hàng Cộng khỏi bảng — lọc cột không ẩn mất hàng Cộng
   bcTotal(ws, r, n, 'Cộng theo bộ lọc (lọc vật tư để xem tổng)', 5, L.length ? { 6:[{ formula:`SUBTOTAL(9,F${r1}:F${r2})`, result:bcR(sN) }, BC.NUM], 7:[{ formula:`SUBTOTAL(9,G${r1}:G${r2})`, result:bcR(sX) }, BC.NUM] } : {});
@@ -14020,7 +14023,7 @@ function bcOverview(X, LN, LX, FU, NX, LO, apx) {
   let r = 8; band(r, 'SỐ LIỆU CHÍNH TRONG KỲ'); r += 2;
   ws.getRow(r).height = 34; ws.getRow(r + 1).height = 18;
   const IN_T = ['Nhập mua', 'Nhập kho', 'Nhập thẳng CT', 'Đi mượn', 'Nhận trả', 'Nhận luân chuyển', 'Nhận giải động'], OUT_T = ['Xuất dùng', 'Xuất trả', 'Trung chuyển', 'Thanh lý (hỏng)', 'Cho mượn', 'Trả lại'];   // v5.56.4
-  const nN = LN.r2 >= LN.r1 ? D.P.filter(x => !x.fuel && x.side === 'N' && IN_T.includes(x.loai)).length : 0, nX = LX.r2 >= LX.r1 ? D.P.filter(x => !x.fuel && x.side === 'X' && OUT_T.includes(x.loai)).length : 0;
+  const nN = LN.r2 >= LN.r1 ? D.P.filter(x => x.side === 'N' && IN_T.includes(x.fuel && /^Nhập (kho|mua)$/.test(x.loai) ? '' : x.loai)).length : 0, nX = LX.r2 >= LX.r1 ? D.P.filter(x => x.side === 'X' && OUT_T.includes(x.fuel && x.loai === 'Xuất dùng' ? '' : x.loai)).length : 0;   // v5.65.3: khớp công thức đếm cột Loại của sổ gộp
   const cntIf = (L, T) => `SUMPRODUCT(COUNTIF(${bcQ(L.name)}!$${bcCL(L.cLoai)}$${L.r1}:$${bcCL(L.cLoai)}$${L.r2},{${T.map(x => '"' + x + '"').join(',')}}))`;
   const nNeg = NX.list.filter(s => { const ct = D.ct ? s.sClose : 0; return ((s.close + ct) < -1e-9); }).length;
   tile(r, 2, LN.r2 >= LN.r1 ? { formula:cntIf(LN, IN_T), result:nN } : 0, '0', 'Lượt nhập vào công trình');
@@ -14127,7 +14130,7 @@ function bcOverview(X, LN, LX, FU, NX, LO, apx) {
   // ----- mục lục -----
   band(r, 'NỘI DUNG BÁO CÁO'); r++;
   const TOC = [['Tổng hợp NXT', 'Tồn đầu, nhập, xuất, điều chỉnh, mượn – trả, tồn cuối từng mặt hàng theo nhóm' + (D.ct ? ' (trong kho + ở công trường)' : '') + (NX.steelTot !== null ? '; thép quy đổi kg' : '')],
-    [BC_NX, 'Từng lượt nhập và xuất vật tư: ngày, số phiếu, NCC / NTP / Đội, máy, loại — bấm lọc cột Nhập / Xuất để xem riêng'],
+    [BC_NX, 'Từng lượt nhập và xuất vật tư, nhiên liệu: ngày, số phiếu, NCC / NTP / Đội, máy, loại — bấm lọc cột Nhập / Xuất để xem riêng'],
     ['Nhiên liệu', 'Tổng hợp nhập – cấp – tồn từng loại dầu, nhớt, mỡ; tiêu hao dầu DO theo máy (lít/ngày, lít/giờ); sổ dầu DO từng lượt']].concat(FU.oilName ? [[FU.oilName, 'Nhớt, mỡ đã cấp cho từng máy và các lượt nhập kho nhớt, mỡ']] : [])
     .concat(apx.map(a => [a, 'Phụ lục']));
   TOC.forEach(([sh, t], k) => {
@@ -14466,7 +14469,7 @@ async function xeSave() {
   await Promise.race([syncAll(true), new Promise(res => setTimeout(res, 10000))]);
   hideLoader();
   const first = (db.transactions || []).find(t => String(t.ma || '').startsWith(x.code + '-') && t.project === curProj);
-  if (x.photos.length && first) await queuePhotos(first.id, x.photos);
+  if (x.photos.length) { if (first) await queuePhotos(first.id, x.photos); else phWaitAdd(x.code, x.photos); }   // v5.65.3: mạng chậm → giữ ảnh, gắn khi tải xong
   closeDp('dp-xe'); XE = null;
   toast(`✅ Đã lưu ${nPh} phiếu theo ${x.code}${x.photos.length && first ? ', gắn ảnh' : ''}`);
   refreshCurrentView(false);
@@ -18541,7 +18544,7 @@ function bbgPhotoSrc(t) {
 { const _h = txnPhotosHtml; txnPhotosHtml = function (t) {
   const s = bbgPhotoSrc(t); if (s === t) return _h.apply(this, arguments);
   const n = photosOf(s.id).length;
-  return _h.call(this, s).replace(/📷 Ảnh biên bản \(\d+\)/, `📷 Ảnh biên bản (${n}) · chung cả biên bản`).replace(/<button type="button" class="ph-add[^]*?<\/button>/, '');
+  return _h.call(this, s).replace(/📷 Ảnh biên bản \(\d+\)/, `📷 Ảnh biên bản (${n}) · ảnh chung của cả phiếu`).replace(/<button type="button" class="ph-add[^]*?<\/button>/, '');
 }; }
 { const _l = loadTxnPhotos; loadTxnPhotos = function (t) { return _l.call(this, bbgPhotoSrc(t)); }; }
 // chi tiết phiếu: dòng "cùng biên bản" + Admin đổi ngày giờ cả nhóm
@@ -19647,6 +19650,82 @@ if (typeof GUIDES !== 'undefined') { const g = GUIDES.find(x => x.id === 'vuanha
 .rv-chips button:active{background:#EEF1F5}
 #fx-recv.need,#bb-recv.need{border-color:#E8A300;background:#FFF8E6}
 .pc-kv b.rv-miss{color:#8A5A00;background:#FFF3CD;border-radius:6px;padding:0 6px;justify-self:start}
+</style>
+<script>// ===== v5.65.3 — ẢNH BIÊN BẢN: DÙNG CHUNG CHO MỌI DÒNG CÙNG PHIẾU · KHÔNG MẤT ẢNH KHI MẠNG CHẬM · GỬI LẠI ẢNH LỖI =====
+// (A) Phiếu nhiều dòng (theo xe, phiếu giấy cùng mã PN/PX, lệnh / biên bản, cặp nhập – xuất thẳng CT): ảnh gắn ở 1 dòng → mọi dòng cùng phiếu đều xem được, có 📷 trong danh sách.
+// (B) Phiếu theo xe: tải lại quá 10 giây chưa thấy phiếu → giữ ảnh trên máy (phWait), tự gắn khi dữ liệu về.
+// (C) Máy chủ từ chối ảnh: không bỏ ảnh, đánh dấu "Lỗi gửi", trong phiếu có nút Gửi lại.
+let _phOwn = { k:'', m:{} };
+function phGroupOf(t) {
+  if (!t || !['nhap', 'xuat'].includes(t.type)) return [];
+  const out = [];
+  try { if (t.thangCT) { const p = db.transactions.find(x => x.id === +t.thangCT); if (p) out.push(p); } } catch (e) {}
+  try { db.transactions.forEach(x => { if (x.thangCT && +x.thangCT === t.id) out.push(x); }); } catch (e) {}
+  try { if (t.ma && typeof cbSameMa === 'function') out.push(...cbSameMa(t)); } catch (e) {}
+  try { if (typeof bbgOf === 'function') out.push(...bbgOf(t)); } catch (e) {}
+  return out.filter(x => x && x.id !== t.id);
+}
+function phOwnerMap() {
+  const P = db.photos || [], T = db.transactions || [];
+  const k = P.length + '|' + T.length + '|' + (T.length ? T[T.length - 1].id : '');
+  if (_phOwn.k === k) return _phOwn.m;
+  const own = new Set(P.map(p => p.txnId)), m = {};
+  own.forEach(id => { const t = T.find(x => x.id === id); if (!t) return; phGroupOf(t).forEach(x => { if (!own.has(x.id) && !m[x.id]) m[x.id] = id; }); });
+  _phOwn = { k, m }; return m;
+}
+bbgPhotoSrc = function (t) {
+  if (!t || photosOf(t.id).length) return t;
+  const o = phOwnerMap()[t.id]; return (o && db.transactions.find(x => x.id === o)) || t;
+};
+{ const _hp = hasPhotos; hasPhotos = function (id) { return _hp(id) || !!phOwnerMap()[id]; }; }
+
+// (B) ảnh chờ phiếu (theo xe) — dữ liệu ảnh nằm trong IndexedDB (u_<id>), danh sách nhỏ ở localStorage
+const LS_PHW = 'fecon_phwait_v1';
+const phwGet = () => { try { return JSON.parse(localStorage.getItem(LS_PHW) || '[]'); } catch (e) { return []; } };
+const phwSet = L => { try { localStorage.setItem(LS_PHW, JSON.stringify(L)); } catch (e) {} };
+async function phWaitAdd(code, list) {
+  const ids = [];
+  for (const ph of list) { try { await PDB.put('u_' + ph.id, ph.data); photoMem[ph.id] = ph.data; ids.push(ph.id); } catch (e) { toast('⚠️ Máy không lưu được ảnh: ' + e.message); } }
+  if (!ids.length) return;
+  const L = phwGet(); L.push({ code:String(code), proj:curProj, ids, at:Date.now() }); phwSet(L);
+  toast(`📷 Mạng chậm: đã giữ ${ids.length} ảnh, tự gắn khi tải xong`);
+}
+function phWaitCheck() {
+  const L = phwGet(); if (!L.length) return;
+  let ch = false;
+  const keep = L.filter(w => {
+    if (Date.now() - w.at > 14 * 864e5) { ch = true; return false; }                       // quá 14 ngày: bỏ
+    if (w.proj !== curProj) return true;
+    const t = (db.transactions || []).find(x => String(x.ma || '').startsWith(w.code + '-') && x.project === curProj && !x._local);
+    if (!t) return true;
+    db.photos = db.photos || [];
+    w.ids.forEach(id => { if (!db.photos.some(p => p.id === id)) { db.photos.push({ id, txnId:t.id, fileId:'', addedByName:meRec(), time:nowStr(), _local:1 }); outbox.push({ action:'uploadPhoto', data:{ photoId:id, txnId:t.id }, ts:Date.now() }); } });
+    ch = true; return false;
+  });
+  if (!ch) return;
+  phwSet(keep); saveLocal(); bgFlush('⏳ Đang tải ảnh lên Google Drive...');
+}
+{ const _as = applyServer; applyServer = function () { const r = _as.apply(this, arguments); try { setTimeout(phWaitCheck, 0); } catch (e) {} return r; }; }
+
+// (C) gửi lại ảnh lỗi
+function phRetry(txnId) {
+  const L = (db.photos || []).filter(p => p.txnId === txnId && p._err); if (!L.length) return;
+  L.forEach(p => { delete p._err; outbox.push({ action:'uploadPhoto', data:{ photoId:p.id, txnId }, ts:Date.now() }); });
+  saveLocal(); bgFlush('⏳ Đang gửi lại ảnh...');
+  setTimeout(() => { try { if (curTxnId === txnId) openTxn(txnId); } catch (e) {} }, 300);
+}
+{ const _th = txnPhotosHtml; txnPhotosHtml = function (t) {
+  const s = _th.apply(this, arguments);
+  try { const src = bbgPhotoSrc(t), bad = photosOf(src.id).filter(p => p._err);
+    if (bad.length) return s + `<div class="ph-errbox">⚠️ ${bad.length} ảnh chưa gửi lên được: ${escHtml(bad[0]._err)}<button type="button" onclick="phRetry(${src.id})">🔁 Gửi lại</button></div>`;
+  } catch (e) {}
+  return s;
+}; }
+</script>
+<style>/* v5.65.3 */
+.ph-wait.ph-err{background:rgba(196,30,30,.92)}
+.ph-errbox{margin:-6px 0 14px;padding:8px 10px;border-radius:10px;background:#FDECEC;color:#8A1C1C;font-size:13px;line-height:1.4}
+.ph-errbox button{display:block;margin-top:6px;border:0;border-radius:8px;background:#C92A2A;color:#fff;font:inherit;font-weight:700;padding:7px 12px;cursor:pointer}
 </style>
 </body>
 </html>
