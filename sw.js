@@ -1,5 +1,5 @@
 // FECON Kho + Thi công - Service Worker v5.65.3
-// 5.65.3: Sổ nhập – xuất gộp cả nhiên liệu, dầu mỡ · ảnh biên bản dùng chung cho mọi dòng cùng phiếu, không mất ảnh khi mạng chậm, gửi lại ảnh lỗi
+// 5.65.3: Sổ nhập – xuất gộp cả nhiên liệu, dầu mỡ + cột Tồn kho (bỏ Mã NCC) · ảnh biên bản dùng chung cho mọi dòng cùng phiếu, không mất ảnh khi mạng chậm, gửi lại ảnh lỗi
 // 5.65.2: Phiếu xuất — ô Người nhận / tổ đội riêng (gợi ý tên), tấm Kiểm tra lại cho mọi kiểu xuất (cho mượn, trả, máy rời CT)
 // 5.65.1: Xem trước theo biên bản — mọi ô chung khuôn (SL + ĐVT cùng chỗ, Đổi / sửa); đếm đúng số phiếu (không tính món mới)
 // 5.65.0: Xuất hàng vừa nhập — danh sách phiếu nhập 3 ngày, tick hàng loạt → phiếu xuất cho tổ đội; nút "Xuất luôn cho tổ đội" sau khi lưu nhập
