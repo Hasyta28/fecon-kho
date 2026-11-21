@@ -1913,7 +1913,7 @@ body.pg-printing #pg-print{display:block;position:fixed;inset:0;z-index:9000;bac
 // ============================================================
 // CONFIG
 // ============================================================
-const APP_VERSION = '5.65.5';
+const APP_VERSION = '5.65.6';
 const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbw6Rmi80I7RI3ij2U7RdRF5pYuQTnPrwEmGmUZS5xpxzLwwVynfoFUujZe1lm6HS1ymxw/exec';
 // ============================================================
 
@@ -19828,6 +19828,149 @@ if (typeof GUIDES !== 'undefined') { const g = GUIDES.find(x => x.id === 'vuanha
 </script>
 <style>/* v5.65.5 */
 #rv-pop .combo-opt span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+</style>
+<script>// ===== v5.65.6 — XUẤT: TÁCH Ô "TỔ ĐỘI / MÁY" VÀ "NGƯỜI NHẬN" =====
+// Máy chủ chỉ có 1 cột supplierOrReceiver → ghi gộp "Tổ · Người" (RV_SEP). Gợi ý tách lại theo từng ô (rvParts). Phiếu cũ không có dấu " · " → nhóm Người nhận.
+// (1) Xuất theo biên bản: #bb-to (Tổ đội / máy, gợi ý tổ + máy ở dự án) + #bb-nguoi; #bb-recv cũ ẩn đi, giữ giá trị gộp → BBD.f.recv như cũ. f.to / f.nguoi giữ trong nháp.
+//     Máy nhận (thietBi) chỉ dò theo ô Tổ đội / máy. Có máy → supplierOrReceiver = người nhận (trước đây bị bỏ trống).
+// (2) Phiếu xuất lẻ: #fx-recv đổi nhãn "Tổ đội", thêm #fx-nguoi "Người nhận". Lúc lưu: fx-recv tạm mang giá trị gộp cho khối 5.65.2, xong trả lại.
+// (3) Bắt buộc: ít nhất 1 trong tổ đội / người nhận / thiết bị (giữ quy tắc 5.65.2). Tấm Kiểm tra lại hiện 2 dòng riêng.
+const RV_SEP = ' · ';
+const rvJoin = (a, b) => [String(a || '').trim(), String(b || '').trim()].filter(Boolean).join(RV_SEP);
+function rvSplit(v) { v = String(v || '').trim(); const i = v.indexOf(RV_SEP); return i < 0 ? { to:'', nguoi:v } : { to:v.slice(0, i).trim(), nguoi:v.slice(i + RV_SEP.length).trim() }; }
+function rvParts() {
+  const T = [], N = [], add = (L, v) => { if (v && !L.some(x => normVN(x) === normVN(v))) L.push(v); };
+  rvNames().forEach(v => { const s = rvSplit(v); add(T, s.to); add(N, s.nguoi); });
+  return { to:T, nguoi:N };
+}
+const RV_KIND = { 'bb-to':'to', 'fx-recv':'to', 'bb-nguoi':'nguoi', 'fx-nguoi':'nguoi' };
+rvShow = function (el) {
+  const p = rvPop(); rvEl = el;
+  const kind = RV_KIND[el.id] || 'nguoi', k = normVN(el.value), hit = v => !k || normVN(v).includes(k);
+  const N = rvParts()[kind].filter(v => hit(v) && normVN(v) !== k).slice(0, 30);
+  const D = el.id === 'bb-to' ? projDevs().filter(d => devActive(d) && hit(d.name) && normVN(d.name) !== k && !N.some(v => normVN(v) === normVN(d.name))).slice(0, 20) : [];
+  let h = '';
+  if (N.length) h += `<div class="combo-head">${kind === 'to' ? '👷 Tổ đội đã dùng' : '🙋 Người đã nhận hàng'}</div>` + N.map(v => `<div class="combo-opt" data-v="${escHtml(v)}"><span>${escHtml(v)}</span></div>`).join('');
+  if (D.length) h += `<div class="combo-head">🚜 Máy ở dự án</div>` + D.map(d => `<div class="combo-opt" data-v="${escHtml(d.name)}"><span>${escHtml(d.name)}</span></div>`).join('');
+  if (!h) { p.style.display = 'none'; return; }
+  p.innerHTML = h;
+  const r = el.getBoundingClientRect(), below = window.innerHeight - r.bottom, w = Math.max(r.width, 240), left = Math.max(8, Math.min(r.left, window.innerWidth - w - 8));
+  Object.assign(p.style, { display:'block', position:'fixed', zIndex:3000, left:left + 'px', width:w + 'px', right:'auto' });
+  if (below < 200 && r.top > below) { p.style.top = 'auto'; p.style.bottom = (window.innerHeight - r.top + 4) + 'px'; p.style.maxHeight = Math.min(280, r.top - 10) + 'px'; }
+  else { p.style.bottom = 'auto'; p.style.top = (r.bottom + 4) + 'px'; p.style.maxHeight = Math.min(280, below - 10) + 'px'; }
+};
+
+// (1) Xuất theo biên bản
+function bbRvSync() {
+  const h = document.getElementById('bb-recv'), a = document.getElementById('bb-to'), b = document.getElementById('bb-nguoi'); if (!h || !a || !b) return;
+  h.value = rvJoin(a.value, b.value); a.classList.remove('need'); b.classList.remove('need'); bbF();
+}
+{ const _o = bbOpen; bbOpen = function () {
+  const r = _o.apply(this, arguments);
+  try {
+    const h = document.getElementById('bb-recv'), fg = h && h.closest('.fg');
+    if (BBD.dir === 'xuat' && fg && !document.getElementById('bb-to')) {
+      const f = BBD.f || {}, s = f.to !== undefined || f.nguoi !== undefined ? { to:f.to || '', nguoi:f.nguoi || '' } : rvSplit(f.recv);
+      fg.style.display = 'none'; fg.nextElementSibling?.classList.contains('rv-chips') && fg.nextElementSibling.remove();
+      fg.insertAdjacentHTML('afterend', `<div class="hx-g2 rv-g2">
+        <div class="fg"><label for="bb-to">Tổ đội / máy</label><input type="text" id="bb-to" autocomplete="off" maxlength="60" placeholder="VD: Tổ khoan 2, KH-01" value="${escHtml(s.to)}" oninput="bbRvSync()"></div>
+        <div class="fg"><label for="bb-nguoi">Người nhận</label><input type="text" id="bb-nguoi" autocomplete="off" maxlength="40" placeholder="VD: Nguyễn Văn A" value="${escHtml(s.nguoi)}" oninput="bbRvSync()"></div></div>`);
+      h.value = rvJoin(s.to, s.nguoi);
+      rvAttach('bb-to'); rvAttach('bb-nguoi');
+    }
+  } catch (e) { console.warn(e); }
+  return r;
+}; }
+{ const _o = bbF; bbF = function () {
+  const r = _o.apply(this, arguments);
+  try { const a = document.getElementById('bb-to'), b = document.getElementById('bb-nguoi'); if (a && b) { BBD.f.to = a.value.trim(); BBD.f.nguoi = b.value.trim(); bbSave(); } } catch (e) { console.warn(e); }
+  return r;
+}; }
+function rvDevOf(v) {
+  v = String(v || '').trim(); if (!v) return '';
+  const L = projDevs().filter(d => devActive(d)), ex = L.find(d => normVN(d.name) === normVN(v)); if (ex) return ex.name;
+  const dv = qkBest(qTokens(v), L, z => z.name)[0]; return dv && dv.s >= 0.45 ? dv.x.name : '';
+}
+{ const _o = bbR; bbR = function (r, k) {
+  const R = _o.apply(this, arguments);
+  try { const f = BBD.f || {}; if (BBD.dir === 'xuat' && R && (f.to !== undefined || f.nguoi !== undefined)) R.thietBi = rvDevOf(f.to); } catch (e) { console.warn(e); }
+  return R;
+}; }
+{ const _o = bbGo; bbGo = function () {
+  const r = _o.apply(this, arguments);
+  try { if (Q5 && Q5.bb && Q5.bb.dir === 'xuat') { const f = BBD.f || {}; Q5.bb.to = f.to || ''; Q5.bb.nguoi = f.nguoi || ''; if (typeof q5Render === 'function') q5Render(); } } catch (e) { console.warn(e); }
+  return r;
+}; }
+{ const _o = q5Ops; q5Ops = function () {
+  const r = _o.apply(this, arguments);
+  try {
+    const bb = Q5.bb; if (bb && bb.dir === 'xuat' && bb.nguoi) r.ops.forEach(o => { const d = o.k === 'txn' ? o.d : null; if (d && d.type === 'xuat' && d.thietBi && !d.supplierOrReceiver) d.supplierOrReceiver = bb.nguoi; });
+  } catch (e) { console.warn(e); }
+  return r;
+}; }
+{ const _r = q5Render; q5Render = function () {
+  const r = _r.apply(this, arguments);
+  try {
+    const bb = Q5 && Q5.bb, box = document.querySelector('#dp-quick-body .bbc-info');
+    if (bb && bb.dir === 'xuat' && box && (bb.to !== undefined || bb.nguoi !== undefined)) {
+      const row = [...box.children].find(d => d.firstElementChild && d.firstElementChild.textContent === 'Người nhận / tổ đội');
+      if (row) row.outerHTML = `<div><span>Tổ đội / máy</span><b>${escHtml(bb.to || '—')}</b></div><div><span>Người nhận</span><b>${escHtml(bb.nguoi || '—')}</b></div>`;
+    }
+  } catch (e) { console.warn(e); }
+  return r;
+}; }
+
+// (2) Phiếu xuất lẻ
+{ const _r = renderXuat; renderXuat = function () {
+  const r = _r.apply(this, arguments);
+  try {
+    const a = document.getElementById('fx-recv'), fg = a && a.closest('.fg');
+    if (fg && !document.getElementById('fx-nguoi')) {
+      const lb = fg.querySelector('label'); if (lb) lb.innerHTML = 'Tổ đội';
+      a.placeholder = 'VD: Tổ khoan 2'; a.maxLength = 60;
+      fg.nextElementSibling?.classList.contains('rv-chips') && fg.nextElementSibling.remove();
+      fg.insertAdjacentHTML('beforeend', `<div class="rv-g2b"><label for="fx-nguoi">Người nhận</label><input type="text" id="fx-nguoi" autocomplete="off" maxlength="40" placeholder="VD: Nguyễn Văn A" oninput="this.classList.remove('need');document.getElementById('fx-recv')?.classList.remove('need')"></div>`);
+      fg.insertAdjacentHTML('beforeend', `<div class="rv-hint">Ghi ít nhất 1 ô nếu không chọn thiết bị nhận</div>`);
+      fg.classList.add('rv-fx');
+      a.addEventListener('input', () => document.getElementById('fx-nguoi')?.classList.remove('need'));
+      rvAttach('fx-nguoi');
+    }
+  } catch (e) { console.warn(e); }
+  return r;
+}; }
+{ const _dx = doXuat; doXuat = async function () {
+  const a = document.getElementById('fx-recv'), b = document.getElementById('fx-nguoi');
+  if (!a || !b || !rvOn()) return _dx.apply(this, arguments);
+  const to = a.value.trim(), ng = b.value.trim(), all = rvJoin(to, ng);
+  if (!all && !String(document.getElementById('fx-device')?.value || '').trim()) b.classList.add('need');
+  window.fxRvParts = { to, nguoi:ng };
+  a.value = all;
+  try { return await _dx.apply(this, arguments); }
+  finally { window.fxRvParts = null; if (a.isConnected && a.value === all) a.value = to; }
+}; }
+{ const _pc = pcConfirm; pcConfirm = function (type) {
+  const pr = _pc.apply(this, arguments);
+  try {
+    const P = window.fxRvParts, kv = document.querySelector('#pc-body .pc-kv');
+    if (type === 'xuat' && P && kv) {
+      const sp = [...kv.querySelectorAll('span')], nr = sp.find(s => s.textContent === 'Người nhận / tổ đội'), dev = sp.some(s => s.textContent === 'Cho máy');
+      const html = (P.to ? `<span>Tổ đội</span><b>${escHtml(P.to)}</b>` : '') + (P.nguoi ? `<span>Người nhận</span><b>${escHtml(P.nguoi)}</b>` : '') + (!P.to && !P.nguoi && !dev ? `<span>Tổ đội / người nhận</span><b class="rv-miss">chưa ghi</b>` : '');
+      if (nr) { nr.nextElementSibling.remove(); nr.insertAdjacentHTML('afterend', html); nr.remove(); }
+      else if (html) { const c = sp.find(s => s.textContent === 'Cho máy'); if (c) c.nextElementSibling.insertAdjacentHTML('afterend', html); else kv.insertAdjacentHTML('afterbegin', html); }
+    }
+  } catch (e) { console.warn(e); }
+  return pr;
+}; }
+if (typeof GUIDES !== 'undefined') { const g = GUIDES.find(x => x.id === 'vuanhap'); if (g) g.s = g.s.map(s => /^Ô Người nhận \/ tổ đội/.test(s) ? 'Phiếu xuất có 2 ô riêng: Tổ đội (theo biên bản: Tổ đội / máy) và Người nhận. Bấm vào ô hiện tên đã dùng gần đây, gõ vài chữ để lọc. Phiếu xuất lẻ: ghi ít nhất 1 ô nếu không chọn thiết bị nhận.' : s); }
+</script>
+<style>/* v5.65.6 */
+.rv-g2 .fg{min-width:0}
+.rv-fx{display:grid;grid-template-columns:1fr 1fr;column-gap:10px;align-items:end}
+.rv-fx>.rv-hint{grid-column:1/-1;grid-row:3;font-size:12px;color:var(--text3);margin-top:4px}
+.rv-fx>label{grid-column:1;grid-row:1}.rv-fx>#fx-recv{grid-column:1;grid-row:2;min-width:0}
+.rv-fx>.rv-g2b{grid-column:2;grid-row:1/3;display:flex;flex-direction:column;justify-content:flex-end;min-width:0}
+.rv-fx>.rv-g2b>input{width:100%;min-width:0}
+#fx-nguoi.need,#bb-to.need,#bb-nguoi.need{border-color:#E8A300;background:#FFF8E6}
 </style>
 </body>
 </html>
