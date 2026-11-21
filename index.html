@@ -1913,7 +1913,7 @@ body.pg-printing #pg-print{display:block;position:fixed;inset:0;z-index:9000;bac
 // ============================================================
 // CONFIG
 // ============================================================
-const APP_VERSION = '5.65.6';
+const APP_VERSION = '5.65.7';
 const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbw6Rmi80I7RI3ij2U7RdRF5pYuQTnPrwEmGmUZS5xpxzLwwVynfoFUujZe1lm6HS1ymxw/exec';
 // ============================================================
 
@@ -19971,6 +19971,64 @@ if (typeof GUIDES !== 'undefined') { const g = GUIDES.find(x => x.id === 'vuanha
 .rv-fx>.rv-g2b{grid-column:2;grid-row:1/3;display:flex;flex-direction:column;justify-content:flex-end;min-width:0}
 .rv-fx>.rv-g2b>input{width:100%;min-width:0}
 #fx-nguoi.need,#bb-to.need,#bb-nguoi.need{border-color:#E8A300;background:#FFF8E6}
+</style>
+<script>// ===== v5.65.7 — BẢNG THEO BIÊN BẢN: GHI CHÚ TỪNG DÒNG =====
+// Mỗi dòng bảng (BBD.rows[i].note) có ô .bbn-nt ở hàng dưới ĐVT / SL. Enter ở SL → Ghi chú; Enter ở Ghi chú → dòng sau.
+// bbR → R.bbNote; q5Ops (ngoài cùng): ghi chú dòng chèn sau "CT · ghi chú chung", trước "⚡ Lệnh" của đúng phiếu (theo R.line). Xem trước: 📝 dưới tên món.
+function bbNtKey(e, i) {
+  if (e.key !== 'Enter') return; e.preventDefault();
+  const el = e.target; bbSet(i, 'note', el.value);
+  setTimeout(() => bbAddAfter(i), 30);
+}
+{ const _o = bbList; bbList = function () {
+  const ae = document.activeElement, nt = ae && ae.classList && ae.classList.contains('bbn-nt') ? +ae.dataset.i : -1;
+  const r = _o.apply(this, arguments);
+  try {
+    const el = document.getElementById('bb-list'); if (!el) return r;
+    const hd = el.querySelector('.bbn-hd'); if (hd && !hd.querySelector('.h-g')) hd.insertAdjacentHTML('beforeend', '<span class="h-g">Ghi chú</span>');
+    [...el.querySelectorAll('.bbn-r:not(.bbn-hd)')].forEach((row, i) => {
+      const q = row.querySelector('.bbn-q'), rw = BBD.rows[i]; if (!q || !rw || row.querySelector('.bbn-nt')) return;
+      q.setAttribute('onkeydown', `if(event.key==='Enter'){event.preventDefault();this.blur();setTimeout(()=>{const n=document.querySelectorAll('#bb-list .bbn-nt')[${i}];n&&n.focus()},40)}`);
+      q.insertAdjacentHTML('afterend', `<input type="text" class="bbn-nt" data-i="${i}" maxlength="120" aria-label="Ghi chú dòng ${i + 1}" placeholder="Ghi chú (không bắt buộc)" value="${escHtml(rw.note || '')}" onchange="bbSet(${i},'note',this.value.trim())" onkeydown="bbNtKey(event,${i})">`);
+    });
+    if (nt >= 0) { const n = el.querySelectorAll('.bbn-nt')[nt]; if (n) try { n.focus({ preventScroll:true }); const v = n.value; n.setSelectionRange(v.length, v.length); } catch (z) {} }
+  } catch (e) { console.warn(e); }
+  return r;
+}; }
+{ const _o = bbR; bbR = function (r, k) {
+  const R = _o.apply(this, arguments);
+  try { if (R) R.bbNote = String(r && r.note || '').trim(); } catch (e) {}
+  return R;
+}; }
+function bbRowNoteAdd(d, nt) {
+  if (!d || !nt) return;
+  const P = String(d.note || '').split(' · ').filter(Boolean); if (P.includes(nt)) return;
+  const k = P.findIndex(x => /^⚡/.test(x)); if (k < 0) P.push(nt); else P.splice(k, 0, nt);
+  d.note = P.join(' · ').slice(0, 400);
+}
+{ const _o = q5Ops; q5Ops = function () {
+  const r = _o.apply(this, arguments);
+  try {
+    if (Q5 && Q5.bb) { const by = {}; (Q5.rows || []).forEach(R => { if (R.bbNote) by[R.line] = R.bbNote; });
+      r.ops.forEach(o => { const nt = by[o.line]; if (!nt) return;
+        if (o.k === 'txn' || o.k === 'loan' || o.k === 'ret') bbRowNoteAdd(o.d, nt);
+        else if (o.k === 'thang') { bbRowNoteAdd(o.d.nhap, nt); bbRowNoteAdd(o.d.xuat, nt); } }); }
+  } catch (e) { console.warn(e); }
+  return r;
+}; }
+{ const _o = q5RowHtml; q5RowHtml = function (R) {
+  const h = _o.apply(this, arguments);
+  try { if (Q5 && Q5.bb && R && R.bbNote) { let k = h.indexOf('<div class="bbc-st">'); if (k < 0) k = h.indexOf('<div class="q5-src">'); const s = `<div class="q5-sub bbn-pn">📝 ${escHtml(R.bbNote)}</div>`; return k < 0 ? h + s : h.slice(0, k) + s + h.slice(k); } } catch (e) {}
+  return h;
+}; }
+</script>
+<style>/* v5.65.7 */
+.bbn-r{grid-template-areas:"tt nm nm nm x" ". u q st st" ". nt nt nt nt"}
+.bbn-r.bbn-hd{grid-template-areas:"tt n n n x" ". u q h h" ". g g g g"}
+.bbn-hd .h-g{grid-area:g}
+.bbn-r .bbn-nt{grid-area:nt;height:36px;font-size:13.5px;border-style:dashed;background:#FCFCFD}
+.bbn-r .bbn-nt:focus{border-style:solid;background:#fff}
+.bbn-pn{color:var(--text2);font-style:italic}
 </style>
 </body>
 </html>
