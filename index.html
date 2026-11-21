@@ -1913,7 +1913,7 @@ body.pg-printing #pg-print{display:block;position:fixed;inset:0;z-index:9000;bac
 // ============================================================
 // CONFIG
 // ============================================================
-const APP_VERSION = '5.65.4';
+const APP_VERSION = '5.65.5';
 const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbw6Rmi80I7RI3ij2U7RdRF5pYuQTnPrwEmGmUZS5xpxzLwwVynfoFUujZe1lm6HS1ymxw/exec';
 // ============================================================
 
@@ -19727,6 +19727,107 @@ function phRetry(txnId) {
 .ph-wait.ph-err{background:rgba(196,30,30,.92)}
 .ph-errbox{margin:-6px 0 14px;padding:8px 10px;border-radius:10px;background:#FDECEC;color:#8A1C1C;font-size:13px;line-height:1.4}
 .ph-errbox button{display:block;margin-top:6px;border:0;border-radius:8px;background:#C92A2A;color:#fff;font:inherit;font-weight:700;padding:7px 12px;cursor:pointer}
+</style>
+<script>// ===== v5.65.5 — THEO BIÊN BẢN: Ô GHI CHÚ CHUNG · GỢI Ý NGƯỜI NHẬN DẠNG DANH SÁCH THẢ XUỐNG · GIỜ ĐÚNG Ở TẤM KIỂM TRA LẠI CHO MƯỢN / TRẢ =====
+// (1) Nhập / Xuất theo biên bản: ô #bb-note "Ghi chú" (chung cả biên bản) → BBD.f.note (giữ trong nháp) → Q5.bb.note → ghi vào note mọi phiếu (sau "CT: số BB", trước ghi chú riêng của dòng). Hiện ở "Chung cho cả biên bản" khi xem trước.
+// (2) Ô người nhận (#bb-recv, #fx-recv): bỏ dãy chip + datalist; thay bằng danh sách thả xuống #rv-pop (bấm ô → tên gần nhất; gõ → lọc không dấu). #bb-recv có thêm nhóm "Máy ở dự án".
+// (3) pcSheet (Kiểm tra lại: cho mượn / trả đồ đi mượn / cho mượn máy): không truyền date → lấy ô Ngày giờ phiếu fx-time (gioVal) như lúc lưu (pushLoan), không lấy giờ hiện tại.
+let rvEl = null;
+function rvPop() {
+  let p = document.getElementById('rv-pop');
+  if (!p) {
+    document.body.insertAdjacentHTML('beforeend', '<div id="rv-pop" class="combo-list" style="display:none"></div>');
+    p = document.getElementById('rv-pop');
+    p.addEventListener('mousedown', e => e.preventDefault());
+    p.addEventListener('click', e => { const b = e.target.closest('[data-v]'); if (!b || !rvEl) return; const el = rvEl; rvHide(); el._rvSkip = 1; try { rvPick(el.id, b.dataset.v); } finally { el._rvSkip = 0; } });
+  }
+  return p;
+}
+function rvShow(el) {
+  const p = rvPop(); rvEl = el;
+  const k = normVN(el.value), hit = v => !k || normVN(v).includes(k);
+  const N = rvNames().filter(v => hit(v) && normVN(v) !== k).slice(0, 30);
+  const D = el.id === 'bb-recv' ? projDevs().filter(d => devActive(d) && hit(d.name) && normVN(d.name) !== k && !N.some(v => normVN(v) === normVN(d.name))).slice(0, 20) : [];
+  let h = '';
+  if (N.length) h += `<div class="combo-head">👷 Đã nhận hàng gần đây</div>` + N.map(v => `<div class="combo-opt" data-v="${escHtml(v)}"><span>${escHtml(v)}</span></div>`).join('');
+  if (D.length) h += `<div class="combo-head">🚜 Máy ở dự án</div>` + D.map(d => `<div class="combo-opt" data-v="${escHtml(d.name)}"><span>${escHtml(d.name)}</span></div>`).join('');
+  if (!h) { p.style.display = 'none'; return; }
+  p.innerHTML = h;
+  const r = el.getBoundingClientRect(), below = window.innerHeight - r.bottom;
+  Object.assign(p.style, { display:'block', position:'fixed', zIndex:3000, left:r.left + 'px', width:r.width + 'px', right:'auto' });
+  if (below < 200 && r.top > below) { p.style.top = 'auto'; p.style.bottom = (window.innerHeight - r.top + 4) + 'px'; p.style.maxHeight = Math.min(280, r.top - 10) + 'px'; }
+  else { p.style.bottom = 'auto'; p.style.top = (r.bottom + 4) + 'px'; p.style.maxHeight = Math.min(280, below - 10) + 'px'; }
+}
+function rvHide() { const p = document.getElementById('rv-pop'); if (p) p.style.display = 'none'; rvEl = null; }
+rvAttach = function (id) {
+  const el = document.getElementById(id); if (!el || el.dataset.rv) return;
+  el.dataset.rv = 1; el.removeAttribute('list'); el.autocomplete = 'off';
+  el.addEventListener('focus', () => rvShow(el));
+  el.addEventListener('input', () => { if (!el._rvSkip && document.activeElement === el) rvShow(el); });
+  el.addEventListener('blur', () => setTimeout(() => { if (rvEl === el && document.activeElement !== el) rvHide(); }, 150));
+};
+document.addEventListener('pointerdown', e => { if (rvEl && e.target !== rvEl && !e.target.closest('#rv-pop')) rvHide(); }, true);
+document.addEventListener('keydown', e => { if (e.key === 'Escape' && rvEl) rvHide(); });
+window.addEventListener('scroll', () => { if (rvEl) rvShow(rvEl); }, true);
+{ const _o = openDp; openDp = function () { rvHide(); return _o.apply(this, arguments); }; }
+{ const _o = closeDp; closeDp = function () { rvHide(); return _o.apply(this, arguments); }; }
+
+// (1) ô Ghi chú chung cho cả biên bản
+{ const _o = bbOpen; bbOpen = function () {
+  const r = _o.apply(this, arguments);
+  try {
+    const g = document.querySelector('#dp-bb-body .hx-g2');
+    if (g && !document.getElementById('bb-note')) g.insertAdjacentHTML('afterend', `<div class="fg"><label for="bb-note">Ghi chú <small>· không bắt buộc · ghi vào mọi món</small></label><input type="text" id="bb-note" maxlength="200" autocomplete="off" placeholder="VD: Cấp cho cọc C12, hạng mục tường vây…" value="${escHtml((BBD.f && BBD.f.note) || '')}" oninput="bbF()"></div>`);
+  } catch (e) { console.warn(e); }
+  return r;
+}; }
+{ const _o = bbF; bbF = function () {
+  const r = _o.apply(this, arguments);
+  try { const el = document.getElementById('bb-note'); if (el) { BBD.f.note = String(el.value || '').trim(); bbSave(); } } catch (e) { console.warn(e); }
+  return r;
+}; }
+{ const _o = bbGo; bbGo = function () {
+  const r = _o.apply(this, arguments);
+  try { if (Q5 && Q5.bb && !Q5.bb.note && BBD.f && BBD.f.note) { Q5.bb.note = BBD.f.note; if (typeof q5Render === 'function') q5Render(); } } catch (e) { console.warn(e); }
+  return r;
+}; }
+function bbNoteAdd(d, note, cts) {
+  if (!d) return;
+  const pre = cts ? 'CT: ' + cts : '', n = String(d.note || '');
+  if (n.includes(note)) return;
+  d.note = (pre && n.startsWith(pre) ? [pre, note, n.slice(pre.length).replace(/^ · /, '')] : [note, n]).filter(Boolean).join(' · ').slice(0, 400);
+}
+{ const _o = q5Ops; q5Ops = function () {
+  const r = _o.apply(this, arguments);
+  try {
+    const bb = Q5.bb, note = bb && String(bb.note || '').trim();
+    if (note) r.ops.forEach(o => {
+      if (o.k === 'txn' || o.k === 'loan' || o.k === 'ret') bbNoteAdd(o.d, note, bb.cts);
+      else if (o.k === 'thang') { bbNoteAdd(o.d.nhap, note, bb.cts); bbNoteAdd(o.d.xuat, note, ''); }
+    });
+  } catch (e) { console.warn(e); }
+  return r;
+}; }
+{ const _r = q5Render; q5Render = function () {
+  const r = _r.apply(this, arguments);
+  try {
+    const bb = Q5 && Q5.bb, box = document.querySelector('#dp-quick-body .bbc-info');
+    if (bb && bb.note && box && !box.querySelector('.bbc-note')) box.insertAdjacentHTML('beforeend', `<div class="bbc-note"><span>Ghi chú</span><b>${escHtml(bb.note)}</b></div>`);
+  } catch (e) { console.warn(e); }
+  return r;
+}; }
+
+// (3) tấm Kiểm tra lại (cho mượn / trả): ngày giờ theo ô Ngày giờ phiếu
+{ const _o = pcSheet; pcSheet = function (o) {
+  try {
+    if (o && !o.date) { const el = document.getElementById('fx-time'), v = el && typeof gioVal === 'function' ? gioVal(el) : ''; if (v) { const d = new Date(v); if (!isNaN(d)) o.date = d; } }
+  } catch (e) { console.warn(e); }
+  return _o.apply(this, arguments);
+}; }
+if (typeof GUIDES !== 'undefined') { const g = GUIDES.find(x => x.id === 'vuanhap'); if (g) g.s = g.s.map(s => /tổ đội đã dùng/.test(s) ? 'Ô Người nhận / tổ đội: bấm vào ô hiện danh sách tên đã dùng gần đây, gõ vài chữ để lọc rồi bấm chọn. Phiếu xuất lẻ: bắt buộc ghi nếu không chọn thiết bị nhận.' : s); }
+</script>
+<style>/* v5.65.5 */
+#rv-pop .combo-opt span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 </style>
 </body>
 </html>
