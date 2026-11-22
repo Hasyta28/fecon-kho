@@ -1913,7 +1913,7 @@ body.pg-printing #pg-print{display:block;position:fixed;inset:0;z-index:9000;bac
 // ============================================================
 // CONFIG
 // ============================================================
-const APP_VERSION = '5.67.1';
+const APP_VERSION = '5.67.2';
 const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbw6Rmi80I7RI3ij2U7RdRF5pYuQTnPrwEmGmUZS5xpxzLwwVynfoFUujZe1lm6HS1ymxw/exec';
 // ============================================================
 
@@ -20676,6 +20676,178 @@ if (typeof pcConfirm === 'function') { const _r = pcConfirm; pcConfirm = functio
 .bbc-one button{border:none;background:none;color:var(--orange);font:inherit;font-weight:700;cursor:pointer;padding:2px 0 2px 6px;flex:none}
 .bbc-info:not(.mini) .bbc-one{margin-bottom:4px;padding-bottom:6px;border-bottom:1px solid var(--border)}
 .bbc-info:not(.mini) .bbc-it{display:none !important}
+</style>
+<script>// ===== v5.67.2: ADMIN GHI BÙ CẤP NHIÊN LIỆU / NHỚT CHO MÁY ĐÃ RỜI CÔNG TRÌNH =====
+// Chỉ Admin. (1) Màn Cấp nhiên liệu: nhóm thu gọn "Máy đã rời công trình". (2) Chọn máy đã rời → bắt buộc chọn ngày giờ trong khoảng ngày vào → ngày rời.
+// (3) Chi tiết máy đã rời: nút "⛽ Ghi bù cấp nhiên liệu". (4) Phiếu xuất lẻ: ô Thiết bị có thêm nhóm máy đã rời (cùng điều kiện ngày).
+// Số đồng hồ (nếu nhập) phải nằm giữa lần đọc trước và sau mốc giờ đã chọn (gồm số lúc vào / lúc kết thúc). Phiếu bù không thêm ghi chú.
+const gbOn = () => can('admin');
+const gbLeft = d => !!(d && d.outDate);
+const gbYmd = s => fmtDateInput(s);
+const gbDmy = s => { const v = gbYmd(s); return v ? v.split('-').reverse().join('/') : ''; };
+function gbRange(d) {   // khoảng giờ hợp lệ (ms, giờ máy) + chuỗi cho ô datetime-local
+  const a = gbYmd(d.inDate), b = gbYmd(d.outDate);
+  return { a, b, lo:a ? new Date(a + 'T00:00').getTime() : 0, hi:b ? new Date(b + 'T23:59:59').getTime() : Date.now() };
+}
+function gbTimeOk(d, local) {   // local = 'YYYY-MM-DDTHH:mm' → true / chuỗi lỗi
+  if (!local) return `Chọn ngày giờ cấp cho "${d.name}" — máy đã rời công trình ngày ${gbDmy(d.outDate)}`;
+  const ms = new Date(local).getTime(), R = gbRange(d);
+  if (!isFinite(ms)) return 'Ngày giờ phiếu không hợp lệ';
+  if (ms > R.hi) return `"${d.name}" đã rời công trình ngày ${gbDmy(d.outDate)} — chọn ngày giờ trước khi máy rời`;
+  if (R.lo && ms < R.lo) return `"${d.name}" vào công trình ngày ${gbDmy(d.inDate)} — chọn ngày giờ sau khi máy vào`;
+  return true;
+}
+function gbMeterAround(d, ms) {   // lần đọc đồng hồ ngay trước / ngay sau mốc giờ
+  let prev = null, next = null;
+  meterLog(d).list.forEach(x => { if (x.m === null || x.m === undefined || x.kind === 'broken') return; if (x.t <= ms) prev = x.m; else if (next === null) next = x.m; });
+  return { prev, next };
+}
+function gbMeterOk(d, local, raw) {
+  if (raw === '' || raw === undefined || raw === null) return true;
+  const m = +raw, ms = new Date(local).getTime(); if (isNaN(m) || !isFinite(ms)) return true;
+  const { prev, next } = gbMeterAround(d, ms);
+  if (prev !== null && m < prev) return `${mLbl(d)} ${fmtNum(m)} nhỏ hơn lần đọc trước mốc giờ này (${fmtNum(prev)}) — kiểm tra lại hoặc để trống`;
+  if (next !== null && m > next) return `${mLbl(d)} ${fmtNum(m)} lớn hơn lần đọc sau mốc giờ này (${fmtNum(next)}${gbLeft(d) && d.outMeter !== '' && +d.outMeter === next ? ', số lúc kết thúc' : ''}) — kiểm tra lại hoặc để trống`;
+  return true;
+}
+// Mốc giờ đang chọn cho máy đã rời (để "Lần trước" của đồng hồ tính theo đúng mốc, không lấy số lúc kết thúc)
+function gbCtxMs(d) {
+  if (!gbOn() || !gbLeft(d)) return 0;
+  try {
+    const dp = document.getElementById('dp-nl');
+    if (dp && dp.classList.contains('show') && NL.cur && NL.cur.devId === d.id && NL.time) return new Date(NL.time).getTime() || 0;
+    const fd = document.getElementById('fx-device'), ft = document.getElementById('fx-time');
+    if (fd && fd.value === d.name && ft && ft.value) return new Date(ft.value).getTime() || 0;
+  } catch (e) {}
+  return 0;
+}
+{ const _lm = lastMeter; lastMeter = function (d) { const ms = d ? gbCtxMs(d) : 0; if (ms) return gbMeterAround(d, ms).prev; return _lm.apply(this, arguments); }; }
+
+// ---------- (1) Màn Cấp nhiên liệu: nhóm máy đã rời ----------
+let GB_OPEN = false;
+{ const _gl = nlGridList; nlGridList = function () {
+  const out = _gl.apply(this, arguments);
+  try {
+    const E = document.getElementById('nl-grid'); if (!E || !gbOn()) return out;
+    const q = normVN(NL.q || ''), toks = q.split(/\s+/).filter(Boolean);
+    const L = projDevs().filter(gbLeft).filter(d => !toks.length || toks.every(w => normVN(d.name + ' ' + (d.plate || '') + ' ' + (d.maQL || '')).includes(w)))
+      .sort((a, b) => String(gbYmd(b.outDate)).localeCompare(String(gbYmd(a.outDate))) || a.name.localeCompare(b.name, 'vi'));
+    if (!L.length) return out;
+    const open = GB_OPEN || toks.length > 0 || NL.cart.some(x => L.some(d => d.id === x.devId));
+    const unitOf = id => (db.items.find(i => i.id === id) || {}).unit || '';
+    const cards = L.map(d => { const c = NL.cart.find(x => x.devId === d.id);
+      return `<button type="button" class="nl-card gb-card ${c ? 'on' : ''}" onclick="nlPick(${d.id})">${devPhTag(d, 'nl-cph')}${c ? `<span class="nl-ok">✓ ${fmtNum(c.qty)} ${escHtml(unitOf(c.itemId))}</span>` : ''}<span class="gb-tag">Rời ${escHtml(gbDmy(d.outDate))}</span>
+        <b>${escHtml(d.name)}${d.type === 'hire' ? ' <span style="font-weight:600;color:#C4521F">(thuê)</span>' : ''}</b><small>Vào ${escHtml(gbDmy(d.inDate) || '?')} · rời ${escHtml(gbDmy(d.outDate))}</small></button>`; }).join('');
+    E.insertAdjacentHTML('beforeend', `<div class="gb-box" style="grid-column:1 / -1"><button type="button" class="gb-hd" aria-expanded="${open}" onclick="GB_OPEN=!GB_OPEN;nlGridList()">
+      <span>${open ? '▾' : '▸'} Máy đã rời công trình (${L.length})</span><small>Admin ghi bù phiếu cấp bị sót</small></button>${open ? `<div class="nl-grid gb-grid">${cards}</div>` : ''}</div>`);
+    devPhPump(E);
+  } catch (e) { console.warn(e); }
+  return out;
+}; }
+
+// ---------- (2) Ô ngày giờ khi chọn máy đã rời ----------
+const gbCurDev = () => NL.cur && NL.cur.devId ? db.devices.find(x => x.id === NL.cur.devId) : null;
+{ const _nr = nlRender; nlRender = function () {
+  const out = _nr.apply(this, arguments);
+  try {
+    const d = gbCurDev();
+    if (NL.step === 'pad' && gbOn() && gbLeft(d)) {
+      const el = document.getElementById('nl-time'), R = gbRange(d);
+      if (el) {
+        if (NL.time && gbTimeOk(d, NL.time) !== true) NL.time = '';
+        el.value = NL.time || ''; el.dataset.auto = ''; if (R.a) el.min = R.a + 'T00:00';
+        const now = pfIso(new Date()); el.max = R.b && R.b + 'T23:59' < now ? R.b + 'T23:59' : now;
+        el.required = true; el.classList.toggle('gb-need', !NL.time);
+        const mph = () => { const m = document.getElementById('nl-m'); if (!m) return; const p = el.value ? gbMeterAround(d, new Date(el.value).getTime()).prev : null; m.placeholder = p !== null ? 'Trước: ' + fmtNum(p) : 'Số đồng hồ'; };
+        el.addEventListener('change', () => { el.classList.toggle('gb-need', !el.value); NL.time = el.value; mph(); }); mph();
+        const fg = el.closest('.fg'); if (fg && !fg.querySelector('.gb-hint')) fg.insertAdjacentHTML('beforeend', `<div class="gb-hint">Máy đã rời công trình ngày ${escHtml(gbDmy(d.outDate))} — chọn ngày giờ lúc máy còn ở công trường${R.a ? ` (từ ${escHtml(gbDmy(d.inDate))})` : ''}</div>`);
+      }
+      const h = document.querySelector('#dp-nl-body .nl-mh small'); if (h && !h.querySelector('.gb-tag2')) h.insertAdjacentHTML('afterbegin', `<span class="gb-tag2">Đã rời ${escHtml(gbDmy(d.outDate))}</span> `);
+    }
+  } catch (e) { console.warn(e); }
+  return out;
+}; }
+{ const _na = nlAdd; nlAdd = function (save) {
+  const d = gbCurDev();
+  if (d && gbLeft(d)) {
+    if (!gbOn()) { toast('⚠️ Máy đã rời công trình — chỉ Admin ghi bù được'); return; }
+    const el = document.getElementById('nl-time'); if (el) NL.time = el.value || '';
+    const ok = gbTimeOk(d, NL.time); if (ok !== true) { toast('⚠️ ' + ok); el && el.focus(); return; }
+    const mEl = document.getElementById('nl-m'), mk = gbMeterOk(d, NL.time, mEl ? String(mEl.value || '').trim() : '');
+    if (mk !== true) { toast('⚠️ ' + mk); return; }
+  }
+  return _na.apply(this, arguments);
+}; }
+{ const _ns = nlSave; nlSave = async function () {
+  if (NL.busy || !NL.cart.length) return _ns.apply(this, arguments);
+  const left = NL.cart.map(x => x.devId ? db.devices.find(v => v.id === x.devId) : null).filter(gbLeft);
+  if (!left.length) return _ns.apply(this, arguments);
+  if (!gbOn()) { toast('⚠️ Có máy đã rời công trình — chỉ Admin ghi bù được'); return; }
+  const el = document.getElementById('nl-time'); if (el && el.value) NL.time = el.value;
+  for (const d of left) { const ok = gbTimeOk(d, NL.time); if (ok !== true) { toast('⚠️ ' + ok); return; } }
+  const g = gioCheck(localToVN(NL.time), NL.cart.map(x => db.items.find(i => i.id === x.itemId))); if (!g) return;   // mốc kiểm kê → hỏi lại như phiếu thường
+  const r = await _ns.apply(this, arguments);
+  if (g === 'moc') setTimeout(() => { syncAll(true).then(() => refreshCurrentView(false)).catch(() => {}); }, 4000);
+  return r;
+}; }
+
+// ---------- (3) Chi tiết máy đã rời: nút ghi bù ----------
+{ const _dh = nlDevHead; nlDevHead = function (d) {
+  let h = _dh.apply(this, arguments);
+  try {
+    if (gbOn() && gbLeft(d) && curProj && curProj !== 'all' && hp('k_xuat'))
+      h = h.replace(/<\/div>\s*$/, `<button type="button" class="nl-go gb-go" onclick="nlOpen(${d.id})">⛽ Ghi bù cấp nhiên liệu / nhớt<small>Máy đã rời ngày ${escHtml(gbDmy(d.outDate))} · chọn ngày giờ lúc máy còn ở công trường</small></button></div>`);
+  } catch (e) { console.warn(e); }
+  return h;
+}; }
+
+// ---------- (4) Phiếu xuất lẻ: ô Thiết bị có máy đã rời ----------
+{ const _rx = renderXuat; renderXuat = function () {
+  const out = _rx.apply(this, arguments);
+  try {
+    const s = document.getElementById('fx-device'); if (!s || !gbOn() || s.querySelector('optgroup.gb-og')) return out;
+    const L = projDevs().filter(gbLeft).sort((a, b) => a.name.localeCompare(b.name, 'vi'));
+    const act = new Set([...s.options].map(o => o.value));
+    const X = L.filter(d => !act.has(d.name)); if (!X.length) return out;
+    s.insertAdjacentHTML('beforeend', `<optgroup class="gb-og" label="Máy đã rời công trình (Admin ghi bù)">${X.map(d => `<option value="${escHtml(d.name)}">${escHtml(d.name)} · rời ${escHtml(gbDmy(d.outDate))}</option>`).join('')}</optgroup>`);
+    s.addEventListener('change', gbFxHint);
+  } catch (e) { console.warn(e); }
+  return out;
+}; }
+function gbFxDev() { const s = document.getElementById('fx-device'); if (!s || !s.value) return null; return projDevs().filter(gbLeft).find(d => d.name === s.value && !projDevs().some(x => !gbLeft(x) && x.name === s.value)) || null; }
+function gbFxHint() {
+  const d = gbFxDev(), s = document.getElementById('fx-device'), fg = s && s.closest('.fg'); if (!fg) return;
+  let h = fg.querySelector('.gb-hint'); if (h) h.remove();
+  const t = document.getElementById('fx-time');
+  if (!d) { if (t) { t.min = ''; t.classList.remove('gb-need'); } return; }
+  fg.insertAdjacentHTML('beforeend', `<div class="gb-hint">Máy đã rời công trình ngày ${escHtml(gbDmy(d.outDate))} — chọn Ngày giờ phiếu lúc máy còn ở công trường</div>`);
+  if (t) { const R = gbRange(d); if (R.a) t.min = R.a + 'T00:00'; const v = gioVal(t); t.classList.toggle('gb-need', !v || gbTimeOk(d, v) !== true); }
+}
+{ const _dx = doXuat; doXuat = async function () {
+  const d = gbFxDev();
+  if (d) {
+    if (!gbOn()) { toast('⚠️ Máy đã rời công trình — chỉ Admin ghi bù được'); return; }
+    const t = document.getElementById('fx-time'), v = t ? gioVal(t) : '';
+    const ok = gbTimeOk(d, v); if (ok !== true) { toast('⚠️ ' + ok); t && t.focus(); return; }
+    const mEl = document.getElementById('fx-meter'), mk = gbMeterOk(d, v, mEl && mEl.offsetParent !== null ? String(mEl.value || '').trim() : '');
+    if (mk !== true) { toast('⚠️ ' + mk); return; }
+  }
+  return _dx.apply(this, arguments);
+}; }
+</script>
+<style>/* v5.67.2 ghi bù máy đã rời */
+.gb-box{margin-top:6px;border-top:1px dashed var(--border);padding-top:8px}
+.gb-hd{display:flex;width:100%;align-items:baseline;justify-content:space-between;gap:8px;border:none;background:none;padding:6px 2px;font:inherit;font-weight:800;color:var(--text2);cursor:pointer;text-align:left}
+.gb-hd small{font-weight:600;font-size:12px;color:var(--text3,#8A94A3)}
+.gb-grid{margin-top:4px}
+.gb-card{opacity:.72;border-style:dashed}
+.gb-card.on{opacity:1}
+.gb-tag{position:absolute;left:6px;top:6px;background:rgba(55,65,81,.85);color:#fff;font-size:11px;font-weight:700;border-radius:6px;padding:2px 6px}
+.gb-tag2{display:inline-block;background:#FDECEC;color:#B42318;font-weight:700;border-radius:6px;padding:0 6px;font-size:12px}
+.gb-hint{margin-top:4px;font-size:12.5px;line-height:1.35;color:#B54708}
+input.gb-need{border-color:#E8A33D !important;background:#FFF8EB}
+.nl-go.gb-go{display:block;background:#4B5563}
+.nl-go.gb-go small{display:block;font-size:11.5px;font-weight:600;opacity:.85;margin-top:2px}
 </style>
 </body>
 </html>
