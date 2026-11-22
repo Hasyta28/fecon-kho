@@ -1913,7 +1913,7 @@ body.pg-printing #pg-print{display:block;position:fixed;inset:0;z-index:9000;bac
 // ============================================================
 // CONFIG
 // ============================================================
-const APP_VERSION = '5.67.0';
+const APP_VERSION = '5.67.1';
 const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbw6Rmi80I7RI3ij2U7RdRF5pYuQTnPrwEmGmUZS5xpxzLwwVynfoFUujZe1lm6HS1ymxw/exec';
 // ============================================================
 
@@ -20620,6 +20620,61 @@ if (typeof pcConfirm === 'function') { const _r = pcConfirm; pcConfirm = functio
 .nb-b{display:flex;gap:8px;justify-content:flex-end;margin-top:8px}
 .nb-b button{border:1.5px solid var(--border);background:#fff;border-radius:999px;padding:6px 12px;font:inherit;font-size:13px;font-weight:700;cursor:pointer}
 .nb-b button.on{background:var(--green);border-color:var(--green);color:#fff}
+</style>
+<script>
+// ===== v5.67.1: BẢNG THEO BIÊN BẢN GỌN — mỗi món 1 hàng (☑ · số · tên · SL · ĐVT · ✎) · "Khớp kho" chữ nhỏ dưới tên · khung chung 1 dòng =====
+// Chỉ đổi cách hiện ở màn xem trước theo biên bản (Q5.bb, thẻ .bbc của 5.65.1). Logic lưu / kiểm tra không đổi.
+{ const _o = q5RowHtml; q5RowHtml = function (R) {
+  const h = _o.apply(this, arguments);
+  try {
+    if (!(Q5 && Q5.bb) || h.indexOf('q5-card bbc') < 0) return h;
+    return h.replace(/<\/span><\/div>\s*<div class="bbc-row">/, '</span>')                     // gom hàng SL / ĐVT / nút vào hàng tên
+      .replace(/>Đổi \/ sửa (▴|▾)<\/button>/, (m, a) => ` title="Đổi món / sửa">✎<\/button>`)
+      .replace('<span class="bbc-ul"><b>', '<span class="bbc-ul"><b>');
+  } catch (e) { return h; }
+}; }
+{ const _r = q5Render; q5Render = function () {
+  const r = _r.apply(this, arguments);
+  try {
+    const box = Q5 && Q5.bb && document.querySelector('#dp-quick-body .bbc-info'); if (!box || box.querySelector('.bbc-one')) return r;
+    const vals = [...box.children].filter(d => !d.classList.contains('bbc-it')).map(d => d.lastElementChild ? d.lastElementChild.textContent.trim() : '').filter(v => v && v !== '—');
+    box.classList.add('mini');
+    box.insertAdjacentHTML('afterbegin', `<div class="bbc-one"><span>${escHtml(vals.join(' · ') || 'Thông tin chung')}</span><b>▾</b><button type="button" onclick="event.stopPropagation();closeDp('dp-quick')">‹ Sửa</button></div>`);
+    box.querySelector('.bbc-one').onclick = () => { box.classList.toggle('mini'); const b = box.querySelector('.bbc-one>b'); if (b) b.textContent = box.classList.contains('mini') ? '▾' : '▴'; };
+  } catch (e) { console.warn(e); }
+  return r;
+}; }
+</script>
+<style>/* v5.67.1 — bảng theo biên bản gọn */
+.bbc-pv .q5-card.bbc{padding:7px 8px 6px 10px;margin-bottom:5px;border-radius:10px;border-width:1.5px}
+.bbc-pv .bbc-hd{align-items:center;gap:6px}
+.bbc-pv .bbc-hd input[type=checkbox]{margin:0;width:19px;height:19px}
+.bbc-pv .bbc-no{min-width:20px;height:20px;font-size:11px}
+.bbc-pv .bbc-nm{font-size:14.5px;line-height:1.25;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.bbc-pv .bbc-q{flex:none;width:68px;height:36px;padding:0 6px;border-radius:8px}
+.bbc-pv .bbc-q span{display:none}
+.bbc-pv .bbc-q input{font-size:16px}
+.bbc-pv .bbc-ul{flex:none;width:46px;height:36px;border-radius:8px}
+.bbc-pv .bbc-ul b{font-size:13px;max-width:44px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.bbc-pv .bbc-ul small{display:none}
+.bbc-pv .bbc-us{flex:none;width:64px;height:36px;font-size:13px;padding:0 2px;border-radius:8px}
+.bbc-pv .bbc-ed{flex:none;width:34px;height:36px;padding:0;font-size:16px;border-radius:8px}
+.bbc-pv .bbc-st{margin:1px 0 0 53px}
+.bbc-pv .bbc-tag{font-size:11.5px;font-weight:600;padding:0;background:none !important;border-radius:0}
+.bbc-pv .bbc-tag.ok{color:#5B6B60}
+.bbc-pv .bbc-st+.q5-e,.bbc-pv .bbc-st+.q5-w,.bbc-pv .q5-e,.bbc-pv .q5-w{margin:3px 0 0 53px;padding:3px 7px;font-size:12px}
+.bbc-pv .bbn-pn{margin:1px 0 0 53px;font-size:12px}
+.bbc-pv .q5-chips{margin-bottom:4px}.bbc-pv .q5-leg{margin-bottom:6px}
+.bbc-pv .q5-card.bbc{margin-bottom:4px;padding-top:5px;padding-bottom:5px}
+.bbc-pv .q5-foot{padding:8px 10px}.bbc-pv .q5-foot .btn-full{min-height:44px;padding:10px}.bbc-pv .q5-foot .q5-note{font-size:11px;line-height:1.3;margin-top:4px}
+.bbc-info.mini{padding:8px 12px;margin-bottom:8px}
+.bbc-info.mini>div:not(.bbc-one){display:none}
+.bbc-one{display:flex !important;align-items:center;gap:6px;cursor:pointer;font-size:14px}
+.bbc-one span{flex:1;min-width:0;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.bbc-one b{color:var(--text2);font-size:12px}
+.bbc-one button{border:none;background:none;color:var(--orange);font:inherit;font-weight:700;cursor:pointer;padding:2px 0 2px 6px;flex:none}
+.bbc-info:not(.mini) .bbc-one{margin-bottom:4px;padding-bottom:6px;border-bottom:1px solid var(--border)}
+.bbc-info:not(.mini) .bbc-it{display:none !important}
 </style>
 </body>
 </html>
