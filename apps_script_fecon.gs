@@ -1,4 +1,5 @@
-// ===== FECON SOUTH - Kho Vật Tư v5.64.0 =====
+// ===== FECON SOUTH - Kho Vật Tư v5.67.0 =====
+// v5.67.0: XUẤT ÂM — quyền mới k_am "Xuất khi tồn không đủ" (mặc định Thủ kho; Admin luôn có): qkBatch cho phiếu xuất làm tồn kho âm (mượn / trả vẫn chặn). addTxn vốn không chặn âm.
 // v5.64.0: NHỚ TÊN GỌI KHÁC — sheet TenGoiKhac (tên trên giấy / Zalo → tên vật tư trong kho), aliasSet (người có quyền nhập / xuất ghi), getAll gửi alias khi aliasRev đổi
 // v5.63.1: addThang ghi cột may (phiếu nhập thẳng công trường có bộ phận của máy)
 // v5.63.0: BỘ PHẬN THUỘC MÁY — cột mới 'may' ở GiaoDich ("#<ID máy>" hoặc tên máy gõ tay "Tên · mã P.QLTB"), addTxn / editTxn nhận may, txnSetMay gắn máy cho nhiều phiếu nhập / xuất (Admin · QL ghi đè, quyền nhập / xuất kho chỉ phiếu trống)
@@ -165,7 +166,7 @@ const SESSION_DAYS   = 30;           // Đăng nhập được nhớ bao nhiêu 
 const HASH_ROUNDS    = 300;          // Số vòng băm mật khẩu
 const MAX_PENDING    = 30;           // Tối đa bao nhiêu yêu cầu chờ duyệt (chống spam)
 const TZ = 'Asia/Ho_Chi_Minh';
-const SERVER_VERSION = '5.64.0';
+const SERVER_VERSION = '5.67.0';
 const PHOTO_FOLDER_NAME = 'FECON Kho - Ảnh biên bản';
 const PHOTO_MAX_BYTES = 4 * 1024 * 1024;
 
@@ -2924,7 +2925,7 @@ function issueReq(u, d) {
     const i = items.findIndex(z => String(z[0]) === String(l.itemId));
     if (i < 0) fail('Vật tư ' + l.itemName + ' không còn trong kho');
     const bm = !!fillT && !afterMoc_(l.itemId, fillT);              // v5.53.1: cấp trước mốc kiểm kê → số đếm đã tính, không đổi tồn
-    if (!bm && q > (+items[i][4] || 0) + 1e-9) fail('Không đủ tồn kho ' + l.itemName + ' (còn ' + (+items[i][4] || 0) + '). Kiểm kê nếu thực tế còn hàng.');
+    if (!bm && q > (+items[i][4] || 0) + 1e-9 && !(u.role === 'ADM' || hasP(u, 'k_am'))) fail('Không đủ tồn kho ' + l.itemName + ' (còn ' + (+items[i][4] || 0) + '). Kiểm kê nếu thực tế còn hàng.');
     return { k:k, q:q, i:i, bm:bm };
   });
   if (!plan.some(p => p.q > 0)) fail('Nhập số lượng giao');
@@ -3411,7 +3412,7 @@ function copyItems(u, d) {
 // =====================================================================
 const PERMS = ['v_pyc','v_home','v_nhap','v_xuat','v_ton','v_baocao','v_stat','v_all',
   'k_nhap','k_xuat','k_edit','k_kk','k_dm','k_copy','k_loan','g_view','g_price','g_prog',
-  'y_tao','y_bs','y_duyet','y_giao','y_nhan','y_xem','x_nxt','x_pyc','k_meter','v_ver','k_thang','k_bomuon','k_hd','k_gio','k_napx','k_dnap','q_xem',
+  'y_tao','y_bs','y_duyet','y_giao','y_nhan','y_xem','x_nxt','x_pyc','k_meter','v_ver','k_thang','k_bomuon','k_hd','k_gio','k_napx','k_dnap','q_xem','k_am',
   't_xem','t_ghi','t_qa','t_cht','t_kh','t_qs','t_qt'];                                    // v5.23: Thi công
 // v5.23: quyền Thi công mặc định theo chức danh (Admin sửa lại được trong app)
 const TC_DEF = { TS:['t_xem','t_ghi'], SE:['t_xem','t_ghi'], EE:['t_xem','t_ghi'], HSE:['t_xem','t_ghi'], PE:['t_xem','t_ghi','t_kh'],
@@ -3423,7 +3424,7 @@ const ROLE_GROUPS = {
   g1: ['① Phiếu YC', ['v_pyc','y_tao','y_bs','y_nhan','y_xem']],
   g2: ['② Giám sát', ['v_pyc','y_xem']],
   g3: ['③ Xem toàn bộ', V_ALL6.concat(['v_stat','g_view','y_xem','x_nxt','x_pyc'])],
-  g4: ['④ Kho', V_ALL6.concat(['k_nhap','k_xuat','k_edit','k_kk','k_dm','k_copy','k_loan','y_giao','y_xem','x_nxt','x_pyc','k_meter','k_thang','k_gio','k_napx'])],
+  g4: ['④ Kho', V_ALL6.concat(['k_nhap','k_xuat','k_edit','k_kk','k_dm','k_copy','k_loan','y_giao','y_xem','x_nxt','x_pyc','k_meter','k_thang','k_gio','k_napx','k_am'])],
   g5: ['⑤ Đầy đủ', V_ALL6.concat(['v_stat','g_view','g_prog','y_xem','x_nxt','x_pyc','k_meter'])],
   g6: ['⑥ Lãnh đạo', V_ALL6.concat(['v_stat','v_all','g_view','y_xem','x_nxt','x_pyc','q_xem'])],
   gq: ['Quản lý (cũ)', PERMS.filter(k => k !== 'v_all')],
@@ -3488,6 +3489,10 @@ function rolesAll_() {
   if (!props_().getProperty('perm5220')) {                      // v5.22: nhập thẳng ra công trường — mặc định chỉ Thủ kho
     if (r.SK) r.SK.perm.k_thang = 1;
     jset_('roles515', r); props_().setProperty('perm5220', '1');
+  }
+  if (!props_().getProperty('perm5670')) {                      // v5.67.0: xuất khi tồn không đủ (tồn âm, nhập bù sau) — mặc định Thủ kho
+    if (r.SK) r.SK.perm.k_am = 1;
+    jset_('roles515', r); props_().setProperty('perm5670', '1');
   }
   if (!props_().getProperty('perm5580')) {                      // v5.58: thủ kho gửi duyệt nạp sổ Excel · PP/TP QLTB duyệt
     if (r.SK) r.SK.perm.k_napx = 1;
@@ -4220,7 +4225,7 @@ function qkBatch(u, d0) {
       if (!(q > 0)) fail(e + 'số lượng phải lớn hơn 0');
       const x = it(d.itemId), ct = ctOf_(d.type, d.ct), fx = ctFx_(d.type, ct, q);
       x.stock = r3(x.stock + fx[0]); x.site = r3(x.site + fx[1]);
-      if (x.stock < -1e-9) fail(e + x.name + ': kho còn ' + r3(x.stock - fx[0]) + ' ' + x.unit + ', thiếu ' + r3(-x.stock) + ' ' + x.unit);
+      if (x.stock < -1e-9 && !(d.type === 'xuat' && (u.role === 'ADM' || hasP(u, 'k_am')))) fail(e + x.name + ': kho còn ' + r3(x.stock - fx[0]) + ' ' + x.unit + ', thiếu ' + r3(-x.stock) + ' ' + x.unit);   // v5.67.0: quyền k_am được xuất âm
       if (x.site < -1e-9) fail(e + x.name + ': ở công trường còn ' + r3(x.site - fx[1]) + ' ' + x.unit + ', thiếu ' + r3(-x.site) + ' ' + x.unit);
       return;
     }
@@ -5535,6 +5540,8 @@ function devPhImg(u, d) {                                        // trả ảnh 
 }
 
 const VER_LOG = [
+ { v:'5.67.0', d:'22/11/2026', type:'new', title:'Xuất khi tồn không đủ (tồn âm) · Cần nhập bù · ghi chú Kiểm tra tồn kho', who:'Thủ kho · Admin',
+   sum:['Hàng có thật nhưng chưa nhập app vẫn xuất được: app hỏi lại "Tồn sẽ âm", bấm Đúng thì lưu','Quyền mới "Xuất khi tồn không đủ" — mặc định Thủ kho, Admin luôn có','Mã đang âm: số đỏ + ghi chú "⚠️ Kiểm tra tồn kho" ở Tồn kho, Thẻ kho, Excel','Tồn kho → "Cần nhập bù": mỗi mã ghi số âm, ngày xuất làm âm đầu tiên, nút Nhập bù điền sẵn số lượng + ngày giờ trước phiếu xuất đó','Cho mượn / trả mượn / giải động vẫn chặn khi tồn không đủ'] },
  { v:'5.64.0', d:'16/11/2026', type:'new', title:'Trang Nhập / Xuất chung · Bảng theo biên bản cho cả nhập lẫn xuất · Nhớ tên gọi khác · Kiểm tra lại phiếu trước khi lưu', who:'Thủ kho · Quản lý · Admin',
    sum:['Bấm Nhập kho / Xuất kho → trang chung: Phiếu 1 món · Gõ / nói / dán Zalo · Bảng theo biên bản (chụp, dán chữ, file Excel, gõ tay)','Bảng: mỗi dòng báo khớp danh mục / gần giống / món mới, ĐVT lệch, xuất quá tồn, biên bản trùng; tự lưu nháp','Chọn 1 lần tên gần giống → app nhớ cho mọi điện thoại','Phiếu 1 món: bỏ câu hỏi ngoài danh mục P.QLTB, thay bằng tấm kiểm tra lại ngày giờ · tên · số lượng'] },
  { v:'5.63.1', d:'13/11/2026', type:'up', title:'Nhập theo biên bản: dán chữ chép từ ảnh biên bản, app tách từng món', who:'Thủ kho · Quản lý · Admin',
