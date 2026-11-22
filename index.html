@@ -1913,7 +1913,7 @@ body.pg-printing #pg-print{display:block;position:fixed;inset:0;z-index:9000;bac
 // ============================================================
 // CONFIG
 // ============================================================
-const APP_VERSION = '5.67.2';
+const APP_VERSION = '5.67.3';
 const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbw6Rmi80I7RI3ij2U7RdRF5pYuQTnPrwEmGmUZS5xpxzLwwVynfoFUujZe1lm6HS1ymxw/exec';
 // ============================================================
 
@@ -20848,6 +20848,135 @@ function gbFxHint() {
 input.gb-need{border-color:#E8A33D !important;background:#FFF8EB}
 .nl-go.gb-go{display:block;background:#4B5563}
 .nl-go.gb-go small{display:block;font-size:11.5px;font-weight:600;opacity:.85;margin-top:2px}
+</style>
+<script>// ===== v5.67.3: CẤP NHIÊN LIỆU — TẤM KIỂM TRA LẠI TRƯỚC KHI LƯU (cấp + nhập dầu) · LỊCH SỬ CẤP CỦA MÁY =====
+// (1) nlSave: tấm "Kiểm tra lại" (ngày giờ, từng máy, tổng theo loại + tồn sau, người lập). Đã bấm "Đúng, lưu" → không hỏi tồn âm lần nữa (amAsk = true trong lượt lưu).
+// (2) nlNhapSave: tấm tương tự cho nhập dầu xe bồn. (3) Màn nhập số lít của 1 máy: bảng "Lịch sử cấp của máy này" (5 lần gần nhất, Xem thêm; dòng mờ "phiếu đang ghi" khi lùi ngày).
+const nlcP2 = n => String(n).padStart(2, '0');
+const nlcDt = d => `${nlcP2(d.getDate())}/${nlcP2(d.getMonth() + 1)}/${d.getFullYear()} · ${nlcP2(d.getHours())}:${nlcP2(d.getMinutes())}`;
+function nlcWhen() {   // ngày giờ sẽ ghi cho phiếu (giống nlSave / withAdminTime)
+  const el = document.getElementById('nl-time'); let v = '';
+  if (canGio()) v = (el ? gioVal(el) : '') || NL.time || '';
+  const d = v ? new Date(v) : new Date(); return isFinite(d.getTime()) ? d : new Date();
+}
+function nlcSheet(title, dt, body, okTxt) {
+  return new Promise(res => {
+    try {
+      if (!document.getElementById('modal-nlc')) document.body.insertAdjacentHTML('beforeend', `<div class="modal-bg" id="modal-nlc" style="display:none;z-index:1200"><div class="modal-sheet pc nlc"><div class="modal-handle"></div><div id="nlc-body"></div>
+        <div class="pc-btns"><button type="button" class="btn-full" id="nlc-fix">Sửa lại</button><button type="button" class="btn-full btn-orange" id="nlc-ok">Đúng, lưu</button></div></div></div>`);
+      const today = isoDay(new Date()), bu = isoDay(dt) !== today;
+      document.getElementById('nlc-body').innerHTML = `<div class="modal-title">${escHtml(title)}</div>
+        <div class="pc-dt${bu ? ' bu' : ''}"><small>Ngày giờ phiếu</small><b>${nlcDt(dt)}</b>${bu ? `<em>Không phải hôm nay (${today.split('-').reverse().slice(0, 2).join('/')})</em>` : ''}</div>${body}`;
+      const m = document.getElementById('modal-nlc'), ok = document.getElementById('nlc-ok'), done = v => { m.style.display = 'none'; res(v); };
+      ok.textContent = okTxt || 'Đúng, lưu';
+      ok.onclick = () => done(true); document.getElementById('nlc-fix').onclick = () => done(false);
+      m.onclick = e => { if (e.target === m) done(false); };
+      if (typeof closeKeyboard === 'function') closeKeyboard();
+      m.style.display = 'flex'; setTimeout(() => ok.focus(), 60);
+    } catch (e) { console.warn(e); res(true); }
+  });
+}
+const nlcStockRow = (it, after, sign) => { const neg = after < -1e-9;
+  return `<div class="nlc-tot${neg ? ' neg' : ''}"><span>${escHtml(it.name)}</span><b>${sign}${fmtNum(Math.round(Math.abs(after - +it.stock) * 1000) / 1000)} ${escHtml(it.unit)}</b>
+    <small>Tồn ${fmtNum(+it.stock)} → <b>${fmtNum(Math.round(after * 1000) / 1000)}</b> ${escHtml(it.unit)}${neg ? ' · TỒN ÂM — hàng có thật nhưng chưa nhập app, cần nhập bù' : ''}</small></div>`; };
+
+// ---------- (1) cấp nhiên liệu ----------
+{ const _ns = nlSave; nlSave = async function () {
+  if (NL.busy || !NL.cart.length || NL._nlcOk) return _ns.apply(this, arguments);
+  // kiểm trước những gì lượt lưu sẽ chặn, để không hiện tấm rồi mới báo lỗi
+  const need = {}; NL.cart.forEach(x => need[x.itemId] = (need[x.itemId] || 0) + x.qty);
+  for (const [id, q] of Object.entries(need)) { const it = db.items.find(i => i.id === +id); if (!it || (q > +it.stock + 1e-9 && !amCan())) return _ns.apply(this, arguments); }
+  const el0 = document.getElementById('nl-time'); if (el0 && el0.value && canGio()) NL.time = el0.value;
+  const left = NL.cart.map(x => x.devId ? db.devices.find(v => v.id === x.devId) : null).filter(d => d && d.outDate);
+  if (left.length) { if (!gbOn()) return _ns.apply(this, arguments); for (const d of left) if (gbTimeOk(d, NL.time) !== true) return _ns.apply(this, arguments); }
+  const dt = nlcWhen(), unitOf = id => (db.items.find(i => i.id === id) || {}).unit || '';
+  const rows = NL.cart.map(x => { const d = x.devId ? db.devices.find(v => v.id === x.devId) : null, it = db.items.find(i => i.id === x.itemId) || {};
+    return `<div class="nlc-r"><div class="nlc-n"><b>${escHtml(d ? d.name : x.other)}</b>${d && d.outDate ? ` <span class="gb-tag2">Đã rời ${escHtml(gbDmy(d.outDate))}</span>` : ''}${d ? '' : ' <small>(ngoài danh sách)</small>'}
+      <small>${escHtml(it.name || '')}${x.meter !== '' && x.meter !== undefined ? ` · ${escHtml(d ? mLbl(d) : 'Đồng hồ')} ${fmtNum(+x.meter)}` : ''}</small></div><div class="nlc-q">${fmtNum(x.qty)} <small>${escHtml(unitOf(x.itemId))}</small></div></div>`; }).join('');
+  const tots = Object.entries(need).map(([id, q]) => { const it = db.items.find(i => i.id === +id); return nlcStockRow(it, +it.stock - q, '−'); }).join('');
+  const body = `<div class="nlc-h">${NL.cart.length} máy</div><div class="nlc-list">${rows}</div><div class="nlc-h">Tổng cấp · tồn kho sau cấp</div>${tots}
+    <div class="pc-kv nlc-kv"><span>Người lập</span><b>${escHtml(meRec() || '')}</b></div>`;
+  if (!(await nlcSheet('Kiểm tra lại phiếu cấp nhiên liệu', dt, body, NL.cart.length > 1 ? `Đúng, lưu ${NL.cart.length} phiếu` : 'Đúng, lưu phiếu'))) { NL.step = 'grid'; NL.cur = null; nlRender(); return; }
+  const _am = amAsk; amAsk = () => true; NL._nlcOk = true;
+  try { return await nlSave.apply(this, arguments); } finally { amAsk = _am; NL._nlcOk = false; }
+}; }
+
+// ---------- (2) nhập dầu xe bồn ----------
+{ const _nn = nlNhapSave; nlNhapSave = async function () {
+  const C = NL.nh; if (!C || NL.busy || NL._nlcOk) return _nn.apply(this, arguments);
+  const it = db.items.find(i => i.id === C.itemId), q = Math.round(nlN(C.qs) * 1000) / 1000;
+  if (!it || !(q > 0)) return _nn.apply(this, arguments);
+  const el0 = document.getElementById('nl-time'); if (el0 && canGio()) NL.time = gioVal(el0) || '';
+  const ncc = String(document.getElementById('nl-ncc')?.value || '').trim(), so = String(document.getElementById('nl-so')?.value || '').trim(), ph = (formPhotos.nl || []).length;
+  const body = `<div class="pc-nm"><small>Loại nhiên liệu</small><b>${escHtml(it.name)}</b></div>
+    <div class="pc-q"><small>Số lượng nhập</small><b>${fmtNum(q)}</b><span>${escHtml(it.unit)}</span></div>
+    ${nlcStockRow(it, +it.stock + q, '+')}
+    <div class="pc-kv nlc-kv"><span>Bên giao</span><b${ncc ? '' : ' class="rv-miss"'}>${escHtml(ncc || 'chưa ghi')}</b>${so ? `<span>Số phiếu giao</span><b>${escHtml(so)}</b>` : ''}<span>Ảnh</span><b${ph ? '' : ' class="rv-miss"'}>${ph ? ph + ' ảnh' : 'chưa có ảnh'}</b><span>Người lập</span><b>${escHtml(meRec() || '')}</b></div>`;
+  if (!(await nlcSheet('Kiểm tra lại phiếu nhập dầu', nlcWhen(), body, 'Đúng, lưu phiếu'))) return;
+  NL._nlcOk = true;
+  try { return await _nn.apply(this, arguments); } finally { NL._nlcOk = false; }
+}; }
+
+// ---------- (3) lịch sử cấp của máy ----------
+let NLH_ALL = false;
+function nlhHtml(d) {
+  const T = db.transactions.filter(t => t.type === 'xuat' && t.thietBi === d.name && nlTxnFuel(t)).sort((a, b) => nlTime(b) - nlTime(a) || (+b.id) - (+a.id));
+  const ML = {}; try { meterLog(d).list.forEach(x => { if (x.id) ML[x.id] = x; }); } catch (e) {}
+  const rows = T.map(t => ({ t, ms:nlTime(t) }));
+  if (NL.time) { const ms = new Date(NL.time).getTime(); if (isFinite(ms)) { let i = rows.findIndex(r => r.ms <= ms); if (i < 0) i = rows.length; rows.splice(i, 0, { cur:true, ms }); } }
+  if (!rows.length) return `<div class="nlh"><div class="nlh-h">Lịch sử cấp của máy này</div><div class="nlh-empty">Chưa cấp lần nào</div></div>`;
+  const ci = rows.findIndex(r => r.cur), lim = NLH_ALL ? rows.length : Math.max(5, ci + 1), show = rows.slice(0, lim);
+  const it0 = id => db.items.find(i => i.id === id);
+  const html = show.map(r => {
+    if (r.cur) return `<div class="nlh-r cur"><div><b>${nlcDt(new Date(r.ms))}</b><small>← phiếu đang ghi</small></div></div>`;
+    const t = r.t, it = it0(t.itemId), x = ML[t.id] || {}, dt = parseVN(t.datetime);
+    const bits = [t.meter !== '' && t.meter !== undefined && t.meter !== null && !isNaN(+t.meter) ? `ĐH ${fmtNum(+t.meter)}` : '', x.run ? `chạy ${fmtNum(x.run)} ${escHtml(mSfx(d))}` : '', x.lph ? `${fmtNum(Math.round(x.lph * 100) / 100)} ${escHtml(t.unit || 'L')}/${escHtml(mSfx(d))}` : '', escHtml(t.createdByName || '')].filter(Boolean);
+    return `<button type="button" class="nlh-r" onclick="nlhOpen(${t.id})"><div><b>${dt ? nlcDt(dt) : escHtml(t.datetime || '')}</b><small>${escHtml(it ? it.name : t.itemName || '')}</small>${bits.length ? `<small class="nlh-m">${bits.join(' · ')}</small>` : ''}</div><span class="nlh-q">${fmtNum(effQty(t))} <small>${escHtml(t.unit || '')}</small></span></button>`;
+  }).join('');
+  const more = rows.length - show.length;
+  return `<div class="nlh"><div class="nlh-h">Lịch sử cấp của máy này <small>${T.length} lần</small></div>${html}
+    ${more > 0 ? `<button type="button" class="nlh-more" onclick="NLH_ALL=true;nlhRefresh()">Xem thêm ${more} lần ▾</button>` : NLH_ALL && rows.length > 5 ? `<button type="button" class="nlh-more" onclick="NLH_ALL=false;nlhRefresh()">Thu gọn ▴</button>` : ''}</div>`;
+}
+function nlhRefresh() {
+  const B = document.getElementById('dp-nl-body'), d = NL.cur && NL.cur.devId ? db.devices.find(x => x.id === NL.cur.devId) : null; if (!B || !d || NL.step !== 'pad') return;
+  const old = B.querySelector('.nlh'), h = nlhHtml(d);
+  if (old) old.outerHTML = h; else B.insertAdjacentHTML('beforeend', h);
+}
+function nlhOpen(id) { try { openTxn(id); } catch (e) { console.warn(e); } }
+{ const _nr = nlRender; nlRender = function () {
+  const out = _nr.apply(this, arguments);
+  try {
+    if (NL.step === 'pad' && NL.cur && NL.cur.devId) {
+      if (NL._nlhDev !== NL.cur.devId) { NLH_ALL = false; NL._nlhDev = NL.cur.devId; }
+      nlhRefresh();
+      const el = document.getElementById('nl-time'); if (el) el.addEventListener('change', () => { if (canGio()) NL.time = el.value; nlhRefresh(); });
+    }
+  } catch (e) { console.warn(e); }
+  return out;
+}; }
+</script>
+<style>/* v5.67.3 kiểm tra lại cấp nhiên liệu · lịch sử cấp */
+.nlc{max-height:88vh;overflow:auto}
+#nlc-fix{background:#fff;color:var(--text);border:1.5px solid var(--border)}
+.nlc-h{font-size:12.5px;font-weight:800;color:var(--text2);text-transform:uppercase;letter-spacing:.03em;margin:4px 0 6px}
+.nlc-list{border-top:1px solid var(--border);margin-bottom:12px}
+.nlc-r{display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--border)}
+.nlc-n{flex:1;min-width:0}.nlc-n b{font-size:15px}.nlc-n small{display:block;color:var(--text2);font-size:13px}
+.nlc-q{font-size:20px;font-weight:800;white-space:nowrap}.nlc-q small{font-size:13px;font-weight:700;color:var(--text2)}
+.nlc-tot{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:2px 10px;background:#F6F8FA;border:1px solid var(--border);border-radius:12px;padding:8px 12px;margin-bottom:8px}
+.nlc-tot>span{font-weight:700}.nlc-tot>b{font-size:17px}.nlc-tot small{grid-column:1 / -1;color:var(--text2);font-size:13px}
+.nlc-tot.neg{background:#FDECEC;border-color:#F5B5B0}.nlc-tot.neg small{color:#B42318;font-weight:700}
+.nlc-kv{margin-top:10px}
+.nlh{margin-top:16px;border-top:1px solid var(--border);padding-top:10px}
+.nlh-h{font-size:13px;font-weight:800;color:var(--text2);text-transform:uppercase;letter-spacing:.03em;margin-bottom:6px;display:flex;justify-content:space-between}
+.nlh-h small{text-transform:none;font-weight:600}
+.nlh-empty{color:var(--text2);font-size:14px;padding:6px 0}
+.nlh-r{display:flex;width:100%;align-items:center;gap:10px;text-align:left;font:inherit;color:inherit;background:#fff;border:1px solid var(--border);border-radius:12px;padding:8px 12px;margin-bottom:6px;cursor:pointer}
+.nlh-r>div{flex:1;min-width:0}.nlh-r b{font-size:14.5px}.nlh-r small{display:block;color:var(--text2);font-size:12.5px;line-height:1.35}
+.nlh-r .nlh-m{color:var(--text3,#6B7280)}
+.nlh-q{font-size:18px;font-weight:800;white-space:nowrap}.nlh-q small{font-size:12px;color:var(--text2)}
+.nlh-r.cur{background:#FFF8EB;border:1.5px dashed #E8A33D;cursor:default;opacity:.9}.nlh-r.cur small{color:#B54708;font-weight:700}
+.nlh-more{width:100%;border:none;background:none;color:var(--orange);font:inherit;font-weight:700;padding:6px;cursor:pointer}
 </style>
 </body>
 </html>
