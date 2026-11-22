@@ -1913,7 +1913,7 @@ body.pg-printing #pg-print{display:block;position:fixed;inset:0;z-index:9000;bac
 // ============================================================
 // CONFIG
 // ============================================================
-const APP_VERSION = '5.66.0';
+const APP_VERSION = '5.66.1';
 const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbw6Rmi80I7RI3ij2U7RdRF5pYuQTnPrwEmGmUZS5xpxzLwwVynfoFUujZe1lm6HS1ymxw/exec';
 // ============================================================
 
@@ -9290,7 +9290,7 @@ doLoan = guardBtn('loan', doLoan); saveLoanReturn = guardBtn('loan', saveLoanRet
   showVersion();
   const qPart = new URLSearchParams(location.search).get('part');
   if (qPart === 'kho') { try { localStorage.setItem('fecon_part', 'kho'); history.replaceState(null, '', location.pathname); } catch (e) {} }
-  if (token && me && qPart !== 'kho' && tcCan() && (!khoCan() || localStorage.getItem('fecon_part') === 'tc')) { location.replace('thicong.html'); return; }   // v5.31
+  if (token && me && qPart !== 'kho' && !/[?&]phieu=/.test(location.search) && tcCan() && (!khoCan() || localStorage.getItem('fecon_part') === 'tc')) { location.replace('thicong.html'); return; }   // v5.31
   if (token && me) {                  // đã đăng nhập trên máy này → vào luôn (dùng được cả khi mất mạng)
     showPage('pg-app');
     if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', () => setupApp()); else setupApp();   // v5.50.2
@@ -13565,7 +13565,7 @@ function bcLedgerNX(X) {
   const kg = L.some(x => x.it.cat === 'thep');
   const cols = [['STT', 5.5], ['Ngày', 11], ['Số phiếu', 13.5], ['Tên vật tư – nhiên liệu, quy cách', 34], ['ĐVT', 7], ['SL nhập', 10], ['SL xuất', 10], ['Tồn kho', 10], ...(kg ? [['Quy đổi\n(kg)', 10]] : []),
     ['Nhập / Xuất', 9.5], ['Loại', 16], ['NCC / NTP / Đội', 24], ['Máy, thiết bị', 22], ...(D.ct ? [['Xuất từ', 11]] : []),
-    ...(L.some(x => x.cts || isPycRef(x.t.refId)) ? [['Chứng từ /\nPhiếu YC', 14]] : []), ['Người lập', 14], ...(L.some(x => x.t.xe) ? [['Xe', 18]] : []), ['Ghi chú', 26]];   // cột Chứng từ / Xe chỉ hiện khi có số liệu
+    ...(L.some(x => x.cts || isPycRef(x.t.refId)) ? [['Chứng từ /\nPhiếu YC', 14]] : []), ...(L.some(x => phCount(x.t)) ? [['Ảnh\nbiên bản', 11]] : []), ['Người lập', 14], ...(L.some(x => x.t.xe) ? [['Xe', 18]] : []), ['Ghi chú', 26]];   // cột Chứng từ / Xe chỉ hiện khi có số liệu
   const name = BC_NX, ws = X.wb.addWorksheet(name);
   const n = bcSetup(X, ws, cols.map(c => c[1]), 'SỔ THEO DÕI NHẬP – XUẤT KHO VẬT TƯ, NHIÊN LIỆU', X.R.label + '  ·  gồm cả nhiên liệu, dầu mỡ (tồn và tiêu hao theo máy: xem sheet "Nhiên liệu")', { xSplit:4 });
   bcHead(ws, cols.map(c => [c[0], 1]), []);
@@ -13590,9 +13590,11 @@ function bcLedgerNX(X) {
     v[C['Máy, thiết bị'] - 1] = x.t.thietBi || (typeof mayPartTxn === 'function' && mayPartTxn(x.t) ? 'Bộ phận máy ' + mayLabel(x.t.may, x.t.project) : '');   // v5.63.0
     if (D.ct) v[C['Xuất từ'] - 1] = N ? '' : x.site ? 'Công trường' : 'Kho';
     if (C['Chứng từ']) v[C['Chứng từ'] - 1] = [x.cts, isPycRef(x.t.refId) ? x.t.refId : ''].filter(Boolean).join(' · ');
+    if (C['Ảnh']) v[C['Ảnh'] - 1] = phLinkCell(x.t) || '';   // v5.66.1: link mở phiếu trong app
     v[C['Người lập'] - 1] = x.t.createdByName || ''; if (C['Xe']) v[C['Xe'] - 1] = x.t.xe || ''; v[cNote - 1] = note;
     bcPut(ws, r, v, fm, bcH(cols.map((c, i) => [v[i] && typeof v[i] === 'object' ? '' : v[i], c[1]]).filter((_, i) => i !== 1 && i !== 5 && i !== 6 && i !== 7)));
     ws.getCell(r, 8).font = bcF(10.5, true, false, run[kId] < -1e-9 ? 'B42318' : '1F2937');
+    if (C['Ảnh'] && v[C['Ảnh'] - 1]) ws.getCell(r, C['Ảnh']).font = { ...bcF(10.5, false, false, '1565C0'), underline:true };
     if (kg && !kgp && x.it.cat === 'thep') ws.getCell(r, 9).font = bcF(9.5, false, true, BC.ORG);
     ws.getCell(r, cNX).font = bcF(10.5, true, false, N ? '1E7B34' : 'B42318');
     const base = N ? /^Nhập (kho|mua|nhiên liệu)$/.test(loaiOf(x)) : /^(Xuất dùng|Cấp nhiên liệu)$/.test(loaiOf(x));
@@ -20338,5 +20340,35 @@ if (typeof GUIDES !== 'undefined') { const g = GUIDES.find(x => /thiết bị|m�
 .bpx-q{width:100%;box-sizing:border-box;border:1px solid var(--border);border-radius:8px;padding:7px 6px;font:inherit;font-size:14px;text-align:right}
 .bpx-u{font-size:12.5px;color:var(--text2);min-width:24px}
 </style>
+<script>
+// ===== v5.66.1: LINK ẢNH BIÊN BẢN TRONG EXCEL → MỞ THẲNG PHIẾU TRONG APP =====
+// Sổ nhập – xuất có cột "Ảnh biên bản": link index.html?phieu=<số phiếu>&da=<dự án>. Bấm link: đã đăng nhập → mở chi tiết phiếu
+// (ảnh tải qua máy chủ theo quyền dự án, không cần quyền Google Drive); chưa đăng nhập → đăng nhập xong mới mở.
+const phAppLink = (id, p) => location.origin + location.pathname.replace(/[^/]*$/, '') + 'index.html?phieu=' + encodeURIComponent(id) + '&da=' + encodeURIComponent(p || curProj);
+function phSrcId(t) {
+  if (!t) return null;
+  if (LOAN_T[t.type] && t.refId && (db.loans || []).some(l => l.id === +t.refId)) return +t.refId;   // phiếu mượn: ảnh gắn ở phiếu mượn
+  return (typeof bbgPhotoSrc === 'function' ? bbgPhotoSrc(t) : t).id;                               // cùng biên bản: ảnh ở phiếu đầu
+}
+const phCount = t => { const id = phSrcId(t); return id ? photosOf(id).length : 0; };
+function phLinkCell(t) {
+  const n = phCount(t);
+  return n ? { text:`Xem ${n} ảnh`, hyperlink:phAppLink(t.id, t.project), tooltip:'Mở phiếu trong app FECON (cần đăng nhập)' } : null;
+}
+let PHIEU_Q = (() => { const q = new URLSearchParams(location.search); return q.get('phieu') ? { id:+q.get('phieu'), da:q.get('da') || '' } : null; })();
+async function phieuLinkOpen() {
+  if (!PHIEU_Q || !token || !curProj) return;
+  const Q = PHIEU_Q; PHIEU_Q = null;
+  try { history.replaceState(null, '', location.pathname + location.hash); } catch (e) {}
+  if (Q.da && Q.da !== curProj) {
+    if (!(db.projects || []).includes(Q.da)) { toast(`Bạn không được giao dự án ${Q.da} nên không xem được phiếu ${Q.id}`); return; }
+    await switchProject(Q.da);
+  }
+  if (db.transactions.some(x => x.id === Q.id)) { openTxn(Q.id); return; }
+  if ((db.loans || []).some(l => l.id === Q.id)) { openLoan(Q.id); return; }
+  toast(`Không thấy phiếu ${Q.id} trong dự án ${curProj} (phiếu đã xoá hoặc bạn không có quyền xem)`);
+}
+{ const _p = pycHashOpen; pycHashOpen = function () { const r = _p.apply(this, arguments); setTimeout(() => phieuLinkOpen().catch(e => console.error(e)), 200); return r; }; }
+</script>
 </body>
 </html>
