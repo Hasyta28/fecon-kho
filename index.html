@@ -1913,7 +1913,7 @@ body.pg-printing #pg-print{display:block;position:fixed;inset:0;z-index:9000;bac
 // ============================================================
 // CONFIG
 // ============================================================
-const APP_VERSION = '5.66.1';
+const APP_VERSION = '5.67.0';
 const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbw6Rmi80I7RI3ij2U7RdRF5pYuQTnPrwEmGmUZS5xpxzLwwVynfoFUujZe1lm6HS1ymxw/exec';
 // ============================================================
 
@@ -4108,7 +4108,7 @@ async function qkSaveAll() {
   });
   const need = {};
   qkDrafts.filter(d => !d.err && d.type === 'xuat').forEach(d => need[d.itemId] = (need[d.itemId] || 0) + d.qty);
-  qkDrafts.filter(d => !d.err && d.type === 'xuat').forEach(d => { const it = db.items.find(x => x.id === d.itemId); if (need[d.itemId] > it.stock) { d.err = `Tồn không đủ — còn ${fmtNum(it.stock)} ${it.unit}`; bad++; } });
+  qkDrafts.filter(d => !d.err && d.type === 'xuat').forEach(d => { const it = db.items.find(x => x.id === d.itemId); if (need[d.itemId] > it.stock && !amCan()) { d.err = `Tồn không đủ — còn ${fmtNum(it.stock)} ${it.unit}`; bad++; } });
   if (bad) { qkRender(); document.querySelector('.qk-card.bad')?.scrollIntoView({behavior:'smooth', block:'center'}); toast(`⚠️ ${bad} phiếu cần sửa`); return; }
   showLoader('Đang lưu...');
   let saved = 0;
@@ -7023,6 +7023,8 @@ function reqIssue() {
   const r = db.reqs.find(x => x.id === curReqId); if (!r) return;
   const send = r.lines.map((l, k) => { const el = document.getElementById('ri-' + k); return el ? +el.value || 0 : 0; });
   if (!send.some(v => v > 0)) { toast('⚠️ Nhập số thực gửi'); return; }
+  { const nd = {}; r.lines.forEach((l, k) => { if (send[k] > 0) nd[l.itemId] = (nd[l.itemId] || 0) + send[k]; });   // v5.67.0: giao vượt tồn → hỏi lại (quyền k_am)
+    if (amCan() && !amAsk(Object.entries(nd).map(([id, q]) => ({ it:db.items.find(i => i.id === +id), q })))) return; }
   const md = reqMeterDev(r); let mr = {meter:'', meterNote:''};
   if (md) { mr = meterRead('rq', md); if (!mr) return; }
   return reqAction('issueReq', {id:curReqId, send, meter:mr.meter, meterNote:mr.meterNote, fillAt:mr.fillAt || ''}, '🚚 Đã giao hàng, đã trừ tồn kho và tạo phiếu xuất', true);
@@ -7685,7 +7687,7 @@ async function pfSubmit() {
   if (!(d.qty > 0)) { toast('⚠️ Nhập SL yêu cầu'); return; }
   if (!(d.sent > 0)) { toast('⚠️ Nhập SL thực xuất'); return; }
   if (d.sent > d.qty) { toast('⚠️ SL thực xuất lớn hơn SL yêu cầu'); return; }
-  if (!pfBeforeMoc(it) && d.sent > (+it.stock || 0)) { toast(`⚠️ Tồn kho trên app chỉ còn ${fmtNum(it.stock)} ${it.unit} — kiểm kê nếu thực tế còn hàng`); return; }
+  if (!pfBeforeMoc(it) && d.sent > (+it.stock || 0) && !amAsk([{ it, q:d.sent }], true)) { toast(`⚠️ Tồn kho trên app chỉ còn ${fmtNum(it.stock)} ${it.unit} — kiểm kê nếu thực tế còn hàng`); return; }
   const md = pfMeterDev(it);
   if (md) { const mr = meterRead('pf', md); if (!mr) return; Object.assign(d, {meter:mr.meter, meterNote:mr.meterNote}); }
   if (!navigator.onLine) { toast('📴 Cần có mạng để nhập phiếu giấy'); return; }
@@ -8162,7 +8164,7 @@ let listLimit = {nhap:100, xuat:100, dieuchinh:100};
 // ===== v5.18.0: CHỨC DANH & PHÂN QUYỀN (Admin cài trong app) =====
 const PERM_UI = [
   ['Màn hình được thấy', [['v_pyc','Phiếu yêu cầu',''],['v_home','Tổng quan',''],['v_nhap','Phiếu nhập (xem)',''],['v_xuat','Phiếu xuất (xem)',''],['v_ton','Tồn kho (số lượng)',''],['v_baocao','Báo cáo',''],['v_stat','Thống kê dự án đang làm','Chi phí, tiến độ của dự án được giao'],['v_all','Tổng hợp các dự án','Xem mọi dự án, so sánh, chi phí nhiều dự án'],['v_ver','Xem nội dung cập nhật phiên bản','Thông báo đầy đủ, chi tiết từng bản, lịch sử cập nhật']]],
-  ['Kho', [['k_nhap','Lập phiếu nhập',''],['k_xuat','Lập phiếu xuất (xuất thẳng)',''],['k_edit','Sửa / điều chỉnh phiếu',''],['k_kk','Kiểm kê',''],['k_dm','Thêm, sửa tên + nhóm vật tư / thiết bị','Đổi đơn vị và xóa: chỉ Admin'],['k_napx','Nạp sổ nhập xuất từ Excel (gửi duyệt)','Phiếu chỉ vào kho khi Admin / người có quyền duyệt bấm Duyệt'],['k_dnap','Duyệt đợt nạp sổ Excel','Xem trước, duyệt và nạp / trả về / hoàn tác đợt nạp của thủ kho'],['k_copy','Chép vật tư từ dự án khác',''],['k_bomuon','Duyệt bỏ thông tin mượn','Mặc định CHT, CHP, P.QLTB'],['k_hd','Ghi ngày máy bắt đầu hoạt động','Mặc định PP / TP QLTB — bật thêm cho cán bộ QLTB'],['k_loan','Cho mượn / trả dụng cụ',''],['k_meter','Ghi giờ máy thiết bị','Khi xuất dầu, vào / kết thúc công trình'],['k_thang','Nhập thẳng ra công trường (không dùng từ 5.55)','Từ 5.55 mọi hàng nhập đều là tồn kho — quyền này không còn tác dụng'],['k_gio','Chọn ngày giờ phiếu','Phiếu nhập / xuất / nhập nhanh. Số ngày được lùi: khung "Chọn ngày giờ phiếu" ở đầu trang này']]],
+  ['Kho', [['k_nhap','Lập phiếu nhập',''],['k_xuat','Lập phiếu xuất (xuất thẳng)',''],['k_edit','Sửa / điều chỉnh phiếu',''],['k_kk','Kiểm kê',''],['k_dm','Thêm, sửa tên + nhóm vật tư / thiết bị','Đổi đơn vị và xóa: chỉ Admin'],['k_napx','Nạp sổ nhập xuất từ Excel (gửi duyệt)','Phiếu chỉ vào kho khi Admin / người có quyền duyệt bấm Duyệt'],['k_dnap','Duyệt đợt nạp sổ Excel','Xem trước, duyệt và nạp / trả về / hoàn tác đợt nạp của thủ kho'],['k_copy','Chép vật tư từ dự án khác',''],['k_bomuon','Duyệt bỏ thông tin mượn','Mặc định CHT, CHP, P.QLTB'],['k_hd','Ghi ngày máy bắt đầu hoạt động','Mặc định PP / TP QLTB — bật thêm cho cán bộ QLTB'],['k_loan','Cho mượn / trả dụng cụ',''],['k_meter','Ghi giờ máy thiết bị','Khi xuất dầu, vào / kết thúc công trình'],['k_thang','Nhập thẳng ra công trường (không dùng từ 5.55)','Từ 5.55 mọi hàng nhập đều là tồn kho — quyền này không còn tác dụng'],['k_gio','Chọn ngày giờ phiếu','Phiếu nhập / xuất / nhập nhanh. Số ngày được lùi: khung "Chọn ngày giờ phiếu" ở đầu trang này'],['k_am','Xuất khi tồn không đủ','Hàng có thật nhưng chưa nhập app: vẫn xuất được, tồn kho âm, ghi chú Kiểm tra tồn kho cho tới khi nhập bù (v5.67.0)']]],
   ['Giá & chi phí', [['g_view','Xem giá, chi phí',''],['g_price','Sửa bảng giá',''],['g_prog','Cập nhật tiến độ thi công','']]],
   ['Phiếu yêu cầu', [['y_tao','Tạo phiếu',''],['y_bs','Xin bổ sung ngoài định mức',''],['y_duyet','Duyệt phiếu',''],['y_giao','Giao hàng theo phiếu (kho)',''],['y_nhan','Xác nhận nhận hàng',''],['y_xem','Xem mọi phiếu của dự án','Tắt = chỉ thấy phiếu của mình']]],
   ['Xuất file', [['x_nxt','Xuất Excel NXT',''],['x_pyc','Xuất báo cáo phiếu YC','']]],
@@ -8174,7 +8176,7 @@ const V6 = ['v_pyc','v_home','v_nhap','v_xuat','v_ton','v_baocao'];
 const GROUP_UI = {
   g1:['① Phiếu YC', ['v_pyc','y_tao','y_bs','y_nhan','y_xem']], g2:['② Giám sát', ['v_pyc','y_xem']],
   g3:['③ Xem toàn bộ', V6.concat(['v_stat','g_view','y_xem','x_nxt','x_pyc'])],
-  g4:['④ Kho', V6.concat(['k_nhap','k_xuat','k_edit','k_kk','k_dm','k_copy','k_loan','y_giao','y_xem','x_nxt','x_pyc','k_meter','k_thang','k_gio','k_napx'])],
+  g4:['④ Kho', V6.concat(['k_nhap','k_xuat','k_edit','k_kk','k_dm','k_copy','k_loan','y_giao','y_xem','x_nxt','x_pyc','k_meter','k_thang','k_gio','k_napx','k_am'])],
   g5:['⑤ Đầy đủ', V6.concat(['v_stat','g_view','g_prog','y_xem','x_nxt','x_pyc','k_meter'])],
   g6:['⑥ Lãnh đạo', V6.concat(['v_stat','v_all','g_view','y_xem','x_nxt','x_pyc','q_xem'])],
   gq:['Quản lý (cũ)', PERM_KEYS.filter(k => k !== 'v_all')], ga:['Quản trị', PERM_KEYS]
@@ -10162,7 +10164,7 @@ function fxCtVal(item) {
 }
 function ctQtyOk(item, qty) {
   const ct = fxCtVal(item), fromCt = ct === 'ctra', av = fromCt ? ctSite(item) : +item.stock;
-  if (qty > av + 1e-9) { toast(`❌ ${fromCt ? 'Ở công trường' : 'Trong kho'} chỉ còn ${fmtNum(av)} ${item.unit}`); return false; }
+  if (qty > av + 1e-9 && !(!fromCt && amCan())) { toast(`❌ ${fromCt ? 'Ở công trường' : 'Trong kho'} chỉ còn ${fmtNum(av)} ${item.unit}`); return false; }   // v5.67.0: quyền k_am xuất âm (hỏi ở Kiểm tra lại)
   return true;
 }
 // thiết bị / vật tư phụ trợ đang ở công trường nhưng app chưa ghi nhận → tự khai phần thiếu (giống tồn đầu 5.33.2)
@@ -11715,10 +11717,11 @@ function q5Simulate(rows) {                                                    /
     if (!R.on || R.errs.length) return;
     const it = q5ItemOf(R); if (!it) return;
     const q = q5Qty(R), x = S(it), need = (lbl, have) => R.errs.push(`${lbl} còn ${fmtNum(have)} ${it.unit}, thiếu ${fmtNum(q5r3(q - have))} ${it.unit}`);
-    if (R.kind === 'out' || R.kind === 'loanCho' || R.kind === 'retDi') { if (q > x.k + 1e-9) need('Kho', x.k); else { x.k = q5r3(x.k - q); if (R.kind === 'out' && R.mode === 'ra') x.c = q5r3(x.c + q); } }
+    if (R.kind === 'out' && q > x.k + 1e-9 && amCan()) { R.warns.push(amWarn(it, x.k, q)); x.k = q5r3(x.k - q); if (R.mode === 'ra') x.c = q5r3(x.c + q); }   // v5.67.0
+    else if (R.kind === 'out' || R.kind === 'loanCho' || R.kind === 'retDi') { if (q > x.k + 1e-9) need('Kho', x.k); else { x.k = q5r3(x.k - q); if (R.kind === 'out' && R.mode === 'ra') x.c = q5r3(x.c + q); } }
     else if (R.kind === 'outNgoai') {
       if (R.from === 'ct') { if (q > x.c + 1e-9) need('Ở công trường', x.c); else x.c = q5r3(x.c - q); }
-      else if (q > x.k + 1e-9) { if (ctTrack(it) && q <= x.c + 1e-9) { R.from = 'ct'; x.c = q5r3(x.c - q); R.warns.push('Kho không đủ → lấy từ số ở công trường'); } else need('Kho', x.k); }
+      else if (q > x.k + 1e-9) { if (ctTrack(it) && q <= x.c + 1e-9) { R.from = 'ct'; x.c = q5r3(x.c - q); R.warns.push('Kho không đủ → lấy từ số ở công trường'); } else if (amCan()) { R.warns.push(amWarn(it, x.k, q)); x.k = q5r3(x.k - q); } else need('Kho', x.k); }
       else x.k = q5r3(x.k - q);
     }
     else if (R.kind === 'veKho') { if (q > x.c + 1e-9) need('Ở công trường', x.c); else { x.c = q5r3(x.c - q); x.k = q5r3(x.k + q); } }
@@ -12038,7 +12041,7 @@ if (typeof GUIDES !== 'undefined' && !GUIDES.some(g => g.id === 'nhanh')) GUIDES
   'Nhiều món: cách nhau dấu phẩy hoặc xuống dòng. Dòng không có động từ dùng động từ dòng trên. VD: "nhập 2 tank bent, 32 tấn bentonite" rồi xuống dòng "xuất 1000 bộ cóc d20".',
   'phi 32, phi(d32), d32 đều hiểu là D32. "32 tấn" tự đổi sang đơn vị kho đang dùng. Thêm "từ <nơi>" cuối dòng để ghi nguồn.',
   'Bấm "Tách phiếu ›" → bảng xem trước: mỗi dòng ghi loại phiếu (đổi được ở ô trên cùng thẻ). Vàng = còn thiếu, để trống vẫn lưu. Đỏ = phải sửa hoặc bỏ tích dòng đó.',
-  'Hàng nhập vào dự án (trong kho hay ngoài công trường) đều cộng tồn kho. Tồn không đủ → dòng đỏ, không lưu được.',
+  'Hàng nhập vào dự án (trong kho hay ngoài công trường) đều cộng tồn kho. Tồn không đủ → dòng đỏ, không lưu được (người có quyền "Xuất khi tồn không đủ": dòng vàng "Tồn sẽ âm", vẫn lưu được, nhớ nhập bù).',
   'Bấm "Lưu" → lưu cả lệnh một lần (một dòng sai thì không lưu dòng nào). Mỗi phiếu ghi kèm nguyên văn lệnh. Cần có mạng; mất mạng thì lệnh vẫn giữ trong ô.',
   'Nhập hàng mà dự án khác đang cho mượn chờ xác nhận → app bắt chọn: Xác nhận phiếu mượn, hoặc Nhập thường và đóng thẻ chờ (ghi lý do).'] });
 if (typeof helpFor === 'function') { const _q5hf = helpFor; helpFor = function (w) { return w === 'dp-quick' ? 'nhanh' : _q5hf(w); }; }
@@ -13907,8 +13910,8 @@ function bcNXT(X, LN, LX, FU) {
       const notes = [];
       const lo = fuel ? P.filter(x => x.loai === 'Cho mượn').reduce((a, x) => a + bcLoanOpenQ(x.t), 0) : 0;   // v5.59.3: chỉ phần chưa trả / chưa bỏ
       if (lo > 1e-9) notes.push([`Còn ${bcVN(lo, 2)} ${String(it.unit).toLowerCase()} cho DA khác mượn chưa trả`, BC.ORG]);
-      if (s.open < -1e-9) { notes.push(['Tồn đầu kỳ âm — cần kiểm kê', BC.RED]); negOpen.push(s); }
-      else if (close < -1e-9) { notes.push(['Xuất vượt tồn — kiểm tra', BC.RED]); negClose.push(s); }
+      if (s.open < -1e-9) { notes.push(['Kiểm tra tồn kho — tồn đầu kỳ âm, cần nhập bù / kiểm kê', BC.RED]); negOpen.push(s); }
+      else if (close < -1e-9) { notes.push(['Kiểm tra tồn kho — xuất vượt tồn, cần nhập bù', BC.RED]); negClose.push(s); }
       else if (!D.from && Math.abs(s.open) > 1e-9) notes.push([`Tồn trên app chênh ${bcVN(s.open, 3)} so với tổng phiếu — chưa có phiếu tồn đầu, nên kiểm kê`, BC.ORG]);
       if (stt === 'Sắp hết') low.push(s);
       if (it.cat === 'nhienLieu' && !fuel) notes.push([`Nhóm Nhiên liệu nhưng đơn vị ${it.unit || '?'} — kiểm tra lại nhóm (không cộng vào sổ nhiên liệu)`, BC.RED]);   // v5.56.3
@@ -14061,7 +14064,7 @@ function bcOverview(X, LN, LX, FU, NX, LO, apx) {
   nm.slice(0, 5).forEach(([, x]) => W_.push(['Cao', `Ngày ${dd(x)}: phiếu NHẬP ${bcVN(x.qty, 2)} ${x.it.unit} ${x.it.name} ghi tên máy "${x.t.thietBi}" — có thể là phiếu CẤP ghi nhầm (tồn lệch ${bcVN(2 * x.qty, 2)} ${x.it.unit}).`, x.isDO ? 'Nhiên liệu' : 'Nhớt – mỡ']));
   if (nm.length > 5) W_.push(['Cao', `Còn ${nm.length - 5} phiếu NHẬP nhiên liệu khác có ghi tên máy.`, 'Nhiên liệu']);
   if (NX.negOpen.length) W_.push(['Cao', `${NX.negOpen.length} mặt hàng có tồn đầu kỳ âm: ` + names4(NX.negOpen, s => `${s.it.name} (${bcVN(s.open, 2)})`) + ' — xuất trước khi ghi phiếu nhập, hoặc ghi nhầm Nhập / Xuất. Nên kiểm kê và lập phiếu điều chỉnh.', 'Tổng hợp NXT']);
-  if (NX.negClose.length) W_.push(['Cao', `${NX.negClose.length} mặt hàng tồn cuối kỳ âm (xuất vượt tồn): ` + names4(NX.negClose, s => `${s.it.name} (${bcVN(s.close, 2)})`) + ' — kiểm tra phiếu nhập còn thiếu.', 'Tổng hợp NXT']);
+  if (NX.negClose.length) W_.push(['Cao', `${NX.negClose.length} mặt hàng tồn cuối kỳ âm (xuất vượt tồn): ` + names4(NX.negClose, s => `${s.it.name} (${bcVN(s.close, 2)})`) + ' — kiểm tra tồn kho, nhập bù phiếu nhập còn thiếu (app: Tồn kho → Cần nhập bù, ngày nhập bù trước phiếu xuất làm âm).', 'Tổng hợp NXT']);
   const nd = FU.warn.filter(w => w[0] === 'no_dev');
   if (nd.length > 3) W_.push(['TB', `${nd.length} phiếu cấp dầu DO không ghi máy nhận (tổng ${bcVN(nd.reduce((a, w) => a + w[1].qty, 0))} lít).`, 'Nhiên liệu']);
   else nd.forEach(([, x]) => W_.push(['TB', `Ngày ${dd(x)}: phiếu cấp ${bcVN(x.qty, 2)} lít ${x.it.name} không ghi máy nhận.`, 'Nhiên liệu']));
@@ -17767,7 +17770,7 @@ function nlPadUpd() {
   if (!it) { S.textContent = 'Chọn loại nhiên liệu'; S.className = 's bad'; return; }
   if (NL.step === 'nhap') { S.textContent = `Tồn ${it.name}: ${fmtNum(it.stock)} → sau nhập ${fmtNum(Math.round((+it.stock + q) * 100) / 100)} ${it.unit}`; S.className = 's'; return; }
   const other = NL.cart.filter(x => x.itemId === it.id && x.key !== nlKeyOf(C)).reduce((s, x) => s + x.qty, 0), after = Math.round((+it.stock - other - q) * 100) / 100;
-  S.textContent = `Tồn ${it.name}: ${fmtNum(Math.round((+it.stock - other) * 100) / 100)} → sau cấp ${fmtNum(after)} ${it.unit}` + (after < 0 ? ' — KHÔNG ĐỦ' : '');
+  S.textContent = `Tồn ${it.name}: ${fmtNum(Math.round((+it.stock - other) * 100) / 100)} → sau cấp ${fmtNum(after)} ${it.unit}` + (after < 0 ? (amCan() ? ' — TỒN SẼ ÂM, nhớ nhập bù' : ' — KHÔNG ĐỦ') : '');
   S.className = after < 0 ? 's bad' : 's';
 }
 function nlAdd(save) {
@@ -17777,7 +17780,7 @@ function nlAdd(save) {
   if (!(q > 0)) { toast('⚠️ Nhập số ' + String(it.unit || 'lít').toLowerCase()); return; }
   if (!C.devId) { C.other = String(document.getElementById('nl-other')?.value || C.other || '').trim(); if (!C.other) { toast('⚠️ Ghi tên máy / xe nhận'); document.getElementById('nl-other')?.focus(); return; } }
   const key = nlKeyOf(C), other = NL.cart.filter(x => x.itemId === it.id && x.key !== key).reduce((s, x) => s + x.qty, 0);
-  if (q + other > +it.stock + 1e-9) { toast(`❌ Trong kho chỉ còn ${fmtNum(Math.round((+it.stock - other) * 100) / 100)} ${it.unit} ${it.name}`); return; }
+  if (q + other > +it.stock + 1e-9 && !amCan()) { toast(`❌ Trong kho chỉ còn ${fmtNum(Math.round((+it.stock - other) * 100) / 100)} ${it.unit} ${it.name}`); return; }
   const d = C.devId ? db.devices.find(x => x.id === C.devId) : null, mEl = document.getElementById('nl-m');
   let m = mEl ? String(mEl.value || '').trim() : '';
   if (m !== '') {
@@ -17797,7 +17800,8 @@ function nlNewId() { let id = newId(); while (db.transactions.some(t => t.id ===
 async function nlSave() {
   if (NL.busy || !NL.cart.length) return;
   const need = {}; NL.cart.forEach(x => need[x.itemId] = (need[x.itemId] || 0) + x.qty);
-  for (const [id, q] of Object.entries(need)) { const it = db.items.find(i => i.id === +id); if (!it || q > +it.stock + 1e-9) { toast(`❌ ${it ? it.name : 'Nhiên liệu'}: trong kho chỉ còn ${it ? fmtNum(it.stock) + ' ' + it.unit : '0'}`); NL.step = 'grid'; nlRender(); return; } }
+  if (amCan() && !amAsk(Object.entries(need).map(([id, q]) => ({ it:db.items.find(i => i.id === +id), q })))) return;   // v5.67.0: hỏi lại khi tồn sẽ âm
+  for (const [id, q] of Object.entries(need)) { const it = db.items.find(i => i.id === +id); if (!it || (q > +it.stock + 1e-9 && !amCan())) { toast(`❌ ${it ? it.name : 'Nhiên liệu'}: trong kho chỉ còn ${it ? fmtNum(it.stock) + ' ' + it.unit : '0'}`); NL.step = 'grid'; nlRender(); return; } }
   NL.busy = true;
   const tEl = document.getElementById('nl-time') || (() => { if (!NL.time) return null; const x = document.createElement('input'); x.id = 'nl-time-tmp'; x.value = NL.time; x.dataset.auto = ''; return x; })();
   const saved = [];
@@ -20210,7 +20214,8 @@ function bpxRead() {                                             // null = có l
     const id = +c.dataset.i, it = db.items.find(i => i.id === id), qe = box.querySelector(`.bpx-q[data-i="${id}"]`), q = r3(+(qe && qe.value));
     if (!it) continue;
     if (!(q > 0)) { toast(`⚠️ Bộ phận "${it.name}": nhập số lượng, hoặc bỏ tick`); qe && qe.focus(); return null; }
-    const from = bpSrc(it, q);
+    let from = bpSrc(it, q);
+    if (!from && amAsk([{ it, q }])) from = 'kho';                // v5.67.0: quyền k_am → lấy từ kho, tồn âm
     if (!from) { toast(`❌ ${it.name}: tồn không đủ ${fmtNum(q)} (kho ${fmtNum(+it.stock || 0)}${ctSite(it) > 0 ? ', công trường ' + fmtNum(ctSite(it)) : ''})`); qe && qe.focus(); return null; }
     rows.push({ it, q, from });
   }
@@ -20364,11 +20369,257 @@ async function phieuLinkOpen() {
     if (!(db.projects || []).includes(Q.da)) { toast(`Bạn không được giao dự án ${Q.da} nên không xem được phiếu ${Q.id}`); return; }
     await switchProject(Q.da);
   }
-  if (db.transactions.some(x => x.id === Q.id)) { openTxn(Q.id); return; }
-  if ((db.loans || []).some(l => l.id === Q.id)) { openLoan(Q.id); return; }
+  const t = db.transactions.find(x => x.id === Q.id);
+  if (t) { openTxn(Q.id); galOpenFirst(phSrcId(t)); return; }
+  if ((db.loans || []).some(l => l.id === Q.id)) { openLoan(Q.id); galOpenFirst(Q.id); return; }
   toast(`Không thấy phiếu ${Q.id} trong dự án ${curProj} (phiếu đã xoá hoặc bạn không có quyền xem)`);
 }
 { const _p = pycHashOpen; pycHashOpen = function () { const r = _p.apply(this, arguments); setTimeout(() => phieuLinkOpen().catch(e => console.error(e)), 200); return r; }; }
 </script>
+<script>
+// ===== v5.66.2: TRÌNH XEM ẢNH BIÊN BẢN — 1/N, vuốt / ‹ › / phím mũi tên, phóng to 2 ngón / bấm đúp =====
+// Mở từ: link "Xem N ảnh" trong Excel (mở thẳng ảnh đầu) · bấm ảnh nhỏ ở chi tiết phiếu / phiếu mượn (viewPhoto).
+// Ảnh vẫn tải qua photoData (bộ nhớ máy → máy chủ getPhoto theo quyền dự án). Đóng → còn nguyên chi tiết phiếu bên dưới.
+const GAL = { list:[], i:0, cap:'', z:1, x:0, y:0 };
+function galCaption(srcId) {
+  const t = db.transactions.find(x => x.id === srcId);
+  if (t) {
+    const it = db.items.find(i => i.id === t.itemId), d = parseVN(t.datetime);
+    const lb = t.type === 'nhap' ? 'Phiếu nhập' : t.type === 'xuat' ? 'Phiếu xuất' : t.type === 'dieuchinh' ? 'Phiếu điều chỉnh' : 'Phiếu';
+    const n = typeof bbgOf === 'function' && typeof bbgIsBB === 'function' && bbgIsBB(t) ? bbgOf(t).length : 1;
+    return [d ? `${d.getDate()}/${d.getMonth() + 1}/${d.getFullYear()}` : '', lb, `${it?.name || t.itemName || ''} ${fmtNum(+t.qty)} ${it?.unit || t.unit || ''}`.trim() + (n > 1 ? ` (+${n - 1} món cùng biên bản)` : ''), '#' + t.id].filter(Boolean).join(' · ');
+  }
+  const l = (db.loans || []).find(x => x.id === srcId);
+  if (l) return [(l.kind === 'cho' ? 'Cho mượn' : 'Đi mượn'), l.itemName, '#' + l.id].filter(Boolean).join(' · ');
+  return '#' + srcId;
+}
+function galEl() {
+  let g = document.getElementById('gal');
+  if (g) return g;
+  g = document.createElement('div'); g.id = 'gal'; g.className = 'gal';
+  g.innerHTML = `<div class="gal-top"><div class="gal-info"><b id="gal-n"></b><span id="gal-cap"></span></div><button type="button" class="gal-x" onclick="galClose()" aria-label="Đóng">✕</button></div>
+    <div class="gal-stage" id="gal-stage"><img id="gal-img" alt="Ảnh biên bản" draggable="false"><div class="gal-msg" id="gal-msg"></div></div>
+    <button type="button" class="gal-nav gal-prev" onclick="galGo(-1)" aria-label="Ảnh trước">‹</button><button type="button" class="gal-nav gal-next" onclick="galGo(1)" aria-label="Ảnh sau">›</button>
+    <div class="gal-bot"><div class="gal-dots" id="gal-dots"></div><button type="button" class="gal-btn" onclick="galClose()">📄 Chi tiết phiếu</button></div>`;
+  document.body.appendChild(g); galTouch(g.querySelector('#gal-stage'));
+  return g;
+}
+function galOpen(list, i, srcId) {
+  if (!list.length) return;
+  GAL.list = list; GAL.i = Math.max(0, Math.min(i, list.length - 1)); GAL.cap = galCaption(srcId);
+  galEl().classList.add('show'); document.body.classList.add('gal-on'); galShow();
+}
+function galOpenFirst(srcId) { const L = photosOf(srcId); if (L.length) galOpen(L, 0, srcId); }
+function galClose() { const g = document.getElementById('gal'); if (g) g.classList.remove('show'); document.body.classList.remove('gal-on'); }
+function galGo(k) { const n = GAL.list.length; if (n < 2) return; GAL.i = (GAL.i + k + n) % n; galShow(); }
+function galZoom(z, x = 0, y = 0) {
+  GAL.z = Math.max(1, Math.min(5, z)); if (GAL.z === 1) { x = 0; y = 0; } GAL.x = x; GAL.y = y;
+  const im = document.getElementById('gal-img'); if (im) im.style.transform = `translate(${GAL.x}px,${GAL.y}px) scale(${GAL.z})`;
+}
+async function galShow() {
+  const ph = GAL.list[GAL.i], n = GAL.list.length, im = document.getElementById('gal-img'), msg = document.getElementById('gal-msg');
+  document.getElementById('gal-n').textContent = `Ảnh ${GAL.i + 1}/${n}`;
+  document.getElementById('gal-cap').textContent = GAL.cap;
+  document.getElementById('gal-dots').innerHTML = n > 1 ? GAL.list.map((_, k) => `<i class="${k === GAL.i ? 'on' : ''}"></i>`).join('') : '';
+  document.querySelectorAll('#gal .gal-nav').forEach(b => b.style.display = n > 1 ? '' : 'none');
+  galZoom(1); im.removeAttribute('src'); im.style.display = 'none'; msg.textContent = 'Đang tải ảnh…'; msg.style.display = '';
+  let d = null; try { d = await photoData(ph); } catch (e) {}
+  if (GAL.list[GAL.i] !== ph) return;                                 // đã chuyển sang ảnh khác trong lúc tải
+  if (d) { im.src = d; im.style.display = ''; msg.style.display = 'none'; }
+  else msg.textContent = navigator.onLine ? '⚠️ Không tải được ảnh — thử lại sau' : '📴 Cần mạng để tải ảnh';
+  const nx = GAL.list[(GAL.i + 1) % n]; if (n > 1 && nx !== ph) photoData(nx).catch(() => {});   // tải trước ảnh sau
+}
+function galTouch(st) {
+  const P = new Map(); let start = null, pinch = null, lastTap = 0, moved = false;
+  const dist = () => { const [a, b] = [...P.values()]; return Math.hypot(a.x - b.x, a.y - b.y); };
+  st.addEventListener('pointerdown', e => { st.setPointerCapture && st.setPointerCapture(e.pointerId); P.set(e.pointerId, { x:e.clientX, y:e.clientY });
+    if (P.size === 2) { pinch = { d:dist(), z:GAL.z }; start = null; } else if (P.size === 1) { start = { x:e.clientX, y:e.clientY, gx:GAL.x, gy:GAL.y }; moved = false; } });
+  st.addEventListener('pointermove', e => { if (!P.has(e.pointerId)) return; P.set(e.pointerId, { x:e.clientX, y:e.clientY });
+    if (pinch && P.size === 2) { galZoom(pinch.z * dist() / (pinch.d || 1), GAL.x, GAL.y); return; }
+    if (start) { const dx = e.clientX - start.x, dy = e.clientY - start.y; if (Math.abs(dx) + Math.abs(dy) > 8) moved = true;
+      if (GAL.z > 1) galZoom(GAL.z, start.gx + dx, start.gy + dy); } });
+  const up = e => { if (!P.has(e.pointerId)) return; P.delete(e.pointerId);
+    if (pinch) { if (P.size < 2) { pinch = null; start = null; if (GAL.z < 1.05) galZoom(1); } return; }
+    if (!start) return; const dx = e.clientX - start.x, dy = e.clientY - start.y; start = null;
+    if (GAL.z === 1 && Math.abs(dx) > 50 && Math.abs(dx) > Math.abs(dy) * 1.5) { galGo(dx < 0 ? 1 : -1); return; }
+    if (!moved) { const now = Date.now(); if (now - lastTap < 320) { galZoom(GAL.z > 1 ? 1 : 2.5); lastTap = 0; } else lastTap = now; } };
+  st.addEventListener('pointerup', up); st.addEventListener('pointercancel', up);
+  st.addEventListener('wheel', e => { e.preventDefault(); galZoom(GAL.z * (e.deltaY < 0 ? 1.2 : 1 / 1.2), GAL.x, GAL.y); }, { passive:false });
+}
+document.addEventListener('keydown', e => { const g = document.getElementById('gal'); if (!g || !g.classList.contains('show')) return;
+  if (e.key === 'ArrowRight') galGo(1); else if (e.key === 'ArrowLeft') galGo(-1); else if (e.key === 'Escape') galClose(); else return; e.preventDefault(); });
+// Bấm ảnh nhỏ ở chi tiết phiếu / phiếu mượn → trình xem mới (vuốt qua các ảnh của cùng phiếu)
+{ const _vp = viewPhoto; viewPhoto = function (id) {
+  const ph = (db.photos || []).find(p => p.id === id);
+  if (!ph) return _vp.apply(this, arguments);
+  const L = photosOf(ph.txnId); galOpen(L, Math.max(0, L.indexOf(ph)), ph.txnId);
+}; }
+</script>
+<style>/* v5.66.2 */
+.gal{position:fixed;inset:0;z-index:960;background:#0b0b0c;display:none;flex-direction:column;color:#fff;user-select:none;-webkit-user-select:none}
+.gal.show{display:flex}
+body.gal-on{overflow:hidden}
+.gal-top{display:flex;align-items:flex-start;gap:10px;padding:calc(10px + env(safe-area-inset-top)) 12px 8px 16px;background:linear-gradient(#000c,#0000)}
+.gal-info{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px}.gal-info b{font-size:16px}.gal-info span{font-size:13px;color:#d6d6d6;overflow-wrap:anywhere;line-height:1.35}
+.gal-x{flex:none;width:42px;height:42px;border-radius:50%;border:none;background:rgba(255,255,255,.18);color:#fff;font-size:22px;cursor:pointer}
+.gal-stage{flex:1;min-height:0;position:relative;overflow:hidden;display:flex;align-items:center;justify-content:center;touch-action:none}
+.gal-stage img{max-width:100%;max-height:100%;object-fit:contain;transform-origin:center;transition:transform .05s linear;pointer-events:none}
+.gal-msg{position:absolute;font-size:15px;color:#ddd;text-align:center;padding:0 24px}
+.gal-nav{position:absolute;top:50%;transform:translateY(-50%);width:44px;height:64px;border:none;border-radius:10px;background:rgba(0,0,0,.45);color:#fff;font-size:34px;line-height:1;cursor:pointer}
+.gal-prev{left:8px}.gal-next{right:8px}
+.gal-bot{display:flex;flex-direction:column;align-items:center;gap:10px;padding:8px 16px calc(14px + env(safe-area-inset-bottom))}
+.gal-dots{display:flex;gap:6px;min-height:8px}.gal-dots i{width:8px;height:8px;border-radius:50%;background:#ffffff55}.gal-dots i.on{background:#fff}
+.gal-btn{border:none;border-radius:12px;background:#fff;color:#111;font:inherit;font-size:15px;font-weight:600;padding:11px 22px;cursor:pointer}
+@media (min-width:700px){.gal-nav{width:54px;height:80px}.gal-prev{left:18px}.gal-next{right:18px}}
+</style>
+<script>
+// ===== v5.67.0: XUẤT ÂM · CẦN NHẬP BÙ · GHI CHÚ "KIỂM TRA TỒN KHO" =====
+// Quyền k_am "Xuất khi tồn không đủ" (mặc định Thủ kho, Admin luôn có; máy chủ 5.67.0 cấp mặc định): hàng có thật nhưng chưa nhập app vẫn xuất được → tồn kho âm.
+// Áp dụng: phiếu xuất lẻ (ctQtyOk · hỏi ở "Kiểm tra lại"), Nhập / Xuất nhanh + bảng theo biên bản (q5Simulate: dòng vàng), cấp nhiên liệu (nlAdd / nlSave),
+//   phiếu giấy (pfSubmit), giao phiếu yêu cầu (reqIssue), bộ phận theo máy (bpxRead). Cho mượn / trả mượn / giải động / từ công trường: vẫn chặn.
+// Mã đang âm: ghi chú "⚠️ Kiểm tra tồn kho" ở Tồn kho, Thẻ kho, Excel (Sổ NXT + Tóm tắt) · thẻ "Cần nhập bù" ở Tổng quan + Tồn kho → màn dp-nb:
+//   số âm, phiếu xuất đầu tiên của đợt âm hiện tại, nút Nhập bù (điền sẵn SL thiếu, bên giao "Kiểm kê bổ sung", ngày giờ = trước phiếu đó 1 phút).
+function amCan() { return typeof hp === 'function' && hp('k_am'); }
+function amWarn(it, have, q) { return `Tồn sẽ âm: kho ${fmtNum(have)}, xuất ${fmtNum(q)} → ${fmtNum(r3(have - q))} ${it.unit} — nhớ nhập bù`; }
+function amAsk(list) {                                           // true = đủ tồn hoặc người dùng đồng ý xuất âm · false = không có quyền / bấm Huỷ
+  const bad = (list || []).filter(x => x && x.it && x.q > (+x.it.stock || 0) + 1e-9);
+  if (!bad.length) return true;
+  if (!amCan()) return false;
+  return confirm('Tồn trên app không đủ:\n' + bad.map(x => `• ${x.it.name}: còn ${fmtNum(+x.it.stock || 0)}, xuất ${fmtNum(x.q)} → ÂM ${fmtNum(r3((+x.it.stock || 0) - x.q))} ${x.it.unit}`).join('\n')
+    + '\n\nHàng có thật nhưng chưa nhập lên app? Bấm OK để vẫn xuất.\nMã này sẽ có ghi chú "Kiểm tra tồn kho" cho tới khi nhập bù (Tồn kho → Cần nhập bù).');
+}
+const amNeg = it => it && +it.stock < -1e-9;
+function amList() { return (db.items || []).filter(i => amNeg(i) && (curProj === 'all' || i.project === curProj)); }
+function amInfo(it) {                                            // phiếu đầu tiên của đợt âm hiện tại (tồn sau phiếu âm liên tục tới nay)
+  const T = (db.transactions || []).filter(t => t.itemId === it.id && t.project === it.project)
+    .map(t => ({ t, d:(parseVN(t.datetime) || new Date(0)).getTime() })).sort((a, b) => a.d - b.d || (+a.t.id) - (+b.t.id));
+  let bal = +it.stock || 0, k = T.length;
+  for (let i = T.length - 1; i >= 0; i--) { if (bal < -1e-9) k = i; else break; bal -= tk9Delta(T[i].t); }
+  const f = k < T.length ? T[k] : null;
+  return { first:f ? f.t : null, at:f ? f.d : 0, need:r3(-(+it.stock || 0)) };
+}
+const amDtL = ms => { const d = new Date(ms), p = n => String(n).padStart(2, '0'); return `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())}T${p(d.getHours())}:${p(d.getMinutes())}`; };
+const amDtS = ms => { const d = new Date(ms), p = n => String(n).padStart(2, '0'); return `${p(d.getHours())}:${p(d.getMinutes())} ${p(d.getDate())}/${p(d.getMonth() + 1)}/${d.getFullYear()}`; };
+function amOld(inf) { const mx = +db.gioMax || 0; return !can('admin') && mx > 0 && inf.at && inf.at - 60000 < Date.now() - mx * 864e5 ? mx : 0; }
+function amNote(it) {
+  const inf = amInfo(it), f = inf.first;
+  return `<div class="am-note"><b>⚠️ Kiểm tra tồn kho</b> · đang âm ${fmtNum(+it.stock)} ${escHtml(it.unit || '')}${f ? ` · âm từ phiếu ${f.type === 'xuat' ? 'xuất' : 'ngày'} ${escHtml(amDtS(inf.at))}` : ''}</div>`;
+}
+// ---------- Màn "Cần nhập bù" ----------
+function nbOpen() { if (!document.getElementById('dp-nb')) nbInit(); openDp('dp-nb', nbRender); }
+function nbInit() {
+  document.body.insertAdjacentHTML('beforeend', `<div class="detail-page" id="dp-nb"><div class="detail-header"><button class="back-btn" onclick="closeDp('dp-nb')">‹</button><div class="detail-title">Cần nhập bù</div></div><div class="detail-body" id="dp-nb-body"></div></div>`);
+  try { DP_RENDER['dp-nb'] = () => nbRender(); } catch (e) {}
+}
+function nbRender() {
+  const b = document.getElementById('dp-nb-body'); if (!b) return;
+  const L = amList().map(it => ({ it, inf:amInfo(it) })).sort((a, b2) => (a.inf.at || 0) - (b2.inf.at || 0));
+  const canN = hp('k_nhap') && curProj !== 'all';
+  b.innerHTML = `<div class="nb">
+    <div class="info-box">Các mã dưới đây đang <b>ÂM</b> trên app: đã xuất nhưng chưa có phiếu nhập. Kiểm tra tồn kho thực tế và chứng từ giao hàng, rồi bấm <b>Nhập bù</b>: app điền sẵn số lượng còn thiếu và ngày giờ <b>trước phiếu xuất đầu tiên làm âm</b>.<br>Thứ tự: <b>nhập bù trước, kiểm kê sau</b> (kiểm kê đặt lại tồn theo số đếm; phiếu nhập lùi ngày trước mốc kiểm kê chỉ ghi sổ, không đổi tồn).</div>
+    ${L.length ? L.map(({ it, inf }) => { const f = inf.first, old = amOld(inf); return `<div class="nb-c">
+      <div class="nb-t"><b>${escHtml(it.name)}</b>${curProj === 'all' ? `<small>${escHtml(it.project)}</small>` : ''}<span class="nb-q">${fmtNum(+it.stock)} ${escHtml(it.unit || '')}</span></div>
+      <div class="nb-s">${f ? `Âm từ: <b>${escHtml(amDtS(inf.at))}</b> · ${f.type === 'xuat' ? 'Xuất' : escHtml(TXN_TYPE_LBL(f))} ${fmtNum(+f.qty || 0)} ${escHtml(it.unit || '')}${f.supplierOrReceiver ? ' cho ' + escHtml(f.supplierOrReceiver) : f.thietBi ? ' cho ' + escHtml(f.thietBi) : ''}${f.createdByName ? ' · ' + escHtml(f.createdByName) : ''}` : 'Chưa có phiếu nào trên app (tồn đầu âm) — kiểm kê lại'}</div>
+      <div class="nb-s">Cần nhập bù ít nhất <b>${fmtNum(inf.need)} ${escHtml(it.unit || '')}</b>, ngày giờ trước ${f ? escHtml(amDtS(inf.at)) : 'phiếu xuất'}</div>
+      ${old ? `<div class="nb-w">Phiếu cũ hơn ${old} ngày: thủ kho không lùi ngày tới đó được — nhờ Admin nhập bù.</div>` : ''}
+      <div class="nb-b"><button type="button" onclick="nbThe(${it.id})">📒 Thẻ kho</button>${canN && !old ? `<button type="button" class="on" onclick="nbNhap(${it.id})">＋ Nhập bù</button>` : ''}</div>
+    </div>`; }).join('') : '<div class="empty-state" style="padding:30px 0"><p>✅ Không có mã nào đang âm</p></div>'}
+  </div>`;
+}
+function TXN_TYPE_LBL(t) { return t.type === 'nhap' ? 'Nhập' : t.type === 'kiemke' ? 'Kiểm kê' : t.type === 'dieuchinh' ? 'Điều chỉnh' : 'Phiếu'; }
+function nbThe(id) { closeDp('dp-nb'); setTimeout(() => tk9Open(id), 150); }
+function nbNhap(id) {
+  const it = db.items.find(i => i.id === id); if (!it) return;
+  const inf = amInfo(it);
+  ['dp-nb', 'dp-thekho'].forEach(x => { try { if (document.getElementById(x)) closeDp(x); } catch (e) {} });
+  goTab('nhap');
+  setTimeout(() => {
+    try {
+      comboPick('fn', id);
+      const $ = x => document.getElementById(x), q = $('fn-qty'), n = $('fn-ncc'), no = $('fn-note'), tm = $('fn-time');
+      if (q) q.value = inf.need;
+      if (n && !n.value.trim()) n.value = 'Kiểm kê bổ sung';
+      if (no && !no.value.trim()) no.value = 'Nhập bù: hàng đã về nhưng chưa nhập app' + (inf.first ? ' (trước phiếu ' + amDtS(inf.at) + ')' : '');
+      if (tm && inf.at) {
+        if (canGio()) { tm.value = amDtL(inf.at - 60000); tm.dispatchEvent(new Event('input', { bubbles:true })); tm.dispatchEvent(new Event('change', { bubbles:true })); }
+        else toast('⚠️ Bạn chưa có quyền "Chọn ngày giờ phiếu" — nhờ Admin nhập bù đúng ngày');
+      }
+      if (q) q.focus();
+      toast('📝 Đã điền sẵn phiếu nhập bù — kiểm tra số lượng, bên giao, ngày giờ rồi lưu');
+    } catch (e) { console.warn(e); }
+  }, 350);
+}
+// ---------- Tồn kho: ghi chú trên từng mã âm + thẻ Cần nhập bù ----------
+{ const _r = renderTonRows; renderTonRows = function (items) {
+  const html = _r.apply(this, arguments);
+  try {
+    if (!Array.isArray(items) || !items.some(amNeg)) return html;
+    const byId = {}; items.forEach(i => byId[i.id] = i);
+    return html.replace(/<div class="progress-item"([^>]*)data-iid="(\d+)"([^>]*)>/g, (m, a, id, c) => {
+      const it = byId[id]; if (!amNeg(it)) return m;
+      return `<div class="progress-item am-neg"${a}data-iid="${id}"${c}>${amNote(it)}`;
+    }).replace(/(class="progress-item am-neg"[\s\S]*?class="txn-badge [^"]*">)Hết hàng</g, '$1Âm<');
+  } catch (e) { console.warn(e); return html; }
+}; }
+function amBanner() {
+  const n = amList().length; if (!n) return '';
+  return `<div class="am-ban" onclick="nbOpen()"><span>⚠️ <b>${n} mã đang âm</b> — kiểm tra tồn kho, cần nhập bù</span><b>›</b></div>`;
+}
+{ const _r = renderTon; renderTon = function (c) {
+  const r = _r.apply(this, arguments);
+  try { const h = amBanner(); const L = c && c.querySelector('#ton-list'); if (h && L) L.parentElement.insertAdjacentHTML('afterbegin', h); } catch (e) { console.warn(e); }
+  return r;
+}; }
+{ const _r = renderHome; renderHome = function (c) {
+  const r = _r.apply(this, arguments);
+  try { const h = hp('v_ton') ? amBanner() : ''; if (h && c) c.insertAdjacentHTML('afterbegin', `<div style="padding:10px 14px 0">${h}</div>`); } catch (e) { console.warn(e); }
+  return r;
+}; }
+// ---------- Thẻ kho: ghi chú + nút Nhập bù ----------
+{ const _r = tk9Render; tk9Render = function () {
+  const r = _r.apply(this, arguments);
+  try {
+    const it = db.items.find(i => i.id === TK9), box = document.querySelector('#dp-thekho-body .tk9-h');
+    if (amNeg(it) && box) {
+      const inf = amInfo(it), old = amOld(inf);
+      box.insertAdjacentHTML('afterend', `<div class="am-tk">${amNote(it)}<div class="nb-s">Cần nhập bù ít nhất <b>${fmtNum(inf.need)} ${escHtml(it.unit || '')}</b>${inf.first ? ', ngày giờ trước ' + escHtml(amDtS(inf.at)) : ''}.${old ? ` Phiếu cũ hơn ${old} ngày — nhờ Admin nhập bù.` : ''}</div>${hp('k_nhap') && curProj !== 'all' && !old ? `<div class="nb-b"><button type="button" class="on" onclick="nbNhap(${it.id})">＋ Nhập bù</button></div>` : ''}</div>`);
+    }
+  } catch (e) { console.warn(e); }
+  return r;
+}; }
+// ---------- Kiểm tra lại phiếu xuất: tồn sau âm → đỏ + nhắc ----------
+if (typeof pcConfirm === 'function') { const _r = pcConfirm; pcConfirm = function (type, item, name, qty) {
+  const p = _r.apply(this, arguments);
+  try {
+    if (type === 'xuat' && item && qty > (+item.stock || 0) + 1e-9) {
+      const kv = document.querySelector('#pc-body .pc-kv');
+      if (kv) {
+        [...kv.querySelectorAll('span')].forEach(s => { if (s.textContent === 'Tồn kho sau' && s.nextElementSibling) s.nextElementSibling.classList.add('am-red'); });
+        kv.insertAdjacentHTML('afterend', `<div class="am-pc">⚠️ <b>Tồn trên app không đủ</b> (còn ${fmtNum(+item.stock || 0)} ${escHtml(item.unit || '')}). Hàng có thật nhưng chưa nhập app thì bấm <b>Đúng, lưu phiếu</b> — mã này sẽ có ghi chú "Kiểm tra tồn kho" cho tới khi nhập bù.</div>`);
+      }
+    }
+  } catch (e) { console.warn(e); }
+  return p;
+}; }
+</script>
+<style>/* v5.67.0 */
+.am-note{background:#FDECEC;border:1px solid #F5B5B5;color:#9B1C1C;border-radius:8px;padding:5px 9px;font-size:12.5px;line-height:1.4;margin:0 0 6px}
+.am-note b{color:#B42318}
+.progress-item.am-neg .prog-nums{color:var(--red);font-weight:800}
+.am-ban{display:flex;justify-content:space-between;align-items:center;gap:8px;background:#FDECEC;border:1.5px solid #F5B5B5;color:#9B1C1C;border-radius:12px;padding:10px 12px;font-size:13.5px;margin-bottom:10px;cursor:pointer}
+.am-ban>b{font-size:20px;line-height:1}
+.am-tk{background:#fff;border:1px solid #F5B5B5;border-radius:12px;padding:8px 10px;margin:0 0 10px}
+.am-pc{background:#FDECEC;border:1px solid #F5B5B5;color:#7A1313;border-radius:10px;padding:8px 10px;font-size:13px;line-height:1.45;margin-top:10px}
+.pc-kv b.am-red{color:var(--red)}
+.nb{padding:2px 0 30px}.nb .info-box{margin-bottom:12px}
+.nb-c{background:#fff;border:1px solid var(--border);border-left:4px solid var(--red);border-radius:12px;padding:10px 12px;margin-bottom:10px}
+.nb-t{display:flex;align-items:baseline;gap:8px}.nb-t b{flex:1;font-size:15px}.nb-t small{color:var(--text2);font-size:12px}
+.nb-q{color:var(--red);font-weight:800;font-size:15px;white-space:nowrap}
+.nb-s{font-size:12.5px;color:var(--text2);margin-top:4px;line-height:1.45}.nb-s b{color:var(--text1,#1A1F2B)}
+.nb-w{font-size:12.5px;background:#FFF7E0;border:1px solid #F0C36D;border-radius:8px;padding:5px 8px;margin-top:6px}
+.nb-b{display:flex;gap:8px;justify-content:flex-end;margin-top:8px}
+.nb-b button{border:1.5px solid var(--border);background:#fff;border-radius:999px;padding:6px 12px;font:inherit;font-size:13px;font-weight:700;cursor:pointer}
+.nb-b button.on{background:var(--green);border-color:var(--green);color:#fff}
+</style>
 </body>
 </html>
