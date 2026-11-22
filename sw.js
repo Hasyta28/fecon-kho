@@ -1,4 +1,5 @@
-// FECON Kho + Thi công - Service Worker v5.67.0
+// FECON Kho + Thi công - Service Worker v5.67.1
+// 5.67.1: Bảng theo biên bản gọn — mỗi món 1 hàng, khung chung 1 dòng
 // 5.67.0: Xuất khi tồn không đủ (tồn âm) · Cần nhập bù · ghi chú Kiểm tra tồn kho
 // 5.66.2: Trình xem ảnh biên bản mới (1/N, vuốt, phóng to) · link Excel mở thẳng ảnh
 // 5.66.1: Excel Sổ nhập – xuất có cột link "Xem N ảnh" → mở thẳng phiếu trong app (link ?phieu=…&da=…)
@@ -109,7 +110,7 @@
 //  - Mở app: lấy file từ bộ nhớ của bản đang dùng; thiếu file nào mới lấy từ mạng.
 //  - Có sw.js mới trên GitHub: tải sẵn bản mới vào bộ nhớ riêng nhưng KHÔNG đổi bản đang dùng.
 //  - Địa chỉ có ?fresh=... luôn lấy thẳng từ mạng (app dùng để kiểm tra / tải bản mới).
-const VERSION = '5.67.0';
+const VERSION = '5.67.1';
 const APP = 'fecon-app-', META = 'fecon-meta';
 const CORE = ['./', './index.html', './thicong.html', './danhmuc.html', './manifest.json', './icon-192.png', './icon-512.png', './icon-maskable-192.png', './icon-maskable-512.png', './bg-login.jpg'];
 
