@@ -20630,7 +20630,8 @@ if (typeof pcConfirm === 'function') { const _r = pcConfirm; pcConfirm = functio
     if (!(Q5 && Q5.bb) || h.indexOf('q5-card bbc') < 0) return h;
     return h.replace(/<\/span><\/div>\s*<div class="bbc-row">/, '</span>')                     // gom hàng SL / ĐVT / nút vào hàng tên
       .replace(/>Đổi \/ sửa (▴|▾)<\/button>/, (m, a) => ` title="Đổi món / sửa">✎<\/button>`)
-      .replace('<span class="bbc-ul"><b>', '<span class="bbc-ul"><b>');
+      .replace(/(<span class="bbc-tag[^"]*">[^<]*)<\/span>([\s\S]*?)<div class="q5-w">Tồn sẽ âm[^<]*<\/div>/, (m, t, mid) => `${t} <b class="am-t">– Tồn âm</b></span>${mid}`)   // tồn âm: ghi chung dòng Khớp kho, không khung vàng
+      .replace('q5-card bbc warn', R.warns.every(w => /^Tồn sẽ âm/.test(w)) ? 'q5-card bbc' : 'q5-card bbc warn');
   } catch (e) { return h; }
 }; }
 { const _r = q5Render; q5Render = function () {
@@ -20661,7 +20662,7 @@ if (typeof pcConfirm === 'function') { const _r = pcConfirm; pcConfirm = functio
 .bbc-pv .bbc-ed{flex:none;width:34px;height:36px;padding:0;font-size:16px;border-radius:8px}
 .bbc-pv .bbc-st{margin:1px 0 0 53px}
 .bbc-pv .bbc-tag{font-size:11.5px;font-weight:600;padding:0;background:none !important;border-radius:0}
-.bbc-pv .bbc-tag.ok{color:#5B6B60}
+.bbc-pv .bbc-tag.ok{color:#5B6B60}.bbc-pv .bbc-tag .am-t{color:var(--red);font-weight:800}
 .bbc-pv .bbc-st+.q5-e,.bbc-pv .bbc-st+.q5-w,.bbc-pv .q5-e,.bbc-pv .q5-w{margin:3px 0 0 53px;padding:3px 7px;font-size:12px}
 .bbc-pv .bbn-pn{margin:1px 0 0 53px;font-size:12px}
 .bbc-pv .q5-chips{margin-bottom:4px}.bbc-pv .q5-leg{margin-bottom:6px}
