@@ -1913,7 +1913,7 @@ body.pg-printing #pg-print{display:block;position:fixed;inset:0;z-index:9000;bac
 // ============================================================
 // CONFIG
 // ============================================================
-const APP_VERSION = '5.66.1';
+const APP_VERSION = '5.66.2';
 const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbw6Rmi80I7RI3ij2U7RdRF5pYuQTnPrwEmGmUZS5xpxzLwwVynfoFUujZe1lm6HS1ymxw/exec';
 // ============================================================
 
@@ -20364,11 +20364,108 @@ async function phieuLinkOpen() {
     if (!(db.projects || []).includes(Q.da)) { toast(`Bạn không được giao dự án ${Q.da} nên không xem được phiếu ${Q.id}`); return; }
     await switchProject(Q.da);
   }
-  if (db.transactions.some(x => x.id === Q.id)) { openTxn(Q.id); return; }
-  if ((db.loans || []).some(l => l.id === Q.id)) { openLoan(Q.id); return; }
+  const t = db.transactions.find(x => x.id === Q.id);
+  if (t) { openTxn(Q.id); galOpenFirst(phSrcId(t)); return; }
+  if ((db.loans || []).some(l => l.id === Q.id)) { openLoan(Q.id); galOpenFirst(Q.id); return; }
   toast(`Không thấy phiếu ${Q.id} trong dự án ${curProj} (phiếu đã xoá hoặc bạn không có quyền xem)`);
 }
 { const _p = pycHashOpen; pycHashOpen = function () { const r = _p.apply(this, arguments); setTimeout(() => phieuLinkOpen().catch(e => console.error(e)), 200); return r; }; }
 </script>
+<script>
+// ===== v5.66.2: TRÌNH XEM ẢNH BIÊN BẢN — 1/N, vuốt / ‹ › / phím mũi tên, phóng to 2 ngón / bấm đúp =====
+// Mở từ: link "Xem N ảnh" trong Excel (mở thẳng ảnh đầu) · bấm ảnh nhỏ ở chi tiết phiếu / phiếu mượn (viewPhoto).
+// Ảnh vẫn tải qua photoData (bộ nhớ máy → máy chủ getPhoto theo quyền dự án). Đóng → còn nguyên chi tiết phiếu bên dưới.
+const GAL = { list:[], i:0, cap:'', z:1, x:0, y:0 };
+function galCaption(srcId) {
+  const t = db.transactions.find(x => x.id === srcId);
+  if (t) {
+    const it = db.items.find(i => i.id === t.itemId), d = parseVN(t.datetime);
+    const lb = t.type === 'nhap' ? 'Phiếu nhập' : t.type === 'xuat' ? 'Phiếu xuất' : t.type === 'dieuchinh' ? 'Phiếu điều chỉnh' : 'Phiếu';
+    const n = typeof bbgOf === 'function' && typeof bbgIsBB === 'function' && bbgIsBB(t) ? bbgOf(t).length : 1;
+    return [d ? `${d.getDate()}/${d.getMonth() + 1}/${d.getFullYear()}` : '', lb, `${it?.name || t.itemName || ''} ${fmtNum(+t.qty)} ${it?.unit || t.unit || ''}`.trim() + (n > 1 ? ` (+${n - 1} món cùng biên bản)` : ''), '#' + t.id].filter(Boolean).join(' · ');
+  }
+  const l = (db.loans || []).find(x => x.id === srcId);
+  if (l) return [(l.kind === 'cho' ? 'Cho mượn' : 'Đi mượn'), l.itemName, '#' + l.id].filter(Boolean).join(' · ');
+  return '#' + srcId;
+}
+function galEl() {
+  let g = document.getElementById('gal');
+  if (g) return g;
+  g = document.createElement('div'); g.id = 'gal'; g.className = 'gal';
+  g.innerHTML = `<div class="gal-top"><div class="gal-info"><b id="gal-n"></b><span id="gal-cap"></span></div><button type="button" class="gal-x" onclick="galClose()" aria-label="Đóng">✕</button></div>
+    <div class="gal-stage" id="gal-stage"><img id="gal-img" alt="Ảnh biên bản" draggable="false"><div class="gal-msg" id="gal-msg"></div></div>
+    <button type="button" class="gal-nav gal-prev" onclick="galGo(-1)" aria-label="Ảnh trước">‹</button><button type="button" class="gal-nav gal-next" onclick="galGo(1)" aria-label="Ảnh sau">›</button>
+    <div class="gal-bot"><div class="gal-dots" id="gal-dots"></div><button type="button" class="gal-btn" onclick="galClose()">📄 Chi tiết phiếu</button></div>`;
+  document.body.appendChild(g); galTouch(g.querySelector('#gal-stage'));
+  return g;
+}
+function galOpen(list, i, srcId) {
+  if (!list.length) return;
+  GAL.list = list; GAL.i = Math.max(0, Math.min(i, list.length - 1)); GAL.cap = galCaption(srcId);
+  galEl().classList.add('show'); document.body.classList.add('gal-on'); galShow();
+}
+function galOpenFirst(srcId) { const L = photosOf(srcId); if (L.length) galOpen(L, 0, srcId); }
+function galClose() { const g = document.getElementById('gal'); if (g) g.classList.remove('show'); document.body.classList.remove('gal-on'); }
+function galGo(k) { const n = GAL.list.length; if (n < 2) return; GAL.i = (GAL.i + k + n) % n; galShow(); }
+function galZoom(z, x = 0, y = 0) {
+  GAL.z = Math.max(1, Math.min(5, z)); if (GAL.z === 1) { x = 0; y = 0; } GAL.x = x; GAL.y = y;
+  const im = document.getElementById('gal-img'); if (im) im.style.transform = `translate(${GAL.x}px,${GAL.y}px) scale(${GAL.z})`;
+}
+async function galShow() {
+  const ph = GAL.list[GAL.i], n = GAL.list.length, im = document.getElementById('gal-img'), msg = document.getElementById('gal-msg');
+  document.getElementById('gal-n').textContent = `Ảnh ${GAL.i + 1}/${n}`;
+  document.getElementById('gal-cap').textContent = GAL.cap;
+  document.getElementById('gal-dots').innerHTML = n > 1 ? GAL.list.map((_, k) => `<i class="${k === GAL.i ? 'on' : ''}"></i>`).join('') : '';
+  document.querySelectorAll('#gal .gal-nav').forEach(b => b.style.display = n > 1 ? '' : 'none');
+  galZoom(1); im.removeAttribute('src'); im.style.display = 'none'; msg.textContent = 'Đang tải ảnh…'; msg.style.display = '';
+  let d = null; try { d = await photoData(ph); } catch (e) {}
+  if (GAL.list[GAL.i] !== ph) return;                                 // đã chuyển sang ảnh khác trong lúc tải
+  if (d) { im.src = d; im.style.display = ''; msg.style.display = 'none'; }
+  else msg.textContent = navigator.onLine ? '⚠️ Không tải được ảnh — thử lại sau' : '📴 Cần mạng để tải ảnh';
+  const nx = GAL.list[(GAL.i + 1) % n]; if (n > 1 && nx !== ph) photoData(nx).catch(() => {});   // tải trước ảnh sau
+}
+function galTouch(st) {
+  const P = new Map(); let start = null, pinch = null, lastTap = 0, moved = false;
+  const dist = () => { const [a, b] = [...P.values()]; return Math.hypot(a.x - b.x, a.y - b.y); };
+  st.addEventListener('pointerdown', e => { st.setPointerCapture && st.setPointerCapture(e.pointerId); P.set(e.pointerId, { x:e.clientX, y:e.clientY });
+    if (P.size === 2) { pinch = { d:dist(), z:GAL.z }; start = null; } else if (P.size === 1) { start = { x:e.clientX, y:e.clientY, gx:GAL.x, gy:GAL.y }; moved = false; } });
+  st.addEventListener('pointermove', e => { if (!P.has(e.pointerId)) return; P.set(e.pointerId, { x:e.clientX, y:e.clientY });
+    if (pinch && P.size === 2) { galZoom(pinch.z * dist() / (pinch.d || 1), GAL.x, GAL.y); return; }
+    if (start) { const dx = e.clientX - start.x, dy = e.clientY - start.y; if (Math.abs(dx) + Math.abs(dy) > 8) moved = true;
+      if (GAL.z > 1) galZoom(GAL.z, start.gx + dx, start.gy + dy); } });
+  const up = e => { if (!P.has(e.pointerId)) return; P.delete(e.pointerId);
+    if (pinch) { if (P.size < 2) { pinch = null; start = null; if (GAL.z < 1.05) galZoom(1); } return; }
+    if (!start) return; const dx = e.clientX - start.x, dy = e.clientY - start.y; start = null;
+    if (GAL.z === 1 && Math.abs(dx) > 50 && Math.abs(dx) > Math.abs(dy) * 1.5) { galGo(dx < 0 ? 1 : -1); return; }
+    if (!moved) { const now = Date.now(); if (now - lastTap < 320) { galZoom(GAL.z > 1 ? 1 : 2.5); lastTap = 0; } else lastTap = now; } };
+  st.addEventListener('pointerup', up); st.addEventListener('pointercancel', up);
+  st.addEventListener('wheel', e => { e.preventDefault(); galZoom(GAL.z * (e.deltaY < 0 ? 1.2 : 1 / 1.2), GAL.x, GAL.y); }, { passive:false });
+}
+document.addEventListener('keydown', e => { const g = document.getElementById('gal'); if (!g || !g.classList.contains('show')) return;
+  if (e.key === 'ArrowRight') galGo(1); else if (e.key === 'ArrowLeft') galGo(-1); else if (e.key === 'Escape') galClose(); else return; e.preventDefault(); });
+// Bấm ảnh nhỏ ở chi tiết phiếu / phiếu mượn → trình xem mới (vuốt qua các ảnh của cùng phiếu)
+{ const _vp = viewPhoto; viewPhoto = function (id) {
+  const ph = (db.photos || []).find(p => p.id === id);
+  if (!ph) return _vp.apply(this, arguments);
+  const L = photosOf(ph.txnId); galOpen(L, Math.max(0, L.indexOf(ph)), ph.txnId);
+}; }
+</script>
+<style>/* v5.66.2 */
+.gal{position:fixed;inset:0;z-index:960;background:#0b0b0c;display:none;flex-direction:column;color:#fff;user-select:none;-webkit-user-select:none}
+.gal.show{display:flex}
+body.gal-on{overflow:hidden}
+.gal-top{display:flex;align-items:flex-start;gap:10px;padding:calc(10px + env(safe-area-inset-top)) 12px 8px 16px;background:linear-gradient(#000c,#0000)}
+.gal-info{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px}.gal-info b{font-size:16px}.gal-info span{font-size:13px;color:#d6d6d6;overflow-wrap:anywhere;line-height:1.35}
+.gal-x{flex:none;width:42px;height:42px;border-radius:50%;border:none;background:rgba(255,255,255,.18);color:#fff;font-size:22px;cursor:pointer}
+.gal-stage{flex:1;min-height:0;position:relative;overflow:hidden;display:flex;align-items:center;justify-content:center;touch-action:none}
+.gal-stage img{max-width:100%;max-height:100%;object-fit:contain;transform-origin:center;transition:transform .05s linear;pointer-events:none}
+.gal-msg{position:absolute;font-size:15px;color:#ddd;text-align:center;padding:0 24px}
+.gal-nav{position:absolute;top:50%;transform:translateY(-50%);width:44px;height:64px;border:none;border-radius:10px;background:rgba(0,0,0,.45);color:#fff;font-size:34px;line-height:1;cursor:pointer}
+.gal-prev{left:8px}.gal-next{right:8px}
+.gal-bot{display:flex;flex-direction:column;align-items:center;gap:10px;padding:8px 16px calc(14px + env(safe-area-inset-bottom))}
+.gal-dots{display:flex;gap:6px;min-height:8px}.gal-dots i{width:8px;height:8px;border-radius:50%;background:#ffffff55}.gal-dots i.on{background:#fff}
+.gal-btn{border:none;border-radius:12px;background:#fff;color:#111;font:inherit;font-size:15px;font-weight:600;padding:11px 22px;cursor:pointer}
+@media (min-width:700px){.gal-nav{width:54px;height:80px}.gal-prev{left:18px}.gal-next{right:18px}}
+</style>
 </body>
 </html>
