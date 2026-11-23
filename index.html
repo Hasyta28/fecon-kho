@@ -1913,7 +1913,7 @@ body.pg-printing #pg-print{display:block;position:fixed;inset:0;z-index:9000;bac
 // ============================================================
 // CONFIG
 // ============================================================
-const APP_VERSION = '5.67.3';
+const APP_VERSION = '5.68.0';
 const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbw6Rmi80I7RI3ij2U7RdRF5pYuQTnPrwEmGmUZS5xpxzLwwVynfoFUujZe1lm6HS1ymxw/exec';
 // ============================================================
 
@@ -2391,9 +2391,10 @@ function applyServer(r) {
   let rows = r.transactions || [];
   if (r.txnCols) rows = rows.map(a => { const o = {}; r.txnCols.forEach((c, i) => o[c] = a[i]); return o; });
   if (r.txnCols) db.ctOn = r.txnCols.indexOf('ct') >= 0;   // v5.35
+  if (r.txnCols) db.doiOn = r.txnCols.indexOf('thay') >= 0;   // v5.68.0: thủ kho đổi vật tư / máy qua phiếu điều chỉnh
   if (r.txnCols) db.cbOn = r.txnCols.indexOf('cbOld') >= 0;   // v5.59.14: máy chủ cho Admin đổi người lập
   db.one = !!r.one; db.cuDone = (r.cuDone || []).map(String);   // v5.55: một tồn kho
-  rows = rows.map(t => ({...t, id:+t.id, itemId:+t.itemId, qty:+t.qty||0, refId: t.refId ? (isPycRef(String(t.refId)) ? String(t.refId) : +t.refId) : ''}));
+  rows = rows.map(t => ({...t, id:+t.id, itemId:+t.itemId, qty:+t.qty||0, thay:t.thay ? +t.thay : '', refId: t.refId ? (isPycRef(String(t.refId)) ? String(t.refId) : +t.refId) : ''}));
   const base = r.txnCols && r.txnFrom > 0 ? db.transactions.filter(t => !t._local).concat(rows) : rows;
   const ids = new Set(base.map(t => t.id));
   db.transactions = base.concat(db.transactions.filter(t => t._local && !ids.has(t.id) && t.project === P));  // giữ phiếu tạm chưa thấy trên máy chủ
@@ -4958,6 +4959,7 @@ async function buildNxtWorkbook() {
       const tm = /\d{1,2}:\d{2}/.test(t.datetime || '') ? (t.datetime.match(/\d{1,2}:\d{2}/) || [''])[0] : '';
       let note = t.type === 'dieuchinh' ? (t.reason || 'Kiểm kê') : (t.note && t.note !== t.supplierOrReceiver ? t.note : '');
       if (adj) note = [note, `Đã điều chỉnh: ghi ${fmtNum(t.qty)} → đúng ${fmtNum(q)}`].filter(Boolean).join(' · ');
+      if (t.type !== 'dieuchinh' && typeof doiMap === 'function') { const dn = doiMap()[t.id]; if (dn) note = [note, `Đổi sang phiếu #${dn.id}`].filter(Boolean).join(' · '); if (t.thay) note = [note, `Thay phiếu #${t.thay}`].filter(Boolean).join(' · '); }   // v5.68.0
       const vals = [xd(d), it?.name || t.itemName, it?.unit || t.unit, TYPE[t.type], t.type === 'dieuchinh' ? '' : (t.supplierOrReceiver || ''),
         t.thietBi || '', q, tm, note, t.createdByName || '', t.ct ? ctLbl(t.ct) + (isPycRef(t.refId) ? ' · theo ' + t.refId : '') : t.type === 'xuat' ? (isPycRef(t.refId) ? 'Theo ' + t.refId : 'Xuất thẳng') : '',
         t.type === 'xuat' && isPycRef(t.refId) ? (r0 => r0 ? AP_PLAIN(r0) : '')((db.reqs || []).find(x => x.id === t.refId)) : ''];
@@ -5102,7 +5104,7 @@ async function buildNxtWorkbook() {
       const it = itemById(t.itemId), d = parseVN(t.datetime);
       const vals = [i + 1, String(t.id), xd(d), (t.datetime || '').match(/\d{1,2}:\d{2}/)?.[0] || '', TYPE[t.type], it?.name || t.itemName,
         +t.qty, t.type === 'dieuchinh' ? null : effQty(t), it?.unit || t.unit, t.type === 'dieuchinh' ? '' : (t.supplierOrReceiver || ''),
-        t.thietBi || '', t.note || '', t.reason || '', t.refId ? String(t.refId) : '', t.createdByName || '', photosOf(t.id).length || null,
+        t.thietBi || '', t.note || '', t.reason || '', t.thay ? 'Thay #' + t.thay : t.refId ? String(t.refId) : '', t.createdByName || '', photosOf(t.id).length || null,
         t.thangCT ? `Thẳng CT · cặp #${t.thangCT}` : ''];
       vals.forEach((v, k) => ws.getCell(r, k + 1).value = v === '' ? null : v);
       ws.getCell(r, 3).numFmt = 'dd/mm/yyyy';
@@ -8284,7 +8286,7 @@ function meterLog(d) {
   const L = [];
   if (d.inMeter !== '' && d.inMeter !== undefined && d.inMeter !== null && !isNaN(+d.inMeter) && String(d.inMeter) !== '')
     L.push({t:d.inDate ? Date.parse(d.inDate) : 0, m:+d.inMeter, kind:'in', by:d.addedBy || '', date:d.inDate ? d.inDate.split('-').reverse().join('/') : ''});
-  db.transactions.filter(t => t.type === 'xuat' && t.thietBi === d.name).forEach(t => {
+  db.transactions.filter(t => t.type === 'xuat' && t.thietBi === d.name && !doiGoc(t)).forEach(t => {   // v5.68.0: bỏ phiếu đã đổi
     const dt = parseVN(t.datetime);
     L.push({id:t.id, t:dt ? dt.getTime() : 0, m:t.meter === '' || t.meter === undefined || isNaN(+t.meter) ? null : +t.meter, kind:isBrokenNote(t.meterNote) ? 'broken' : isResetNote(t.meterNote) ? 'reset' : 'fuel',
       qty:effQty(t), by:t.createdByName || '', date:String(t.datetime || '').replace(/^\d{1,2}:\d{2}(:\d{2})?\s*/, ''), note:t.meterNote || '', fuel:isDieselItem(itemById(t.itemId) || {name:t.itemName})});
@@ -11292,7 +11294,7 @@ async function devMeterAdd(devId, txnId) {
 // ---------- ngày bắt đầu hoạt động (P.QLTB ghi · lần cấp dầu đầu tiên để tham khảo) ----------
 function devFuels(d) {                                          // các lần cấp dầu của máy từ lần vào công trường hiện tại
   const m = String(d.inDate || '').match(/^(\d{4})-(\d{2})-(\d{2})/), since = m ? new Date(+m[1], m[2] - 1, +m[3]).getTime() : 0;
-  return db.transactions.filter(t => t.type === 'xuat' && t.thietBi === d.name && isDieselItem(itemById(t.itemId) || { name:t.itemName }))
+  return db.transactions.filter(t => t.type === 'xuat' && t.thietBi === d.name && !doiGoc(t) && isDieselItem(itemById(t.itemId) || { name:t.itemName }))
     .map(t => { const dt = parseVN(t.datetime); return { t, at:dt ? dt.getTime() : 0, q:effQty(t), m:t.meter === '' || t.meter === undefined || t.meter === null || isNaN(+t.meter) ? null : +t.meter, rs:isResetNote(t.meterNote) }; })
     .filter(x => x.at >= since).sort((a, b) => a.at - b.at);
 }
@@ -17536,7 +17538,7 @@ const nlItems = () => {
 const nlTime = t => { const d = parseVN(t.datetime); return d ? d.getTime() : 0; };
 function nlLast(name) {
   let best = null; if (!name) return null;
-  db.transactions.forEach(t => { if (t.type === 'xuat' && t.thietBi === name && nlTxnFuel(t) && (!best || nlTime(t) > nlTime(best))) best = t; });
+  db.transactions.forEach(t => { if (t.type === 'xuat' && t.thietBi === name && !doiGoc(t) && nlTxnFuel(t) && (!best || nlTime(t) > nlTime(best))) best = t; });
   return best;
 }
 function nlWhen(t) {
@@ -20920,7 +20922,7 @@ const nlcStockRow = (it, after, sign) => { const neg = after < -1e-9;
 // ---------- (3) lịch sử cấp của máy ----------
 let NLH_ALL = false;
 function nlhHtml(d) {
-  const T = db.transactions.filter(t => t.type === 'xuat' && t.thietBi === d.name && nlTxnFuel(t)).sort((a, b) => nlTime(b) - nlTime(a) || (+b.id) - (+a.id));
+  const T = db.transactions.filter(t => t.type === 'xuat' && t.thietBi === d.name && !doiGoc(t) && nlTxnFuel(t)).sort((a, b) => nlTime(b) - nlTime(a) || (+b.id) - (+a.id));
   const ML = {}; try { meterLog(d).list.forEach(x => { if (x.id) ML[x.id] = x; }); } catch (e) {}
   const rows = T.map(t => ({ t, ms:nlTime(t) }));
   if (NL.time) { const ms = new Date(NL.time).getTime(); if (isFinite(ms)) { let i = rows.findIndex(r => r.ms <= ms); if (i < 0) i = rows.length; rows.splice(i, 0, { cur:true, ms }); } }
@@ -20977,6 +20979,207 @@ function nlhOpen(id) { try { openTxn(id); } catch (e) { console.warn(e); } }
 .nlh-q{font-size:18px;font-weight:800;white-space:nowrap}.nlh-q small{font-size:12px;color:var(--text2)}
 .nlh-r.cur{background:#FFF8EB;border:1.5px dashed #E8A33D;cursor:default;opacity:.9}.nlh-r.cur small{color:#B54708;font-weight:700}
 .nlh-more{width:100%;border:none;background:none;color:var(--orange);font:inherit;font-weight:700;padding:6px;cursor:pointer}
+</style>
+<script>// ===== v5.68.0: PHIẾU ĐIỀU CHỈNH — ĐỔI VẬT TƯ / MÁY NHẬN KHI CHỌN NHẦM =====
+// Máy chủ 5.68.0 (cột 'thay') → db.doiOn. Đổi = phiếu điều chỉnh đưa phiếu gốc về 0 + phiếu cùng loại cho món / máy đúng, giữ ngày giờ phiếu gốc.
+// Admin vẫn Sửa / Xóa phiếu như cũ (openEditTxn) — phần này không đụng.
+let _doi = {src:null, len:-1, map:{}};
+function doiMap() {                                   // số phiếu gốc → phiếu thay
+  const tx = db.transactions;
+  if (_doi.src === tx && _doi.len === tx.length) return _doi.map;
+  const m = {}; tx.forEach(t => { if (t.thay) m[+t.thay] = t; });
+  _doi = {src:tx, len:tx.length, map:m}; return m;
+}
+function doiGoc(t) { return !!(t && doiMap()[t.id]); }   // phiếu đã được đổi sang phiếu khác (lượng = 0, bỏ khỏi đồng hồ / lịch sử cấp)
+let ADJD = null;                                      // {open, itemId, ql, dev, meter}
+function adjDoiCtx() { return adjCtx && adjCtx.mode === 'slip' && ADJD ? adjCtx.t : null; }
+function adjDoiItem() { const t = adjDoiCtx(); if (!t) return null; return ADJD.ql ? {id:0, name:ADJD.ql.name, unit:ADJD.ql.unit || 'Cái', stock:0, project:t.project} : db.items.find(i => i.id === ADJD.itemId) || null; }
+function adjDoiChanged() {
+  const t = adjDoiCtx(); if (!t || !ADJD.open) return false;
+  return !!ADJD.ql || ADJD.itemId !== t.itemId || (t.type === 'xuat' && ADJD.dev !== (t.thietBi || ''));
+}
+function adjDoiHtml() {
+  return `<div id="adj-doi-wrap" class="adjd" style="display:none">
+    <button type="button" class="adjd-tg" id="adj-doi-tg" onclick="adjDoiToggle()">🔁 Chọn nhầm vật tư / máy? <u>Bấm để đổi</u></button>
+    <div id="adj-doi" style="display:none">
+      <div class="fg"><label>Vật tư đúng</label>
+        <div class="combo"><input type="text" id="adj-it-txt" autocomplete="off" placeholder="Gõ để tìm vật tư trong kho hoặc danh mục P.QLTB" oninput="adjItInput()" onfocus="adjItInput()" onblur="setTimeout(()=>{const l=document.getElementById('adj-it-list');if(l)l.style.display='none'},200)">
+          <div class="combo-list" id="adj-it-list"></div></div>
+        <div class="combo-hint" id="adj-it-hint"></div></div>
+      <div class="fg" id="adj-dev-wrap"><label>Máy / thiết bị nhận đúng</label><select id="adj-dev" onchange="adjDevPick()"></select></div>
+      <div class="fg" id="adj-meter-wrap" style="display:none"><label id="adj-meter-lbl">Số đồng hồ của máy mới (không bắt buộc)</label><input type="number" id="adj-meter" step="any" inputmode="decimal" oninput="ADJD.meter=this.value"></div>
+    </div></div>`;
+}
+function adjDoiSetup() {
+  if (!document.getElementById('adj-doi-wrap')) document.getElementById('adj-info').insertAdjacentHTML('afterend', adjDoiHtml());
+  const t = adjCtx && adjCtx.mode === 'slip' ? adjCtx.t : null, w = document.getElementById('adj-doi-wrap');
+  ADJD = t ? {open:false, itemId:t.itemId, ql:null, dev:t.thietBi || '', meter:''} : null;
+  w.style.display = t && db.doiOn ? '' : 'none';
+  document.getElementById('adj-doi').style.display = 'none';
+  document.getElementById('adj-doi-tg').style.display = '';
+  if (!t) return;
+  const it = db.items.find(i => i.id === t.itemId);
+  document.getElementById('adj-it-txt').value = it ? it.name : (t.itemName || '');
+  document.getElementById('adj-it-hint').innerHTML = '';
+  const dw = document.getElementById('adj-dev-wrap'); dw.style.display = t.type === 'xuat' ? '' : 'none';
+  if (t.type === 'xuat') {
+    const devs = db.devices.filter(d => !d.outDate || d.name === t.thietBi).map(d => d.name);
+    if (t.thietBi && !devs.includes(t.thietBi)) devs.unshift(t.thietBi);
+    document.getElementById('adj-dev').innerHTML = '<option value="">— Không chọn thiết bị —</option>' + devs.map(n => `<option value="${escHtml(n)}" ${n === (t.thietBi || '') ? 'selected' : ''}>${escHtml(n)}</option>`).join('');
+  }
+  document.getElementById('adj-meter').value = ''; document.getElementById('adj-meter-wrap').style.display = 'none';
+}
+function adjDoiToggle() {
+  ADJD.open = true;
+  document.getElementById('adj-doi').style.display = ''; document.getElementById('adj-doi-tg').style.display = 'none';
+  adjDoiLabels(); adjPreview();
+}
+function adjDoiLabels() {
+  const t = adjCtx.t, it = adjDoiItem() || {}, ch = adjDoiChanged();
+  document.getElementById('adj-label').textContent = ch ? `Số lượng ĐÚNG (${it.unit || ''} — đơn vị của ${it.name || 'món mới'})` : 'Số lượng ĐÚNG của phiếu này (nhập 0 nếu phiếu ghi nhầm hoàn toàn)';
+  document.getElementById('adj-rlabel').textContent = ch ? 'Lý do đổi (bắt buộc)' : 'Lý do điều chỉnh (bắt buộc)';
+  document.getElementById('adj-save').textContent = ch ? '🔁 Đổi phiếu' : 'Tạo phiếu điều chỉnh';
+  const d = ADJD.dev && db.devices.find(x => x.name === ADJD.dev), mw = document.getElementById('adj-meter-wrap');
+  const showM = t.type === 'xuat' && ADJD.dev !== (t.thietBi || '') && d && d.meterUnit !== 'none';
+  mw.style.display = showM ? '' : 'none';
+  if (showM) document.getElementById('adj-meter-lbl').textContent = `Số đồng hồ ${d.meterUnit === 'km' ? '(km)' : '(giờ máy)'} của ${d.name} lúc cấp — không bắt buộc`;
+}
+function adjItInput() {
+  const t = adjCtx.t, txt = document.getElementById('adj-it-txt').value, q = normVN(txt);
+  const cur = ADJD.ql ? null : db.items.find(i => i.id === ADJD.itemId), curName = ADJD.ql ? ADJD.ql.name : cur ? cur.name : '';
+  const same = curName && normVN(curName) === q;
+  if (!same && q) { ADJD.itemId = 0; ADJD.ql = null; document.getElementById('adj-it-hint').innerHTML = '<span style="color:var(--red)">Chọn một dòng trong danh sách</span>'; adjDoiLabels(); adjPreview(); }
+  const mine = db.items.filter(i => i.project === t.project || !i.project);
+  const opt = i => `<div class="combo-opt" onmousedown="event.preventDefault()" onclick="adjItPick(${i.id})"><span>${escHtml(i.name)}</span><small>Tồn: ${fmtNum(i.stock)} ${escHtml(i.unit)}${i.maQL ? ' · 📚 ' + escHtml(i.maQL) : ''}</small></div>`;
+  const optQ = x => `<div class="combo-opt ql" onmousedown="event.preventDefault()" onclick="adjItPickQL('${escHtml(x.ma)}')"><span>📦 ${escHtml(x.name)}</span><small>${escHtml(x.ma)} · ${escHtml(x.unit || '')}</small></div>`;
+  let h = '';
+  const key = same || !q ? curName : txt;
+  const kho = mine.map(i => ({i, c:!same && q ? normVN(i.name + ' ' + (i.maQL || '')).includes(q) : false, s:key ? qlScore(key, i.name) : 0}))
+    .filter(z => same || !q ? z.i.id !== ADJD.itemId && z.s >= 0.3 : z.c || z.s >= 0.35).sort((a, b) => (b.c - a.c) || b.s - a.s).slice(0, same || !q ? 8 : 20);
+  if (cur && (same || !q)) h += `<div class="combo-head">✔ Đang chọn</div>` + opt(cur);
+  if (kho.length) h += `<div class="combo-head">📦 Vật tư trong kho dự án${same || !q ? ' gần giống' : ''}</div>` + kho.map(z => opt(z.i)).join('');
+  if (!same && q && qlOn()) {
+    const hit = qlFind(txt, 'vt', 20).filter(x => !mine.some(i => i.maQL === x.ma));
+    if (hit.length) h += `<div class="combo-head">📚 Danh mục P.QLTB</div>` + hit.map(optQ).join('');
+  }
+  if (same || !q) h += `<div class="combo-opt empty">Gõ để tìm vật tư khác (gõ không dấu, VD: nhot 40)</div>`;
+  const l = document.getElementById('adj-it-list'); l.innerHTML = h || '<div class="combo-opt empty">Không tìm thấy</div>'; l.style.display = 'block';
+}
+function adjItPick(id) {
+  const i = db.items.find(x => x.id === id); if (!i) return;
+  ADJD.itemId = id; ADJD.ql = null;
+  document.getElementById('adj-it-txt').value = i.name; document.getElementById('adj-it-list').style.display = 'none';
+  const t = adjCtx.t;
+  document.getElementById('adj-it-hint').innerHTML = id === t.itemId ? '' : `<span style="color:var(--text2)">Đơn vị: <b>${escHtml(i.unit)}</b> · tồn ${fmtNum(i.stock)}${i.unit !== adjCtx.item.unit ? ` · <b style="color:#B54708">khác đơn vị món cũ (${escHtml(adjCtx.item.unit)}) — nhập lại số lượng</b>` : ''}</span>`;
+  if (i.unit !== adjCtx.item.unit && id !== t.itemId) document.getElementById('adj-val').value = '';
+  adjDoiLabels(); adjPreview();
+}
+function adjItPickQL(ma) {
+  const x = qlByMa(ma); if (!x) return;
+  ADJD.ql = x; ADJD.itemId = 0;
+  document.getElementById('adj-it-txt').value = x.name; document.getElementById('adj-it-list').style.display = 'none';
+  document.getElementById('adj-it-hint').innerHTML = `<span style="color:var(--primary)">📚 Theo danh mục P.QLTB · ${escHtml(x.ma)} · lưu sẽ thêm vật tư này vào kho dự án (${escHtml(x.unit || '')})</span>`;
+  if ((x.unit || '') !== adjCtx.item.unit) document.getElementById('adj-val').value = '';
+  adjDoiLabels(); adjPreview();
+}
+function adjDevPick() { ADJD.dev = document.getElementById('adj-dev').value; adjDoiLabels(); adjPreview(); }
+const _adjustFromTxn568 = adjustFromTxn;
+adjustFromTxn = function () {
+  const t = db.transactions.find(x => x.id === curTxnId);
+  ADJD = null;
+  if (t && doiGoc(t)) { const n = doiMap()[t.id]; toast('⚠️ Phiếu này đã đổi sang phiếu #' + n.id + ' — mở phiếu đó để điều chỉnh'); openTxn(n.id); return; }
+  _adjustFromTxn568();
+  if (adjCtx && adjCtx.mode === 'slip' && adjCtx.t === t) adjDoiSetup(); else if (document.getElementById('adj-doi-wrap')) document.getElementById('adj-doi-wrap').style.display = 'none';
+};
+const _openCountAdjust568 = openCountAdjust;
+openCountAdjust = function (id) { ADJD = null; const w = document.getElementById('adj-doi-wrap'); if (w) w.style.display = 'none'; return _openCountAdjust568(id); };
+const _adjPreview568 = adjPreview;
+adjPreview = function () {
+  if (!adjDoiChanged()) return _adjPreview568();
+  const el = document.getElementById('adj-preview'), t = adjCtx.t, old = adjCtx.item, nw = adjDoiItem();
+  const raw = document.getElementById('adj-val').value, v = +raw;
+  if (!nw) { el.innerHTML = '<span style="color:var(--red)">Chọn vật tư đúng</span>'; return; }
+  if (raw === '' || !(v > 0)) { el.innerHTML = '<span style="color:var(--text3)">Nhập số lượng đúng (lớn hơn 0)</span>'; return; }
+  const sg = t.type === 'nhap' ? 1 : -1, back = -sg * adjCtx.cur;
+  const sameIt = !ADJD.ql && nw.id === old.id;
+  const oldAfter = r3((+old.stock || 0) + back + (sameIt ? sg * v : 0)), nwAfter = sameIt ? oldAfter : r3((+nw.stock || 0) + sg * v);
+  const ln = (it, d, after) => `<div>${escHtml(it.name)}: <b style="color:${d > 0 ? 'var(--green)' : 'var(--red)'}">${d > 0 ? '+' : ''}${fmtNum(d)} ${escHtml(it.unit)}</b> <span style="color:var(--text3)">→ còn ${fmtNum(after)}</span>${after < -1e-9 ? ' <b style="color:var(--red)">TỒN ÂM</b>' : ''}</div>`;
+  el.innerHTML = `<div class="adjd-pv"><div class="adjd-h">Sẽ lưu 2 phiếu</div>
+    <div>① Phiếu điều chỉnh đưa phiếu cũ về 0</div>${sameIt ? '' : ln(old, back, oldAfter)}
+    <div>② Phiếu ${t.type === 'nhap' ? 'nhập' : 'xuất'} mới, ngày giờ như phiếu cũ (${escHtml(t.datetime || '')})${t.type === 'xuat' && ADJD.dev !== (t.thietBi || '') ? ` · máy <b>${escHtml(ADJD.dev || '(không chọn)')}</b>` : ''}</div>${sameIt ? ln(old, r3(back + sg * v), oldAfter) : ln(nw, sg * v, nwAfter)}</div>`;
+};
+const _saveAdjust568 = saveAdjust;
+saveAdjust = async function () {
+  if (!adjDoiChanged()) return _saveAdjust568();
+  const t = adjCtx.t, old = adjCtx.item, raw = document.getElementById('adj-val').value, v = r3(+raw), reason = document.getElementById('adj-reason').value.trim();
+  if (!ADJD.ql && !db.items.some(i => i.id === ADJD.itemId)) { toast('⚠️ Chọn vật tư đúng trong danh sách gợi ý'); return; }
+  if (raw === '' || !(v > 0)) { toast('⚠️ Nhập số lượng đúng (lớn hơn 0)'); return; }
+  if (reason.length < 5) { toast('⚠️ Ghi rõ lý do đổi'); return; }
+  if (navigator.onLine === false) { toast('📴 Đổi vật tư / máy cần có mạng — thử lại khi có sóng'); return; }
+  if (t.type === 'xuat') {
+    const nw = adjDoiItem(), sameIt = !ADJD.ql && nw.id === old.id;
+    const have = sameIt ? (+old.stock || 0) + adjCtx.cur : (+nw.stock || 0);
+    if (!amAsk([{it:{...nw, stock:have}, q:v}])) { if (!amCan()) toast(`⚠️ Tồn ${nw.name} không đủ (còn ${fmtNum(have)} ${nw.unit})`); return; }
+  }
+  showLoader('Đang đổi phiếu...');
+  let itemId = ADJD.itemId;
+  if (ADJD.ql) {                                            // món theo danh mục P.QLTB chưa có trong kho dự án → thêm vào kho trước
+    const x = ADJD.ql, nk = normVN(x.name), ex = db.items.find(i => i.project === t.project && (i.maQL === x.ma || normVN(i.name) === nk));
+    if (ex) itemId = ex.id;
+    else {
+      const ni = {id:newId(), name:x.name, cat:x.cat || 'khac', unit:x.unit || 'Cái', stock:0, minStock:0, project:t.project, maQL:x.ma, ngoaiDM:''};
+      const r0 = await api('upsert', {table:'items', rows:[ni]});
+      if (!r0 || !r0.success) { hideLoader(); toast('⚠️ Không thêm được vật tư: ' + ((r0 && r0.error) || 'lỗi mạng')); return; }
+      db.items.push(ni); itemId = ni.id;
+    }
+  }
+  const idDc = newId(), idNew = idDc + 1;
+  const data = {refId:t.id, itemId, qty:v, thietBi:t.type === 'xuat' ? ADJD.dev : undefined, meter:ADJD.meter, reason, idDc, idNew, ck:'doi' + idNew};
+  const r = await api('doiPhieu', data);
+  hideLoader();
+  if (!r || !r.success) {
+    const e = String((r && r.error) || 'Lỗi mạng — thử lại');
+    toast('⚠️ ' + (/Thao tác không hợp lệ/.test(e) ? 'Máy chủ chưa cập nhật bản 5.68.0 — nhờ Admin dán Apps Script mới' : e)); return;
+  }
+  const fix = o => ({...o, _local:true, id:+o.id, itemId:+o.itemId, qty:+o.qty || 0, thay:o.thay ? +o.thay : '', meter:o.meter === '' || o.meter == null ? '' : +o.meter,
+    refId:o.refId ? (isPycRef(String(o.refId)) ? String(o.refId) : +o.refId) : ''});
+  if (r.dc && r.nw && !db.transactions.some(x => x.id === +r.nw.id)) {
+    const dc = fix(r.dc), nw = fix(r.nw);
+    db.transactions.push(dc, nw);
+    const io = db.items.find(i => i.id === dc.itemId); if (io) io.stock = Math.round(((+io.stock || 0) + dc.qty) * 100) / 100;
+    const inw = db.items.find(i => i.id === nw.itemId); if (inw) inw.stock = Math.round(((+inw.stock || 0) + (nw.type === 'nhap' ? nw.qty : -nw.qty)) * 100) / 100;
+  }
+  closeModal('modal-adjust'); updateLowBadge();
+  toast('✅ Đã đổi phiếu — phiếu mới #' + idNew);
+  refreshCurrentView(false);
+  if (db.transactions.some(x => x.id === idNew)) openTxn(idNew);
+  setTimeout(() => { try { syncAll(); } catch (e) {} }, 1500);
+};
+const _openTxn568 = openTxn;
+openTxn = function (id) {
+  _openTxn568(id);
+  const t = db.transactions.find(x => x.id === id); if (!t || curTxnId !== id) return;
+  const box = document.querySelector('#mt-body .kv-box'); if (!box) return;
+  const nw = doiMap()[t.id], og = t.thay ? db.transactions.find(x => x.id === +t.thay) : null;
+  const desc = x => { const it = db.items.find(i => i.id === x.itemId); return `${escHtml(it?.name || x.itemName || '')} ${fmtNum(x.qty)} ${escHtml(it?.unit || x.unit || '')}${x.thietBi ? ' → ' + escHtml(x.thietBi) : ''}`; };
+  let h = '';
+  if (nw) h += `<div class="kv adjd-kv"><span>🔁 Đã đổi sang</span><b><a onclick="openTxn(${nw.id})">#${nw.id} · ${desc(nw)}</a></b></div>`;
+  if (t.thay) h += `<div class="kv adjd-kv"><span>🔁 Thay cho phiếu</span><b>${og ? `<a onclick="openTxn(${og.id})">#${og.id} · ${desc(og)}</a>` : '#' + escHtml(String(t.thay))}</b></div>`;
+  if (h) box.insertAdjacentHTML('afterbegin', h);
+  if (nw) {
+    document.getElementById('mt-adjust-btn').style.display = 'none';
+    document.getElementById('mt-lock').textContent = '🔒 Phiếu này đã đổi vật tư / máy sang phiếu #' + nw.id + ' (số lượng tính về 0). Cần chỉnh tiếp: mở phiếu mới.';
+  }
+};
+</script>
+<style>/* v5.68.0 đổi vật tư / máy ở phiếu điều chỉnh */
+.adjd{margin:-2px 0 12px}
+.adjd-tg{width:100%;text-align:left;background:#F3F7FC;border:1.5px dashed #9DB8D9;border-radius:12px;padding:10px 12px;font:inherit;font-weight:700;color:var(--primary);cursor:pointer}
+.adjd-tg u{font-weight:800}
+#adj-doi{background:#F8FAFC;border:1px solid var(--border);border-radius:12px;padding:10px 12px 2px}
+.adjd-pv{background:#FFF8EB;border:1px solid #F3D29B;border-radius:12px;padding:8px 12px;line-height:1.5;font-size:14px}
+.adjd-h{font-weight:800;color:#B54708;margin-bottom:2px}
+.adjd-kv b a{color:var(--primary);text-decoration:underline;cursor:pointer}
 </style>
 </body>
 </html>
