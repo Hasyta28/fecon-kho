@@ -1,4 +1,5 @@
-// ===== FECON SOUTH - Kho Vật Tư v5.68.0 =====
+// ===== FECON SOUTH - Kho Vật Tư v5.69.0 =====
+// v5.69.0: TRẠNG THÁI MÁY GHI TAY + SỬA CHỮA / PHỤ TÙNG — ThietBi thêm cột tt, ttNote, ttBy, ttAt (setDevSt, quyền mới q_tt — mặc định PP/TP QLTB) · sheet TrangThaiMay (lịch sử đổi trạng thái) · SuaChua thêm st, pyc, parts, ptCost, doneAt, doneBy (repairOpen báo hỏng, repairDone sửa xong) · phiếu yêu cầu loại 'sc' (đề xuất phụ tùng cho 1 lần hỏng, P.QLTB duyệt được) · nhập kho món đang chờ → Telegram báo · qltbAll gửi trạng thái ghi tay + phụ tùng chờ
 // v5.68.0: ĐỔI VẬT TƯ / MÁY NHẬN QUA PHIẾU ĐIỀU CHỈNH — doiPhieu (quyền k_edit): 1 phiếu điều chỉnh đưa phiếu gốc về 0 + 1 phiếu cùng loại (nhập / xuất) cho vật tư / máy đúng, giữ ngày giờ phiếu gốc; cột mới 'thay' ở GiaoDich (số phiếu gốc)
 // v5.67.0: XUẤT ÂM — quyền mới k_am "Xuất khi tồn không đủ" (mặc định Thủ kho; Admin luôn có): qkBatch cho phiếu xuất làm tồn kho âm (mượn / trả vẫn chặn). addTxn vốn không chặn âm.
 // v5.64.0: NHỚ TÊN GỌI KHÁC — sheet TenGoiKhac (tên trên giấy / Zalo → tên vật tư trong kho), aliasSet (người có quyền nhập / xuất ghi), getAll gửi alias khi aliasRev đổi
@@ -167,7 +168,7 @@ const SESSION_DAYS   = 30;           // Đăng nhập được nhớ bao nhiêu 
 const HASH_ROUNDS    = 300;          // Số vòng băm mật khẩu
 const MAX_PENDING    = 30;           // Tối đa bao nhiêu yêu cầu chờ duyệt (chống spam)
 const TZ = 'Asia/Ho_Chi_Minh';
-const SERVER_VERSION = '5.68.0';
+const SERVER_VERSION = '5.69.0';
 const PHOTO_FOLDER_NAME = 'FECON Kho - Ảnh biên bản';
 const PHOTO_MAX_BYTES = 4 * 1024 * 1024;
 
@@ -178,11 +179,14 @@ const TABLES = {
   items:   { sheet:'TonKho',  cols:['id','name','cat','unit','stock','minStock','project','capThang','canMay','maQL','ngoaiDM','site','theoDoi'],
              head:['ID','Tên vật tư','Nhóm','Đơn vị','Tồn kho','Tối thiểu','Dự án','Cấp thẳng (1 = không cần phiếu)','Phải chọn máy (1)','Mã P.QLTB','Ngoài DM P.QLTB (1 = ngoài DM, 2 = không thuộc P.QLTB)',
                    'Ở công trường (v5.35)','Theo dõi ở công trường (1 có · 0 không · trống = theo nhóm)'] },
-  devices: { sheet:'ThietBi', cols:['id','name','cat','type','fuelRate','plate','note','project','meterUnit','inDate','inMeter','outDate','outMeter','addedBy','addedAt','maQL','ngoaiDM','donVi','startDate','startBy'],
-             head:['ID','Tên thiết bị','Nhóm','Loại hình','Định mức dầu (L/giờ)','Số hiệu / Biển số','Ghi chú','Dự án','Đồng hồ (h / km / none)','Ngày vào công trình','Số đồng hồ lúc vào','Ngày kết thúc','Số đồng hồ lúc kết thúc','Người thêm','Ngày thêm','Mã P.QLTB','Ngoài DM P.QLTB (1 = ngoài DM, 2 = không thuộc P.QLTB)','Đơn vị cho thuê (máy thuê ngoài)','Ngày bắt đầu hoạt động (P.QLTB ghi · v5.46)','Người ghi ngày hoạt động'] },
+  devices: { sheet:'ThietBi', cols:['id','name','cat','type','fuelRate','plate','note','project','meterUnit','inDate','inMeter','outDate','outMeter','addedBy','addedAt','maQL','ngoaiDM','donVi','startDate','startBy','tt','ttNote','ttBy','ttAt'],
+             head:['ID','Tên thiết bị','Nhóm','Loại hình','Định mức dầu (L/giờ)','Số hiệu / Biển số','Ghi chú','Dự án','Đồng hồ (h / km / none)','Ngày vào công trình','Số đồng hồ lúc vào','Ngày kết thúc','Số đồng hồ lúc kết thúc','Người thêm','Ngày thêm','Mã P.QLTB','Ngoài DM P.QLTB (1 = ngoài DM, 2 = không thuộc P.QLTB)','Đơn vị cho thuê (máy thuê ngoài)','Ngày bắt đầu hoạt động (P.QLTB ghi · v5.46)','Người ghi ngày hoạt động','Trạng thái ghi tay (v5.69: chua / lam / cho / hong / chopt / roi · trống = app tự tính)','Ghi chú trạng thái','Người ghi trạng thái','Lúc ghi trạng thái'] },
   devlog:  { sheet:'MayVaoRa', cols:['id','deviceId','deviceName','maQL','kind','date','meter','note','project','by','at'],
              head:['ID','ID máy','Tên máy','Mã P.QLTB','Vào / Ra (vao / ra)','Ngày','Số đồng hồ','Ghi chú','Dự án','Người ghi','Lúc ghi'] },
-  repairs: { sheet:'SuaChua', cols:['id','deviceId','date','issue','fix','cost','by','note','project','addedBy','datetime'] },
+  repairs: { sheet:'SuaChua', cols:['id','deviceId','date','issue','fix','cost','by','note','project','addedBy','datetime','st','pyc','parts','ptCost','doneAt','doneBy'],
+             head:['id','deviceId','date','issue','fix','cost','by','note','project','addedBy','datetime','Tình trạng (v5.69: mo = đang hỏng · chopt = chờ phụ tùng · xong · trống = cũ)','Phiếu đề xuất phụ tùng (PYC)','Phụ tùng đã thay (JSON)','Chi phí phụ tùng (theo Bảng giá)','Lúc sửa xong','Người bấm sửa xong'] },
+  devst:   { sheet:'TrangThaiMay', cols:['id','project','deviceId','deviceName','from','to','note','by','at','src'],
+             head:['ID','Dự án','ID máy','Tên máy','Trạng thái cũ','Trạng thái mới','Ghi chú','Người đổi','Lúc đổi','Nguồn (tay / báo hỏng / đề xuất phụ tùng / sửa xong)'] },
   notes:   { sheet:'GhiChu',  cols:['id','content','ref','addedBy','datetime','project'] }
 };
 const TXN = { sheet:'GiaoDich',
@@ -241,7 +245,7 @@ const PERM = {
   listUsers:'ql', setUserProjects:'ql', approveUser:'admin', rejectUser:'admin', updateUser:'admin', deleteUser:'admin', revokeUserSessions:'admin'
 };
 const READS = { devPhImg:1, qltbAll:1, nccScan:1, nxtPend:1, nxtReview:1, dmMismatch:1, dmFull:1, dmStock:1, dmThumbs:1, pgInfo:1, projAdmin:1, qltbList:1, verLog:1, itemCatalog:1, deviceAdminLog:1, deviceCatalog:1, backupInfo:1, listItemsOf:1, me:1, getAll:1, getVersion:1, getLog:1, listUsers:1, getPhoto:1, getSummary:1, getCost:1, getPrices:1 };
-const IDEM = { createReq:1, issueReq:1, paperReq:1, reservePyc:1, xeBatch:1, receiveReq:1, addCount:1, qkBatch:1, doiPhieu:1 };   // v5.20.3: thao tác chống ghi trùng theo mã riêng (ck)
+const IDEM = { repairOpen:1, repairDone:1, createReq:1, issueReq:1, paperReq:1, reservePyc:1, xeBatch:1, receiveReq:1, addCount:1, qkBatch:1, doiPhieu:1 };   // v5.20.3: thao tác chống ghi trùng theo mã riêng (ck)
 const NO_BUMP = { setPjLoc:1, logout:1, changePassword:1, logoutOthers:1, backupNow:1, backupSetup:1 };
 
 // ---------- CỔNG VÀO ----------
@@ -428,6 +432,9 @@ function route(action, data, token) {
       case 'dropDecide':      r = dropDecide(u, data); break;
       case 'editTxn':         r = editTxn(u, data); break;
       case 'doiPhieu':        r = doiPhieu(u, data); break;          // v5.68.0
+      case 'setDevSt':        r = setDevSt(u, data); break;          // v5.69.0
+      case 'repairOpen':      r = repairOpen(u, data); break;
+      case 'repairDone':      r = repairDone(u, data); break;
       case 'txnSetCreator':   r = txnSetCreator(u, data); break;   // v5.59.15
       case 'txnSetParty':     r = txnSetParty(u, data); break;     // v5.62.0
       case 'txnSetMay':       r = txnSetMay(u, data); break;       // v5.63.0
@@ -885,6 +892,7 @@ function getAll(u, d) {
   res.loans = S.loans; res.photos = S.photos;
   try { res.loanIn = loanInbox_(P); res.allProjects = projList(); } catch (e) { res.loanIn = []; }      // v5.40
   let reqs = S.reqs || [];
+  try { res.scReqs = reqs.filter(r => r.kind === 'sc').map(scReqLite_); } catch (e) {}   // v5.69.0: phụ tùng sửa chữa — ai xem máy cũng thấy
   if (!hasP(u, 'y_xem')) reqs = reqs.filter(r => r.createdBy === u.id);
   const ckv = props_().getProperty('ckv') || '1', bot = props_().getProperty('TG_BOT') || '';
   Object.assign(res, { reqs:reqs, cauKien:String(d.ckv || '') !== ckv ? S.ck : undefined, ckv:ckv, projCfg:projCfg_(P), kkMoc:kkMoc_(), thangDS:thangDS_(),
@@ -983,6 +991,7 @@ function addTxn(u, t0) {
   if (fx[1]) tk.getRange(i + 2, ctSiteCol_()).setValue(Math.round((siteNow + fx[1]) * 1000) / 1000);   // v5.35: ở công trường
 
   writeLog(u, TXN_LABEL[t.type], txnLogDetail(row) + (beforeMoc ? ' · ghi trước mốc kiểm kê, không đổi tồn' : ''), at);
+  if (t.type === 'nhap') { try { scArrived_(u, itemProj, String(t.itemId), itemName, qty, unit); } catch (e) {} }   // v5.69.0: phụ tùng đang chờ cho máy hỏng
   return { success:true, id:row.id, datetime:row.datetime, beforeMoc:beforeMoc };
 }
 
@@ -1041,7 +1050,7 @@ function doiPhieu(u, d0) {
 const TABLE_LABEL = { items:'vật tư', devices:'thiết bị', repairs:'sửa chữa', notes:'ghi chú' };
 function upsert(u, table, rows) {
   const T = TABLES[table];
-  if (!T || table === 'devlog') fail('Bảng không hợp lệ: ' + table);
+  if (!T || table === 'devlog' || table === 'devst') fail('Bảng không hợp lệ: ' + table);
   const sh = sheetOf(T.sheet, T.head || T.cols);
   const values = readRows(sh, T.cols.length);
   const vaoLogs = [], dlSync = [];                                          // v5.21: máy mới có ngày vào → ghi Máy vào
@@ -1063,6 +1072,7 @@ function upsert(u, table, rows) {
       if (o.maQL) o.ngoaiDM = '';
       if (table === 'devices') { const ci = T.cols.indexOf('donVi'); o.donVi = clean(String(o.donVi === undefined ? (exists ? values[i][ci] || '' : '') : o.donVi), 120); }   // v5.21.2: app cũ không gửi → giữ nguyên
       if (table === 'devices') ['startDate','startBy'].forEach(k => { const ci = T.cols.indexOf(k); if (o[k] === undefined) o[k] = exists ? fromCell(values[i][ci]) : ''; });   // v5.46.1: app cũ không gửi → giữ ngày hoạt động
+      if (table === 'devices') ['tt','ttNote','ttBy','ttAt'].forEach(k => { const ci = T.cols.indexOf(k); o[k] = exists ? fromCell(values[i][ci]) : ''; });   // v5.69.0: trạng thái chỉ đổi qua setDevSt / sửa chữa
       if (exists && oldMa !== o.maQL) qlLogs.push((table === 'devices' ? 'Máy "' : 'Vật tư "') + String(o.name || values[i][1]) + '": ' + (oldMa || '(chưa có mã)') + ' → ' + (o.maQL || (table === 'devices' ? 'ngoài danh mục' : 'không thuộc P.QLTB')) + (raw && raw.qlWhy ? ' · lý do: ' + clean(String(raw.qlWhy), 200) : ''));
     }
     if (!o.project) fail('Thiếu dự án');
@@ -1115,7 +1125,9 @@ function upsert(u, table, rows) {
       const ai = T.cols.indexOf('addedBy'), di = T.cols.indexOf('datetime');
       if (exists) { o.addedBy = values[i][ai]; o.datetime = values[i][di]; }
       else { o.addedBy = u.name; o.datetime = nowTxt(); }
-      if (table === 'repairs') o.cost = +o.cost || 0;
+      if (table === 'repairs') { o.cost = +o.cost || 0;
+        ['st','pyc','parts','ptCost','doneAt','doneBy'].forEach(k => { const ci = T.cols.indexOf(k); o[k] = exists ? fromCell(values[i][ci]) : ''; });   // v5.69.0: chỉ đổi qua repairOpen / createReq sc / repairDone
+        if (exists && String(o.st) === 'xong' && !String(o.fix || '').trim()) o.fix = values[i][T.cols.indexOf('fix')]; }
     }
     const newRow = T.cols.map(c => o[c] === undefined ? '' : o[c]);
     const label = String(o.name || o.issue || o.content || o.id).slice(0, 60);
@@ -1158,7 +1170,7 @@ function setMinStock(u, d) {
 
 function removeRows(u, table, ids) {
   const T = TABLES[table];
-  if (!T) fail('Bảng không hợp lệ: ' + table);
+  if (!T || table === 'devst' || table === 'devlog') fail('Bảng không hợp lệ: ' + table);
   const sh = sheetOf(T.sheet, T.head || T.cols);
   const set = {}; ids.forEach(id => set[String(id)] = true);
   const values = readRows(sh, T.cols.length);
@@ -2251,7 +2263,8 @@ function napExcel_(P) {
   const gone = [
     ['vật tư', wipe(TABLES.items.sheet, TABLES.items.head, TABLES.items.cols)],
     ['máy', wipe(TABLES.devices.sheet, TABLES.devices.cols, TABLES.devices.cols)],
-    ['sửa chữa', wipe(TABLES.repairs.sheet, TABLES.repairs.cols, TABLES.repairs.cols)],
+    ['sửa chữa', wipe(TABLES.repairs.sheet, TABLES.repairs.head, TABLES.repairs.cols)],
+    ['trạng thái máy', wipe(TABLES.devst.sheet, TABLES.devst.head, TABLES.devst.cols)],
     ['ghi chú', wipe(TABLES.notes.sheet, TABLES.notes.cols, TABLES.notes.cols)],
     ['phiếu', wipe(TXN.sheet, TXN.head, TXN.cols)],
     ['phiếu mượn', wipe(LOAN.sheet, LOAN.head, LOAN.cols)],
@@ -2848,6 +2861,7 @@ function nextReqId_() {
 function remain_(r) { return r.lines.reduce((a, l) => a + Math.max(0, (+l.req || 0) - (+l.sent || 0)), 0); }
 
 function createReq(u, d0) {
+  if (d0.kind === 'sc') return scCreateReq_(u, d0);            // v5.69.0: đề xuất phụ tùng sửa chữa máy
   const P = String(d0.project || ''); mustAllow(u, P);
   if (!can_(u, 'tao')) fail('Chức danh của bạn chưa được bật quyền tạo phiếu');
   const T = TABLES.items, items = readRows(sheetOf(T.sheet, T.head), T.cols.length).filter(r => r[0] !== '' && String(r[6]) === P);
@@ -2926,8 +2940,9 @@ function createReq(u, d0) {
 }
 
 function approveReq(u, d) {
-  const x = loadReq_(d.id), r = x.r; mustAllow(u, r.project);
-  if (!can_(u, 'duyet')) fail('Bạn không có quyền duyệt phiếu');
+  const x = loadReq_(d.id), r = x.r, sc = r.kind === 'sc' && hasP(u, 'q_tt');   // v5.69.0: P.QLTB duyệt phiếu phụ tùng sửa chữa
+  if (sc) scAllow_(u, r.project); else mustAllow(u, r.project);
+  if (!can_(u, 'duyet') && !sc) fail('Bạn không có quyền duyệt phiếu');
   if (r.duyet !== 'chua') return { success:true, duplicate:true, req:r };
   if (r.status === 'tuchoi' || r.status === 'huy') fail('Phiếu đã ' + REQ_ST[r.status].toLowerCase());
   const now = nowTxt(), after = r.status !== 'cho';
@@ -2939,27 +2954,31 @@ function approveReq(u, d) {
 }
 
 function rejectReq(u, d) {
-  const x = loadReq_(d.id), r = x.r; mustAllow(u, r.project);
+  const x = loadReq_(d.id), r = x.r, sc = r.kind === 'sc' && hasP(u, 'q_tt');
+  if (sc) scAllow_(u, r.project); else mustAllow(u, r.project);
   const why = clean(String(d.reason || ''), 200);
   if (!why) fail('Nhập lý do từ chối');
   if (r.status !== 'cho' || r.lines.some(l => +l.sent > 0)) fail('Chỉ từ chối được phiếu chưa cấp');
   const kho = hasP(u, 'y_giao');
-  if (!kho && !can_(u, 'duyet')) fail('Bạn không có quyền từ chối phiếu');
+  if (!kho && !can_(u, 'duyet') && !sc) fail('Bạn không có quyền từ chối phiếu');
   const now = nowTxt();
   r.status = 'tuchoi'; r.reject = shortName_(u) + ' (' + ROLE_NAME[u.role] + '): ' + why;
   r.log.push({ t:now, x:shortName_(u) + ' (' + ROLE_NAME[u.role] + ') từ chối' });
   saveReq_(x.sh, x.i, r);
+  if (r.kind === 'sc') scReqGone_(r);
   writeLog(u, 'Từ chối phiếu yêu cầu', r.id + ': ' + why);
   notify_(r.project, [], [r.createdBy], u.id, '⛔ ' + r.id + ' bị từ chối\n' + r.title + '\nLý do: ' + why);
   return { success:true, req:r };
 }
 
 function cancelReq(u, d) {
-  const x = loadReq_(d.id), r = x.r; mustAllow(u, r.project);
+  const x = loadReq_(d.id), r = x.r, sc = r.kind === 'sc' && hasP(u, 'q_tt');
+  if (sc) scAllow_(u, r.project); else mustAllow(u, r.project);
   if (r.status !== 'cho' || r.lines.some(l => +l.sent > 0)) fail('Chỉ hủy được phiếu chưa cấp');
-  if (r.createdBy !== u.id && !can_(u, 'duyet')) fail('Chỉ người lập hoặc CHT/CHP hủy được phiếu');
+  if (r.createdBy !== u.id && !can_(u, 'duyet') && !sc) fail('Chỉ người lập hoặc CHT/CHP hủy được phiếu');
   r.status = 'huy'; r.log.push({ t:nowTxt(), x:shortName_(u) + ' hủy phiếu' });
   saveReq_(x.sh, x.i, r); writeLog(u, 'Hủy phiếu yêu cầu', r.id);
+  if (r.kind === 'sc') scReqGone_(r);
   return { success:true, req:r };
 }
 
@@ -3466,7 +3485,7 @@ function copyItems(u, d) {
 // =====================================================================
 const PERMS = ['v_pyc','v_home','v_nhap','v_xuat','v_ton','v_baocao','v_stat','v_all',
   'k_nhap','k_xuat','k_edit','k_kk','k_dm','k_copy','k_loan','g_view','g_price','g_prog',
-  'y_tao','y_bs','y_duyet','y_giao','y_nhan','y_xem','x_nxt','x_pyc','k_meter','v_ver','k_thang','k_bomuon','k_hd','k_gio','k_napx','k_dnap','q_xem','k_am',
+  'y_tao','y_bs','y_duyet','y_giao','y_nhan','y_xem','x_nxt','x_pyc','k_meter','v_ver','k_thang','k_bomuon','k_hd','k_gio','k_napx','k_dnap','q_xem','k_am','q_tt',
   't_xem','t_ghi','t_qa','t_cht','t_kh','t_qs','t_qt'];                                    // v5.23: Thi công
 // v5.23: quyền Thi công mặc định theo chức danh (Admin sửa lại được trong app)
 const TC_DEF = { TS:['t_xem','t_ghi'], SE:['t_xem','t_ghi'], EE:['t_xem','t_ghi'], HSE:['t_xem','t_ghi'], PE:['t_xem','t_ghi','t_kh'],
@@ -3498,7 +3517,7 @@ function presetPerm_(code, group) {
   if (code === 'CM' || code === 'DCM') { o.y_tao = o.y_bs = o.y_duyet = o.y_nhan = 1; }
   if (code === 'ACC' || code === 'PD') o.k_meter = 0;           // v5.16: ghi giờ máy mặc định SK, DEQ, EQM, CM, DCM
   if (VER_ROLES.indexOf(code) >= 0) o.v_ver = 1;                 // v5.20.2: xem nội dung cập nhật phiên bản
-  if (code === 'DEQ' || code === 'EQM') { o.k_hd = 1; o.k_dnap = 1; o.q_xem = 1; }   // v5.59.16: Phòng QLTB   // v5.58: duyệt nạp sổ Excel              // v5.46: ghi ngày máy bắt đầu hoạt động — P.QLTB
+  if (code === 'DEQ' || code === 'EQM') { o.k_hd = 1; o.k_dnap = 1; o.q_xem = 1; o.q_tt = 1; }   // v5.59.16: Phòng QLTB   // v5.58: duyệt nạp sổ Excel              // v5.46: ghi ngày máy bắt đầu hoạt động — P.QLTB
   (TC_DEF[code] || (group === 'ga' ? PERMS.filter(k => k.indexOf('t_') === 0) : ['t_xem'])).forEach(k => o[k] = 1);   // v5.23
   return o;
 }
@@ -3544,6 +3563,10 @@ function rolesAll_() {
     if (r.SK) r.SK.perm.k_thang = 1;
     jset_('roles515', r); props_().setProperty('perm5220', '1');
   }
+  if (!props_().getProperty('perm5690')) {                      // v5.69.0: đổi trạng thái máy · duyệt phụ tùng sửa chữa — mặc định PP/TP QLTB
+    ['DEQ','EQM'].forEach(k => { if (r[k]) r[k].perm.q_tt = 1; });
+    jset_('roles515', r); props_().setProperty('perm5690', '1');
+  }
   if (!props_().getProperty('perm5670')) {                      // v5.67.0: xuất khi tồn không đủ (tồn âm, nhập bù sau) — mặc định Thủ kho
     if (r.SK) r.SK.perm.k_am = 1;
     jset_('roles515', r); props_().setProperty('perm5670', '1');
@@ -3578,7 +3601,8 @@ const P_ = k => u => hasP(u, k);
 const ACT = {
   aliasSet:u => ADM(u) || hasP(u, 'k_nhap') || hasP(u, 'k_xuat'),   // v5.64.0: nhớ tên gọi khác
   devPhoto:u => devPhCan_(u), devPhImg:ANY,                       // v5.60.0: ảnh máy
-  qltbAll:u => ADM(u) || hasP(u, 'q_xem'), setPjLoc:ADM,          // v5.59.16: Phòng QLTB
+  qltbAll:u => ADM(u) || hasP(u, 'q_xem'), setPjLoc:ADM,
+  setDevSt:u => ADM(u) || hasP(u, 'q_tt'), repairOpen:u => scCan_(u), repairDone:u => scCan_(u),   // v5.69.0          // v5.59.16: Phòng QLTB
   me:ANY, getAll:ANY, getVersion:ANY, logout:ANY, changePassword:ANY, getPhoto:ANY, tgUnlink:ANY, tgTest:ANY, logoutOthers:ANY,
   addTransaction:(u, d) => hasP(u, d.type === 'nhap' ? 'k_nhap' : d.type === 'xuat' ? 'k_xuat' : 'k_edit'),
   addThang:P_('k_thang'), setThangDS:ADM, qkBatch:u => hasP(u, 'k_nhap') || hasP(u, 'k_xuat'), setDanhMuc:ADM, setCats:ADM, setStandIn:ADM, siFix:ADM, dmMismatch:ADM, dmFixCats:ADM, thangClean:ADM, siteClean:ADM, devLogEdit:ADM, devLogDups:ADM, dmFull:ANY, dmStock:ANY, dmThumbs:ANY, dmImgSet:ADM, dmImgDel:ADM, dmImgFind:ADM, dmPhoto:u => ADM(u) || hasP(u, 'k_nhap') || hasP(u, 'k_xuat'), projAdmin:ADM, projRename:ADM, projDelete:ADM, projClose:ADM, setUnits:ADM, hongAdd:u => hasP(u, 'k_nhap') || hasP(u, 'k_xuat'), hongSet:u => hasP(u, 'k_nhap') || hasP(u, 'k_xuat'), hongMove:u => hasP(u, 'k_nhap') || hasP(u, 'k_xuat'), cuMark:u => hasP(u, 'k_nhap') || hasP(u, 'k_xuat'), setGioMax:ADM,
@@ -3595,7 +3619,7 @@ const ACT = {
   getSummary:P_('v_all'), getCost:u => hasP(u, 'g_view'), getPrices:u => hasP(u, 'g_view'),
   setPrice:P_('g_price'), setProgress:P_('g_prog'),
   remove:u => hasP(u, 'k_dm') || ADM(u), updateProjects:ADM, getLog:ADM,
-  createReq:P_('y_tao'), approveReq:P_('y_duyet'), rejectReq:u => hasP(u, 'y_giao') || hasP(u, 'y_duyet'), cancelReq:ANY, receiveReq:ANY,
+  createReq:u => hasP(u, 'y_tao') || scCan_(u), approveReq:u => hasP(u, 'y_duyet') || hasP(u, 'q_tt'), rejectReq:u => hasP(u, 'y_giao') || hasP(u, 'y_duyet') || hasP(u, 'q_tt'), cancelReq:ANY, receiveReq:ANY,
   issueReq:P_('y_giao'), reservePyc:pgCanPrint_, paperReq:P_('y_giao'), paperCancel:u => ADM(u) || hasP(u, 'y_duyet'), paperUndo:ADM, xeBatch:u => hasP(u, 'k_nhap') || hasP(u, 'k_xuat'), setXeTypes:ADM, pgInfo:ANY,
   closeDevice:P_('k_meter'), addCount:P_('k_kk'), listItemsOf:ADM, copyItems:ADM, purgeUnused:ADM,
   deviceCatalog:u => hasP(u, 'k_dm') || u.role === 'ADM', itemCatalog:u => hasP(u, 'k_dm') || u.role === 'ADM', purgeItems:ADM, setTxnMeter:u => ADM(u) || hasP(u, 'k_xuat') || hasP(u, 'k_meter'), deviceAdminLog:ADM, verLog:P_('v_ver'), qltbSave:ADM, qltbList:ANY,
@@ -3947,6 +3971,132 @@ function setDevStart(u, d) {                                    // v5.46: P.QLTB
   sh.getRange(i + 2, c('startDate')).setValue(toCell(v)); sh.getRange(i + 2, c('startBy')).setValue(v ? toCell(u.name) : '');
   writeLog(u, 'Ghi ngày máy bắt đầu hoạt động', String(rows[i][1]) + ' · ' + (v || '(xóa)'));
   return { success:true };
+}
+// ===== v5.69.0: TRẠNG THÁI MÁY GHI TAY + SỬA CHỮA / PHỤ TÙNG =====
+// tt: chua Chưa hoạt động · lam Đang làm · cho Chờ việc · hong Hỏng / đang sửa · chopt Chờ phụ tùng · roi Chờ rời công trình · '' = app tự tính.
+// Đổi tay: Admin / q_tt (P.QLTB). Báo hỏng → hong · đề xuất phụ tùng → chopt · sửa xong → trạng thái người bấm chọn. Mỗi lần đổi ghi 1 dòng TrangThaiMay.
+const DEV_TT = { chua:'Chưa hoạt động', lam:'Đang làm', cho:'Chờ việc', hong:'Hỏng / đang sửa', chopt:'Chờ phụ tùng', roi:'Chờ rời công trình' };
+function scCan_(u) { return ADM(u) || ['q_tt','k_hd','k_dm','k_meter'].some(k => hasP(u, k)); }
+function scAllow_(u, P) {                                        // P.QLTB (q_xem + q_tt) làm được ở mọi dự án; người khác theo dự án được giao
+  if (ADM(u) || (hasP(u, 'q_xem') && hasP(u, 'q_tt'))) { if (PJ_W && pjIsClosed_(P)) fail('Dự án "' + P + '" đã đóng — chỉ xem, không ghi được.'); return; }
+  mustAllow(u, P);
+}
+function devRow_(id) {
+  const T = TABLES.devices, sh = sheetOf(T.sheet, T.head), rows = readRows(sh, T.cols.length);
+  const i = rows.findIndex(r => String(r[0]) === String(id)); if (i < 0) fail('Không tìm thấy máy');
+  return { T:T, sh:sh, i:i, r:rows[i], c:k => T.cols.indexOf(k) + 1, get:k => fromCell(rows[i][T.cols.indexOf(k)]) };
+}
+function devTtSet_(u, x, tt, note, src) {                        // ghi trạng thái + lịch sử
+  const from = String(x.get('tt') || ''), now = nowTxt(), nm = String(x.r[1]), P = String(x.get('project'));
+  x.sh.getRange(x.i + 2, x.c('tt'), 1, 4).setValues([[toCell(tt), toCell(note), toCell(tt ? u.name : ''), toCell(tt ? now : '')]]);
+  const H = TABLES.devst, row = { id:String(Date.now()) + String(Math.floor(Math.random() * 1000)).padStart(3, '0'), project:P, deviceId:String(x.r[0]), deviceName:nm,
+    from:from, to:tt, note:note, by:u.name, at:now, src:src };
+  sheetOf(H.sheet, H.head).appendRow(H.cols.map(k => toCell(row[k])));
+  try { CacheService.getScriptCache().remove('qltbAll'); } catch (e) {}
+  return { id:String(x.r[0]), tt:tt, ttNote:note, ttBy:tt ? u.name : '', ttAt:tt ? now : '', h:row };
+}
+function setDevSt(u, d) {
+  const x = devRow_(d.id), P = String(x.get('project')); scAllow_(u, P);
+  const tt = String(d.tt || ''); if (tt && !DEV_TT[tt]) fail('Trạng thái không hợp lệ');
+  if (String(x.get('outDate') || '')) fail('Máy đã kết thúc ở dự án — không đổi trạng thái');
+  const note = clean(String(d.note || ''), 200);
+  const o = devTtSet_(u, x, tt, note, 'tay');
+  writeLog(u, 'Đổi trạng thái máy', String(x.r[1]) + ' · ' + (DEV_TT[tt] || 'tự tính') + (note ? ' · ' + note : ''));
+  return { success:true, dev:o };
+}
+function repSheet_() { const T = TABLES.repairs; return { T:T, sh:sheetOf(T.sheet, T.head) }; }
+function repairOpen(u, d) {                                       // báo hỏng: 1 lần hỏng mới, máy → Hỏng / đang sửa
+  const x = devRow_(d.deviceId), P = String(x.get('project')); scAllow_(u, P);
+  if (String(x.get('outDate') || '')) fail('Máy đã kết thúc ở dự án');
+  const issue = clean(String(d.issue || ''), 300); if (issue.length < 3) fail('Ghi rõ máy hỏng gì');
+  const date = /^\d{4}-\d{2}-\d{2}$/.test(String(d.date || '')) ? String(d.date) : Utilities.formatDate(new Date(), TZ, 'yyyy-MM-dd');
+  const R = repSheet_(), id = String(d.id || '') || String(Date.now());
+  if (readRows(R.sh, 1).some(r => String(r[0]) === id)) return { success:true, duplicate:true };
+  const o = { id:+id || id, deviceId:+x.r[0] || String(x.r[0]), date:date, issue:issue, fix:'', cost:0, by:'', note:clean(String(d.note || ''), 300), project:P, addedBy:u.name, datetime:nowTxt(),
+    st:'mo', pyc:'', parts:'', ptCost:'', doneAt:'', doneBy:'' };
+  R.sh.appendRow(R.T.cols.map(k => toCell(o[k])));
+  const dv = devTtSet_(u, x, 'hong', issue.slice(0, 120), 'báo hỏng');
+  writeLog(u, 'Báo hỏng máy', String(x.r[1]) + ' · ' + issue);
+  notify_(P, ['q_tt'], [], u.id, '🔧 MÁY HỎNG: ' + String(x.r[1]) + '\n' + issue + '\nNgười báo: ' + u.name);
+  return { success:true, repair:o, dev:dv };
+}
+function repLoad_(id) {
+  const R = repSheet_(), rows = readRows(R.sh, R.T.cols.length), i = rows.findIndex(r => String(r[0]) === String(id));
+  if (i < 0) fail('Không tìm thấy lần hỏng');
+  return Object.assign(R, { i:i, o:rowToObj(R.T.cols, rows[i]) });
+}
+function repSave_(R) { R.sh.getRange(R.i + 2, 1, 1, R.T.cols.length).setValues([R.T.cols.map(k => toCell(R.o[k] === undefined ? '' : R.o[k]))]); }
+function scAllReqs_(P) { return readTable_(REQ, P).map(reqOut_).filter(r => r.kind === 'sc'); }
+function scReqLite_(r) {
+  return { id:r.id, p:r.project, rep:String(r.ckId || '').replace(/^SC\|/, ''), may:r.may, status:r.status, duyet:r.duyet, duyetBy:r.duyetBy, by:r.createdByName, at:r.datetime, note:r.note,
+    lines:(r.lines || []).map(l => ({ itemId:String(l.itemId), itemName:String(l.itemName), unit:String(l.unit), req:+l.req || 0, sent:+l.sent || 0 })) };
+}
+// d: { repairId, lines:[{ itemId | name, unit, cat, ma, qty }], note }
+function scCreateReq_(u, d0) {
+  const R = repLoad_(d0.repairId), rep = R.o, P = String(rep.project); scAllow_(u, P);
+  if (String(rep.st) === 'xong') fail('Lần hỏng này đã sửa xong');
+  const x = devRow_(rep.deviceId);
+  const T = TABLES.items, tk = sheetOf(T.sheet, T.head), items = readRows(tk, T.cols.length).filter(r => r[0] !== '' && String(r[6]) === P);
+  const src = Array.isArray(d0.lines) ? d0.lines.slice(0, 30) : [], lines = [], seen = {}, now = nowTxt();
+  src.forEach((l, k) => {
+    const q = Math.round((+l.qty || 0) * 1000) / 1000; if (!(q > 0)) fail('Dòng ' + (k + 1) + ': số lượng phải lớn hơn 0');
+    let it = l.itemId ? items.find(r => String(r[0]) === String(l.itemId)) : null;
+    const nm = clean(String(l.name || ''), 120);
+    if (!it && nm) it = items.find(r => normName_(r[1]) === normName_(nm));
+    if (!it) {                                                   // món chưa có ở kho dự án → thêm (tồn 0) để thủ kho nhập về
+      if (nm.length < 2) fail('Dòng ' + (k + 1) + ': ghi tên linh kiện, phụ tùng');
+      const o = { id:Date.now() * 10 + k, name:nm, cat:clean(String(l.cat || 'khac'), 40), unit:clean(String(l.unit || ''), 20) || 'Cái', stock:0, minStock:0, project:P,
+        capThang:0, canMay:0, maQL:'', ngoaiDM:'', site:0, theoDoi:'' };
+      it = T.cols.map(c => o[c] === undefined ? '' : o[c]); tk.appendRow(it.map(toCell)); items.push(it);
+      writeLog(u, 'Thêm vật tư', nm + ' · từ đề xuất phụ tùng sửa chữa');
+    }
+    if (seen[String(it[0])]) fail('"' + it[1] + '" ghi 2 lần — gộp số lượng vào 1 dòng');
+    seen[String(it[0])] = 1;
+    const ma = clean(String(l.ma || ''), 60);
+    lines.push({ itemId:it[0], itemName:String(it[1]), unit:String(it[3]), req:q, sent:0, br:'Sửa chữa' + (ma ? ' · mã PT ' + ma : '') });
+  });
+  if (!lines.length) fail('Thêm ít nhất 1 linh kiện, phụ tùng');
+  const auto = hasP(u, 'y_duyet') || hasP(u, 'q_tt'), nm = String(x.r[1]);
+  const r = { id:nextReqId_(), project:P, kind:'sc', ckId:'SC|' + rep.id, ckName:'Sửa chữa: ' + String(rep.issue).slice(0, 60), may:nm, title:'Phụ tùng sửa chữa · ' + nm,
+    lines:lines, opt:null, bs:null, note:clean(String(d0.note || ''), 300), status:'cho', duyet: auto ? 'tudong' : 'chua', duyetBy:'', duyetAt:'', reject:'',
+    createdBy:u.id, createdByName:u.name, createdRole:u.role, datetime:now, clientTime:String(d0.clientTime || '').slice(0, 40),
+    log:[{ t:now, x:shortName_(u) + ' (' + (ROLE_NAME[u.role] || u.role) + ') đề xuất phụ tùng sửa chữa' + (auto ? ' · không cần duyệt' : '') }], test:'' };
+  const sh = reqSheet_(); saveReq_(sh, readRows(sh, 1).length, r);
+  rep.pyc = String(rep.pyc || '').split(',').filter(Boolean).concat([r.id]).join(','); rep.st = 'chopt'; repSave_(R);
+  const dv = devTtSet_(u, x, 'chopt', r.id + ' · ' + lines.map(l => l.itemName).join(', ').slice(0, 150), 'đề xuất phụ tùng');
+  writeLog(u, 'Đề xuất phụ tùng sửa chữa', r.id + ' · ' + nm + ' · ' + lines.map(l => l.itemName + ' ' + l.req).join(', '));
+  notify_(P, ['y_giao', 'q_tt'].concat(auto ? [] : ['y_duyet']), [], u.id, '🔩 ĐỀ XUẤT PHỤ TÙNG ' + r.id + '\nMáy: ' + nm + '\nHỏng: ' + rep.issue + '\n' +
+    lines.map(l => l.itemName + ': ' + l.req + ' ' + l.unit).join('\n') + '\nNgười đề xuất: ' + u.name + (auto ? '' : '\n⚠ Chờ duyệt (CHT/CHP hoặc P.QLTB)'));
+  return { success:true, req:r, repair:rep, dev:dv };
+}
+function scReqGone_(r) {                                         // phiếu phụ tùng bị huỷ / từ chối: lần hỏng không còn phiếu nào mở → về "đang hỏng"
+  try { const R = repLoad_(String(r.ckId).replace(/^SC\|/, '')); if (String(R.o.st) !== 'chopt') return;
+    const open = scAllReqs_(R.o.project).filter(q => String(q.ckId) === String(r.ckId) && q.id !== r.id && q.status !== 'huy' && q.status !== 'tuchoi');
+    if (!open.length) { R.o.st = 'mo'; repSave_(R); }
+  } catch (e) {}
+}
+function scArrived_(u, P, itemId, name, qty, unit) {             // nhập kho món đang chờ cho máy hỏng → Telegram
+  const W = scAllReqs_(P).filter(r => (r.status === 'cho' || r.status === 'chohang' || r.status === 'gui') && r.lines.some(l => String(l.itemId) === itemId && (+l.req || 0) > (+l.sent || 0)));
+  W.forEach(r => notify_(P, ['q_tt', 'y_giao'], [String(r.createdBy)], u.id, '📦 PHỤ TÙNG ĐÃ VỀ: ' + name + ' +' + qty + ' ' + unit + '\nCho máy ' + r.may + ' (' + r.id + ')\nThủ kho giao theo phiếu để thay.'));
+}
+// sửa xong: { id, fix, cost, by, note, next: lam / cho / chua }
+function repairDone(u, d) {
+  const R = repLoad_(d.id), rep = R.o, P = String(rep.project); scAllow_(u, P);
+  if (String(rep.st) === 'xong') return { success:true, duplicate:true, repair:rep };
+  const fix = clean(String(d.fix || ''), 300); if (fix.length < 3) fail('Ghi đã sửa / thay gì');
+  const next = ['lam', 'cho', 'chua'].indexOf(String(d.next)) >= 0 ? String(d.next) : 'cho';
+  const pr = loadPrices_(P), day = costDay_(nowTxt()), parts = []; let ptCost = 0;
+  scAllReqs_(P).filter(q => String(q.ckId) === 'SC|' + String(rep.id) && q.status !== 'huy' && q.status !== 'tuchoi').forEach(q => q.lines.forEach(l => {
+    if (!(+l.sent > 0)) return; const price = priceAt_(pr[String(l.itemId)], day);
+    parts.push({ pyc:q.id, itemId:String(l.itemId), name:String(l.itemName), unit:String(l.unit), qty:+l.sent, price:price }); ptCost += Math.round(price * (+l.sent || 0));
+  }));
+  Object.assign(rep, { fix:fix, cost:Math.max(0, Math.round(+d.cost || 0)), by:clean(String(d.by || ''), 120), note:clean(String(d.note || rep.note || ''), 300),
+    st:'xong', parts:JSON.stringify(parts), ptCost:ptCost || '', doneAt:nowTxt(), doneBy:u.name });
+  repSave_(R);
+  const x = devRow_(rep.deviceId);
+  const dv = String(x.get('outDate') || '') ? null : devTtSet_(u, x, next, 'Sửa xong: ' + fix.slice(0, 120), 'sửa xong');
+  writeLog(u, 'Sửa xong máy', String(x.r[1]) + ' · ' + fix + (parts.length ? ' · thay ' + parts.map(p => p.name + ' ' + p.qty).join(', ') : ''));
+  return { success:true, repair:rep, dev:dv };
 }
 function deviceAdminLog(u, d) {
   const name = String(d.name || ''); if (!name) return { success:true, rows:[] };
@@ -4838,7 +4988,7 @@ function pjMapData_(data) {                                       // tên cũ �
 }
 // Các bảng có cột Dự án (Kho + Thi công + Giải động). Bảng Thi công / Giải động nằm ở tệp thicong.gs cùng dự án Apps Script.
 function pjTables_() {
-  const L = [['Vật tư', TABLES.items], ['Máy / thiết bị', TABLES.devices], ['Máy vào / ra', TABLES.devlog], ['Sửa chữa', TABLES.repairs], ['Ghi chú', TABLES.notes],
+  const L = [['Vật tư', TABLES.items], ['Máy / thiết bị', TABLES.devices], ['Máy vào / ra', TABLES.devlog], ['Sửa chữa', TABLES.repairs], ['Trạng thái máy', TABLES.devst], ['Ghi chú', TABLES.notes],
     ['Phiếu nhập / xuất', TXN], ['Phiếu mượn', LOAN], ['Ảnh biên bản', PHOTO], ['Bảng giá', PRICE], ['Hạng mục', HANGMUC], ['Kế hoạch', PLAN],
     ['Phiếu yêu cầu', REQ], ['Cấu kiện (Kho)', CK]];
   if (typeof TC_CK !== 'undefined') L.push(['Thi công: cấu kiện', TC_CK], ['Thi công: bản ghi', TC_REC], ['Thi công: ảnh', TC_PH], ['Thi công: cấu hình', TC_CF]);
@@ -5372,7 +5522,7 @@ function nxtCancel(u, d) {
 // Xoá các dòng có cột Dự án = P ở: vật tư, máy, máy vào/ra, sửa chữa, ghi chú, phiếu nhập/xuất, phiếu mượn, ảnh biên bản, bảng giá, phiếu YC, phiếu giấy, giải động, báo hỏng, đợt nạp Excel.
 // Giữ: Thi công (TC_*), cấu kiện kho, hạng mục, kế hoạch, cài đặt dự án, người đứng tên, tài khoản được giao. Trước khi xoá: sao lưu cả file + file "Lưu trữ" chứa đúng các dòng bị xoá.
 function pjWipeTables_() {
-  const L = [['Vật tư', TABLES.items], ['Máy / thiết bị', TABLES.devices], ['Máy vào / ra', TABLES.devlog], ['Sửa chữa', TABLES.repairs], ['Ghi chú', TABLES.notes],
+  const L = [['Vật tư', TABLES.items], ['Máy / thiết bị', TABLES.devices], ['Máy vào / ra', TABLES.devlog], ['Sửa chữa', TABLES.repairs], ['Trạng thái máy', TABLES.devst], ['Ghi chú', TABLES.notes],
     ['Phiếu nhập / xuất', TXN], ['Phiếu mượn', LOAN], ['Ảnh biên bản', PHOTO], ['Bảng giá', PRICE], ['Phiếu yêu cầu', REQ], ['Phiếu giấy (mã QR)', PG], ['Báo hỏng', HONG], ['Đợt nạp Excel', NAP]];
   if (typeof GD !== 'undefined') L.push(['Danh sách giải động', GD]);
   return L.map(x => ({ label:x[0], sheet:x[1].sheet, pc:x[1].cols.indexOf('project') })).filter(x => x.pc >= 0);
@@ -5465,13 +5615,14 @@ function qltbBuild_() {
   const items = readRows(sheetOf(TI.sheet, TI.head), TI.cols.length).filter(r => r[0] !== '' && String(r[1]) !== '').map(r => [String(r[ci('project')]), String(r[0]), String(r[1]), String(r[ci('cat')]), String(r[ci('unit')]),
     Math.round((+r[ci('stock')] || 0) * 1000) / 1000, Math.round((+r[ci('site')] || 0) * 1000) / 1000, +r[ci('minStock')] || 0, String(r[ci('maQL')] || ''), String(r[ci('ngoaiDM')] || '')]).filter(r => r[5] > 0 || r[6] > 0);
   // hoạt động gần nhất của từng máy (phiếu xuất ghi tên máy): ngày phiếu cuối + ngày giờ máy tăng lần cuối
-  const act = {};
+  const act = {}, scR = scAllReqs_(), scIds = {}; scR.forEach(r => scIds[r.id] = 1);
   try {
     const sh = ss.getSheetByName(TXN.sheet), n = sh ? sh.getLastRow() - 1 : 0;
     if (n > 0) {
       const c = k => TXN.cols.indexOf(k), w = c('xe') + 1, V = sh.getRange(2, 1, n, Math.min(w, sh.getLastColumn())).getValues();
       V.forEach(r => {
         if (String(r[c('type')]) !== 'xuat' || !String(r[c('thietBi')] || '')) return;
+        if (scIds[String(r[c('refId')] || '')]) return;                 // v5.69.0: xuất phụ tùng sửa chữa không tính là máy đang làm
         const dt = r[c('datetime')] instanceof Date ? r[c('datetime')] : txtDate_(r[c('datetime')]); if (!dt) return;
         const k = String(r[c('project')]) + '|' + String(r[c('thietBi')]), ms = dt.getTime(), m = r[c('meter')] === '' || isNaN(+r[c('meter')]) ? null : +r[c('meter')];
         const o = act[k] || (act[k] = { last:0, up:0, ms:[] });
@@ -5487,6 +5638,7 @@ function qltbBuild_() {
     const p = String(r[cd('project')]), nm = String(r[1]), a = act[p + '|' + nm] || {};
     return { p:p, id:String(r[0]), name:nm, cat:String(r[cd('cat')]), type:String(r[cd('type')] || 'own'), plate:String(r[cd('plate')] || ''), maQL:String(r[cd('maQL')] || ''),
       donVi:String(r[cd('donVi')] || ''), meterUnit:String(r[cd('meterUnit')] || 'h'), inDate:day(r[cd('inDate')]), startDate:day(r[cd('startDate')]),
+      tt:String(r[cd('tt')] || ''), ttNote:String(r[cd('ttNote')] || ''), ttBy:String(r[cd('ttBy')] || ''), ttAt:String(fromCell(r[cd('ttAt')]) || ''),   // v5.69.0
       last:a.last || 0, up:a.up || 0, meter:a.meter === undefined || a.meter === null ? '' : a.meter };
   });
   try { const PH = devPhAll_(); if (PH.length) devices.forEach(o => { const x = devPhOf_(PH, o.id, o.name, o.maQL, o.cat); if (x) o.ph = x.th; }); } catch (e) {}   // v5.61.0: ảnh máy
@@ -5499,8 +5651,8 @@ function qltbBuild_() {
   let repairs = [];
   try { const TR = TABLES.repairs, cr = k => TR.cols.indexOf(k), lim = Date.now() - 60 * 864e5;
     const shR = ss.getSheetByName(TR.sheet);
-    repairs = (shR ? readRows(shR, TR.cols.length) : []).filter(r => r[0] !== '' && String(r[cr('issue')] || '') && !String(r[cr('fix')] || '')).map(r => [String(r[cr('deviceId')]), String(r[cr('project')]), day(r[cr('date')]), String(r[cr('issue')]).slice(0, 80)])
-      .filter(x => { const t = Date.parse(x[2]); return !t || t >= lim; });
+    repairs = (shR ? readRows(shR, TR.cols.length) : []).filter(r => r[0] !== '' && String(r[cr('issue')] || '') && String(r[cr('st')] || '') !== 'xong' && (String(r[cr('st')] || '') || !String(r[cr('fix')] || ''))).map(r => [String(r[cr('deviceId')]), String(r[cr('project')]), day(r[cr('date')]), String(r[cr('issue')]).slice(0, 80), String(r[cr('st')] || ''), String(r[0])])
+      .filter(x => x[4] || (() => { const t = Date.parse(x[2]); return !t || t >= lim; })());   // v5.69.0: lần hỏng mới (có tình trạng) không hết hạn 60 ngày
   } catch (e) {}
   // báo hỏng vật tư / thiết bị phụ trợ đang mở
   let hong = [];
@@ -5512,7 +5664,12 @@ function qltbBuild_() {
   try { if (typeof gdRead_ === 'function') gdRead_().rows.forEach(r => (r.hist || []).forEach(h => {
     if ((h.h === 'da' || h.h === 'kho') && h.dest && h.dest !== r.project && (+h.q || 0) > (+h.recv || 0)) transit.push({ from:r.project, to:h.dest, ma:String(r.ma || ''), name:String(r.name || ''), unit:String(r.unit || ''), q:Math.round(((+h.q || 0) - (+h.recv || 0)) * 1000) / 1000, date:String(h.date || '') });
   })); } catch (e) {}
-  return { kho:kho, at:at, loc:pjLocAll_(), items:items, devices:devices, devlog:devlog, repairs:repairs, hong:hong, transit:transit };
+  // v5.69.0: phiếu đề xuất phụ tùng sửa chữa chưa xong + tồn hiện có từng món
+  let sc = [];
+  try { const stk = {}; readRows(sheetOf(TI.sheet, TI.head), TI.cols.length).forEach(r => { if (r[0] !== '') stk[String(r[0])] = +r[ci('stock')] || 0; });
+    sc = scR.filter(r => r.status !== 'huy' && r.status !== 'tuchoi' && r.status !== 'xong').map(r => Object.assign(scReqLite_(r), { lines:r.lines.map(l => ({ itemId:String(l.itemId), itemName:String(l.itemName), unit:String(l.unit), req:+l.req || 0, sent:+l.sent || 0, stock:stk[String(l.itemId)] || 0 })) }));
+  } catch (e) {}
+  return { kho:kho, at:at, loc:pjLocAll_(), items:items, devices:devices, devlog:devlog, repairs:repairs, hong:hong, transit:transit, sc:sc, scOn:1 };
 }
 
 // ===== v5.60.0 — ẢNH THẬT CỦA MÁY (màn Cấp nhiên liệu) =====
@@ -5594,6 +5751,8 @@ function devPhImg(u, d) {                                        // trả ảnh 
 }
 
 const VER_LOG = [
+ { v:'5.69.0', d:'24/11/2026', type:'new', title:'Trạng thái máy ghi tay · Báo hỏng → đề xuất phụ tùng → sửa xong', who:'P.QLTB · Admin · Đội máy · Thủ kho',
+   sum:['Chi tiết máy và Phòng QLTB: nút Đổi trạng thái (Chưa hoạt động, Đang làm, Chờ việc, Hỏng / đang sửa, Chờ phụ tùng, Chờ rời công trình) — Admin và người có quyền mới "Đổi trạng thái máy" (mặc định PP/TP QLTB)','Trạng thái ghi tay được ưu tiên; máy chưa ai ghi vẫn tự tính, kèm chữ (tự tính). Lịch sử đổi trạng thái lưu ở máy và file Excel','Máy hỏng: Báo hỏng → Đề xuất linh kiện, phụ tùng (phiếu yêu cầu, P.QLTB hoặc CHT duyệt) → thủ kho nhập về, app báo đã về → giao theo phiếu → Sửa xong','Lịch sử bảo trì sửa chữa theo từng lần hỏng: phụ tùng đã thay, số phiếu, chi phí phụ tùng theo Bảng giá + chi phí khác'] },
  { v:'5.68.0', d:'23/11/2026', type:'new', title:'Phiếu điều chỉnh: đổi vật tư / máy nhận khi chọn nhầm', who:'Thủ kho',
    sum:['Mở phiếu nhập / xuất → Tạo phiếu điều chỉnh → "Chọn nhầm vật tư / máy?" → chọn món đúng, máy nhận đúng, số lượng','App tự lập phiếu điều chỉnh đưa phiếu cũ về 0 và phiếu mới cho món / máy đúng, giữ ngày giờ phiếu cũ','Báo cáo nhiên liệu theo máy, sổ nhập xuất, BM05 tính theo phiếu mới; phiếu cũ vẫn còn để xem lại','Admin vẫn sửa / xóa phiếu như trước'] },
  { v:'5.67.0', d:'22/11/2026', type:'new', title:'Xuất khi tồn không đủ (tồn âm) · Cần nhập bù · ghi chú Kiểm tra tồn kho', who:'Thủ kho · Admin',
