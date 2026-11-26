@@ -1913,7 +1913,7 @@ body.pg-printing #pg-print{display:block;position:fixed;inset:0;z-index:9000;bac
 // ============================================================
 // CONFIG
 // ============================================================
-const APP_VERSION = '5.69.0';
+const APP_VERSION = '5.71.0';
 const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbw6Rmi80I7RI3ij2U7RdRF5pYuQTnPrwEmGmUZS5xpxzLwwVynfoFUujZe1lm6HS1ymxw/exec';
 // ============================================================
 
@@ -6781,7 +6781,7 @@ function reqLook(r) {
   const part = reqRemain(r) > 0;
   if (r.status === 'tuchoi') return {bg:'#F3F4F6', bd:'#C9D3E3', chip:'⛔ Bị từ chối', cb:'#6B7A90'};
   if (r.status === 'huy') return {bg:'#F3F4F6', bd:'#C9D3E3', chip:'Đã hủy', cb:'#8A9AB0'};
-  if (r.duyet === 'chua' && r.status === 'cho' && !hp('y_giao')) return {bg:'rgba(242,201,76,.16)', bd:'rgba(183,121,31,.55)', chip:'⏳ Chờ CHT/CHP duyệt · chờ kho giao', cb:'#B7791F'};
+  if (r.duyet === 'chua' && r.status === 'cho' && !hp('y_giao')) return {bg:'#fff', bd:'#F5D27A', chip:'⏳ Chờ CHT/CHP duyệt · chờ kho giao', cb:'#F59E0B', ct:'#3B2500'};   // v5.71.0: vàng cam sáng, nền trắng
   if (r.status === 'cho') return {bg:'rgba(231,76,60,.10)', bd:'rgba(192,57,43,.5)', chip:'⏳ Chờ kho giao hàng', cb:'#C0392B'};
   if (r.status === 'gui') return {bg:'rgba(41,128,185,.09)', bd:'rgba(41,128,185,.5)', chip: part ? '🚚 Kho đã giao một phần · chờ người nhận xác nhận' : '🚚 Kho đã giao đủ · chờ người nhận xác nhận', cb:'#1F6FA8'};
   if (r.status === 'chohang') return {bg:'rgba(242,101,34,.10)', bd:'rgba(194,65,12,.5)', chip:'📦 Đã nhận một phần · còn thiếu, chờ kho giao tiếp', cb:'#C2410C'};
@@ -6817,7 +6817,7 @@ function reqCard(r) {
   const L = reqLook(r), A = reqAp(r);
   const sum = (r.lines || []).map(l => cocShort(l.itemName) + ': ' + fmtNum(l.req) + (l.sent && l.sent < l.req ? ` (kho đã giao ${fmtNum(l.sent)})` : '')).join(' · ');
   return `<div class="pyc-card" style="background:${L.bg};border-color:${L.bd}" onclick="openReq('${escHtml(r.id)}')">
-    <div class="pyc-strip" style="background:${L.cb}">${L.chip}</div>
+    <div class="pyc-strip" style="background:${L.cb}${L.ct ? ";color:" + L.ct : ""}">${L.chip}</div>
     <div class="pyc-in-card">
       <div class="pyc-id">${escHtml(r.id)}</div>
       <div class="pyc-title">${escHtml(r.title)}</div>
@@ -6945,7 +6945,7 @@ function renderReqDetail() {
   const NX = reqNext(r);
   const px = byTimeDesc(db.transactions.filter(t => t.type === 'xuat' && t.refId === r.id));
   body.innerHTML = `<div class="pyc-detail">
-    <div class="pyc-banner"><div class="pyc-banner-top" style="background:${L.cb}"><small>TRẠNG THÁI PHIẾU</small><b>${L.chip}</b></div>
+    <div class="pyc-banner"><div class="pyc-banner-top" style="background:${L.cb}${L.ct ? ";color:" + L.ct : ""}"><small>TRẠNG THÁI PHIẾU</small><b>${L.chip}</b></div>
       <div class="pyc-banner-bot"><div style="color:${NX[1] ? '#C2410C' : 'var(--text3)'};font-weight:800;font-size:15.5px">${NX[0]}</div>
       ${A[3] ? `<div class="pyc-unapp">${A[0]}</div>` : `<div style="font-size:14px">Duyệt: <b style="color:${A[2]}">${A[0]}</b></div>`}</div></div>
     <div class="pyc-head">
@@ -7299,7 +7299,7 @@ function pgSheetHtml(code, f) {                                // v5.64.3: nửa
   return `<div class="pgq-s"><div class="pgq-main">${hd}
     <div class="pgq-f"><span>Ngày: <b class="v">${escHtml(f.datetime || '')}</b></span><span>Người đề nghị: <b class="v">${escHtml(nm[0] || '')}</b></span>${nm[1] ? `<span>Tổ đội: <b class="v">${escHtml(nm[1])}</b></span>` : ''}</div>
     <div class="pgq-f"><span>${coc ? no : ck}Vật tư &nbsp;${coc ? ck : no}Cóc nối → <b>Mã cọc / panel:</b></span><span class="pgq-mcp">${escHtml(f.ckName || '')}</span></div>
-    <table>${th}${ls.map(l => `<tr><td>${escHtml(cocShort(l.itemName))}</td><td>${escHtml(l.unit || '')}</td><td class="n">${fmtNum(l.req)}</td><td>${escHtml(f.may || nm[1] || '')}</td><td class="k n">${+l.sent ? fmtNum(l.sent) : ''}</td></tr>`).join('')}${more ? `<tr><td colspan="5" class="pgq-more">… và ${more} món khác — xem đủ trên app (quét mã QR)</td></tr>` : ''}${'<tr><td></td><td></td><td></td><td></td><td class="k"></td></tr>'.repeat(Math.max(0, PYC_ROWS - ls.length - (more ? 1 : 0)))}</table>
+    <table>${th}${ls.map(l => `<tr><td>${escHtml(cocShort(l.itemName))}</td><td>${escHtml(l.unit || '')}</td><td class="n">${fmtNum(l.req)}</td><td>${escHtml(l.may || f.may || nm[1] || '')}</td><td class="k n">${+l.sent ? fmtNum(l.sent) : ''}</td></tr>`).join('')}${more ? `<tr><td colspan="5" class="pgq-more">… và ${more} món khác — xem đủ trên app (quét mã QR)</td></tr>` : ''}${'<tr><td></td><td></td><td></td><td></td><td class="k"></td></tr>'.repeat(Math.max(0, PYC_ROWS - ls.length - (more ? 1 : 0)))}</table>
     ${sig}</div>${side}</div>`;
 }
 // v5.54: phiếu nhập theo xe — nửa tờ A4 (2 phiếu / tờ), 10 dòng
@@ -7984,8 +7984,8 @@ function addPycSheets(wb, R, P) {
     const extra = [q.opt && q.opt.text, q.bs && `Bổ sung – ${q.bs.reason}${q.bs.note ? ': ' + q.bs.note : ''}`, q.note].filter(Boolean).join('; ');
     (q.lines || []).forEach(l => {
       const rem = Math.max(0, (+l.req || 0) - (+l.sent || 0));
-      [q.id, q.datetime, q.createdByName, q.createdRole === 'giay' ? 'Phiếu giấy' : ROLE_NAME[q.createdRole] || q.createdRole, q.kind === 'coc' ? String(q.title).split(' · ').slice(1).join(' · ') + (/^Bổ sung/.test(q.title) ? ' (bổ sung)' : '') : (q.lines[0]?.itemName || ''),
-        q.may, l.itemName].forEach((v, j) => put(ws, r, j + 1, v, {band, bold:j === 0, center:j < 2}));
+      [q.id, q.datetime, q.createdByName, q.createdRole === 'giay' ? 'Phiếu giấy' : ROLE_NAME[q.createdRole] || q.createdRole, q.kind === 'coc' ? String(q.title).split(' · ').slice(1).join(' · ') + (/^Bổ sung/.test(q.title) ? ' (bổ sung)' : '') : ((q.lines || []).length > 1 ? q.title : q.lines[0]?.itemName || ''),
+        l.may || q.may, l.itemName].forEach((v, j) => put(ws, r, j + 1, v, {band, bold:j === 0, center:j < 2}));
       put(ws, r, 8, +l.req || 0, {num:true, band}); put(ws, r, 9, +l.sent || 0, {num:true, band});
       put(ws, r, 10, {formula:`H${r}-I${r}`, result:rem}, {num:true, band, hl:rem > 0});
       put(ws, r, 11, st, {band, bold:true}); put(ws, r, 12, ap, {band, hl:/chưa duyệt/.test(ap)});
@@ -8173,7 +8173,8 @@ const PERM_UI = [
   ['Phiếu yêu cầu', [['y_tao','Tạo phiếu',''],['y_bs','Xin bổ sung ngoài định mức',''],['y_duyet','Duyệt phiếu',''],['y_giao','Giao hàng theo phiếu (kho)',''],['y_nhan','Xác nhận nhận hàng',''],['y_xem','Xem mọi phiếu của dự án','Tắt = chỉ thấy phiếu của mình']]],
   ['Xuất file', [['x_nxt','Xuất Excel NXT',''],['x_pyc','Xuất báo cáo phiếu YC','']]],
   ['⑧ Phòng QLTB', [['q_xem','Xem Phòng QLTB','Thẻ Phòng QLTB: sơ đồ + danh mục máy móc, thiết bị, vật tư của mọi kho trong công ty'],['q_tt','Đổi trạng thái máy · duyệt phụ tùng sửa chữa','Nút Đổi trạng thái ở chi tiết máy và Phòng QLTB (ưu tiên hơn trạng thái app tự tính); duyệt, huỷ phiếu đề xuất phụ tùng sửa chữa ở mọi dự án (cần thêm quyền Xem Phòng QLTB)']]],   // v5.69.0
-  ['⑦ Thi công', [['t_xem','Xem Thi công','Thấy ô 🏗️ Thi công: mặt bằng, hồ sơ cấu kiện, báo cáo'],['t_ghi','Ghi nhật ký hiện trường','Định vị, khoan, dung dịch, lồng thép, xe bê tông, tremie… · gửi kiểm tra'],['t_qa','Xác nhận QA/QC · giải phóng Hold','Xác nhận / trả về bản ghi, đóng NCR'],['t_cht','Duyệt nội bộ (CHT)','Duyệt hồ sơ nghiệm thu, sửa bản đã xác nhận (ghi lý do)'],['t_kh','Lập kế hoạch · đăng ký bê tông',''],['t_qs','QS · BOQ & khối lượng',''],['t_qt','Quản trị Thi công','Cấu hình ngưỡng, nạp danh sách cọc / panel, danh mục']]]
+  ['⑦ Thi công', [['t_xem','Xem Thi công','Thấy ô 🏗️ Thi công: mặt bằng, hồ sơ cấu kiện, báo cáo'],['t_ghi','Ghi nhật ký hiện trường','Định vị, khoan, dung dịch, lồng thép, xe bê tông, tremie… · gửi kiểm tra'],['t_qa','Xác nhận QA/QC · giải phóng Hold','Xác nhận / trả về bản ghi, đóng NCR'],['t_cht','Duyệt nội bộ (CHT)','Duyệt hồ sơ nghiệm thu, sửa bản đã xác nhận (ghi lý do)'],['t_kh','Lập kế hoạch · đăng ký bê tông',''],['t_qs','QS · BOQ & khối lượng',''],['t_qt','Quản trị Thi công','Cấu hình ngưỡng, nạp danh sách cọc / panel, danh mục']]],
+  ['⑨ Màn hình thợ', [['y_gon','Màn gọn: chỉ tạo phiếu yêu cầu','Đăng nhập xong chỉ thấy nút Tạo phiếu và Phiếu của tôi (thợ máy, thợ điện / nước…). Không áp dụng cho chức danh có Tổng quan hoặc giao / duyệt phiếu']]]
 ];
 const PERM_KEYS = PERM_UI.flatMap(s => s[1].map(p => p[0]));
 const V6 = ['v_pyc','v_home','v_nhap','v_xuat','v_ton','v_baocao'];
@@ -8183,7 +8184,7 @@ const GROUP_UI = {
   g4:['④ Kho', V6.concat(['k_nhap','k_xuat','k_edit','k_kk','k_dm','k_copy','k_loan','y_giao','y_xem','x_nxt','x_pyc','k_meter','k_thang','k_gio','k_napx','k_am'])],
   g5:['⑤ Đầy đủ', V6.concat(['v_stat','g_view','g_prog','y_xem','x_nxt','x_pyc','k_meter'])],
   g6:['⑥ Lãnh đạo', V6.concat(['v_stat','v_all','g_view','y_xem','x_nxt','x_pyc','q_xem'])],
-  gq:['Quản lý (cũ)', PERM_KEYS.filter(k => k !== 'v_all')], ga:['Quản trị', PERM_KEYS]
+  gq:['Quản lý (cũ)', PERM_KEYS.filter(k => k !== 'v_all' && k !== 'y_gon')], ga:['Quản trị', PERM_KEYS]
 };
 const TC_DEF_UI = { TS:['t_xem','t_ghi'], SE:['t_xem','t_ghi'], EE:['t_xem','t_ghi'], HSE:['t_xem','t_ghi'], PE:['t_xem','t_ghi','t_kh'], SUP:['t_xem','t_qa'], QS:['t_xem','t_qs'], SK:[],
   DCM:['t_xem','t_ghi','t_qa','t_cht','t_kh'], CM:['t_xem','t_ghi','t_qa','t_cht','t_kh'], PD:['t_xem','t_cht','t_kh','t_qs'] };   // v5.31
@@ -8196,8 +8197,10 @@ async function openRoles() {
   const r = await api('listUsers', {}, 30000);
   if (r && r.success) { rlUsers = {}; (r.users || []).forEach(u => { rlUsers[u.role] = (rlUsers[u.role] || 0) + 1; }); renderRoles(); }
 }
-const rlDirty = () => !!rlDraft && JSON.stringify(rlDraft) !== JSON.stringify(ROLES[rlSel]?.perm || {});
-function rlPick(code) { if (rlDirty() && !confirm('Chưa lưu thay đổi của ' + rlSel + '. Bỏ thay đổi?')) return; rlSel = code; rlDraft = null; renderRoles(); }
+let rlGoiY = null;   // v5.71.0: nhóm vật tư gợi ý trước (bản nháp)
+const rlDirty = () => (!!rlDraft && JSON.stringify(rlDraft) !== JSON.stringify(ROLES[rlSel]?.perm || {})) || (!!rlGoiY && JSON.stringify(rlGoiY) !== JSON.stringify(ROLES[rlSel]?.goiY || []));
+function rlPick(code) { if (rlDirty() && !confirm('Chưa lưu thay đổi của ' + rlSel + '. Bỏ thay đổi?')) return; rlSel = code; rlDraft = null; rlGoiY = null; renderRoles(); }
+function rlGTog(c) { const r = ROLES[rlSel]; if (!r || r.group === 'ga') return; const a = (rlGoiY || r.goiY || []).slice(), i = a.indexOf(c); if (i >= 0) a.splice(i, 1); else a.push(c); rlGoiY = a; renderRoles(); }
 function rlTog(k) { const r = ROLES[rlSel]; if (!r || r.group === 'ga') return; rlDraft = Object.assign({}, rlDraft || r.perm); rlDraft[k] = rlDraft[k] ? 0 : 1; renderRoles(); }
 function rlSec(i, on) { const r = ROLES[rlSel]; if (!r || r.group === 'ga') return; rlDraft = Object.assign({}, rlDraft || r.perm); PERM_UI[i][1].forEach(p => rlDraft[p[0]] = on ? 1 : 0); renderRoles(); }
 function rlReset() { const r = ROLES[rlSel]; if (!r || r.group === 'ga') return; rlDraft = presetPerm(rlSel, r.group); renderRoles(); toast('Đã đặt lại theo nhóm mẫu — bấm Lưu để áp dụng'); }
@@ -8222,6 +8225,9 @@ function renderRoles() {
       ${locked ? '<div class="info-box">Quản trị hệ thống luôn có toàn quyền, không chỉnh được.</div>' : ''}
       ${PERM_UI.map((s, i) => { const all = s[1].every(p => d[p[0]]); return `<div class="rl-sec"><div class="rl-sh"><b>${s[0]}</b>${locked ? '' : `<button onclick="rlSec(${i},${all ? 0 : 1})">${all ? 'Bỏ cả mục' : 'Chọn cả mục'}</button>`}</div>
         ${s[1].map(p => `<div class="rl-row" onclick="rlTog('${p[0]}')"><span class="rl-box ${d[p[0]] ? 'on' : ''}">${d[p[0]] ? '✓' : ''}</span><span><b>${p[1]}</b>${p[2] ? `<small>${p[2]}</small>` : ''}</span></div>`).join('')}</div>`; }).join('')}
+      ${locked ? '' : (() => { const G = rlGoiY || r.goiY || []; return `<div class="rl-sec"><div class="rl-sh"><b>⑩ Nhóm vật tư gợi ý trước (phiếu yêu cầu)</b></div>
+        <div style="padding:8px 12px 12px"><div class="rl-meta" style="margin:0 0 8px">Ô tìm vật tư hiện trước các món chức danh này hay xin, rồi tới các nhóm chọn dưới đây (bấm theo thứ tự ưu tiên)</div>
+        <div class="chip-row" style="padding:0;flex-wrap:wrap">${CATEGORIES.filter(c => c.id !== 'cocNoi').map(c => { const k = G.indexOf(c.id); return `<div class="chip ${k >= 0 ? 'on' : ''}" onclick="rlGTog('${c.id}')">${k >= 0 ? (k + 1) + '. ' : ''}${escHtml(c.name)}</div>`; }).join('')}</div></div></div>`; })()}
     </div>
     <div class="rl-save"><span style="color:${dirty ? '#C2410C' : 'var(--text3)'}">${dirty ? '● Có thay đổi chưa lưu' : 'Đã lưu'}</span><button ${dirty ? '' : 'disabled'} onclick="rlSave()">Lưu</button></div>` : ''}`;
 }
@@ -8231,8 +8237,8 @@ async function rlCall(action, data, ok) {
   setRoles(r.roles); toast(ok); return r;
 }
 async function rlSave() {
-  const r = ROLES[rlSel]; if (!r || !rlDraft) return;
-  if (await rlCall('saveRole', {code:rlSel, abbr:r.abbr, name:r.name, group:r.group, perm:rlDraft}, `✅ Đã lưu quyền ${r.abbr} — áp dụng ngay cho các tài khoản đang dùng`)) { rlDraft = null; renderRoles(); }
+  const r = ROLES[rlSel]; if (!r || !(rlDraft || rlGoiY)) return;
+  if (await rlCall('saveRole', {code:rlSel, abbr:r.abbr, name:r.name, group:r.group, perm:rlDraft || r.perm, goiY:rlGoiY || r.goiY || []}, `✅ Đã lưu quyền ${r.abbr} — áp dụng ngay cho các tài khoản đang dùng`)) { rlDraft = null; rlGoiY = null; renderRoles(); }
 }
 async function rlCreate() {
   const abbr = (document.getElementById('rl-n-abbr').value || '').trim(), name = (document.getElementById('rl-n-name').value || '').trim(), g = document.getElementById('rl-n-group').value;
@@ -8244,7 +8250,7 @@ async function rlRename() {
   const r = ROLES[rlSel]; if (!r) return;
   const abbr = (prompt('Viết tắt tiếng Anh (tối đa 6 ký tự):', r.abbr) || '').toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 6); if (!abbr) return;
   const name = (prompt('Tên tiếng Việt:', r.name) || '').trim(); if (!name) return;
-  if (await rlCall('saveRole', {code:rlSel, abbr, name, group:r.group, perm:rlDraft || r.perm}, '✅ Đã đổi tên chức danh')) { rlSel = abbr; rlDraft = null; renderRoles(); }
+  if (await rlCall('saveRole', {code:rlSel, abbr, name, group:r.group, perm:rlDraft || r.perm, goiY:rlGoiY || r.goiY || []}, '✅ Đã đổi tên chức danh')) { rlSel = abbr; rlDraft = null; rlGoiY = null; renderRoles(); }
 }
 async function rlDelete() {
   const r = ROLES[rlSel]; if (!r || !confirm(`Xóa chức danh ${r.abbr} – ${r.name}?`)) return;
@@ -8580,7 +8586,7 @@ async function loadDevAdminLog(d) {
   box.innerHTML = `<b>🔒 Nhật ký sửa của Admin</b> <small>(chỉ Admin thấy)</small>` + (rows ? (rows.length ? rows.map(x => `<div class="al-row"><span>${escHtml(x.t)} · ${escHtml(x.by)}</span>${escHtml(x.x)}</div>`).join('') : '<div class="pyc-empty">Chưa sửa lần nào</div>') : '<div class="pyc-empty">Không tải được (cần mạng)</div>');
 }
 
-const GUIDES = [{"id":"qltb_nhap","g":"Kho","t":"Nhập máy / vật tư theo danh mục P.QLTB","p":"k_nhap","s":["Phiếu nhập → gõ tên hoặc mã vào ô tên (không cần dấu). Danh sách có 2 nhóm: Vật tư trong kho dự án và 📚 Danh mục P.QLTB.","Chọn một máy (🏗): phiếu đổi thành \"Máy vào công trường\" — nhập ngày vào và số đồng hồ lúc vào rồi Xác nhận. Máy tự có trong Máy móc & Thiết bị và hiện ở Lịch sử nhập (🏗 Máy vào).","Chọn vật tư phụ trợ (📦: gầu, tole, tải ép cọc…): nhập số lượng như phiếu nhập thường, vật tư mang tên và mã theo P.QLTB.","Gõ tên không có trong danh mục: app nhắc kiểm tra với P.QLTB. Chọn \"Đã kiểm tra, vẫn nhập\" (ghi Ngoài danh mục) hoặc \"Vật tư tiêu hao\" cho dầu, que hàn… Máy rời công trường: mở máy → Kết thúc (hiện ở Lịch sử xuất, 🏗 Máy ra)."]},{"id":"qltb_ganma","g":"Kho","t":"Gắn mã P.QLTB cho máy / vật tư đã có","p":"k_dm","s":["Bấm ☰ (Menu) → \"🔗 Gắn mã P.QLTB\".","Mỗi dòng có tên gợi ý gần nhất trong danh mục. Đúng thì bấm \"Gắn mã này\", không đúng thì \"Chọn khác\" để tìm.","Máy không có trong danh mục: \"Ngoài danh mục\". Vật tư tiêu hao: \"Không thuộc P.QLTB\".","Chọn nhiều dòng: tick ô bên trái từng dòng (hoặc \"Chọn tất cả\"), rồi bấm nút ở thanh dưới cùng.","Gắn nhầm: bấm nhóm \"Đã gắn\", tick các dòng sai → \"Bỏ mã\". Vật tư lấy lại tên cũ, về nhóm \"Chưa gắn\" để gắn lại."]},{"id":"capnhat","g":"Bắt đầu","t":"Cập nhật phiên bản mới","p":"","s":["Có bản mới, đầu màn hình chính hiện thẻ \"Cập nhật phiên bản mới\".","Bấm \"Cập nhật\" để lên bản mới ngay (app tải lại khoảng vài giây). Bấm \"Để sau, giữ bản cũ\" thì vẫn dùng bản đang có.","Muốn cập nhật sau: bấm ☰ (Menu) → \"🆕 Cập nhật phiên bản mới\" (có chấm đỏ) → \"Cập nhật\". Bấm \"Kiểm tra bản mới\" để hỏi lại ngay.","Người được Admin cho phép xem thêm nội dung từng bản: lỗi gì, cách sửa, đã thử nghiệm chưa, và lịch sử cập nhật."]},{"id":"khoaapp","g":"Bắt đầu","t":"Mở khóa bằng Face ID / vân tay","p":"","s":["Sau khi đăng nhập bằng mật khẩu, app hỏi \"Bật mở khóa bằng Face ID / vân tay?\" → bấm Bật (hoặc Menu → \"Khóa app bằng Face ID / vân tay\").","Mỗi ngày, lần đầu mở app (sau 0:00) quét Face ID / vân tay một lần, sau đó dùng bình thường cả ngày.","Không quét được thì bấm \"Dùng mật khẩu\". Đăng xuất thì tính năng tự tắt."]},{"id": "dangnhap", "g": "Bắt đầu", "t": "Đăng nhập & liên kết Telegram", "p": "", "s": ["Mở app, nhập tên đăng nhập do Admin cấp.", "Nhập mật khẩu rồi bấm \"Đăng nhập\". Chấm màu dưới khung cho biết mạng tốt hay yếu.", "Bấm ☰ (Menu) → \"Nhận cảnh báo Telegram\".", "Bấm \"Mở Telegram để liên kết\" → bấm Start trong Telegram. Khoảng 1 phút sau bấm \"Kiểm tra\"."]}, {"id": "pyc_coc", "g": "Phiếu yêu cầu", "t": "Tạo phiếu yêu cầu cóc nối", "p": "y_tao", "s": ["Vào tab Phiếu YC, bấm \"+ Tạo phiếu yêu cầu\".", "Chọn hạng mục (Cọc / Tường vây), gõ tên cấu kiện (VD: P3.11) rồi chọn trong danh sách.", "Chọn mức nối cóc theo thực tế thi công (bắt buộc). App tự tính số cóc theo bản vẽ.", "Kiểm tra bảng số lượng, ghi chú nếu cần rồi bấm \"Gửi phiếu\". Phiếu tới kho ngay, thủ kho nhận tin Telegram."]}, {"id": "pyc_vt", "g": "Phiếu yêu cầu", "t": "Tạo phiếu vật tư khác (dầu, mỡ, răng gàu…)", "p": "y_tao", "s": ["Bấm \"+ Tạo phiếu yêu cầu\" → chọn thẻ \"Vật tư khác\".", "Gõ tên vật tư (không cần dấu, VD: \"dau do\") rồi chọn trong danh sách gợi ý.", "Dầu, mỡ, răng gàu… bắt buộc chọn máy sử dụng. Chọn \"Dùng chung\" thì ghi lý do.", "Nhập số lượng rồi bấm \"Gửi phiếu\"."]}, {"id": "pyc_duyet", "g": "Phiếu yêu cầu", "t": "Duyệt phiếu (CHT / CHP)", "p": "y_duyet", "s": ["Tab Phiếu YC → phiếu có dải vàng \"Chờ CHT/CHP duyệt\". Bấm để mở.", "Xem trạng thái phiếu và số lượng từng vật tư. Kho vẫn giao trước được khi bạn chưa duyệt.", "Bấm \"✅ Duyệt phiếu\". Không đồng ý thì nhập lý do và bấm \"Từ chối\" / \"Hủy\"."]}, {"id": "pyc_giao", "g": "Phiếu yêu cầu", "t": "Giao hàng theo phiếu yêu cầu", "p": "y_giao", "s": ["Tab Phiếu YC → mục \"Cần giao gấp\", bấm vào phiếu có dải đỏ.", "Đọc khung Trạng thái phiếu: việc của bạn, phiếu đã được CHT/CHP duyệt chưa.", "Mỗi vật tư nhập số \"Giao lần này\", hoặc bấm \"Giao đủ\". Kho thiếu thì giao một phần hoặc bấm Kiểm kê.", "Bấm \"🚚 Giao hàng – trừ tồn kho\". App trừ tồn, tạo phiếu xuất và báo người lập phiếu."]}, {"id": "pyc_nhan", "g": "Phiếu yêu cầu", "t": "Xác nhận nhận hàng / báo nhận thiếu", "p": "y_nhan", "s": ["Kho giao xong, phiếu chuyển dải xanh \"Kho đã giao\". Bấm để mở.", "Kiểm hàng thực tế với số \"Kho đã giao\" của từng vật tư.", "Đủ thì bấm \"✅ Tôi đã nhận đủ hàng\". Thiếu thì bấm \"⚠️ Nhận thiếu\", nhập số thực nhận rồi xác nhận."]}, {"id": "nhap", "g": "Kho", "t": "Nhập kho", "p": "k_nhap", "s": ["Tab Tổng quan → bấm ô \"Nhập kho\".", "Chọn vật tư (gõ để tìm), nhập số lượng, nhà cung cấp, chụp ảnh biên bản nếu có.", "Bấm \"✅ Xác nhận nhập kho\". Mất mạng vẫn lưu được, có mạng app tự gửi."]}, {"id": "xuat", "g": "Kho", "t": "Xuất kho & xuất dầu ghi giờ máy", "p": "k_xuat", "s": ["Tab Tổng quan → \"Xuất kho\". Chọn vật tư và nhập số lượng.", "Xuất dầu cho máy: chọn máy nhận dầu.", "Bắt buộc nhập SỐ ĐỒNG HỒ GIỜ MÁY đọc trên máy (không phải giờ trong ngày). Đồng hồ hỏng thì tích ô và ghi lý do.", "Bấm \"📤 Xác nhận xuất kho\"."]}, {"id": "kiemke", "g": "Kho", "t": "Kiểm kê thực tế", "p": "k_kk", "s": ["Bấm ☰ (Menu) → \"Đợt kiểm kê\" (hoặc tab Phiếu YC → \"Đợt kiểm kê\").", "Đếm thực tế và nhập số đếm vào từng dòng vật tư. Số khác với app sẽ tự tô viền cam.", "Bấm \"Lưu đợt kiểm kê\". Số đếm thành mốc để app tính tồn kho về sau."]}, {"id": "muontra", "g": "Kho", "t": "Cho mượn / trả dụng cụ", "p": "k_loan", "s": ["Bấm ☰ (Menu) → \"Cho mượn / Trả\".", "Bấm \"+\" để lập phiếu mượn.", "Chọn loại phiếu (Cho mượn / Đi mượn), vật tư, người mượn, số lượng rồi lưu. Khi trả, mở phiếu và bấm \"Xác nhận\" trả."]}, {"id": "themmay", "g": "Máy móc", "t": "Thêm máy & giờ máy lúc vào", "p": "k_dm", "s": ["Menu → \"Máy móc & Thiết bị\" → bấm \"+ Thêm\".", "Bấm ô Tên thiết bị → chọn máy có sẵn trong danh sách (gõ tên hoặc mã để tìm). Không có thì gõ tên mới.", "Kiểm tra thông tin tự điền, nhập NGÀY VÀO và SỐ ĐỒNG HỒ GIỜ MÁY lúc máy vào công trình.", "Bấm \"Lưu\"."]}, {"id": "ketthuc", "g": "Máy móc", "t": "Kết thúc máy rời công trình", "p": "k_meter", "s": ["Mở máy trong danh sách Máy móc. Khung giờ máy cho biết ngày vào, tổng giờ chạy, lít dầu/giờ.", "Máy rời công trình: bấm \"Kết thúc · máy rời công trình\".", "Chọn ngày kết thúc, nhập số đồng hồ lúc rời rồi \"Xác nhận kết thúc\"."]}, {"id": "baocao", "g": "Báo cáo", "t": "Xem báo cáo & xuất Excel", "p": "x_nxt", "s": ["Bấm tab \"Báo cáo\" ở thanh dưới.", "Bấm \"Xuất báo cáo Excel\" (tab Phiếu YC có thêm \"Xuất báo cáo phiếu YC\").", "Chọn kỳ báo cáo rồi bấm \"⬇️ Xuất Excel\" → tải về hoặc gửi Zalo."]}, {"id": "thanhvien", "g": "Quản trị", "t": "Thành viên & phân quyền chức danh", "p": "ADM", "s": ["Bấm ☰ (Menu) → \"Thành viên\".", "Bấm vào một người → chọn chức danh và TÍCH DỰ ÁN (bắt buộc với chức danh cần dự án) → Lưu.", "Menu → \"Phân quyền chức danh\" → bấm một chức danh.", "Tích / bỏ tích từng quyền rồi bấm \"Lưu\". Áp dụng ngay cho mọi người cùng chức danh."]}, {"id": "saoluu", "g": "Quản trị", "t": "Sao lưu dữ liệu", "p": "ADM", "s": ["Bấm ☰ (Menu) → \"Sao lưu dữ liệu\".", "Xem lần sao lưu gần nhất. Bấm \"Sao lưu ngay\" trước việc lớn; mở thư mục Drive để xem các bản sao."]}];
+const GUIDES = [{"id":"qltb_nhap","g":"Kho","t":"Nhập máy / vật tư theo danh mục P.QLTB","p":"k_nhap","s":["Phiếu nhập → gõ tên hoặc mã vào ô tên (không cần dấu). Danh sách có 2 nhóm: Vật tư trong kho dự án và 📚 Danh mục P.QLTB.","Chọn một máy (🏗): phiếu đổi thành \"Máy vào công trường\" — nhập ngày vào và số đồng hồ lúc vào rồi Xác nhận. Máy tự có trong Máy móc & Thiết bị và hiện ở Lịch sử nhập (🏗 Máy vào).","Chọn vật tư phụ trợ (📦: gầu, tole, tải ép cọc…): nhập số lượng như phiếu nhập thường, vật tư mang tên và mã theo P.QLTB.","Gõ tên không có trong danh mục: app nhắc kiểm tra với P.QLTB. Chọn \"Đã kiểm tra, vẫn nhập\" (ghi Ngoài danh mục) hoặc \"Vật tư tiêu hao\" cho dầu, que hàn… Máy rời công trường: mở máy → Kết thúc (hiện ở Lịch sử xuất, 🏗 Máy ra)."]},{"id":"qltb_ganma","g":"Kho","t":"Gắn mã P.QLTB cho máy / vật tư đã có","p":"k_dm","s":["Bấm ☰ (Menu) → \"🔗 Gắn mã P.QLTB\".","Mỗi dòng có tên gợi ý gần nhất trong danh mục. Đúng thì bấm \"Gắn mã này\", không đúng thì \"Chọn khác\" để tìm.","Máy không có trong danh mục: \"Ngoài danh mục\". Vật tư tiêu hao: \"Không thuộc P.QLTB\".","Chọn nhiều dòng: tick ô bên trái từng dòng (hoặc \"Chọn tất cả\"), rồi bấm nút ở thanh dưới cùng.","Gắn nhầm: bấm nhóm \"Đã gắn\", tick các dòng sai → \"Bỏ mã\". Vật tư lấy lại tên cũ, về nhóm \"Chưa gắn\" để gắn lại."]},{"id":"capnhat","g":"Bắt đầu","t":"Cập nhật phiên bản mới","p":"","s":["Có bản mới, đầu màn hình chính hiện thẻ \"Cập nhật phiên bản mới\".","Bấm \"Cập nhật\" để lên bản mới ngay (app tải lại khoảng vài giây). Bấm \"Để sau, giữ bản cũ\" thì vẫn dùng bản đang có.","Muốn cập nhật sau: bấm ☰ (Menu) → \"🆕 Cập nhật phiên bản mới\" (có chấm đỏ) → \"Cập nhật\". Bấm \"Kiểm tra bản mới\" để hỏi lại ngay.","Người được Admin cho phép xem thêm nội dung từng bản: lỗi gì, cách sửa, đã thử nghiệm chưa, và lịch sử cập nhật."]},{"id":"khoaapp","g":"Bắt đầu","t":"Mở khóa bằng Face ID / vân tay","p":"","s":["Sau khi đăng nhập bằng mật khẩu, app hỏi \"Bật mở khóa bằng Face ID / vân tay?\" → bấm Bật (hoặc Menu → \"Khóa app bằng Face ID / vân tay\").","Mỗi ngày, lần đầu mở app (sau 0:00) quét Face ID / vân tay một lần, sau đó dùng bình thường cả ngày.","Không quét được thì bấm \"Dùng mật khẩu\". Đăng xuất thì tính năng tự tắt."]},{"id": "dangnhap", "g": "Bắt đầu", "t": "Đăng nhập & liên kết Telegram", "p": "", "s": ["Mở app, nhập tên đăng nhập do Admin cấp.", "Nhập mật khẩu rồi bấm \"Đăng nhập\". Chấm màu dưới khung cho biết mạng tốt hay yếu.", "Bấm ☰ (Menu) → \"Nhận cảnh báo Telegram\".", "Bấm \"Mở Telegram để liên kết\" → bấm Start trong Telegram. Khoảng 1 phút sau bấm \"Kiểm tra\"."]}, {"id": "pyc_coc", "g": "Phiếu yêu cầu", "t": "Tạo phiếu yêu cầu cóc nối", "p": "y_tao", "s": ["Vào tab Phiếu YC, bấm \"+ Tạo phiếu yêu cầu\".", "Chọn hạng mục (Cọc / Tường vây), gõ tên cấu kiện (VD: P3.11) rồi chọn trong danh sách.", "Chọn mức nối cóc theo thực tế thi công (bắt buộc). App tự tính số cóc theo bản vẽ.", "Kiểm tra bảng số lượng, ghi chú nếu cần rồi bấm \"Gửi phiếu\". Phiếu tới kho ngay, thủ kho nhận tin Telegram."]}, {"id": "pyc_vt", "g": "Phiếu yêu cầu", "t": "Tạo phiếu vật tư / nhiên liệu (nhiều dòng)", "p": "y_tao", "s": ["Bấm \"+ Tạo phiếu yêu cầu\" → thẻ \"Vật tư khác\" (thợ: vào thẳng phiếu).", "Mục 📦 Vật tư: gõ tên (không cần dấu, VD: \"rang gau\") rồi chọn trong gợi ý, nhập số lượng. Bấm \"+ Thêm vật tư\" để thêm dòng, ✕ để xoá dòng.", "Mục ⛽ Nhiên liệu: chọn MÁY trước (bắt buộc), rồi thêm dòng dầu (1 dòng) và các dòng nhớt / mỡ.", "Món có ⭐ là món chức danh của bạn hay xin. Kiểm tra lại rồi bấm \"Gửi phiếu\"."]}, {"id": "pyc_duyet", "g": "Phiếu yêu cầu", "t": "Duyệt phiếu (CHT / CHP)", "p": "y_duyet", "s": ["Tab Phiếu YC → phiếu có dải vàng \"Chờ CHT/CHP duyệt\". Bấm để mở.", "Xem trạng thái phiếu và số lượng từng vật tư. Kho vẫn giao trước được khi bạn chưa duyệt.", "Bấm \"✅ Duyệt phiếu\". Không đồng ý thì nhập lý do và bấm \"Từ chối\" / \"Hủy\"."]}, {"id": "pyc_giao", "g": "Phiếu yêu cầu", "t": "Giao hàng theo phiếu yêu cầu", "p": "y_giao", "s": ["Tab Phiếu YC → mục \"Cần giao gấp\", bấm vào phiếu có dải đỏ.", "Đọc khung Trạng thái phiếu: việc của bạn, phiếu đã được CHT/CHP duyệt chưa.", "Mỗi vật tư nhập số \"Giao lần này\", hoặc bấm \"Giao đủ\". Kho thiếu thì giao một phần hoặc bấm Kiểm kê.", "Bấm \"🚚 Giao hàng – trừ tồn kho\". App trừ tồn, tạo phiếu xuất và báo người lập phiếu."]}, {"id": "pyc_nhan", "g": "Phiếu yêu cầu", "t": "Xác nhận nhận hàng / báo nhận thiếu", "p": "y_nhan", "s": ["Kho giao xong, phiếu chuyển dải xanh \"Kho đã giao\". Bấm để mở.", "Kiểm hàng thực tế với số \"Kho đã giao\" của từng vật tư.", "Đủ thì bấm \"✅ Tôi đã nhận đủ hàng\". Thiếu thì bấm \"⚠️ Nhận thiếu\", nhập số thực nhận rồi xác nhận."]}, {"id": "nhap", "g": "Kho", "t": "Nhập kho", "p": "k_nhap", "s": ["Tab Tổng quan → bấm ô \"Nhập kho\".", "Chọn vật tư (gõ để tìm), nhập số lượng, nhà cung cấp, chụp ảnh biên bản nếu có.", "Bấm \"✅ Xác nhận nhập kho\". Mất mạng vẫn lưu được, có mạng app tự gửi."]}, {"id": "xuat", "g": "Kho", "t": "Xuất kho & xuất dầu ghi giờ máy", "p": "k_xuat", "s": ["Tab Tổng quan → \"Xuất kho\". Chọn vật tư và nhập số lượng.", "Xuất dầu cho máy: chọn máy nhận dầu.", "Bắt buộc nhập SỐ ĐỒNG HỒ GIỜ MÁY đọc trên máy (không phải giờ trong ngày). Đồng hồ hỏng thì tích ô và ghi lý do.", "Bấm \"📤 Xác nhận xuất kho\"."]}, {"id": "kiemke", "g": "Kho", "t": "Kiểm kê thực tế", "p": "k_kk", "s": ["Bấm ☰ (Menu) → \"Đợt kiểm kê\" (hoặc tab Phiếu YC → \"Đợt kiểm kê\").", "Đếm thực tế và nhập số đếm vào từng dòng vật tư. Số khác với app sẽ tự tô viền cam.", "Bấm \"Lưu đợt kiểm kê\". Số đếm thành mốc để app tính tồn kho về sau."]}, {"id": "muontra", "g": "Kho", "t": "Cho mượn / trả dụng cụ", "p": "k_loan", "s": ["Bấm ☰ (Menu) → \"Cho mượn / Trả\".", "Bấm \"+\" để lập phiếu mượn.", "Chọn loại phiếu (Cho mượn / Đi mượn), vật tư, người mượn, số lượng rồi lưu. Khi trả, mở phiếu và bấm \"Xác nhận\" trả."]}, {"id": "themmay", "g": "Máy móc", "t": "Thêm máy & giờ máy lúc vào", "p": "k_dm", "s": ["Menu → \"Máy móc & Thiết bị\" → bấm \"+ Thêm\".", "Bấm ô Tên thiết bị → chọn máy có sẵn trong danh sách (gõ tên hoặc mã để tìm). Không có thì gõ tên mới.", "Kiểm tra thông tin tự điền, nhập NGÀY VÀO và SỐ ĐỒNG HỒ GIỜ MÁY lúc máy vào công trình.", "Bấm \"Lưu\"."]}, {"id": "ketthuc", "g": "Máy móc", "t": "Kết thúc máy rời công trình", "p": "k_meter", "s": ["Mở máy trong danh sách Máy móc. Khung giờ máy cho biết ngày vào, tổng giờ chạy, lít dầu/giờ.", "Máy rời công trình: bấm \"Kết thúc · máy rời công trình\".", "Chọn ngày kết thúc, nhập số đồng hồ lúc rời rồi \"Xác nhận kết thúc\"."]}, {"id": "baocao", "g": "Báo cáo", "t": "Xem báo cáo & xuất Excel", "p": "x_nxt", "s": ["Bấm tab \"Báo cáo\" ở thanh dưới.", "Bấm \"Xuất báo cáo Excel\" (tab Phiếu YC có thêm \"Xuất báo cáo phiếu YC\").", "Chọn kỳ báo cáo rồi bấm \"⬇️ Xuất Excel\" → tải về hoặc gửi Zalo."]}, {"id": "thanhvien", "g": "Quản trị", "t": "Thành viên & phân quyền chức danh", "p": "ADM", "s": ["Bấm ☰ (Menu) → \"Thành viên\".", "Bấm vào một người → chọn chức danh và TÍCH DỰ ÁN (bắt buộc với chức danh cần dự án) → Lưu.", "Menu → \"Phân quyền chức danh\" → bấm một chức danh.", "Tích / bỏ tích từng quyền rồi bấm \"Lưu\". Áp dụng ngay cho mọi người cùng chức danh."]}, {"id": "saoluu", "g": "Quản trị", "t": "Sao lưu dữ liệu", "p": "ADM", "s": ["Bấm ☰ (Menu) → \"Sao lưu dữ liệu\".", "Xem lần sao lưu gần nhất. Bấm \"Sao lưu ngay\" trước việc lớn; mở thư mục Drive để xem các bản sao."]}];
 
 // v5.25: HƯỚNG DẪN SỬ DỤNG — ảnh trong thư mục huongdan/ (chỉ tải khi mở bài, xem rồi thì lưu lại trên máy)
 const GUIDE_ICO = {'Bắt đầu':'👋', 'Phiếu yêu cầu':'📝', 'Kho':'📦', 'Máy móc':'🏗', 'Báo cáo':'📊', 'Quản trị':'🛡'};
@@ -21572,6 +21578,256 @@ const qlChopt = d => d.tt === 'chopt' || !!(d.rep && d.rep[4] === 'chopt');
 .sc-sug:empty{display:none}.sc-sug div{padding:9px 10px;border-bottom:1px solid var(--border);cursor:pointer;font-size:14px}.sc-sug small{display:block;color:var(--text3);font-size:12px}
 .sc-ok{color:var(--green);font-size:12px;font-weight:600}.sc-new{color:#B45309;font-size:12px;font-weight:600}
 .sc-chip.on{background:#7E22CE;border-color:#7E22CE;color:#fff}
+</style>
+<script>// ===== v5.71.0: PHIẾU YC NHIỀU DÒNG (📦 VẬT TƯ + ⛽ NHIÊN LIỆU) · MÀN GỌN CHO THỢ · CÁN BỘ VÀO THẲNG PHIẾU YC · GỢI Ý THEO CHỨC DANH (máy chủ 5.71.0) =====
+// Thợ = chức danh Admin bật quyền y_gon "Màn gọn" (không có Tổng quan, không giao / duyệt phiếu): chỉ thấy Tạo phiếu + Phiếu của tôi.
+// Cán bộ hiện trường = có Phiếu YC nhưng không có Tổng quan: vào thẳng Phiếu YC (không hiện màn chọn phần), có lối sang Thi công.
+// Phiếu "Vật tư khác": rf.L = [{sec:'vt'|'nl', itemId, q, qty, may, mayNote, hint}] · Nhiên liệu dùng 1 máy cho cả mục (rf.nlMay), 1 dòng dầu.
+const isTho = () => !!me && role !== 'ADM' && hp('y_gon') && !hp('v_home') && !hp('y_giao') && !hp('y_duyet') && !hp('v_all');
+const isCanBo = () => !!me && role !== 'ADM' && !isTho() && hp('v_pyc') && !hp('v_home') && !hp('v_all') && !hp('y_giao');
+function rqSvNew() { const m = String(serverVerInfo || '').match(/(\d+)\.(\d+)\.(\d+)/); return !m || (+m[1] * 1000 + +m[2]) * 1000 + +m[3] >= 5071000; }
+const rqDau = it => !!it && (isDieselItem(it) || /xăng/i.test(it.name || ''));
+const rqIsNl = it => !!it && (typeof nlFuel === 'function' ? nlFuel(it) : it.cat === 'nhienLieu');
+const rqCatName = c => (CATEGORIES.find(x => x.id === c) || {name:'Khác'}).name;
+const rqGoiY = () => { const r = ROLES[role]; return r && Array.isArray(r.goiY) ? r.goiY : []; };
+function rqFreq() {                                             // món chức danh này hay xin (phiếu của mình tính gấp đôi)
+  const m = {};
+  (db.reqs || []).forEach(r => { if (r.kind !== 'vt') return; const w = r.createdBy === me?.id ? 2 : r.createdRole === role ? 1 : 0; if (!w) return;
+    (r.lines || []).forEach(l => { m[l.itemId] = (m[l.itemId] || 0) + w; }); });
+  return m;
+}
+const rqNewLine = sec => ({sec, itemId:'', q:'', qty:'', may:'', mayNote:'', hint:null});
+function rqLineIt(l) {
+  if (!l) return null;
+  if (l.itemId) { const it = db.items.find(i => i.id === +l.itemId && +i.capThang !== 1); if (it) return it; }
+  const x = l.hint; if (!x || l.q !== x.n) return null;
+  return { id:0, _hint:1, name:x.n, cat:x.c, unit:x.u, stock:0, canMay:+x.may || 0, capThang:0, maQL:x.ma || '', ngoaiDM:x.nd, p:x.p };
+}
+const rqDevs = cur => db.devices.filter(d => !d.outDate || d.name === cur);
+function rqMaySel(val, note, onSel, onNote) {
+  return `<select onchange="${onSel}"><option value="">— Chọn máy —</option>
+    ${rqDevs(val).map(d => `<option ${val === d.name ? 'selected' : ''}>${escHtml(d.name)}</option>`).join('')}
+    <option value="chung" ${val === 'chung' ? 'selected' : ''}>Dùng chung, không theo máy</option></select>
+    ${val === 'chung' ? `<input class="rq-why" value="${escHtml(note || '')}" oninput="${onNote}" placeholder="Lý do dùng chung (bắt buộc)">` : ''}`;
+}
+
+openReqNew = function () {
+  const cks = ckList(), tho = isTho();
+  rf = {mode: !tho && cks.length ? 'coc' : 'vt', hm: cks.some(c => c.hm === 'coc') ? 'coc' : 'tv', q:'', ck:'', opt:null, bsOn:false, bsSize:'D25', bsQty:'', bsReason:'', bsNote:'',
+    itemId:'', itemQ:'', qty:'', may:'', mayNote:'', note:'', L:[rqNewLine('vt')], nlMay:'', nlMayNote:''};
+  if (rqGoiY().includes('nhienLieu')) { if (rqGoiY()[0] === 'nhienLieu') rf.L = [rqNewLine('nl')]; else rf.L.push(rqNewLine('nl')); }
+  openDp('dp-req-new', renderReqNew);
+};
+{ const _rrn = renderReqNew; renderReqNew = function () {
+  if (!rf) return;
+  if (isTho()) rf.mode = 'vt';
+  if (rf.mode === 'coc') return _rrn.apply(this, arguments);
+  if (!rf.L) rf.L = [rqNewLine('vt')];
+  const body = document.getElementById('dp-req-new-body'); if (!body) return;
+  const tab = (k, t) => `<button class="pyc-seg ${rf.mode === k ? 'on' : ''}" onclick="rfSet('mode','${k}',1)">${t}</button>`;
+  let html = isTho() ? `<div class="rq-who"><span>👤 ${escHtml(me?.name || '')} · ${escHtml((ROLES[role] || {}).name || role)}</span><span>${escHtml(curProj)}</span></div>` : `<div class="pyc-segs">${tab('coc', 'Cóc nối theo cấu kiện')}${tab('vt', 'Vật tư khác')}</div>`;
+  html += rqGoiY()[0] === 'nhienLieu' ? rqSecHtml('nl') + rqSecHtml('vt') : rqSecHtml('vt') + rqSecHtml('nl');   // thợ máy: Nhiên liệu lên trước
+  const n = rf.L.filter(l => rqLineIt(l)).length;
+  html += `<div class="form-section"><div class="fg"><label>Ghi chú</label><input value="${escHtml(rf.note)}" oninput="rf.note=this.value" placeholder="VD: ca đêm, giao tại máy"></div>
+    <button class="btn-full btn-orange" onclick="submitReq()">Gửi phiếu${n > 1 ? ' (' + n + ' dòng)' : ''}</button>
+    <div class="pyc-hint">${hp('y_duyet') ? 'Phiếu tới thẳng kho, không cần duyệt' : 'Phiếu tới kho ngay và chờ CHT/CHP duyệt song song'}</div></div>`;
+  body.innerHTML = html;
+}; }
+function rqSecHtml(sec) {
+  const nl = sec === 'nl', idx = rf.L.map((l, k) => [l, k]).filter(x => x[0].sec === sec);
+  let h = `<div class="form-section rq-sec rq-${sec}"><div class="rq-sh"><b>${nl ? '⛽ Nhiên liệu' : '📦 Vật tư'}</b><span>${idx.length ? idx.length + ' dòng' : ''}</span></div>`;
+  if (nl && idx.length) h += `<div class="fg rq-nlmay"><label>Máy nhận nhiên liệu <span style="color:var(--red)">*</span></label>
+      ${rqMaySel(rf.nlMay, rf.nlMayNote, 'rf.nlMay=this.value;renderReqNew()', 'rf.nlMayNote=this.value')}
+      <div class="pyc-hint" style="text-align:left">Cả mục dùng 1 máy · 1 dòng dầu, thêm được nhiều dòng nhớt / mỡ</div></div>`;
+  h += idx.map(x => rqLineHtml(x[0], x[1])).join('');
+  h += `<button class="rq-add" onclick="rqAdd('${sec}')">＋ Thêm ${nl ? 'nhiên liệu / nhớt / mỡ' : 'vật tư'}</button>`;
+  if (!nl) h += `<div class="info-box" style="margin:8px 0 0">Thép, ống siêu âm, đai, kẽm, bentonite… cấp thẳng cho tổ đội nên không có trong danh sách.</div>`;
+  return h + '</div>';
+}
+function rqLineHtml(l, k) {
+  const it = rqLineIt(l), nl = l.sec === 'nl', showTon = hp('v_ton') || hp('y_giao');
+  const top = it ? `<div class="rq-nm" onclick="rqEdit(${k})"><b>${rqDau(it) ? '⛽ ' : ''}${escHtml(it.name)}</b>
+        <small>${it._hint ? '🔁 tên dùng ở ' + escHtml(it.p) + ' · gửi phiếu sẽ thêm vào kho dự án' : escHtml(rqCatName(it.cat)) + (showTon ? ' · tồn ' + fmtNum(it.stock) + ' ' + escHtml(it.unit) : '')} · bấm để đổi</small></div>`
+    : `<div class="combo rq-combo"><input type="text" id="rq-q-${k}" autocomplete="off" value="${escHtml(l.q)}" placeholder="${nl ? 'Gõ tên: dầu, nhớt, mỡ…' : 'Gõ tên vật tư (không cần dấu)…'}"
+        oninput="rqQ(${k},this.value)" onfocus="rqList(${k})" onblur="setTimeout(()=>rqHide(${k}),200)"><div class="combo-list" id="rq-l-${k}"></div></div>`;
+  const may = it && !nl && +it.canMay === 1 ? `<div class="rq-may"><small>Máy sử dụng <span style="color:var(--red)">*</span></small>${rqMaySel(l.may, l.mayNote, `rf.L[${k}].may=this.value;renderReqNew()`, `rf.L[${k}].mayNote=this.value`)}</div>` : '';
+  return `<div class="rq-line">
+    <div class="rq-top">${top}<button class="rq-x" onclick="rqDel(${k})" aria-label="Xoá dòng">✕</button></div>
+    <div class="rq-qty"><span>Số lượng</span><input type="number" inputmode="decimal" id="rq-n-${k}" value="${escHtml(l.qty)}" oninput="rf.L[${k}].qty=this.value"><b>${it ? escHtml(it.unit) : ''}</b></div>
+    ${may}</div>`;
+}
+function rqList(k) {
+  const l = rf && rf.L && rf.L[k], el = document.getElementById('rq-l-' + k); if (!l || !el) return;
+  const nl = l.sec === 'nl', toks = vnNorm(l.q).split(/\s+/).filter(Boolean), showTon = hp('v_ton') || hp('y_giao'), F = rqFreq(), G = rqGoiY();
+  const hasDau = nl && rf.L.some((x, j) => j !== k && x.sec === 'nl' && rqDau(rqLineIt(x)));
+  const used = new Set(rf.L.filter((x, j) => j !== k && x.sec === 'nl' && x.itemId).map(x => +x.itemId));
+  let pool = db.items.filter(i => +i.capThang !== 1 && (nl ? rqIsNl(i) : !rqIsNl(i)) && !(nl && used.has(i.id)) && !(hasDau && rqDau(i)));
+  if (toks.length) pool = pool.filter(i => toks.every(t => vnNorm(i.name + ' ' + rqCatName(i.cat)).includes(t)));
+  const gi = i => { const x = G.indexOf(i.cat); return x < 0 ? 99 : x; };
+  const row = i => `<div class="combo-item" onmousedown="event.preventDefault()" onclick="rqPick(${k},${i.id})">
+      <b>${F[i.id] ? '⭐ ' : ''}${escHtml(i.name)}</b><small>${escHtml(rqCatName(i.cat))}${showTon ? ' · còn ' + fmtNum(i.stock) + ' ' + escHtml(i.unit) : ''}</small></div>`;
+  let html = hasDau ? `<div class="combo-head">Đã có dòng dầu — sửa số lít ở dòng đó. Ở đây thêm nhớt / mỡ</div>` : '';
+  if (!toks.length) {
+    const fav = pool.filter(i => F[i.id]).sort((a, b) => F[b.id] - F[a.id]).slice(0, 8), favS = new Set(fav.map(i => i.id));
+    if (fav.length) html += `<div class="combo-head">⭐ Hay dùng</div>` + fav.map(row).join('');
+    const cats = [...new Set(pool.map(i => i.cat))].sort((a, b) => { const x = G.indexOf(a), y = G.indexOf(b); return (x < 0 ? 99 : x) - (y < 0 ? 99 : y) || CATEGORIES.findIndex(c => c.id === a) - CATEGORIES.findIndex(c => c.id === b); });
+    cats.forEach(c => { const arr = pool.filter(i => i.cat === c && !favS.has(i.id)); if (arr.length) html += `<div class="combo-head">${escHtml(rqCatName(c))}</div>` + arr.map(row).join(''); });
+  } else {
+    html += pool.map((i, n) => [i, n]).sort((a, b) => (F[b[0].id] ? 1 : 0) - (F[a[0].id] ? 1 : 0) || gi(a[0]) - gi(b[0]) || (F[b[0].id] || 0) - (F[a[0].id] || 0) || a[1] - b[1]).slice(0, 80).map(x => row(x[0])).join('');
+    try {
+      const arr = hintFind(l.q, { noCap:true }).filter(x => { const o = {name:x.n, cat:x.c, unit:x.u}; return (nl ? rqIsNl(o) : !rqIsNl(o)) && !(hasDau && rqDau(o)); });
+      if (arr.length) html += hintRowsHtml('rq' + k, arr, 8, '', false, '').replace(/class="combo-opt hint"/g, 'class="combo-item hint"');
+    } catch (e) {}
+  }
+  el.innerHTML = html || `<div class="combo-empty">Không tìm thấy "${escHtml(l.q)}"</div>`;
+  el.style.display = 'block';
+}
+function rqHide(k) { const el = document.getElementById('rq-l-' + k); if (el) el.style.display = 'none'; }
+function rqQ(k, v) { const l = rf.L[k]; if (!l) return; l.q = v; l.itemId = ''; if (l.hint && l.hint.n !== v) l.hint = null; rqList(k); }
+function rqFocus(id) { setTimeout(() => { const e = document.getElementById(id); if (e) { e.focus(); try { e.scrollIntoView({block:'center'}); } catch (x) {} } }, 30); }
+function rqPick(k, id) {
+  const it = db.items.find(i => i.id === id), l = rf.L[k]; if (!it || !l) return;
+  l.itemId = id; l.q = it.name; l.hint = null; l.may = ''; l.mayNote = '';
+  renderReqNew(); rqFocus('rq-n-' + k);
+}
+function rqAdd(sec) {
+  const k0 = rf.L.findIndex(l => l.sec === sec && !rqLineIt(l));
+  if (k0 >= 0) { rqFocus('rq-q-' + k0); return; }
+  rf.L.push(rqNewLine(sec)); renderReqNew(); rqFocus('rq-q-' + (rf.L.length - 1));
+}
+function rqDel(k) { rf.L.splice(k, 1); renderReqNew(); }
+function rqEdit(k) { const l = rf.L[k]; if (!l) return; l.itemId = ''; l.hint = null; l.q = ''; l.may = ''; renderReqNew(); rqFocus('rq-q-' + k); }
+{ const _hp = hintPick; hintPick = function (p, i) {
+  if (/^rq\d+$/.test(p)) { const k = +p.slice(2), x = (HROWS[p] || [])[i], l = rf && rf.L && rf.L[k];
+    if (x && l) { l.hint = x; l.itemId = ''; l.q = x.n; l.may = ''; l.mayNote = ''; renderReqNew(); rqFocus('rq-n-' + k); } return; }
+  return _hp.apply(this, arguments);
+}; }
+{ const _sr = submitReq; submitReq = async function () {
+  if (!rf || rf.mode === 'coc') return _sr.apply(this, arguments);
+  const L = rf.L.map((l, k) => [l, k]).filter(x => x[0].itemId || x[0].hint || String(x[0].q).trim() || String(x[0].qty).trim());
+  if (!L.length) { toast('⚠️ Thêm ít nhất 1 dòng vật tư hoặc nhiên liệu'); return; }
+  const out = []; let nDau = 0;
+  for (const [l, k] of L) {
+    const it = rqLineIt(l);
+    if (!it) { toast(`⚠️ ${l.q ? '"' + l.q + '"' : 'Dòng trống'}: chọn vật tư trong danh sách gợi ý`); rqFocus('rq-q-' + k); return; }
+    if (!(+l.qty > 0)) { toast('⚠️ Nhập số lượng cho ' + it.name); rqFocus('rq-n-' + k); return; }
+    let may = '', mayNote = '';
+    if (l.sec === 'nl') {
+      if (!rf.nlMay) { toast('⚠️ Chọn máy nhận nhiên liệu'); return; }
+      if (rf.nlMay === 'chung' && !String(rf.nlMayNote || '').trim()) { toast('⚠️ Ghi lý do dùng chung (nhiên liệu)'); return; }
+      may = rf.nlMay; mayNote = rf.nlMayNote || ''; if (rqDau(it)) nDau++;
+    } else if (+it.canMay === 1) {
+      if (!l.may) { toast('⚠️ Chọn máy sử dụng cho ' + it.name); return; }
+      if (l.may === 'chung' && !String(l.mayNote || '').trim()) { toast('⚠️ Ghi lý do dùng chung cho ' + it.name); return; }
+      may = l.may; mayNote = l.mayNote || '';
+    }
+    const o = {itemId:it._hint ? '' : it.id, qty:+l.qty, may, mayNote, nl:l.sec === 'nl' ? 1 : 0};
+    if (it._hint) o.newItem = {name:it.name, cat:it.cat, unit:it.unit, maQL:it.maQL || '', ngoaiDM:it.ngoaiDM, canMay:+it.canMay || 0};
+    out.push(o);
+  }
+  if (nDau > 1) { toast('⚠️ Mục Nhiên liệu chỉ 1 dòng dầu — gộp số lít vào 1 dòng'); return; }
+  if (out.length > 1 && !rqSvNew()) { toast('⚠️ ' + serverVerInfo + ' — Admin dán Apps Script 5.71.0 rồi mới gửi được phiếu nhiều dòng. Tạm gửi từng món'); return; }
+  const d = {project:curProj, kind:'vt', note:rf.note, clientTime:nowStr(), lines:out};
+  if (out.length === 1) Object.assign(d, {itemId:out[0].itemId, qty:out[0].qty, may:out[0].may, mayNote:out[0].mayNote}, out[0].newItem ? {newItem:out[0].newItem} : {});   // máy chủ cũ
+  const r = await reqAction('createReq', d, '✅ Đã gửi phiếu — bấm "Gửi Zalo" nếu cần báo thêm qua Zalo');
+  if (r) { closeDp('dp-req-new'); reqListMode = 'open'; goTab('pyc'); if (r.req) openReq(r.req.id); }
+}; }
+// Giao hàng: giờ máy (không bắt buộc) theo dòng dầu có máy — máy chủ chỉ ghi vào phiếu xuất của dòng đó
+function rqMeterInfo(r) {
+  if (!r || r.kind !== 'vt') return null;
+  for (let k = 0; k < (r.lines || []).length; k++) {
+    const l = r.lines[k], nm = l.may || r.may; if (!nm) continue;
+    const it = itemById(+l.itemId) || {name:l.itemName}; if (!isDieselItem(it)) continue;
+    const d = db.devices.find(x => x.name === nm); if (d && mUnit(d) !== 'none') return {d, k};
+  }
+  return null;
+}
+reqMeterDev = r => (rqMeterInfo(r) || {}).d || null;
+{ const _rd = renderReqDetail; renderReqDetail = function () {   // phiếu nhiều dòng: ghi rõ ô giờ máy là của máy nào
+  const x = _rd.apply(this, arguments);
+  const r = (db.reqs || []).find(q => q.id === curReqId), mi = rqMeterInfo(r), b = document.getElementById('rq-mbox');
+  if (mi && b && r.lines.length > 1) b.insertAdjacentHTML('afterbegin', `<div class="rq-mfor">⛽ Giờ máy cho dòng ${escHtml(r.lines[mi.k].itemName)} · <b>${escHtml(mi.d.name)}</b></div>`);
+  return x;
+}; }
+{ const _ra = reqAction; reqAction = function (action, data) {
+  if (action === 'issueReq' && data) { const r = (db.reqs || []).find(x => x.id === data.id), mi = rqMeterInfo(r); if (mi && r.lines.length > 1) data = Object.assign({}, data, {meterLine:mi.k}); }
+  return _ra.apply(this, [action, data].concat([].slice.call(arguments, 2)));
+}; }
+reqShareText = function (r) {
+  const L = reqLook(r), A = reqAp(r);
+  const out = [`📝 PHIẾU YÊU CẦU ${r.id} — ${r.project}`, r.title, `Trạng thái: ${L.chip} · ${A[0]}`];
+  if (r.opt && r.opt.text) out.push(r.opt.text);
+  if (r.may) out.push('Máy: ' + r.may);
+  (r.lines || []).forEach(l => out.push(`• ${cocShort(l.itemName)}${l.may && l.may !== r.may ? ' (máy ' + l.may + ')' : ''}: yêu cầu ${fmtNum(l.req)} ${l.unit || ''}${l.sent ? ` · đã gửi ${fmtNum(l.sent)}` : ''}`));
+  if (r.bs) out.push(`Bổ sung: ${r.bs.reason}${r.bs.note ? ' – ' + r.bs.note : ''}`);
+  if (r.reject) out.push('Từ chối: ' + r.reject);
+  if (r.note) out.push('Ghi chú: ' + r.note);
+  out.push(`Người yêu cầu: ${r.createdByName} · ${r.datetime || ''}`);
+  return out.join('\n');
+};
+// Màn gọn cho thợ · cán bộ vào thẳng Phiếu YC
+{ const _ar = applyRoleUI; applyRoleUI = function () {
+  const x = _ar.apply(this, arguments);
+  document.querySelectorAll('#sidebar .sidebar-item').forEach(el => { if (/openGuides|openVer|dp-tg|doLogout|goTabSb\('pyc'\)/.test(el.getAttribute('onclick') || '')) el.classList.add('tho-ok'); });
+  document.body.classList.toggle('tho-mode', isTho());
+  return x;
+}; }
+{ const _pc = partChooser; partChooser = function () {
+  if (isTho() || isCanBo()) { try { localStorage.setItem(LS_PART, 'kho'); } catch (e) {} return; }
+  return _pc.apply(this, arguments);
+}; }
+{ const _gt = goTab; goTab = function (tab) { if (isTho() && tab !== 'pyc') tab = 'pyc'; return _gt.call(this, tab); }; }
+{ const _rp = renderPyc; renderPyc = function (c) {
+  if (isTho()) return rqThoHome(c);
+  const x = _rp.apply(this, arguments);
+  if (isCanBo() && tcCan()) { const h = c.querySelector('.hist-head');
+    const tc = `<div class="rq-tc" onclick="goTc()"><span class="ic">🏗️</span><div><b>Thi công</b><small>Cọc khoan nhồi · Tường vây · Nhật ký · Nghiệm thu</small></div><span class="go">›</span></div>`;
+    if (h) h.insertAdjacentHTML('afterend', tc); else c.insertAdjacentHTML('afterbegin', tc); }
+  return x;
+}; }
+function rqThoHome(c) {
+  const R = newestFirst(projReqs()).filter(r => r.createdBy === me?.id);
+  const gui = R.filter(r => r.status === 'gui'), mo = R.filter(r => r.status === 'cho' || r.status === 'chohang'), xong = R.filter(r => !reqOpen(r)).slice(0, 10);
+  c.innerHTML = `<div class="rq-tho">
+    <div class="rq-hi"><div class="av">${escHtml(initials(me?.name))}</div><div><small>Xin chào</small><b>${escHtml(me?.name || '')}</b><span>${escHtml((ROLES[role] || {}).name || role)} · ${escHtml(curProj)}</span></div></div>
+    ${hp('y_tao') ? `<button class="rq-big" onclick="openReqNew()"><span class="pl">＋</span><span><b>Tạo phiếu yêu cầu</b><small>📦 Vật tư · ⛽ Nhiên liệu</small></span></button>` : '<div class="info-box">Chức danh của bạn chưa được bật quyền Tạo phiếu — nhờ Admin bật.</div>'}
+    ${pycSection('🚚 Kho đã giao – kiểm hàng rồi bấm "Đã nhận"', gui, 'Chưa có phiếu kho đã giao')}
+    ${pycSection('📋 Phiếu đang chờ kho', mo, 'Không có phiếu đang chờ')}
+    ${xong.length ? pycSection('✅ Đã xong gần đây', xong) : ''}
+  </div>`;
+}
+</script>
+<style>/* v5.71.0 phiếu YC nhiều dòng · màn gọn thợ */
+.rq-sec{border-left:4px solid var(--primary)}
+.rq-mfor{font-size:13.5px;color:#9A3412;background:#FFF1E8;border-radius:8px;padding:6px 9px;margin-bottom:8px}.rq-sec.rq-nl{border-left-color:#F26522}
+.rq-sh{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}.rq-sh b{font-size:16.5px}.rq-sh span{font-size:13px;color:var(--text3);font-weight:700}
+.rq-line{border:1px solid var(--border);border-radius:12px;padding:9px;margin-bottom:8px;background:#FAFBFC}
+.rq-top{display:flex;gap:8px;align-items:flex-start}.rq-top>.rq-nm,.rq-top>.rq-combo{flex:1;min-width:0}
+.rq-nm{cursor:pointer;padding:4px 2px}.rq-nm b{display:block;font-size:15.5px;line-height:1.3}.rq-nm small{display:block;color:var(--text3);font-size:12.5px;margin-top:2px}
+.rq-combo{position:relative}.rq-combo input{width:100%;box-sizing:border-box;padding:10px 11px;border:1.5px solid var(--border);border-radius:10px;font:inherit;font-size:15.5px;background:#fff;outline:none}.rq-combo input:focus{border-color:var(--primary)}
+.rq-combo .combo-list{position:absolute;left:0;right:-46px;top:calc(100% + 4px);z-index:20;background:#fff;border:1px solid var(--border);border-radius:12px;box-shadow:0 10px 26px rgba(0,0,0,.16);max-height:300px;overflow:auto;display:none}
+.rq-combo .combo-item{display:block;padding:10px 12px;border-bottom:1px solid var(--border);cursor:pointer}.rq-combo .combo-item:active{background:#EEF4FF}
+.rq-combo .combo-item b{display:block;font-size:15px;line-height:1.3}.rq-combo .combo-item small{display:block;font-size:12.5px;color:var(--text3);margin-top:2px}
+.rq-combo .combo-item.hint{display:flex;flex-direction:column}.rq-combo .combo-head{padding:7px 12px;font-size:12px;font-weight:800;color:var(--text3);background:#F5F7FA;text-transform:uppercase;letter-spacing:.4px}
+.rq-combo .combo-empty{padding:12px;color:var(--text3);font-size:14px}
+.rq-x{flex:0 0 38px;height:38px;border:none;background:#FDECEC;color:var(--red);border-radius:10px;font-weight:900;font-size:16px;cursor:pointer}
+.rq-qty{display:flex;align-items:center;gap:8px;margin-top:8px}.rq-qty span{font-size:13.5px;color:var(--text2);font-weight:700;flex:0 0 auto}
+.rq-qty input{flex:1;min-width:0;max-width:150px;font-size:17px;font-weight:800;padding:9px 10px;border:1.5px solid var(--border);border-radius:10px;font-family:inherit}.rq-qty b{font-size:14px;color:var(--text2)}
+.rq-may{margin-top:8px}.rq-may small{display:block;font-size:12.5px;font-weight:700;color:var(--text2);margin-bottom:4px}
+.rq-may select,.rq-nlmay select,.rq-why{width:100%;box-sizing:border-box;padding:10px;border:1.5px solid var(--border);border-radius:10px;font:inherit;font-size:15px;background:#fff}.rq-why{margin-top:6px}
+.rq-add{width:100%;border:1.5px dashed var(--primary);background:#EEF4FF;color:var(--primary);border-radius:12px;padding:11px;font:inherit;font-weight:800;font-size:15px;cursor:pointer}
+.rq-nl .rq-add{border-color:#F26522;background:#FFF1E8;color:#C2410C}
+.rq-who{display:flex;justify-content:space-between;align-items:center;gap:8px;margin:0 0 10px;font-size:13px;color:var(--text3);font-weight:700}
+.rq-tc{display:flex;align-items:center;gap:12px;margin:0 14px 12px;padding:12px 14px;border-radius:16px;background:#FFF1E8;border:1.5px solid #F7C9A9;cursor:pointer}
+.rq-tc .ic{font-size:28px}.rq-tc div{flex:1}.rq-tc b{display:block;font-size:16px}.rq-tc small{color:var(--text3);font-size:12.5px}.rq-tc .go{font-size:26px;font-weight:900;color:#C2410C}
+.rq-tho{padding:14px 14px 30px}
+.rq-hi{display:flex;gap:12px;align-items:center;margin:4px 0 16px}.rq-hi .av{width:48px;height:48px;border-radius:50%;background:#FFF1E8;color:#0B2545;font-weight:900;display:flex;align-items:center;justify-content:center;font-size:17px}
+.rq-hi small{display:block;font-size:12.5px;color:var(--text3);font-weight:700}.rq-hi b{display:block;font-size:19px}.rq-hi span{font-size:12.5px;color:var(--text3)}
+.rq-big{width:100%;display:flex;align-items:center;gap:14px;border:none;border-radius:20px;padding:20px 18px;margin-bottom:18px;background:linear-gradient(135deg,#F26522,#E0531A);color:#fff;text-align:left;cursor:pointer;box-shadow:0 8px 22px rgba(242,101,34,.35);font-family:inherit}
+.rq-big .pl{width:52px;height:52px;border-radius:16px;background:rgba(255,255,255,.22);display:flex;align-items:center;justify-content:center;font-size:30px;font-weight:900}
+.rq-big b{display:block;font-size:20px}.rq-big small{display:block;font-size:13.5px;opacity:.9;margin-top:3px}
+body.tho-mode #bottom-nav{display:none!important}
+body.tho-mode .sidebar-body>.sidebar-item:not(.tho-ok):not(#sb-bio),body.tho-mode .sidebar-body>.sidebar-label,body.tho-mode .sidebar-body>.sidebar-divider{display:none!important}
 </style>
 </body>
 </html>
