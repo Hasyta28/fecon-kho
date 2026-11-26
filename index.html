@@ -8214,7 +8214,7 @@ function renderRoles() {
   body.innerHTML = `
     <div class="card" style="padding:12px;margin-bottom:12px">
       <div class="rl-h"><b>1. Chọn chức danh</b><button onclick="rlAdd=!rlAdd;renderRoles()">${rlAdd ? 'Đóng' : '+ Thêm chức danh'}</button></div>
-      ${rlAdd ? `<div class="rl-add"><div class="fg-row"><div class="fg"><label>Viết tắt (tiếng Anh)</label><input id="rl-n-abbr" maxlength="6" placeholder="VD: QA" oninput="this.value=this.value.toUpperCase().replace(/[^A-Z0-9]/g,'')"></div>
+      ${rlAdd ? `<div class="rl-add"><div class="fg-row"><div class="fg"><label>Viết tắt <small style="font-weight:400">(không bắt buộc)</small></label><input id="rl-n-abbr" maxlength="6" placeholder="Để trống: tự tạo" oninput="this.value=this.value.toUpperCase().replace(/[^A-Z0-9]/g,'')"></div>
         <div class="fg"><label>Tên tiếng Việt</label><input id="rl-n-name" placeholder="VD: Kỹ sư chất lượng"></div></div>
         <div class="fg"><label>Nhóm mẫu (quyền ban đầu)</label><select id="rl-n-group">${['g1','g2','g3','g4','g5','g6'].map(g => `<option value="${g}">${GROUP_UI[g][0]}</option>`).join('')}</select></div>
         <button class="btn-full" style="background:var(--primary)" onclick="rlCreate()">Thêm chức danh</button></div>` : ''}
@@ -8243,14 +8243,24 @@ async function rlSave() {
   if (await rlCall('saveRole', {code:rlSel, abbr:r.abbr, name:r.name, group:r.group, perm:rlDraft || r.perm, goiY:rlGoiY || r.goiY || []}, `✅ Đã lưu quyền ${r.abbr} — áp dụng ngay cho các tài khoản đang dùng`)) { rlDraft = null; rlGoiY = null; renderRoles(); }
 }
 async function rlCreate() {
-  const abbr = (document.getElementById('rl-n-abbr').value || '').trim(), name = (document.getElementById('rl-n-name').value || '').trim(), g = document.getElementById('rl-n-group').value;
-  if (!abbr || !name) { toast('⚠️ Nhập viết tắt và tên tiếng Việt'); return; }
+  let abbr = (document.getElementById('rl-n-abbr').value || '').trim(); const name = (document.getElementById('rl-n-name').value || '').trim(), g = document.getElementById('rl-n-group').value;
+  if (!name) { toast('⚠️ Nhập tên tiếng Việt'); return; }
+  if (!abbr) abbr = rlAutoAbbr(name);   // v5.72.0: để trống viết tắt → tự tạo từ chữ đầu tên tiếng Việt
   if (ROLES[abbr]) { toast('⚠️ Viết tắt đã có'); return; }
   if (await rlCall('saveRole', {code:abbr, abbr, name, group:g, perm:presetPerm(abbr, g)}, `✅ Đã thêm ${abbr} (${name})`)) { rlSel = abbr; rlAdd = false; rlDraft = null; renderRoles(); }
 }
+// v5.72.0: mã viết tắt tự tạo — chữ đầu mỗi từ, bỏ dấu (Kỹ sư điện → KSD), trùng thì thêm số
+function rlAutoAbbr(name) {
+  const base = String(name).normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[đĐ]/g, 'D').toUpperCase()
+    .split(/[^A-Z0-9]+/).filter(Boolean).map(w => w[0]).join('').slice(0, 5) || 'CD';
+  if (!ROLES[base] && base !== 'ADM') return base;
+  for (let i = 2; i < 100; i++) { const c = (base.slice(0, 6 - String(i).length) + i); if (!ROLES[c]) return c; }
+  return base;
+}
 async function rlRename() {
   const r = ROLES[rlSel]; if (!r) return;
-  const abbr = (prompt('Viết tắt tiếng Anh (tối đa 6 ký tự):', r.abbr) || '').toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 6); if (!abbr) return;
+  const a0 = prompt('Viết tắt (tối đa 6 ký tự, để trống = giữ nguyên ' + r.abbr + '):', r.abbr); if (a0 == null) return;
+  const abbr = a0.toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 6) || r.abbr;
   const name = (prompt('Tên tiếng Việt:', r.name) || '').trim(); if (!name) return;
   if (await rlCall('saveRole', {code:rlSel, abbr, name, group:r.group, perm:rlDraft || r.perm, goiY:rlGoiY || r.goiY || []}, '✅ Đã đổi tên chức danh')) { rlSel = abbr; rlDraft = null; rlGoiY = null; renderRoles(); }
 }
