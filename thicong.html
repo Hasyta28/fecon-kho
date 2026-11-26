@@ -467,7 +467,7 @@ button .pi,.btn .pi,a .pi,.chip .pi,.tag .pi,.badge .pi,.yn .pi,.bnav .pi,.bnav-
 <div id="app"></div>
 <script>
 // FECON South · THI CÔNG 1.4.3 — chạy cùng app Kho (đăng nhập ở index.html, dùng chung máy chủ Apps Script)
-const KHO_VERSION = '5.71.0';
+const KHO_VERSION = '5.72.0';
 // ===== FECON Thi công 1.0 — lõi: máy chủ, lưu trên máy, hàng đợi gửi, điều hướng =====
 const TC_APP_VERSION = '1.16.0';   // 1.16.0 (FECON 5.56.15): Mặt bằng → Bố trí công trường (kéo thả thiết bị, bãi; tự báo sát tường vây, đè mốc, chồng lấn, tầm quay cẩu; gắn máy thật Kho) — cần máy chủ TC 1.8.0 ·   // 1.15.0 (FECON 5.56.14): Quản trị → Cấu hình: nhập ranh hầm (đường bao) + mốc trắc đạc VN2000, vẽ lên mặt bằng ·   // 1.14.0 (FECON 5.56.13): cấu kiện "tọa độ sơ đồ" (nạp từ bản vẽ, chưa có VN2000) — Định vị để trống X, Y thiết kế · nạp trạng thái đã thi công từ trang "Trang thai" ·   // 1.13.0 (FECON 5.56.12): CHT/CHP "Gửi & xác nhận luôn" (trừ Hold, Nghiệm thu, Khối lượng) — cần máy chủ TC 1.6.0
 const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbw6Rmi80I7RI3ij2U7RdRF5pYuQTnPrwEmGmUZS5xpxzLwwVynfoFUujZe1lm6HS1ymxw/exec';
@@ -4547,6 +4547,69 @@ const xlBuf = wb => xlNoEmo(wb).xlsx.writeBuffer();
 })();
 
 if ('serviceWorker' in navigator) { try { navigator.serviceWorker.register('sw.js').catch(() => {}); } catch (e) {} }
+</script>
+<style>/* ===== v5.72.0: PHẢN HỒI KHI CHẠM — đổi màu khi chạm / rê chuột, tiếng "tách", rung (Android) ===== */
+.tap-hov{filter:brightness(.96);box-shadow:inset 0 0 0 999px rgba(0,60,140,.05)!important;cursor:pointer}
+.tap-on{filter:brightness(.88)!important;box-shadow:inset 0 0 0 999px rgba(0,60,140,.13)!important;transition:filter .05s,transform .05s}
+.tap-on.tap-sm{transform:scale(.95)}
+</style>
+<script>// ===== v5.72.0: PHẢN HỒI KHI CHẠM (dùng chung Kho + Thi công; cài đặt lưu trên máy: fecon_tap_snd, fecon_tap_vib) =====
+(function () {
+  const SEL = 'button,a[href],a[onclick],[onclick],[role="button"],[role="tab"],summary,.sidebar-item,.chip,.filter-chip';
+  const SKIP = 'input,textarea,select,option,[contenteditable="true"],.modal-bg,.sidebar-overlay,.kl-dim,.no-tap';
+  const lsGet = k => { try { return localStorage.getItem(k); } catch (e) { return null; } };
+  window.tapOn = k => lsGet('fecon_tap_' + k) !== '0';                       // mặc định BẬT
+  window.tapSet = (k, v) => { try { localStorage.setItem('fecon_tap_' + k, v ? '1' : '0'); } catch (e) {} };
+  function pick(t) {
+    if (!t || !t.closest || t.closest(SKIP)) return null;
+    const el = t.closest(SEL);
+    if (!el || el.disabled || el.closest(SKIP)) return null;
+    const r = el.getBoundingClientRect();
+    if (r.width * r.height > innerWidth * innerHeight * 0.5) return null;   // lớp phủ / khung to: không đổi màu
+    return el;
+  }
+  let ac = null;
+  function tick() {
+    if (!tapOn('snd')) return;
+    try {
+      ac = ac || new (window.AudioContext || window.webkitAudioContext)();
+      if (ac.state === 'suspended') ac.resume();
+      const t = ac.currentTime, o = ac.createOscillator(), g = ac.createGain();
+      o.type = 'sine'; o.frequency.setValueAtTime(1500, t); o.frequency.exponentialRampToValueAtTime(700, t + 0.03);
+      g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(0.12, t + 0.004); g.gain.exponentialRampToValueAtTime(0.0001, t + 0.04);
+      o.connect(g); g.connect(ac.destination); o.start(t); o.stop(t + 0.05);
+    } catch (e) {}
+  }
+  window.tapTick = tick;
+  let cur = null, tm = 0;
+  function off() { if (cur) { const c = cur; cur = null; clearTimeout(tm); tm = setTimeout(() => c.classList.remove('tap-on', 'tap-sm'), 90); } }
+  document.addEventListener('pointerdown', e => {
+    if (e.button > 0) return;
+    const el = pick(e.target); if (!el) return;
+    if (cur && cur !== el) cur.classList.remove('tap-on', 'tap-sm');
+    clearTimeout(tm); cur = el;
+    const r = el.getBoundingClientRect();
+    el.classList.add('tap-on'); if (r.height < 120 && r.width < 320) el.classList.add('tap-sm');
+  }, true);
+  ['pointerup', 'pointercancel', 'dragstart'].forEach(n => document.addEventListener(n, off, true));
+  document.addEventListener('scroll', off, true);
+  // Tiếng + rung khi chạm thật (sự kiện click: vuốt cuộn không kêu)
+  document.addEventListener('click', e => {
+    if (!pick(e.target)) return;
+    tick();
+    if (tapOn('vib') && navigator.vibrate) { try { navigator.vibrate(15); } catch (x) {} }   // iPhone không hỗ trợ: tự bỏ qua
+  }, true);
+  // Máy tính: rê chuột vào thì sáng nhẹ
+  let hov = null;
+  document.addEventListener('pointerover', e => {
+    if (e.pointerType !== 'mouse') return;
+    const el = pick(e.target);
+    if (el === hov) return;
+    if (hov) hov.classList.remove('tap-hov');
+    hov = el; if (el) el.classList.add('tap-hov');
+  }, true);
+  document.addEventListener('pointerleave', () => { if (hov) { hov.classList.remove('tap-hov'); hov = null; } });
+})();
 </script>
 </body>
 </html>
