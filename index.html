@@ -6781,7 +6781,7 @@ function reqLook(r) {
   const part = reqRemain(r) > 0;
   if (r.status === 'tuchoi') return {bg:'#F3F4F6', bd:'#C9D3E3', chip:'⛔ Bị từ chối', cb:'#6B7A90'};
   if (r.status === 'huy') return {bg:'#F3F4F6', bd:'#C9D3E3', chip:'Đã hủy', cb:'#8A9AB0'};
-  if (r.duyet === 'chua' && r.status === 'cho' && !hp('y_giao')) return {bg:'rgba(242,201,76,.16)', bd:'rgba(183,121,31,.55)', chip:'⏳ Chờ CHT/CHP duyệt · chờ kho giao', cb:'#B7791F'};
+  if (r.duyet === 'chua' && r.status === 'cho' && !hp('y_giao')) return {bg:'#fff', bd:'#F5D27A', chip:'⏳ Chờ CHT/CHP duyệt · chờ kho giao', cb:'#F59E0B', ct:'#3B2500'};   // v5.71.0: vàng cam sáng, nền trắng
   if (r.status === 'cho') return {bg:'rgba(231,76,60,.10)', bd:'rgba(192,57,43,.5)', chip:'⏳ Chờ kho giao hàng', cb:'#C0392B'};
   if (r.status === 'gui') return {bg:'rgba(41,128,185,.09)', bd:'rgba(41,128,185,.5)', chip: part ? '🚚 Kho đã giao một phần · chờ người nhận xác nhận' : '🚚 Kho đã giao đủ · chờ người nhận xác nhận', cb:'#1F6FA8'};
   if (r.status === 'chohang') return {bg:'rgba(242,101,34,.10)', bd:'rgba(194,65,12,.5)', chip:'📦 Đã nhận một phần · còn thiếu, chờ kho giao tiếp', cb:'#C2410C'};
@@ -6817,7 +6817,7 @@ function reqCard(r) {
   const L = reqLook(r), A = reqAp(r);
   const sum = (r.lines || []).map(l => cocShort(l.itemName) + ': ' + fmtNum(l.req) + (l.sent && l.sent < l.req ? ` (kho đã giao ${fmtNum(l.sent)})` : '')).join(' · ');
   return `<div class="pyc-card" style="background:${L.bg};border-color:${L.bd}" onclick="openReq('${escHtml(r.id)}')">
-    <div class="pyc-strip" style="background:${L.cb}">${L.chip}</div>
+    <div class="pyc-strip" style="background:${L.cb}${L.ct ? ";color:" + L.ct : ""}">${L.chip}</div>
     <div class="pyc-in-card">
       <div class="pyc-id">${escHtml(r.id)}</div>
       <div class="pyc-title">${escHtml(r.title)}</div>
@@ -6945,7 +6945,7 @@ function renderReqDetail() {
   const NX = reqNext(r);
   const px = byTimeDesc(db.transactions.filter(t => t.type === 'xuat' && t.refId === r.id));
   body.innerHTML = `<div class="pyc-detail">
-    <div class="pyc-banner"><div class="pyc-banner-top" style="background:${L.cb}"><small>TRẠNG THÁI PHIẾU</small><b>${L.chip}</b></div>
+    <div class="pyc-banner"><div class="pyc-banner-top" style="background:${L.cb}${L.ct ? ";color:" + L.ct : ""}"><small>TRẠNG THÁI PHIẾU</small><b>${L.chip}</b></div>
       <div class="pyc-banner-bot"><div style="color:${NX[1] ? '#C2410C' : 'var(--text3)'};font-weight:800;font-size:15.5px">${NX[0]}</div>
       ${A[3] ? `<div class="pyc-unapp">${A[0]}</div>` : `<div style="font-size:14px">Duyệt: <b style="color:${A[2]}">${A[0]}</b></div>`}</div></div>
     <div class="pyc-head">
