@@ -1915,7 +1915,7 @@ body.pg-printing #pg-print{display:block;position:fixed;inset:0;z-index:9000;bac
 // ============================================================
 // CONFIG
 // ============================================================
-const APP_VERSION = '5.73.2';
+const APP_VERSION = '5.73.3';
 const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbw6Rmi80I7RI3ij2U7RdRF5pYuQTnPrwEmGmUZS5xpxzLwwVynfoFUujZe1lm6HS1ymxw/exec';
 // ============================================================
 
@@ -14186,7 +14186,7 @@ async function bcBuild() {
   const LO = bcLoans(X);
   let MT = null; try { MT = bcMayThue(X, FU); } catch (e) { console.error(e); }   // v5.57.0 · v5.59.9: Máy – thiết bị
   // phụ lục từ hàm cũ: Sửa chữa, Đối chiếu P.QLTB, Phiếu YC / cóc nối / kiểm kê, Hàng hư hỏng
-  const KEEP = ['Sửa chữa', 'Trạng thái máy', 'Tóm tắt',   // v5.59.9: bỏ sheet Đối chiếu P.QLTB · v5.69.0: + Trạng thái máy
+  const KEEP = ['Sửa chữa', 'Tóm tắt',   // v5.59.9: bỏ sheet Đối chiếu P.QLTB · v5.69.0: + Trạng thái máy · v5.73.3: bỏ Trạng thái máy (người dùng không cần)
     'Phiếu yêu cầu', 'Đối chiếu cóc nối', 'Kiểm kê', 'Đang hỏng'];
   const mine = new Set(wb.worksheets.map(w => w.id));
   try { BC_WB = wb; await _bcOldNxt(); } finally { BC_WB = null; }
