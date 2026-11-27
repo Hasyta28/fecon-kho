@@ -32,6 +32,7 @@ KHÔNG đưa lên repo (repo công khai): file dữ liệu `.xlsx` (thư mục `
 3. Chốt DANH SÁCH SỬA đánh số, ghi rõ có phải dán Apps Script không.
 4. Chỉ sửa khi người dùng nói "làm" / "ok chốt".
 5. Khi làm: tăng phiên bản; gói `FECON_x.y.z.zip` + `HUONG_DAN_CAP_NHAT.txt` (bấm gì, có dán Apps Script không); chạy thử trên máy chủ giả + xem ảnh chụp rồi mới gửi; cập nhật `BAN_GIAO.md`.
+   **Tự cài (người dùng dặn 27/11/2026):** việc đã chốt "làm" thì sau khi chạy thử đạt, Claude tự tạo PR và gộp (merge) vào `main` luôn — GitHub Pages tự cập nhật, người dùng chỉ bấm "Cập nhật ngay" trên app. Không hỏi lại. Phần Apps Script thì Claude không tự dán được: cập nhật 2 tệp `.gs` trên repo và báo người dùng dán (dán Apps Script TRƯỚC, nên chỉ gộp GitHub sau khi người dùng báo đã dán, trừ khi app mới vẫn chạy được với máy chủ cũ).
 6. Không làm tính năng giúp khai số đo khác thực tế trong hồ sơ nghiệm thu.
 
 ## Đóng gói & triển khai (tránh làm app / máy chủ nặng)
