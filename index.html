@@ -1456,6 +1456,8 @@ body.pg-printing #pg-print{display:block;position:fixed;inset:0;z-index:9000;bac
     <div class="sidebar-item" onclick="closeSidebar();setTimeout(openVer,300)"><span class="sidebar-item-ico">🆕</span>Cập nhật phiên bản mới<span class="sb-dot" id="sb-ver-dot" style="display:none"></span></div>
     <div class="sidebar-item" id="sb-bio" style="display:none" onclick="bioToggle()"><span class="sidebar-item-ico">🔒</span><span id="sb-bio-lbl" style="flex:1">Khóa app bằng Face ID</span><span class="bio-sw" id="sb-bio-sw"></span></div>
     <div class="sidebar-item" onclick="openDpSb('dp-tg')"><span class="sidebar-item-ico">🔔</span>Nhận cảnh báo Telegram</div>
+    <div class="sidebar-item" onclick="tapToggle('snd')"><span class="sidebar-item-ico">👉</span><span style="flex:1">Tiếng khi chạm</span><span class="bio-sw" id="sb-tap-snd-sw"></span></div>
+    <div class="sidebar-item" onclick="tapToggle('vib')"><span class="sidebar-item-ico">📱</span><span style="flex:1">Rung khi chạm <small style="color:var(--text2)">(Android)</small></span><span class="bio-sw" id="sb-tap-vib-sw"></span></div>
     <div class="sidebar-divider need-ql"></div>
     <div class="sidebar-label need-ql">Quản lý</div>
     <div class="sidebar-item need-admin" onclick="openDpSb('dp-members')"><span class="sidebar-item-ico">👥</span>Thành viên<span class="sb-badge" id="sb-pend" style="display:none">0</span></div>
@@ -1913,7 +1915,7 @@ body.pg-printing #pg-print{display:block;position:fixed;inset:0;z-index:9000;bac
 // ============================================================
 // CONFIG
 // ============================================================
-const APP_VERSION = '5.71.0';
+const APP_VERSION = '5.72.0';
 const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbw6Rmi80I7RI3ij2U7RdRF5pYuQTnPrwEmGmUZS5xpxzLwwVynfoFUujZe1lm6HS1ymxw/exec';
 // ============================================================
 
@@ -8212,7 +8214,7 @@ function renderRoles() {
   body.innerHTML = `
     <div class="card" style="padding:12px;margin-bottom:12px">
       <div class="rl-h"><b>1. Chọn chức danh</b><button onclick="rlAdd=!rlAdd;renderRoles()">${rlAdd ? 'Đóng' : '+ Thêm chức danh'}</button></div>
-      ${rlAdd ? `<div class="rl-add"><div class="fg-row"><div class="fg"><label>Viết tắt (tiếng Anh)</label><input id="rl-n-abbr" maxlength="6" placeholder="VD: QA" oninput="this.value=this.value.toUpperCase().replace(/[^A-Z0-9]/g,'')"></div>
+      ${rlAdd ? `<div class="rl-add"><div class="fg-row"><div class="fg"><label>Viết tắt <small style="font-weight:400">(không bắt buộc)</small></label><input id="rl-n-abbr" maxlength="6" placeholder="Để trống: tự tạo" oninput="this.value=this.value.toUpperCase().replace(/[^A-Z0-9]/g,'')"></div>
         <div class="fg"><label>Tên tiếng Việt</label><input id="rl-n-name" placeholder="VD: Kỹ sư chất lượng"></div></div>
         <div class="fg"><label>Nhóm mẫu (quyền ban đầu)</label><select id="rl-n-group">${['g1','g2','g3','g4','g5','g6'].map(g => `<option value="${g}">${GROUP_UI[g][0]}</option>`).join('')}</select></div>
         <button class="btn-full" style="background:var(--primary)" onclick="rlCreate()">Thêm chức danh</button></div>` : ''}
@@ -8241,14 +8243,24 @@ async function rlSave() {
   if (await rlCall('saveRole', {code:rlSel, abbr:r.abbr, name:r.name, group:r.group, perm:rlDraft || r.perm, goiY:rlGoiY || r.goiY || []}, `✅ Đã lưu quyền ${r.abbr} — áp dụng ngay cho các tài khoản đang dùng`)) { rlDraft = null; rlGoiY = null; renderRoles(); }
 }
 async function rlCreate() {
-  const abbr = (document.getElementById('rl-n-abbr').value || '').trim(), name = (document.getElementById('rl-n-name').value || '').trim(), g = document.getElementById('rl-n-group').value;
-  if (!abbr || !name) { toast('⚠️ Nhập viết tắt và tên tiếng Việt'); return; }
+  let abbr = (document.getElementById('rl-n-abbr').value || '').trim(); const name = (document.getElementById('rl-n-name').value || '').trim(), g = document.getElementById('rl-n-group').value;
+  if (!name) { toast('⚠️ Nhập tên tiếng Việt'); return; }
+  if (!abbr) abbr = rlAutoAbbr(name);   // v5.72.0: để trống viết tắt → tự tạo từ chữ đầu tên tiếng Việt
   if (ROLES[abbr]) { toast('⚠️ Viết tắt đã có'); return; }
   if (await rlCall('saveRole', {code:abbr, abbr, name, group:g, perm:presetPerm(abbr, g)}, `✅ Đã thêm ${abbr} (${name})`)) { rlSel = abbr; rlAdd = false; rlDraft = null; renderRoles(); }
 }
+// v5.72.0: mã viết tắt tự tạo — chữ đầu mỗi từ, bỏ dấu (Kỹ sư điện → KSD), trùng thì thêm số
+function rlAutoAbbr(name) {
+  const base = String(name).normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[đĐ]/g, 'D').toUpperCase()
+    .split(/[^A-Z0-9]+/).filter(Boolean).map(w => w[0]).join('').slice(0, 5) || 'CD';
+  if (!ROLES[base] && base !== 'ADM') return base;
+  for (let i = 2; i < 100; i++) { const c = (base.slice(0, 6 - String(i).length) + i); if (!ROLES[c]) return c; }
+  return base;
+}
 async function rlRename() {
   const r = ROLES[rlSel]; if (!r) return;
-  const abbr = (prompt('Viết tắt tiếng Anh (tối đa 6 ký tự):', r.abbr) || '').toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 6); if (!abbr) return;
+  const a0 = prompt('Viết tắt (tối đa 6 ký tự, để trống = giữ nguyên ' + r.abbr + '):', r.abbr); if (a0 == null) return;
+  const abbr = a0.toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 6) || r.abbr;
   const name = (prompt('Tên tiếng Việt:', r.name) || '').trim(); if (!name) return;
   if (await rlCall('saveRole', {code:rlSel, abbr, name, group:r.group, perm:rlDraft || r.perm, goiY:rlGoiY || r.goiY || []}, '✅ Đã đổi tên chức danh')) { rlSel = abbr; rlDraft = null; rlGoiY = null; renderRoles(); }
 }
@@ -21829,5 +21841,74 @@ function rqThoHome(c) {
 body.tho-mode #bottom-nav{display:none!important}
 body.tho-mode .sidebar-body>.sidebar-item:not(.tho-ok):not(#sb-bio),body.tho-mode .sidebar-body>.sidebar-label,body.tho-mode .sidebar-body>.sidebar-divider{display:none!important}
 </style>
+<style>/* ===== v5.72.0: PHẢN HỒI KHI CHẠM — đổi màu khi chạm / rê chuột, tiếng "tách", rung (Android) ===== */
+.tap-hov{filter:brightness(.96);box-shadow:inset 0 0 0 999px rgba(0,60,140,.05)!important;cursor:pointer}
+.tap-on{filter:brightness(.88)!important;box-shadow:inset 0 0 0 999px rgba(0,60,140,.13)!important;transition:filter .05s,transform .05s}
+.tap-on.tap-sm{transform:scale(.95)}
+</style>
+<script>// ===== v5.72.0: PHẢN HỒI KHI CHẠM (dùng chung Kho + Thi công; cài đặt lưu trên máy: fecon_tap_snd, fecon_tap_vib) =====
+(function () {
+  const SEL = 'button,a[href],a[onclick],[onclick],[role="button"],[role="tab"],summary,.sidebar-item,.chip,.filter-chip';
+  const SKIP = 'input,textarea,select,option,[contenteditable="true"],.modal-bg,.sidebar-overlay,.kl-dim,.no-tap';
+  const lsGet = k => { try { return localStorage.getItem(k); } catch (e) { return null; } };
+  window.tapOn = k => lsGet('fecon_tap_' + k) !== '0';                       // mặc định BẬT
+  window.tapSet = (k, v) => { try { localStorage.setItem('fecon_tap_' + k, v ? '1' : '0'); } catch (e) {} };
+  function pick(t) {
+    if (!t || !t.closest || t.closest(SKIP)) return null;
+    const el = t.closest(SEL);
+    if (!el || el.disabled || el.closest(SKIP)) return null;
+    const r = el.getBoundingClientRect();
+    if (r.width * r.height > innerWidth * innerHeight * 0.5) return null;   // lớp phủ / khung to: không đổi màu
+    return el;
+  }
+  let ac = null;
+  function tick() {
+    if (!tapOn('snd')) return;
+    try {
+      ac = ac || new (window.AudioContext || window.webkitAudioContext)();
+      if (ac.state === 'suspended') ac.resume();
+      const t = ac.currentTime, o = ac.createOscillator(), g = ac.createGain();
+      o.type = 'sine'; o.frequency.setValueAtTime(1500, t); o.frequency.exponentialRampToValueAtTime(700, t + 0.03);
+      g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(0.12, t + 0.004); g.gain.exponentialRampToValueAtTime(0.0001, t + 0.04);
+      o.connect(g); g.connect(ac.destination); o.start(t); o.stop(t + 0.05);
+    } catch (e) {}
+  }
+  window.tapTick = tick;
+  let cur = null, tm = 0;
+  function off() { if (cur) { const c = cur; cur = null; clearTimeout(tm); tm = setTimeout(() => c.classList.remove('tap-on', 'tap-sm'), 90); } }
+  document.addEventListener('pointerdown', e => {
+    if (e.button > 0) return;
+    const el = pick(e.target); if (!el) return;
+    if (cur && cur !== el) cur.classList.remove('tap-on', 'tap-sm');
+    clearTimeout(tm); cur = el;
+    const r = el.getBoundingClientRect();
+    el.classList.add('tap-on'); if (r.height < 120 && r.width < 320) el.classList.add('tap-sm');
+  }, true);
+  ['pointerup', 'pointercancel', 'dragstart'].forEach(n => document.addEventListener(n, off, true));
+  document.addEventListener('scroll', off, true);
+  // Tiếng + rung khi chạm thật (sự kiện click: vuốt cuộn không kêu)
+  document.addEventListener('click', e => {
+    if (!pick(e.target)) return;
+    tick();
+    if (tapOn('vib') && navigator.vibrate) { try { navigator.vibrate(15); } catch (x) {} }   // iPhone không hỗ trợ: tự bỏ qua
+  }, true);
+  // Máy tính: rê chuột vào thì sáng nhẹ
+  let hov = null;
+  document.addEventListener('pointerover', e => {
+    if (e.pointerType !== 'mouse') return;
+    const el = pick(e.target);
+    if (el === hov) return;
+    if (hov) hov.classList.remove('tap-hov');
+    hov = el; if (el) el.classList.add('tap-hov');
+  }, true);
+  document.addEventListener('pointerleave', () => { if (hov) { hov.classList.remove('tap-hov'); hov = null; } });
+})();
+</script>
+<script>// v5.72.0: công tắc Tiếng / Rung khi chạm trong menu
+function tapSwPaint(){ ['snd','vib'].forEach(k=>{ const s=document.getElementById('sb-tap-'+k+'-sw'); if(s) s.classList.toggle('on', tapOn(k)); }); }
+function tapToggle(k){ const v=!tapOn(k); tapSet(k,v); tapSwPaint(); if(k==='snd'&&v) tapTick(); if(k==='vib'&&v&&navigator.vibrate) navigator.vibrate(30);
+  toast((k==='snd'?'👉 Tiếng khi chạm: ':'📱 Rung khi chạm: ')+(v?'BẬT':'TẮT')+(k==='vib'&&v&&!navigator.vibrate?' (máy này không hỗ trợ rung, ví dụ iPhone)':'')); }
+tapSwPaint();
+</script>
 </body>
 </html>
