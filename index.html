@@ -1915,7 +1915,7 @@ body.pg-printing #pg-print{display:block;position:fixed;inset:0;z-index:9000;bac
 // ============================================================
 // CONFIG
 // ============================================================
-const APP_VERSION = '5.73.0';
+const APP_VERSION = '5.73.1';
 const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbw6Rmi80I7RI3ij2U7RdRF5pYuQTnPrwEmGmUZS5xpxzLwwVynfoFUujZe1lm6HS1ymxw/exec';
 // ============================================================
 
@@ -12859,6 +12859,7 @@ let h9Cnt = null;
   } catch (e) {}
 }; }
 function h9Set(type, v) {
+  if (window.imeOn) return;   // v5.73.1: bộ gõ đang ghép chữ → chờ ghép xong
   H9Q[type] = v; listLimit[type] = 100;
   goTab('ls' + type);
   const el = $h('h9-q-' + type); if (el) { el.focus(); try { el.setSelectionRange(el.value.length, el.value.length); } catch (e) {} }
@@ -17336,7 +17337,7 @@ function renderQlMap() {
   b.innerHTML = `<div class="info-box">Gắn mã P.QLTB cho máy / vật tư đã nhập trước khi có danh mục. Bấm <b>Gắn mã này</b>: vật tư đổi tên theo P.QLTB, máy giữ tên đang dùng; số liệu, phiếu cũ giữ nguyên. Gắn nhầm thì vào nhóm <b>Đã gắn</b>, tick các dòng sai rồi <b>Bỏ mã</b>. Đã gắn: <b>${done}</b>.</div>
     <div class="chip-row" style="margin-bottom:8px;padding:0"><div class="chip ${kind === 'may' ? 'on' : ''}" onclick="qmTab='may';q7Sel.clear();renderQlMap()">🏗 Máy (${db.devices.length})</div><div class="chip ${kind === 'vt' ? 'on' : ''}" onclick="qmTab='vt';q7Sel.clear();renderQlMap()">📦 Vật tư (${db.items.length})</div></div>
     <div class="chip-row" style="margin-bottom:8px;padding:0">${['chua', 'da', 'ngoai'].map(g => `<div class="chip ${q7G === g ? 'on' : ''}" onclick="q7G='${g}';q7Sel.clear();renderQlMap()">${gl[g]} (${cnt(kind, g)})</div>`).join('')}</div>
-    <div class="q7-tools"><input type="text" id="q7-q" placeholder="🔍 Tìm theo tên hoặc mã..." value="${escHtml(q7Q)}" oninput="q7Q=this.value;q7Sel.clear();clearTimeout(window._q7t);window._q7t=setTimeout(()=>{renderQlMap();const e=document.getElementById('q7-q');if(e){e.focus();e.setSelectionRange(e.value.length,e.value.length);}},250)"></div>
+    <div class="q7-tools"><input type="text" id="q7-q" data-ime placeholder="🔍 Tìm theo tên hoặc mã..." value="${escHtml(q7Q)}" oninput="q7Q=this.value;q7Sel.clear();clearTimeout(window._q7t);window._q7t=setTimeout(()=>{if(window.imeOn)return;renderQlMap();const e=document.getElementById('q7-q');if(e){e.focus();e.setSelectionRange(e.value.length,e.value.length);}},250)"></div>
     ${can && rows.length ? `<div class="q7-all"><label style="display:flex;gap:8px;align-items:center"><input type="checkbox" class="q7-ck" id="q7-all" ${nSel && nSel === rows.length ? 'checked' : ''} onchange="q7All(this.checked)">Chọn tất cả (${rows.length}${q7Q ? ' đang lọc' : ''})</label>${nHi ? `<button onclick="q7PickHi()">Chọn ${nHi} dòng giống ≥ 70%</button>` : ''}</div>` : ''}
     ${other && can ? `<div class="qm-bulk"><span>${other} vật tư chưa tìm thấy tên gần giống (thường là dầu, cóc nối, que hàn…). Vật tư nào thuộc P.QLTB thì bấm <b>Chọn khác</b>.</span><button onclick="qmBulkNone()">Đánh dấu ${other} vật tư chưa có gợi ý là tiêu hao</button></div>` : ''}
     ${rows.length ? rows.map(row).join('') : `<div class="empty-state"><p>${q7Q ? 'Không tìm thấy' : empty}</p></div>`}
@@ -22013,6 +22014,25 @@ function tapSwPaint(){ ['snd','vib'].forEach(k=>{ const s=document.getElementByI
 function tapToggle(k){ const v=!tapOn(k); tapSet(k,v); tapSwPaint(); if(k==='snd'&&v) tapTick(); if(k==='vib'&&v&&navigator.vibrate) navigator.vibrate(30);
   toast((k==='snd'?'👉 Tiếng khi chạm: ':'📱 Rung khi chạm: ')+(v?'BẬT':'TẮT')+(k==='vib'&&v&&!navigator.vibrate?' (máy này không hỗ trợ rung, ví dụ iPhone)':'')); }
 tapSwPaint();
+</script>
+<script>// ===== v5.73.1: Ô TÌM KIẾM + BỘ GÕ TIẾNG VIỆT (Telex / VNI trên Mac, iPhone) =====
+// Lỗi cũ: gõ / xoá trong ô tìm → app vẽ lại ô mới trong lúc bộ gõ còn đang ghép chữ → chữ bị nhân đôi ("dodado…").
+// Cách sửa: khi bộ gõ đang ghép chữ thì KHÔNG chạy lệnh lọc của ô tìm; ghép xong mới lọc một lần.
+(function () {
+  const SEL = 'input[type=search], input.srch-ic, input[data-ime]';
+  window.imeOn = false;
+  document.addEventListener('compositionstart', e => { if (e.target.matches && e.target.matches(SEL)) window.imeOn = true; }, true);
+  document.addEventListener('input', e => {
+    const t = e.target;
+    if ((e.isComposing || window.imeOn) && t.matches && t.matches(SEL)) e.stopImmediatePropagation();   // đang ghép chữ → chưa lọc
+  }, true);
+  document.addEventListener('compositionend', e => {
+    const t = e.target; if (!(t.matches && t.matches(SEL))) return;
+    window.imeOn = false;
+    setTimeout(() => { if (!window.imeOn && t.isConnected) t.dispatchEvent(new Event('input', { bubbles: true })); }, 0);   // ghép xong → lọc 1 lần
+  }, true);
+  document.addEventListener('focusout', e => { if (e.target.matches && e.target.matches(SEL)) window.imeOn = false; }, true);
+})();
 </script>
 </body>
 </html>

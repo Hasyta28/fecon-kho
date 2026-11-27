@@ -467,7 +467,7 @@ button .pi,.btn .pi,a .pi,.chip .pi,.tag .pi,.badge .pi,.yn .pi,.bnav .pi,.bnav-
 <div id="app"></div>
 <script>
 // FECON South · THI CÔNG 1.4.3 — chạy cùng app Kho (đăng nhập ở index.html, dùng chung máy chủ Apps Script)
-const KHO_VERSION = '5.73.0';
+const KHO_VERSION = '5.73.1';
 // ===== FECON Thi công 1.0 — lõi: máy chủ, lưu trên máy, hàng đợi gửi, điều hướng =====
 const TC_APP_VERSION = '1.16.0';   // 1.16.0 (FECON 5.56.15): Mặt bằng → Bố trí công trường (kéo thả thiết bị, bãi; tự báo sát tường vây, đè mốc, chồng lấn, tầm quay cẩu; gắn máy thật Kho) — cần máy chủ TC 1.8.0 ·   // 1.15.0 (FECON 5.56.14): Quản trị → Cấu hình: nhập ranh hầm (đường bao) + mốc trắc đạc VN2000, vẽ lên mặt bằng ·   // 1.14.0 (FECON 5.56.13): cấu kiện "tọa độ sơ đồ" (nạp từ bản vẽ, chưa có VN2000) — Định vị để trống X, Y thiết kế · nạp trạng thái đã thi công từ trang "Trang thai" ·   // 1.13.0 (FECON 5.56.12): CHT/CHP "Gửi & xác nhận luôn" (trừ Hold, Nghiệm thu, Khối lượng) — cần máy chủ TC 1.6.0
 const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbw6Rmi80I7RI3ij2U7RdRF5pYuQTnPrwEmGmUZS5xpxzLwwVynfoFUujZe1lm6HS1ymxw/exec';
@@ -3711,7 +3711,7 @@ function qHtml(a) {
       <div class="qleg">${TPERM.map(p => `<div><b>${p[1]}</b> ${esc(p[2])}</div>`).join('')}<div><b>ADM</b> Quản trị hệ thống luôn có toàn quyền</div></div>
       <div style="display:flex;gap:8px;margin-top:12px"><button class="btn sm" ${dirty.length ? '' : 'disabled'} onclick="qSave()">💾 Lưu ${dirty.length ? dirty.length + ' chức danh' : ''}</button>${dirty.length ? '<button class="btn ghost sm" onclick="QD={};render(false)">Bỏ thay đổi</button>' : ''}</div></div>
     <div class="fsec"><div class="fsec-t">👷 Người dùng · dự án được giao<small>chạm để giao dự án</small></div>
-      <div class="fg"><input placeholder="Tìm tên / chức danh…" value="${esc(ut)}" oninput="cur.a.uq=this.value;clearTimeout(window._uqT);window._uqT=setTimeout(()=>{render(false);const i=document.querySelector('.fsec input');if(i){i.focus();i.setSelectionRange(i.value.length,i.value.length)}},350)"></div>
+      <div class="fg"><input data-ime placeholder="Tìm tên / chức danh…" value="${esc(ut)}" oninput="cur.a.uq=this.value;clearTimeout(window._uqT);window._uqT=setTimeout(()=>{if(window.imeOn)return;render(false);const i=document.querySelector('.fsec input');if(i){i.focus();i.setSelectionRange(i.value.length,i.value.length)}},350)"></div>
       <div class="card">${users.map(u => { const tc = u.role === 'ADM' || ((QR.roles[u.role] || {}).perm || {}).t_xem; const pj = u.projects || [];
         return `<div class="row tap" onclick="qUser('${esc(u.id)}')"><div class="ico ${tc ? 'or' : 'gy'}">${esc(initials(u.name))}</div><div class="rmain"><div class="rname">${esc(u.name)} <span class="small">· ${esc(u.role)}</span></div><div class="rsub">${tc ? TPERM.filter(p => val(u.role, p[0])).map(p => p[1]).join(' · ') : '<span class="c-mut">không vào Thi công</span>'} · ${pj.length ? esc(pj.join(', ')) : '<b class="c-rd">chưa giao dự án</b>'}</div></div><span class="chev">›</span></div>`; }).join('') || '<div class="empty">Không có ai</div>'}</div>
       </div>`;
@@ -4609,6 +4609,25 @@ if ('serviceWorker' in navigator) { try { navigator.serviceWorker.register('sw.j
     hov = el; if (el) el.classList.add('tap-hov');
   }, true);
   document.addEventListener('pointerleave', () => { if (hov) { hov.classList.remove('tap-hov'); hov = null; } });
+})();
+</script>
+<script>// ===== v5.73.1: Ô TÌM KIẾM + BỘ GÕ TIẾNG VIỆT (Telex / VNI trên Mac, iPhone) =====
+// Lỗi cũ: gõ / xoá trong ô tìm → app vẽ lại ô mới trong lúc bộ gõ còn đang ghép chữ → chữ bị nhân đôi ("dodado…").
+// Cách sửa: khi bộ gõ đang ghép chữ thì KHÔNG chạy lệnh lọc của ô tìm; ghép xong mới lọc một lần.
+(function () {
+  const SEL = 'input[type=search], input.srch-ic, input[data-ime]';
+  window.imeOn = false;
+  document.addEventListener('compositionstart', e => { if (e.target.matches && e.target.matches(SEL)) window.imeOn = true; }, true);
+  document.addEventListener('input', e => {
+    const t = e.target;
+    if ((e.isComposing || window.imeOn) && t.matches && t.matches(SEL)) e.stopImmediatePropagation();   // đang ghép chữ → chưa lọc
+  }, true);
+  document.addEventListener('compositionend', e => {
+    const t = e.target; if (!(t.matches && t.matches(SEL))) return;
+    window.imeOn = false;
+    setTimeout(() => { if (!window.imeOn && t.isConnected) t.dispatchEvent(new Event('input', { bubbles: true })); }, 0);   // ghép xong → lọc 1 lần
+  }, true);
+  document.addEventListener('focusout', e => { if (e.target.matches && e.target.matches(SEL)) window.imeOn = false; }, true);
 })();
 </script>
 </body>
