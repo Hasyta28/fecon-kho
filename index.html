@@ -1915,7 +1915,7 @@ body.pg-printing #pg-print{display:block;position:fixed;inset:0;z-index:9000;bac
 // ============================================================
 // CONFIG
 // ============================================================
-const APP_VERSION = '5.73.1';
+const APP_VERSION = '5.73.2';
 const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbw6Rmi80I7RI3ij2U7RdRF5pYuQTnPrwEmGmUZS5xpxzLwwVynfoFUujZe1lm6HS1ymxw/exec';
 // ============================================================
 
@@ -15726,7 +15726,21 @@ function xlAutoH(wb) {
   } catch (e) { console.error(e); }
   return wb;
 }
-const xlBuf = async wb => { try { if (typeof bcStamp === 'function') await bcStamp(wb); } catch (e) { console.error(e); } return xlAutoH(xlNoEmo(wb)).xlsx.writeBuffer(); };   // v5.57.0: dấu nguồn + khoá số liệu · v5.59.7: hàng tự cao
+// v5.73.2: định dạng "#,##0.##" làm số chẵn hiện dấu thừa ("16.500," / "36,") trên Excel kiểu Việt Nam (Mac / Windows).
+// Trước khi ghi file: ô chứa số nguyên (kể cả kết quả công thức) mà định dạng có phần lẻ tuỳ chọn → bỏ phần lẻ. Số lẻ giữ nguyên.
+function xlIntFmt(wb) {
+  try {
+    (wb.worksheets || []).forEach(ws => ws.eachRow({ includeEmpty:false }, row => row.eachCell({ includeEmpty:false }, c => {
+      const f = c.numFmt; if (typeof f !== 'string' || !/0\.#+/.test(f)) return;
+      const v = c.value, n = typeof v === 'number' ? v : v && typeof v === 'object' && typeof v.result === 'number' ? v.result : null;
+      const k = (f.match(/0\.(#+)/) || ['', '##'])[1].length;                 // 16500,0001 cũng hiện "16.500," → coi là số chẵn
+      if (n === null || Math.abs(n - Math.round(n)) >= 0.5 * Math.pow(10, -k)) return;
+      c.style = Object.assign({}, c.style, { numFmt:f.replace(/0\.#+/g, '0') });   // chép kiểu riêng cho ô, không đụng ô khác dùng chung kiểu
+    })));
+  } catch (e) { console.error(e); }
+  return wb;
+}
+const xlBuf = async wb => { try { if (typeof bcStamp === 'function') await bcStamp(wb); } catch (e) { console.error(e); } return xlAutoH(xlIntFmt(xlNoEmo(wb))).xlsx.writeBuffer(); };   // v5.57.0: dấu nguồn + khoá số liệu · v5.59.7: hàng tự cao · v5.73.2: bỏ dấu thừa sau số chẵn
 </script>
 <script>// ===== v5.57.0 — DANH MỤC NHÀ CUNG CẤP DÙNG CHUNG · XUẤT EXCEL KHOÁ SỐ LIỆU =====
 // Máy chủ gửi danh mục (ncc) khi nccRev đổi → lưu trên máy. Ô NCC có data-ncc="may|vt|xe" → bảng chọn gõ không dấu.
