@@ -1915,7 +1915,7 @@ body.pg-printing #pg-print{display:block;position:fixed;inset:0;z-index:9000;bac
 // ============================================================
 // CONFIG
 // ============================================================
-const APP_VERSION = '5.72.0';
+const APP_VERSION = '5.73.0';
 const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbw6Rmi80I7RI3ij2U7RdRF5pYuQTnPrwEmGmUZS5xpxzLwwVynfoFUujZe1lm6HS1ymxw/exec';
 // ============================================================
 
@@ -20419,17 +20419,18 @@ function galEl() {
   let g = document.getElementById('gal');
   if (g) return g;
   g = document.createElement('div'); g.id = 'gal'; g.className = 'gal';
-  g.innerHTML = `<div class="gal-top"><div class="gal-info"><b id="gal-n"></b><span id="gal-cap"></span></div><button type="button" class="gal-x" onclick="galClose()" aria-label="Đóng">✕</button></div>
+  g.innerHTML = `<div class="gal-main"><div class="gal-top"><div class="gal-info"><b id="gal-n"></b><span id="gal-cap"></span></div><button type="button" class="gal-lb" id="gal-lb" onclick="galSideToggle()" aria-label="Danh sách vật tư">📋 Danh sách</button><button type="button" class="gal-x" onclick="galClose()" aria-label="Đóng">✕</button></div>
     <div class="gal-stage" id="gal-stage"><img id="gal-img" alt="Ảnh biên bản" draggable="false"><div class="gal-msg" id="gal-msg"></div></div>
     <button type="button" class="gal-nav gal-prev" onclick="galGo(-1)" aria-label="Ảnh trước">‹</button><button type="button" class="gal-nav gal-next" onclick="galGo(1)" aria-label="Ảnh sau">›</button>
-    <div class="gal-bot"><div class="gal-dots" id="gal-dots"></div><button type="button" class="gal-btn" onclick="galClose()">📄 Chi tiết phiếu</button></div>`;
+    <div class="gal-bot"><div class="gal-dots" id="gal-dots"></div><button type="button" class="gal-btn" onclick="galClose()">📄 Chi tiết phiếu</button></div></div>
+    <aside class="gal-side" id="gal-side" aria-label="Danh sách vật tư theo biên bản"></aside>`;
   document.body.appendChild(g); galTouch(g.querySelector('#gal-stage'));
   return g;
 }
 function galOpen(list, i, srcId) {
   if (!list.length) return;
-  GAL.list = list; GAL.i = Math.max(0, Math.min(i, list.length - 1)); GAL.cap = galCaption(srcId);
-  galEl().classList.add('show'); document.body.classList.add('gal-on'); galShow();
+  GAL.list = list; GAL.i = Math.max(0, Math.min(i, list.length - 1)); GAL.cap = galCaption(srcId); GAL.src = srcId;
+  galEl().classList.add('show'); document.body.classList.add('gal-on'); galSideRender(); galShow();
 }
 function galOpenFirst(srcId) { const L = photosOf(srcId); if (L.length) galOpen(L, 0, srcId); }
 function galClose() { const g = document.getElementById('gal'); if (g) g.classList.remove('show'); document.body.classList.remove('gal-on'); }
@@ -20480,6 +20481,7 @@ document.addEventListener('keydown', e => { const g = document.getElementById('g
 <style>/* v5.66.2 */
 .gal{position:fixed;inset:0;z-index:960;background:#0b0b0c;display:none;flex-direction:column;color:#fff;user-select:none;-webkit-user-select:none}
 .gal.show{display:flex}
+.gal-main{flex:1;min-width:0;min-height:0;display:flex;flex-direction:column;position:relative}
 body.gal-on{overflow:hidden}
 .gal-top{display:flex;align-items:flex-start;gap:10px;padding:calc(10px + env(safe-area-inset-top)) 12px 8px 16px;background:linear-gradient(#000c,#0000)}
 .gal-info{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px}.gal-info b{font-size:16px}.gal-info span{font-size:13px;color:#d6d6d6;overflow-wrap:anywhere;line-height:1.35}
@@ -20493,6 +20495,108 @@ body.gal-on{overflow:hidden}
 .gal-dots{display:flex;gap:6px;min-height:8px}.gal-dots i{width:8px;height:8px;border-radius:50%;background:#ffffff55}.gal-dots i.on{background:#fff}
 .gal-btn{border:none;border-radius:12px;background:#fff;color:#111;font:inherit;font-size:15px;font-weight:600;padding:11px 22px;cursor:pointer}
 @media (min-width:700px){.gal-nav{width:54px;height:80px}.gal-prev{left:18px}.gal-next{right:18px}}
+</style>
+<script>
+// ===== v5.73.0: XEM ẢNH BIÊN BẢN CHIA ĐÔI — bên ảnh · bên danh sách vật tư nhập / xuất của chính biên bản đó (dò từng dòng) =====
+// Máy tính / iPad ngang: ảnh trái, danh sách phải. Điện thoại: ảnh trên, danh sách dưới. Nút "📋 Danh sách" bật / tắt (nhớ trên máy: fecon_gal_side).
+// Dấu ✓ "đã dò" chỉ để đối chiếu bằng mắt, giữ trong lúc app đang mở, KHÔNG ghi gì vào phiếu / máy chủ.
+const GAL_CK = {};   // srcId → Set id dòng đã dò
+const galSideOn = () => { try { return localStorage.getItem('fecon_gal_side') !== '0'; } catch (e) { return true; } };
+function galSideRows(srcId) {
+  const o = db.transactions.find(x => x.id === srcId);
+  if (o) {
+    const m = new Map([[o.id, o]]);
+    try { phGroupOf(o).forEach(x => { if (!photosOf(x.id).length) m.set(x.id, x); }); } catch (e) {}   // phiếu có ảnh riêng là biên bản khác
+    try { const own = phOwnerMap(); db.transactions.forEach(x => { if (own[x.id] === srcId) m.set(x.id, x); }); } catch (e) {}
+    return [...m.values()].sort((p, q) => p.id - q.id).map(t => {
+      const it = db.items.find(i => i.id === t.itemId);
+      const nt = String(t.note || '').split(' · ').map(s => s.trim()).filter(s => s && !/^⚡ Lệnh: “/.test(s));
+      return { id:t.id, type:t.type, name:it?.name || t.itemName || '(không rõ tên)', code:it?.code || '', qty:+t.qty, unit:it?.unit || t.unit || '', note:nt.join(' · '), t };
+    });
+  }
+  const l = (db.loans || []).find(x => x.id === srcId);
+  if (l) return [{ id:l.id, type:l.kind === 'cho' ? 'xuat' : 'nhap', name:l.itemName || '', code:'', qty:+l.qty || 0, unit:l.unit || '', note:l.note || '' }];
+  return [];
+}
+function galSideRender() {
+  const g = document.getElementById('gal'), sd = document.getElementById('gal-side'); if (!g || !sd) return;
+  const R = galSideRows(GAL.src), lb = document.getElementById('gal-lb');
+  if (lb) lb.style.display = R.length ? '' : 'none';
+  g.classList.toggle('side', !!R.length && galSideOn());
+  if (!R.length) { sd.innerHTML = ''; return; }
+  const ck = GAL_CK[GAL.src] || (GAL_CK[GAL.src] = new Set());
+  const f = R[0].t, d = f ? parseVN(f.datetime) : null;
+  const mixed = new Set(R.map(r => r.type)).size > 1;
+  const lbl = ty => ty === 'nhap' ? 'Nhập' : ty === 'xuat' ? 'Xuất' : ty === 'dieuchinh' ? 'Điều chỉnh' : '';
+  const head = mixed ? 'Danh sách nhập / xuất' : `Danh sách ${lbl(R[0].type).toLowerCase() || 'vật tư'} theo biên bản`;
+  const who = f ? String(f.supplierOrReceiver || '') : '';
+  sd.innerHTML = `<div class="gs-hd"><div class="gs-t"><b>${escHtml(head)}</b><small>${[d ? `${d.getDate()}/${d.getMonth() + 1}/${d.getFullYear()}` : '', who ? (R[0].type === 'xuat' ? 'Nhận: ' : 'Giao: ') + who : '', R.length + ' dòng'].filter(Boolean).map(escHtml).join(' · ')}</small></div>
+    <span class="gs-ok" id="gs-ok"></span></div>
+    <div class="gs-list">${R.map((r, k) => `<div class="gs-r${ck.has(r.id) ? ' on' : ''}" data-id="${r.id}" role="checkbox" aria-checked="${ck.has(r.id)}" tabindex="0" onclick="galSideTick(${r.id})">
+      <span class="gs-n">${k + 1}</span><span class="gs-c" aria-hidden="true"></span>
+      <span class="gs-nm"><b>${escHtml(r.name)}</b>${r.code ? `<small>${escHtml(r.code)}</small>` : ''}${r.note ? `<em>${escHtml(r.note)}</em>` : ''}${mixed ? `<i class="gs-ty ${r.type}">${lbl(r.type)}</i>` : ''}</span>
+      <span class="gs-q"><b>${fmtNum(r.qty)}</b><small>${escHtml(r.unit)}</small></span></div>`).join('')}</div>
+    <div class="gs-ft">Chạm từng dòng để đánh dấu đã dò với ảnh. Dấu ✓ chỉ để xem, không ghi vào phiếu.</div>`;
+  galSideCount();
+}
+function galSideCount() {
+  const ck = GAL_CK[GAL.src] || new Set(), n = document.querySelectorAll('#gal-side .gs-r').length, el = document.getElementById('gs-ok');
+  const k = [...document.querySelectorAll('#gal-side .gs-r')].filter(r => ck.has(+r.dataset.id)).length;
+  if (el) { el.textContent = `Đã dò ${k}/${n}`; el.classList.toggle('all', n > 0 && k === n); }
+}
+function galSideTick(id) {
+  const ck = GAL_CK[GAL.src] || (GAL_CK[GAL.src] = new Set());
+  ck.has(id) ? ck.delete(id) : ck.add(id);
+  const r = document.querySelector(`#gal-side .gs-r[data-id="${id}"]`);
+  if (r) { r.classList.toggle('on', ck.has(id)); r.setAttribute('aria-checked', ck.has(id)); }
+  galSideCount();
+}
+function galSideToggle() {
+  const g = document.getElementById('gal'); if (!g) return;
+  const on = !g.classList.contains('side'); g.classList.toggle('side', on);
+  try { localStorage.setItem('fecon_gal_side', on ? '1' : '0'); } catch (e) {}
+  galZoom(1);
+}
+document.addEventListener('keydown', e => { const r = e.target && e.target.closest && e.target.closest('#gal-side .gs-r');
+  if (r && (e.key === ' ' || e.key === 'Enter')) { e.preventDefault(); galSideTick(+r.dataset.id); } });
+</script>
+<style>/* v5.73.0 */
+.gal-lb{flex:none;height:42px;border-radius:21px;border:none;background:rgba(255,255,255,.18);color:#fff;font:inherit;font-size:14px;font-weight:600;padding:0 14px;cursor:pointer}
+.gal.side .gal-lb{background:#fff;color:#111}
+.gal-side{display:none;flex-direction:column;min-height:0;background:#fff;color:#1a1a1a;user-select:text;-webkit-user-select:text}
+.gal.side .gal-side{display:flex}
+.gs-hd{display:flex;align-items:center;gap:10px;padding:12px 14px 10px;border-bottom:1px solid #e3e3e3}
+.gs-t{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px}.gs-t b{font-size:15px}.gs-t small{font-size:12.5px;color:#666;overflow-wrap:anywhere}
+.gs-ok{flex:none;font-size:13px;font-weight:600;color:#555;background:#f0f0f0;border-radius:14px;padding:5px 10px}.gs-ok.all{background:#DDF3E4;color:#13703A}
+.gs-list{flex:1;min-height:0;overflow:auto;-webkit-overflow-scrolling:touch}
+.gs-r{display:flex;align-items:flex-start;gap:9px;padding:10px 14px;border-bottom:1px solid #eee;cursor:pointer}
+.gs-r:nth-child(even){background:#fafafa}
+.gs-r.on{background:#EEF8F1}.gs-r.on .gs-nm b{color:#555}
+.gs-n{flex:none;width:22px;text-align:right;font-size:13px;color:#888;padding-top:2px}
+.gs-c{flex:none;width:20px;height:20px;border:2px solid #bbb;border-radius:5px;box-sizing:border-box;margin-top:1px;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;color:#fff}
+.gs-r.on .gs-c{background:#1E9E50;border-color:#1E9E50}.gs-r.on .gs-c::after{content:'✓'}
+.gs-nm{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px}.gs-nm b{font-size:14.5px;font-weight:600;overflow-wrap:anywhere}
+.gs-nm small{font-size:12px;color:#777}.gs-nm em{font-size:12.5px;color:#8A5A00;font-style:normal;overflow-wrap:anywhere}
+.gs-ty{align-self:flex-start;font-style:normal;font-size:11.5px;font-weight:600;border-radius:6px;padding:1px 7px;background:#E6F0FF;color:#1D4FB8}.gs-ty.xuat{background:#FFF0E0;color:#A04B00}
+.gs-q{flex:none;display:flex;flex-direction:column;align-items:flex-end;min-width:56px}.gs-q b{font-size:16px;font-variant-numeric:tabular-nums}.gs-q small{font-size:12px;color:#666}
+.gs-ft{font-size:12px;color:#777;padding:8px 14px calc(10px + env(safe-area-inset-bottom));border-top:1px solid #eee}
+/* điện thoại (dọc): ảnh trên, danh sách dưới */
+.gal.side .gal-main{flex:0 0 52%}
+.gal.side .gal-side{flex:1;border-radius:14px 14px 0 0}
+.gal.side .gal-bot{padding:4px 12px 8px;flex-direction:row;justify-content:center}
+.gal.side .gal-btn{padding:7px 14px;font-size:13.5px}
+.gal.side .gal-top{padding-bottom:4px}
+@media (max-width:819px){.gs-ft{display:none}.gs-r{padding:8px 12px}.gs-hd{padding:10px 12px 8px}.gal-lb{height:38px;padding:0 12px;font-size:13.5px}}
+@media (max-width:420px){.gal.side .gal-info span{display:none}}
+/* máy tính / iPad / điện thoại ngang: ảnh trái, danh sách phải */
+@media (min-width:820px), (orientation:landscape) and (min-width:600px){
+  .gal{flex-direction:row}
+  .gal.side .gal-main{flex:1 1 auto}
+  .gal.side .gal-side{flex:0 0 clamp(330px,40%,560px);border-radius:0;border-left:1px solid #333}
+  .gal.side .gal-bot{flex-direction:column;padding:8px 16px calc(14px + env(safe-area-inset-bottom))}
+  .gal.side .gal-btn{padding:11px 22px;font-size:15px}
+  .gal.side .gal-info span{display:inline}
+}
 </style>
 <script>
 // ===== v5.67.0: XUẤT ÂM · CẦN NHẬP BÙ · GHI CHÚ "KIỂM TRA TỒN KHO" =====
