@@ -1,4 +1,5 @@
-// FECON Kho + Thi công - Service Worker v5.73.3
+// FECON Kho + Thi công - Service Worker v5.73.4
+// 5.73.4: Báo cáo kho Excel – Tổng quan liệt kê đủ máy được cấp dầu (bỏ giới hạn 8 máy) + dòng cộng
 // 5.73.3: Báo cáo kho Excel bỏ sheet "Trạng thái máy"
 // 5.73.2: File Excel — số chẵn không còn dấu thừa ở cuối ("16.500," → "16.500"), mọi sheet (Nhiên liệu, Nhớt – mỡ, Sổ nhập – xuất…)
 // 5.73.1: Ô tìm kiếm không còn nhân đôi chữ khi gõ / xoá bằng bộ gõ tiếng Việt (Phiếu nhập, Phiếu xuất, Thiết bị, QLTB, Sơ đồ kho, Hướng dẫn, Thi công)
@@ -120,7 +121,7 @@
 //  - Mở app: lấy file từ bộ nhớ của bản đang dùng; thiếu file nào mới lấy từ mạng.
 //  - Có sw.js mới trên GitHub: tải sẵn bản mới vào bộ nhớ riêng nhưng KHÔNG đổi bản đang dùng.
 //  - Địa chỉ có ?fresh=... luôn lấy thẳng từ mạng (app dùng để kiểm tra / tải bản mới).
-const VERSION = '5.73.3';
+const VERSION = '5.73.4';
 const APP = 'fecon-app-', META = 'fecon-meta';
 const CORE = ['./', './index.html', './thicong.html', './danhmuc.html', './manifest.json', './icon-192.png', './icon-512.png', './icon-maskable-192.png', './icon-maskable-512.png', './bg-login.jpg'];
 
