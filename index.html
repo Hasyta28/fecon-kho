@@ -1915,7 +1915,7 @@ body.pg-printing #pg-print{display:block;position:fixed;inset:0;z-index:9000;bac
 // ============================================================
 // CONFIG
 // ============================================================
-const APP_VERSION = '5.73.3';
+const APP_VERSION = '5.73.4';
 const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbw6Rmi80I7RI3ij2U7RdRF5pYuQTnPrwEmGmUZS5xpxzLwwVynfoFUujZe1lm6HS1ymxw/exec';
 // ============================================================
 
@@ -14129,7 +14129,7 @@ function bcOverview(X, LN, LX, FU, NX, LO, apx) {
   r++;
   // ----- dầu theo máy -----
   band(r, 'DẦU DO CẤP THEO MÁY TRONG KỲ (lít)'); r++;
-  const top = FU.devRows.slice().sort((a, b) => b.q - a.q).slice(0, 8), t0 = r;
+  const top = FU.devRows.slice().sort((a, b) => b.q - a.q), t0 = r;   // v5.73.4: liệt kê đủ mọi máy được cấp dầu (trước chỉ 8 máy nhiều nhất)
   top.forEach(d => {
     ws.mergeCells(r, 2, r, 7); Object.assign(ws.getCell(r, 2), { value:d.nm, font:bcF(10.5), alignment:LEFT1 });
     ws.mergeCells(r, 8, r, 11); Object.assign(ws.getCell(r, 8), { value:{ formula:`${bcQ(FU.name)}!G${d.r}`, result:bcR(d.q) }, numFmt:'#,##0', font:bcF(10.5, true), alignment:RIGHT });
@@ -14138,7 +14138,15 @@ function bcOverview(X, LN, LX, FU, NX, LO, apx) {
     r++;
   });
   if (!top.length) { ws.mergeCells(r, 2, r, 13); Object.assign(ws.getCell(r, 2), { value:'Không có lần cấp dầu DO cho máy trong kỳ', font:bcF(10.5, false, true, BC.GREY) }); r++; }
-  else bcCF(ws, `H${t0}:H${r - 1}`, [bcBar()]);
+  else {
+    bcCF(ws, `H${t0}:H${r - 1}`, [bcBar()]);
+    const t1 = r - 1;   // v5.73.4: dòng cộng — khớp tổng DO cấp cho máy ở sheet Nhiên liệu
+    ws.mergeCells(r, 2, r, 7); Object.assign(ws.getCell(r, 2), { value:`Cộng: ${top.length} máy được cấp dầu trong kỳ`, font:bcF(10.5, true), alignment:LEFT1 });
+    ws.mergeCells(r, 8, r, 11); Object.assign(ws.getCell(r, 8), { value:{ formula:`SUM(H${t0}:H${t1})`, result:bcR(top.reduce((a, d) => a + d.q, 0)) }, numFmt:'#,##0', font:bcF(10.5, true), alignment:RIGHT });
+    ws.mergeCells(r, 12, r, 13); Object.assign(ws.getCell(r, 12), { value:{ formula:`SUM(L${t0}:L${t1})`, result:FU.tX ? Math.round(top.reduce((a, d) => a + d.q, 0) / FU.tX * 1000) / 1000 : 0 }, numFmt:'0%', font:bcF(9.5, true, false, BC.GREY), alignment:CEN });
+    for (let c = 2; c <= 13; c++) ws.getCell(r, c).border = { top:{ style:'thin' } };
+    r++;
+  }
   r++;
   // ----- v5.59.13: nhớt theo máy -----
   if (NH.length) {
